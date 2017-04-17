@@ -1,6 +1,6 @@
 from JumpScale9 import j
 import os
-import sys
+# import sys
 import atexit
 import struct
 from collections import namedtuple
@@ -33,7 +33,7 @@ class Application:
         """
         empties the core.db
         """
-        if j.core.db != None:
+        if j.core.db is not None:
             for key in j.core.db.keys():
                 j.core.db.delete(key)
         self.reload()
@@ -139,7 +139,8 @@ class Application:
     def _initWhoAmI(self):
         self._whoAmi = WhoAmI(gid=int(self.config['grid']["gid"]), nid=int(
             self.config['grid']["nid"]), pid=self.systempid)
-        self._whoAmIBytestr = struct.pack("<IHH", self.whoAmI.pid, self.whoAmI.nid, self.whoAmI.gid)
+        self._whoAmIBytestr = struct.pack(
+            "<IHH", self.whoAmI.pid, self.whoAmI.nid, self.whoAmI.gid)
 
     def getWhoAmiStr(self):
         return "_".join([str(item) for item in self.whoAmI])
@@ -190,7 +191,8 @@ class Application:
         '''
         import sys
 
-        # TODO: should we check the status (e.g. if application wasnt started, we shouldnt call this method)
+        # TODO: should we check the status (e.g. if application wasnt started,
+        # we shouldnt call this method)
         if self.state == "UNKNOWN":
             # Consider this a normal exit
             self.state = "HALTED"
@@ -202,7 +204,7 @@ class Application:
         self.logger.info("Stopping Application %s" % self.appname)
         try:
             __IPYTHON__.atexit_operations()
-        except:
+        except BaseException:
             pass
 
         # # Write exitcode
@@ -254,7 +256,12 @@ class Application:
             return False
         return True
 
-    def getAppInstanceHRD(self, name, instance, domain="jumpscale", parent=None):
+    def getAppInstanceHRD(
+            self,
+            name,
+            instance,
+            domain="jumpscale",
+            parent=None):
         """
         returns hrd for specific domain,name and & instance name
         """
@@ -297,12 +304,14 @@ class Application:
             if j.core.platformtype.myplatform.isLinux:
                 command = "ps -o pcpu %d | grep -E --regex=\"[0.9]\"" % pid
                 self.logger.debug("getCPUusage on linux with: %s" % command)
-                exitcode, output, err = j.sal.process.execute(command, True, False)
+                exitcode, output, err = j.sal.process.execute(
+                    command, True, False)
                 return output
             elif j.core.platformtype.myplatform.isSolaris():
                 command = 'ps -efo pcpu,pid |grep %d' % pid
                 self.logger.debug("getCPUusage on linux with: %s" % command)
-                exitcode, output, err = j.sal.process.execute(command, True, False)
+                exitcode, output, err = j.sal.process.execute(
+                    command, True, False)
                 cpuUsage = output.split(' ')[1]
                 return cpuUsage
         except Exception:
@@ -322,12 +331,14 @@ class Application:
             elif j.core.platformtype.myplatform.isLinux:
                 command = "ps -o pmem %d | grep -E --regex=\"[0.9]\"" % pid
                 self.logger.debug("getMemoryUsage on linux with: %s" % command)
-                exitcode, output, err = j.sal.process.execute(command, True, False)
+                exitcode, output, err = j.sal.process.execute(
+                    command, True, False)
                 return output
             elif j.core.platformtype.myplatform.isSolaris():
                 command = "ps -efo pcpu,pid |grep %d" % pid
                 self.logger.debug("getMemoryUsage on linux with: %s" % command)
-                exitcode, output, err = j.sal.process.execute(command, True, False)
+                exitcode, output, err = j.sal.process.execute(
+                    command, True, False)
                 memUsage = output.split(' ')[1]
                 return memUsage
         except Exception:
@@ -346,16 +357,19 @@ class Application:
     # TODO: *2 is this still being used?
     def appGetPids(self, appname):
         if j.core.db is None:
-            raise j.exceptions.RuntimeError("Redis was not running when applications started, cannot get pid's")
+            raise j.exceptions.RuntimeError(
+                "Redis was not running when applications started, cannot get pid's")
         if not j.core.db.hexists("application", appname):
             return list()
         else:
-            pids = j.data.serializer.json.loads(j.core.db.hget("application", appname))
+            pids = j.data.serializer.json.loads(
+                j.core.db.hget("application", appname))
             return pids
 
     def appsGetNames(self):
         if j.core.db is None:
-            raise j.exceptions.RuntimeError("Make sure redis is running for port 9999")
+            raise j.exceptions.RuntimeError(
+                "Make sure redis is running for port 9999")
         return j.core.db.hkeys("application")
 
     def appsGet(self):
@@ -384,7 +398,10 @@ class Application:
                     todelete.append(pid)
         for item in todelete:
             pids.remove(item)
-        j.core.db.hset("application", appname, j.data.serializer.json.dumps(pids))
+        j.core.db.hset(
+            "application",
+            appname,
+            j.data.serializer.json.dumps(pids))
 
         return pids
 
@@ -394,8 +411,10 @@ class Application:
         """
         # if unique machine id is set in grid.hrd, then return it
         uniquekey = 'node.machineguid'
-        if j.application.config.jumpscale['system']['grid'].get(uniquekey, False):
-            machineguid = j.application.config.jumpscale['system']['grid'].get(uniquekey)
+        if j.application.config.jumpscale['system']['grid'].get(
+                uniquekey, False):
+            machineguid = j.application.config.jumpscale['system']['grid'].get(
+                uniquekey)
             if machineguid.strip():
                 return machineguid
 
@@ -416,7 +435,8 @@ class Application:
             raise j.exceptions.RuntimeError(
                 "Cannot find macaddress of nics in machine.")
 
-        if j.application.config.jumpscale['system']['grid'].get(uniquekey, False):
+        if j.application.config.jumpscale['system']['grid'].get(
+                uniquekey, False):
             j.application.config.jumpscale['system']['grid'][uniquekey] = macaddr[0]
         return macaddr[0]
 
@@ -430,5 +450,7 @@ class Application:
             return False
         return self._writeExitcodeOnExit
 
-    writeExitcodeOnExit = property(fset=_setWriteExitcodeOnExit, fget=_getWriteExitcodeOnExit,
-                                   doc="Gets / sets if the exitcode has to be persisted on disk")
+    writeExitcodeOnExit = property(
+        fset=_setWriteExitcodeOnExit,
+        fget=_getWriteExitcodeOnExit,
+        doc="Gets / sets if the exitcode has to be persisted on disk")

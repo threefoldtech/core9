@@ -30,8 +30,11 @@ class SystemFSWalker:
         if contentRegexIncludes == [] and contentRegexExcludes == []:
             return True
         content = j.sal.fs.fileGetContents(path)
-        if j.tools.code.regex.matchMultiple(patterns=contentRegexIncludes, text=content) and not j.tools.code.regex.matchMultiple(
-                patterns=contentRegexExcludes, text=content):
+        if j.tools.code.regex.matchMultiple(
+                patterns=contentRegexIncludes,
+                text=content) and not j.tools.code.regex.matchMultiple(
+                patterns=contentRegexExcludes,
+                text=content):
             return True
         return False
 
@@ -151,8 +154,11 @@ class SystemFSWalker:
                                       contentRegexIncludes, contentRegexExcludes, depths, followlinks)
 
             if j.sal.fs.isFile(path2, followlinks):
-                if j.tools.code.regex.matchMultiple(patterns=pathRegexIncludes, text=path2) and not j.tools.code.regex.matchMultiple(
-                        patterns=pathRegexExcludes, text=path):
+                if j.tools.code.regex.matchMultiple(
+                        patterns=pathRegexIncludes,
+                        text=path2) and not j.tools.code.regex.matchMultiple(
+                        patterns=pathRegexExcludes,
+                        text=path):
                     if SystemFSWalker._checkDepth(path2, depths, path) and SystemFSWalker._checkContent(
                             path2, contentRegexIncludes, contentRegexExcludes):
                         callback(arg, path2)
@@ -224,10 +230,21 @@ class SystemFSWalker:
                 # print "walker matchdir:%s"% path2
                 if callbackFunctionDir is None:
                     j.sal.fs.walker._walkFunctional(
-                        path2, callbackFunctionFile, callbackFunctionDir, arg, callbackForMatchDir, callbackForMatchFile)
+                        path2,
+                        callbackFunctionFile,
+                        callbackFunctionDir,
+                        arg,
+                        callbackForMatchDir,
+                        callbackForMatchFile)
                 else:
                     result = callbackFunctionDir(path2, arg)
-                    if result != False:
+                    if result:
                         # print "walker recurse:%s"% path2
                         j.sal.fs.walker._walkFunctional(
-                            path2, callbackFunctionFile, callbackFunctionDir, arg, callbackForMatchDir, callbackForMatchFile, findDirectorySymlinks=findDirectorySymlinks)
+                            path2,
+                            callbackFunctionFile,
+                            callbackFunctionDir,
+                            arg,
+                            callbackForMatchDir,
+                            callbackForMatchFile,
+                            findDirectorySymlinks=findDirectorySymlinks)

@@ -4,7 +4,7 @@ import time
 
 try:
     import regex
-except:
+except BaseException:
     pass
 
 
@@ -301,8 +301,19 @@ class FSWalker():
     def _findhelper(self, arg, path):
         arg.append(path)
 
-    def find(self, root, includeFolders=False, includeLinks=False, pathRegexIncludes={}, pathRegexExcludes={}, followlinks=False,
-             childrenRegexExcludes=[".*/log/.*", "/dev/.*", "/proc/.*"], mdserverclient=None):
+    def find(
+            self,
+            root,
+            includeFolders=False,
+            includeLinks=False,
+            pathRegexIncludes={},
+            pathRegexExcludes={},
+            followlinks=False,
+            childrenRegexExcludes=[
+                ".*/log/.*",
+                "/dev/.*",
+                "/proc/.*"],
+            mdserverclient=None):
         """
         @return {files:[],dirs:[],links:[],...$othertypes}
         """
@@ -337,8 +348,15 @@ class FSWalker():
             pathRegexIncludes, pathRegexExcludes, includeFolders=includeFolders, includeLinks=includeLinks)
 
         root = os.path.abspath(root)
-        self.walk(root, callbackFunctions, arg={}, callbackMatchFunctions=callbackMatchFunctions, childrenRegexExcludes=childrenRegexExcludes,
-                  pathRegexIncludes=pathRegexIncludes, pathRegexExcludes=pathRegexExcludes, mdserverclient=mdserverclient)
+        self.walk(
+            root,
+            callbackFunctions,
+            arg={},
+            callbackMatchFunctions=callbackMatchFunctions,
+            childrenRegexExcludes=childrenRegexExcludes,
+            pathRegexIncludes=pathRegexIncludes,
+            pathRegexExcludes=pathRegexExcludes,
+            mdserverclient=mdserverclient)
 
         return result
 
@@ -416,11 +434,27 @@ else:
 
         # print "ROOT OF WALKER:%s"%root
         if mdserverclient is None:
-            self._walkFunctional(root, callbackFunctions, arg, callbackMatchFunctions, followlinks,
-                                 childrenRegexExcludes=childrenRegexExcludes, pathRegexIncludes=pathRegexIncludes, pathRegexExcludes=pathRegexExcludes, stat=stat)
+            self._walkFunctional(
+                root,
+                callbackFunctions,
+                arg,
+                callbackMatchFunctions,
+                followlinks,
+                childrenRegexExcludes=childrenRegexExcludes,
+                pathRegexIncludes=pathRegexIncludes,
+                pathRegexExcludes=pathRegexExcludes,
+                stat=stat)
         else:
-            self._walkFunctionalMDS(root, callbackFunctions, arg, callbackMatchFunctions, followlinks,
-                                    childrenRegexExcludes=childrenRegexExcludes, pathRegexIncludes=pathRegexIncludes, pathRegexExcludes=pathRegexExcludes, stat=stat)
+            self._walkFunctionalMDS(
+                root,
+                callbackFunctions,
+                arg,
+                callbackMatchFunctions,
+                followlinks,
+                childrenRegexExcludes=childrenRegexExcludes,
+                pathRegexIncludes=pathRegexIncludes,
+                pathRegexExcludes=pathRegexExcludes,
+                stat=stat)
 
     def _walkFunctional(self, root, callbackFunctions={}, arg=None, callbackMatchFunctions={}, followlinks=False,
                         childrenRegexExcludes=[], pathRegexIncludes={}, pathRegexExcludes={}, stat=False):
@@ -466,12 +500,26 @@ else:
                     path2 += "/"
 
                 if pathRegexIncludes.get(ttype, []) == [] and childrenRegexExcludes == []:
-                    self._walkFunctional(path2, callbackFunctions, arg, callbackMatchFunctions, followlinks,
-                                         childrenRegexExcludes=childrenRegexExcludes, pathRegexIncludes=pathRegexIncludes, pathRegexExcludes=pathRegexExcludes)
+                    self._walkFunctional(
+                        path2,
+                        callbackFunctions,
+                        arg,
+                        callbackMatchFunctions,
+                        followlinks,
+                        childrenRegexExcludes=childrenRegexExcludes,
+                        pathRegexIncludes=pathRegexIncludes,
+                        pathRegexExcludes=pathRegexExcludes)
 
                 elif RegexTool.matchPath(path2, pathRegexIncludes.get(ttype, []), childrenRegexExcludes):
-                    self._walkFunctional(path2, callbackFunctions, arg, callbackMatchFunctions, followlinks,
-                                         childrenRegexExcludes=childrenRegexExcludes, pathRegexIncludes=pathRegexIncludes, pathRegexExcludes=pathRegexExcludes)
+                    self._walkFunctional(
+                        path2,
+                        callbackFunctions,
+                        arg,
+                        callbackMatchFunctions,
+                        followlinks,
+                        childrenRegexExcludes=childrenRegexExcludes,
+                        pathRegexIncludes=pathRegexIncludes,
+                        pathRegexExcludes=pathRegexExcludes)
 
 
 class extra():
@@ -484,5 +532,6 @@ class extra():
 
         # self.RegexTool=RegexTool
         # self.ByteProcessor=ByteProcessor
+
 
 extra = extra()

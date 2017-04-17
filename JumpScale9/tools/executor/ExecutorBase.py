@@ -23,13 +23,13 @@ class ExecutorBase:
 
     @property
     def logger(self):
-        if self._logger == None:
+        if self._logger is None:
             self._logger = j.logger.get("unknown")
         return self._logger
 
     @property
     def id(self):
-        if self._id == None:
+        if self._id is None:
             raise j.exceptions.Input(message="self._id cannot be None", level=1, source="", tags="", msgpub="")
         return self._id
 
@@ -38,7 +38,7 @@ class ExecutorBase:
         """
         is dict which is stored on node itself in json format in /tmp/jsexecutor.json
         """
-        if self._config == None:
+        if self._config is None:
             if self.exists("$VARDIR/jsexecutor.json") == False:
                 self._config = {}
             else:
@@ -53,7 +53,7 @@ class ExecutorBase:
         if key in self.config:
             return self.config[key]
         else:
-            if defval != None:
+            if defval is not None:
                 if set:
                     self.configSet(key, defval)
                 return defval
@@ -83,7 +83,7 @@ class ExecutorBase:
         if self.readonly:
             raise j.exceptions.Input(message="cannot write config to '%s', because is readonly" %
                                      self, level=1, source="", tags="", msgpub="")
-        if self._config_changed == False:
+        if not self._config_changed:
             return
         data = j.data.serializer.json.dumps(self.config, sort_keys=True, indent=True)
         self.logger.info("config save")
@@ -168,7 +168,7 @@ class ExecutorBase:
             self._cuisine.executor = self
             try:
                 self._cuisine.sshclient = self.sshclient
-            except:
+            except BaseException:
                 pass
         return self._cuisine
 

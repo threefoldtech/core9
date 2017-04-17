@@ -76,8 +76,18 @@ class SSHClientFactory:
                 except Exception:
                     usecache = False
             if key not in self.cache or usecache is False:
-                self.cache[key] = SSHClient(addr, port, login, passwd, stdout=stdout, forward_agent=forward_agent, allow_agent=allow_agent,
-                                            look_for_keys=look_for_keys, key_filename=key_filename, passphrase=passphrase, timeout=timeout)
+                self.cache[key] = SSHClient(
+                    addr,
+                    port,
+                    login,
+                    passwd,
+                    stdout=stdout,
+                    forward_agent=forward_agent,
+                    allow_agent=allow_agent,
+                    look_for_keys=look_for_keys,
+                    key_filename=key_filename,
+                    passphrase=passphrase,
+                    timeout=timeout)
 
             return self.cache[key]
 

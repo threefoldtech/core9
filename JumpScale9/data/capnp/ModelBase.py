@@ -107,7 +107,7 @@ class ModelBase():
             dbobjprop = eval("self.dbobj.%s" % key)
             if len(dbobjprop) != 0:
                 raise RuntimeError("bug, dbobj prop should be empty, means we didn't reserialize properly")
-            if prop != None and len(prop) > 0:
+            if prop is not None and len(prop) > 0:
                 # init the subobj, iterate over all the items we have & insert them
                 subobj = self.dbobj.init(key, len(prop))
                 for x in range(0, len(prop)):
@@ -196,8 +196,7 @@ class ModelBase():
         else:
             try:
                 self.__dict__["list_%s" % name] = [item.copy() for item in prop]
-            except:
-                # means is not an object can be e.g. a string
+            except BaseException:                # means is not an object can be e.g. a string
                 self.__dict__["list_%s" % name] = [item for item in prop]
 
         # empty the dbobj list
@@ -283,7 +282,7 @@ class ModelBaseCollection:
         for field in self.capnp_schema.schema.fields_list:
             try:
                 str(field.schema)
-            except:
+            except BaseException:
                 continue
 
             if "List" in str(field.schema):
@@ -300,7 +299,7 @@ class ModelBaseCollection:
                     try:
                         self._listConstructors[field.proto.name] = eval(
                             "self.capnp_schema.%s.new_message" % subTypeName)
-                    except:
+                    except BaseException:
                         continue
 
                 self.__dict__["list_%s_constructor" % field.proto.name] = self._listConstructors[field.proto.name]
@@ -375,24 +374,24 @@ class ModelBaseCollection:
                 collection=self)
         return model
 
-    def list(self,  query=None):
-            """
-            List all keys of a index
-            @param if query not none then will use the index to do a query and ignore other elements
-            e.g
-              -  self.index.select().order_by(self.index.modTime.desc())
-              -  self.index.select().where((self.index.priority=="normal") | (self.index.priority=="critical"))
-             info how to use see:
-                http://docs.peewee-orm.com/en/latest/peewee/querying.html
-                the query is the statement in the where
-            """
+    def list(self, query=None):
+        """
+        List all keys of a index
+        @param if query not none then will use the index to do a query and ignore other elements
+        e.g
+          -  self.index.select().order_by(self.index.modTime.desc())
+          -  self.index.select().where((self.index.priority=="normal") | (self.index.priority=="critical"))
+         info how to use see:
+            http://docs.peewee-orm.com/en/latest/peewee/querying.html
+            the query is the statement in the where
+        """
 
-            if query != None:
-                res = [item.key for item in query]
-            else:
-                res = [item.key for item in self.index.select().order_by(self.index.modTime.desc())]
+        if query is not None:
+            res = [item.key for item in query]
+        else:
+            res = [item.key for item in self.index.select().order_by(self.index.modTime.desc())]
 
-            return res
+        return res
 
     def find(self, **kwargs):
         """

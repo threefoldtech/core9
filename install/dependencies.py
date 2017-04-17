@@ -5,9 +5,9 @@ class dependencies():
         self.do = do
 
     def base(self):
-        url="https://raw.githubusercontent.com/uiri/toml/master/toml.py"
+        url = "https://raw.githubusercontent.com/uiri/toml/master/toml.py"
         from IPython import embed
-        print ("DEBUG NOW base")
+        print("DEBUG NOW base")
         embed()
         raise RuntimeError("stop debug here")
 
@@ -75,12 +75,12 @@ class dependencies():
         self.do.pip("cython", executor=executor)
         self.do.pip("pycapnp", executor=executor)
 
-    def osx(self,all=False):
+    def osx(self, all=False):
         # self.do.execute("sudo chflags nohidden /opt")
-        for item in ["tmux","psutils"]:
+        for item in ["tmux", "psutils"]:
             self.do.execute("brew unlink %s;brew install %s;brew link --overwrite %s" % (item, item))
             cmds = "tmux psutils"
-        for item in ["libtiff","libjpeg","jpeg","webp","little-cms2"]:
+        for item in ["libtiff", "libjpeg", "jpeg", "webp", "little-cms2"]:
             self.do.execute("brew unlink %s;brew install %s;brew link --overwrite %s" % (item, item))
 
     def portal(self, executor=None):

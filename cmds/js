@@ -13,9 +13,9 @@ options, args = parser.parse_known_args()
 
 
 import sys
-if len(args)==1:
+if len(args) == 1:
     toexec = args[0]
-    toexec=toexec.strip("'\" ").strip("'\" ")
+    toexec = toexec.strip("'\" ").strip("'\" ")
     exec(toexec)
 else:
     from IPython import embed

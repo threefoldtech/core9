@@ -17,7 +17,7 @@ try:
     from pygments.formatters import get_formatter_by_name
     pygmentsObj = True
     import sys
-except:
+except BaseException:
     pygmentsObj = False
 
 
@@ -407,7 +407,7 @@ class Text:
                 # check getFloat
                 try:
                     result = float(result)
-                except:
+                except BaseException:
                     raise j.exceptions.Input(
                         "Please provide float.", "system.self.ask.neededfloat")
                 result = str(result)
@@ -609,8 +609,9 @@ class Text:
         elif isinstance(string, str) or isinstance(string, float) or isinstance(string, int):
             ttype, result = self._str2var(j.data.text.toStr(string))
         else:
-            raise j.exceptions.Input("Could not convert '%s' to basetype, input was %s. Expected string, dict or list." % (
-                string, type(string)), "self.str2var")
+            raise j.exceptions.Input(
+                "Could not convert '%s' to basetype, input was %s. Expected string, dict or list." %
+                (string, type(string)), "self.str2var")
         return result
 
         try:
@@ -657,8 +658,9 @@ class Text:
             elif isinstance(string, str) or isinstance(string, float) or isinstance(string, int):
                 ttype, result = self._str2var(j.data.text.toStr(string))
             else:
-                raise j.exceptions.Input("Could not convert '%s' to basetype, input was %s. Expected string, dict or list." % (
-                    string, type(string)), "self.str2var")
+                raise j.exceptions.Input(
+                    "Could not convert '%s' to basetype, input was %s. Expected string, dict or list." %
+                    (string, type(string)), "self.str2var")
             return result
         except Exception as e:
             raise j.exceptions.Input(
@@ -694,7 +696,7 @@ class Text:
             obj = obj.decode("utf8")
             return obj
         elif j.data.types.bool.check(obj):
-            if obj == True:
+            if obj:
                 obj = "True"
             else:
                 obj = "False"

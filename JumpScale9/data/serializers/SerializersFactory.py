@@ -12,7 +12,7 @@ from JumpScale.data.serializers.SerializerUJson import SerializerUJson
 from JumpScale.data.serializers.SerializerYAML import SerializerYAML
 try:
     from JumpScale.data.serializers.SerializerTOML import SerializerTOML
-except:
+except BaseException:
     pass
 
 
@@ -33,7 +33,7 @@ class SerializersFactory:
         self.yaml = SerializerYAML()
         try:
             self.toml = SerializerTOML()
-        except:
+        except BaseException:
             pass
 
     def get(self, serializationstr, key=""):

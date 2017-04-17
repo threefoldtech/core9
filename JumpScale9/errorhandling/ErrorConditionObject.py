@@ -3,7 +3,7 @@ try:
     import pygments.lexers
     from pygments.formatters import get_formatter_by_name
     pygmentsObj = True
-except:
+except BaseException:
     pygmentsObj = False
 
 import copy
@@ -127,11 +127,11 @@ class ErrorConditionObject(BaseException):
         return unique key for object, is used to define unique id
         """
         if self.category != "":
-            C = "%s_%s_%s_%s_%s_%s_%s_%s" % (
-                self.gid, self.nid, self.category, self.level, self.funcname, self.funcfilename, self.appname, self.type)
+            C = "%s_%s_%s_%s_%s_%s_%s_%s" % (self.gid, self.nid, self.category, self.level,
+                                             self.funcname, self.funcfilename, self.appname, self.type)
         else:
-            C = "%s_%s_%s_%s_%s_%s_%s_%s" % (
-                self.gid, self.nid, self.errormessage, self.level, self.funcname, self.funcfilename, self.appname, self.type)
+            C = "%s_%s_%s_%s_%s_%s_%s_%s" % (self.gid, self.nid, self.errormessage,
+                                             self.level, self.funcname, self.funcfilename, self.appname, self.type)
         self.uniquekey = j.data.hash.md5_string(C)
         return self.uniquekey
 
@@ -179,7 +179,7 @@ class ErrorConditionObject(BaseException):
         if not j.data.types.int.check(self.level):
             try:
                 self.level = int(self.level)
-            except:
+            except BaseException:
                 pass
             if not j.data.types.int.check(param.level):
                 self.level = 1
@@ -316,7 +316,7 @@ class ErrorConditionObject(BaseException):
                 return False
             if v.find("jumpscale.Shell") != -1:
                 return False
-        except:
+        except BaseException:
             return False
 
         return True

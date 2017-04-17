@@ -144,7 +144,7 @@ class GogsFactory:
         return GogsClient(addr=addr, port=port, login=login, passwd=passwd, accesstoken=accesstoken)
 
     def syncAllFromPSQL(self, git_host_name):
-        if self.model == None:
+        if self.model is None:
             raise j.exceptions.Input(message="please connect to psql first, use self.connectPSQL",
                                      level=1, source="", tags="", msgpub="")
         self.logger.info("syncAllFromPSQL")
@@ -241,7 +241,7 @@ class GogsFactory:
         @param dbname str,, database name.
         """
         self.logger.info("getIssuesFromPSQL")
-        if self.model == None:
+        if self.model is None:
             raise j.exceptions.Input(message="please connect to psql first, use self.connectPSQL",
                                      level=1, source="", tags="", msgpub="")
 
@@ -381,7 +381,7 @@ class GogsFactory:
         @param passwd str,,database passwd.
         @param dbname str,, database name.
         """
-        if self.model == None:
+        if self.model is None:
             raise j.exceptions.Input(message="please connect to psql first, use self.connectPSQL",
                                      level=1, source="", tags="", msgpub="")
 
@@ -411,7 +411,7 @@ class GogsFactory:
         """
         self.logger.info("getUsersFromPSQL")
 
-        if self.model == None:
+        if self.model is None:
             raise j.exceptions.Input(message="please connect to psql first, use self.connectPSQL",
                                      level=1, source="", tags="", msgpub="")
 
@@ -459,18 +459,22 @@ class GogsFactory:
         model.logger.debug("gitHostRefSet: git_host_name='%s' git_host_id='%s' git_host_url='%s'" %
                            (git_host_name, git_host_id, git_host_url))
         ref = self._gitHostRefGet(model, git_host_name, git_host_url)
-        if ref == None:
+        if ref is None:
             model.addSubItem("gitHostRefs", data=model.collection.list_gitHostRefs_constructor(
                 id=git_host_id, name=git_host_name, url=git_host_url))
-            key = model.collection._index.lookupSet("githost_%s" % git_host_name, git_host_id, model.key)
+            # key = model.collection._index.lookupSet("githost_%s" % git_host_name, git_host_id, model.key)
             model.save()
         else:
             if str(ref.id) != str(id):
                 raise j.exceptions.Input(
-                    message="gogs id has been changed over time, this should not be possible", level=1, source="", tags="", msgpub="")
+                    message="gogs id has been changed over time, this should not be possible",
+                    level=1,
+                    source="",
+                    tags="",
+                    msgpub="")
 
     def _gitHostRefExists(self, model, git_host_name):
-        return not self._gitHostRefGet(model, git_host_name) == None
+        return not self._gitHostRefGet(model, git_host_name) is None
 
     def _gitHostRefGet(self, model, git_host_name, git_host_url):
         for item in model.dbobj.gitHostRefs:
@@ -485,7 +489,7 @@ class GogsFactory:
         modelCollection.logger.debug("gitHostRefSet: git_host_name='%s' git_host_id='%s' git_host_url='%s'" % (
             git_host_name, git_host_id, git_host_url))
         key = modelCollection._index.lookupGet("githost_%s" % git_host_name, git_host_id)
-        if key == None:
+        if key is None:
             modelCollection.logger.debug("githost id not found, create new")
             if createNew:
                 modelActive = modelCollection.new()

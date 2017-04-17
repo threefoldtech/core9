@@ -12,12 +12,21 @@ class InfluxDumper:
     def __init__(self, testname, redis, server="localhost", port=8086, login="root", passwd="root"):
         self.redis = redis
         self.dbname = testname
-        self.influxdb = j.clients.influxdb.get(host=server, port=port, username=login, password=passwd,
-                                               database=None, ssl=False, verify_ssl=False, timeout=None, use_udp=False, udp_port=4444)
+        self.influxdb = j.clients.influxdb.get(
+            host=server,
+            port=port,
+            username=login,
+            password=passwd,
+            database=None,
+            ssl=False,
+            verify_ssl=False,
+            timeout=None,
+            use_udp=False,
+            udp_port=4444)
 
         try:
             self.influxdb.drop_database(testname)
-        except:
+        except BaseException:
             pass
         self.influxdb.create_database(testname)
         self.influxdb.switch_database(testname)

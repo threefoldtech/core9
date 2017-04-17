@@ -61,9 +61,17 @@ class Dirs:
 
     @property
     def JSLIBDIR(self):
-        return j.sal.fs.getParent(j.sal.fs.getDirName(j.sal.fs.getPathOfRunningFunction(j.logger.__init__)))
+        return j.sal.fs.getParent(
+            j.sal.fs.getDirName(
+                j.sal.fs.getPathOfRunningFunction(
+                    j.logger.__init__)))
 
-    def replaceFilesDirVars(self, path, recursive=True, filter=None, additionalArgs={}):
+    def replaceFilesDirVars(
+            self,
+            path,
+            recursive=True,
+            filter=None,
+            additionalArgs={}):
         if j.sal.fs.isFile(path):
             paths = [path]
         else:

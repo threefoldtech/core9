@@ -311,7 +311,7 @@ class RegexTools:
             if self.matchMultiple(includes, line) and not self.matchMultiple(excludes, line):
                 line = replaceFunction(arg, line)
             # if line.strip() != "":
-            if line != False:
+            if line:
                 out = "%s%s\n" % (out, line)
         if out[-2:] == "\n\n":
             out = out[:-1]
@@ -340,7 +340,7 @@ class RegexTools:
         line = self.findLine("^%s *=" % variableName, text)
         if line != "":
             val = line.split("=")[1].strip()
-            if isArray == True:
+            if isArray:
                 splitted = val.split(",")
                 if len(splitted) > 0:
                     splitted = [item.strip() for item in splitted]
@@ -353,8 +353,15 @@ class RegexTools:
 
     def extractFirstFoundBlock(self, text, blockStartPatterns, blockStartPatternsNegative=[], blockStopPatterns=[
     ], blockStopPatternsNegative=[], linesIncludePatterns=[".*"], linesExcludePatterns=[], includeMatchingLine=True):
-        result = self.extractBlocks(text, blockStartPatterns, blockStartPatternsNegative, blockStopPatterns,
-                                    blockStopPatternsNegative, linesIncludePatterns, linesExcludePatterns, includeMatchingLine)
+        result = self.extractBlocks(
+            text,
+            blockStartPatterns,
+            blockStartPatternsNegative,
+            blockStopPatterns,
+            blockStopPatternsNegative,
+            linesIncludePatterns,
+            linesExcludePatterns,
+            includeMatchingLine)
         if len(result) > 0:
             return result[0]
         else:
@@ -369,8 +376,8 @@ class RegexTools:
         example pattern: '^class ' looks for class at beginning of line with space behind
         """
         # check types of input
-        if type(blockStartPatterns).__name__ != 'list' or type(blockStartPatternsNegative).__name__ != 'list' or type(blockStopPatterns).__name__ != 'list' \
-                or type(blockStopPatternsNegative).__name__ != 'list' or type(linesIncludePatterns).__name__ != 'list' or type(linesExcludePatterns).__name__ != 'list':
+        if type(blockStartPatterns).__name__ != 'list' or type(blockStartPatternsNegative).__name__ != 'list' or type(blockStopPatterns).__name__ != 'list' or type(
+                blockStopPatternsNegative).__name__ != 'list' or type(linesIncludePatterns).__name__ != 'list' or type(linesExcludePatterns).__name__ != 'list':
             raise j.exceptions.RuntimeError(
                 "Blockstartpatterns,blockStartPatternsNegative,blockStopPatterns,blockStopPatternsNegative,linesIncludePatterns,linesExcludePatterns has to be of type list")
 
@@ -386,11 +393,19 @@ class RegexTools:
             addLine = (self.matchMultiple(linesIncludePatterns, line) and not self.matchMultiple(
                 linesExcludePatterns, line)) or emptyLine
             if state == "foundblock" and (
-                t == len(lines) - 1 or
-                (self.matchMultiple(blockStopPatterns, line) or
-                 (self.matchMultiple(blockStartPatterns, line) and not self.matchMultiple(blockStartPatternsNegative, line)) or
-                 (len(blockStopPatternsNegative) > 0 and not self.matchMultiple(blockStopPatternsNegative, line)))
-            ):
+                t == len(lines) -
+                1 or (
+                    self.matchMultiple(
+                        blockStopPatterns,
+                        line) or (
+                        self.matchMultiple(
+                    blockStartPatterns,
+                    line) and not self.matchMultiple(
+                        blockStartPatternsNegative,
+                        line)) or (
+                            len(blockStopPatternsNegative) > 0 and not self.matchMultiple(
+                                blockStopPatternsNegative,
+                                line)))):
 
                 # new potential block found or end of file
                 result.append(block)  # add to results line

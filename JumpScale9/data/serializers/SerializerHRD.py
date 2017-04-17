@@ -101,7 +101,7 @@ class SerializerHRD(SerializerBase):
                 value = self._processKey(keyrest, value, result[index])
                 result[index] = value
             else:
-                if not keypart in result:
+                if keypart not in result:
                     result[keypart] = None
                 value = self._processKey(keyrest, value, result[keypart])
                 result[keypart] = value

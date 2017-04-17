@@ -14,7 +14,8 @@ import os
 
 
 FILE_FORMAT = '%(asctime)s - %(pathname)s:%(lineno)d - %(levelname)-8s - %(message)s'
-CONSOLE_FORMAT = '%(cyan)s[%(asctime)s]%(reset)s - %(filename)-20s:%(lineno)-4d:%(name)-30s - %(log_color)s%(levelname)-8s%(reset)s - %(message)s'
+CONSOLE_FORMAT = '%(cyan)s[% (asctime)s]%(reset)s - %(filename)-20s: % (lineno)-4d: % (name)-30s '
+CONSOLE_FORMAT += '- % (log_color)s % (levelname) - 8s % (reset)s - %(message)s'
 
 # Modes
 PRODUCTION = 0  # use NullHander, let the application configure the logging
@@ -61,10 +62,10 @@ class Handlers():
                 datefmt="%a%d %H:%M",
                 reset=True,
                 log_colors={
-                    'DEBUG':    'cyan',
-                    'INFO':     'green',
-                    'WARNING':  'yellow',
-                    'ERROR':    'red',
+                    'DEBUG': 'cyan',
+                    'INFO': 'green',
+                    'WARNING': 'yellow',
+                    'ERROR': 'red',
                     'CRITICAL': 'red,bg_white',
                 },
                 secondary_log_colors={},

@@ -1,6 +1,6 @@
 try:
     import ujson as json
-except:
+except BaseException:
     import json
 from SerializerBase import *
 

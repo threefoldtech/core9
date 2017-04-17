@@ -1,7 +1,7 @@
 from JumpScale9 import j
-import sys
+# import sys
 import os
-import re
+# import re
 
 
 def _useELFtrick(file):
@@ -129,20 +129,23 @@ class PlatformType:
     def platformtypes(self):
         if self._platformtypes is None:
             platformtypes = j.core.platformtype.getParents(self.myplatform)
-            self._platformtypes = [item for item in platformtypes if item != ""]
+            self._platformtypes = [
+                item for item in platformtypes if item != ""]
         return self._platformtypes
 
     @property
     def uname(self):
         if self._uname is None:
-            rc, self._uname, err = self.executor.execute("uname -mnprs", showout=False, timeout=3, die=False)
+            rc, self._uname, err = self.executor.execute(
+                "uname -mnprs", showout=False, timeout=3, die=False)
             self._uname = self._uname.strip()
             if self._uname.find("warning: setlocale") != -1:
                 j.application._fixlocale = True
                 os.environ["LC_ALL"] = 'C.UTF-8'
                 os.environ["TERMINFO"] = 'xterm-256colors'
             self._uname = self._uname.split("\n")[0]
-            self._osname0, self._hostname0, self._osversion, self._cpu, self._platform = self._uname.split(" ")
+            self._osname0, self._hostname0, self._osversion, self._cpu, self._platform = self._uname.split(
+                " ")
         return self._uname
 
     @property
@@ -234,7 +237,8 @@ class PlatformType:
     def dieIfNotPlatform(self, platform):
         if not self.has_parent(platform):
             raise j.exceptions.RuntimeError(
-                "Can not continue, supported platform is %s, this platform is %s" % (platform, self.myplatform))
+                "Can not continue, supported platform is %s, this platform is %s" %
+                (platform, self.myplatform))
 
     @property
     def isUbuntu(self):
@@ -286,7 +290,10 @@ class PlatformType:
             import winreg as wr
             try:
                 virt = wr.OpenKey(
-                    wr.HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Virtualization', 0, wr.KEY_READ | wr.KEY_WOW64_64KEY)
+                    wr.HKEY_LOCAL_MACHINE,
+                    'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Virtualization',
+                    0,
+                    wr.KEY_READ | wr.KEY_WOW64_64KEY)
                 wr.QueryValueEx(virt, 'Version')
             except WindowsError:
                 return False

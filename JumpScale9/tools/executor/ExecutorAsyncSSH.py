@@ -6,11 +6,11 @@ import os
 class ExecutorAsyncSSH(ExecutorSSH):
 
     def __init__(self, addr='', port=22, login="root",
-                 passwd=None,  allow_agent=True, debug=False,
+                 passwd=None, allow_agent=True, debug=False,
                  look_for_keys=True, checkok=True, timeout=5, key_filename=(), passphrase=None):
 
         super().__init__(addr=addr, port=port, login=login,
-                         passwd=passwd,  allow_agent=allow_agent, debug=debug,
+                         passwd=passwd, allow_agent=allow_agent, debug=debug,
                          look_for_keys=look_for_keys, checkok=checkok,
                          timeout=timeout, key_filename=(), passphrase=passphrase)
 

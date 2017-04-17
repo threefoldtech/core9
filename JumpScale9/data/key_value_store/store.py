@@ -6,11 +6,11 @@ import time
 import collections
 try:
     import msgpack
-except:
+except BaseException:
     pass
 try:
     import snappy
-except:
+except BaseException:
     pass
 
 import re
@@ -124,7 +124,7 @@ class KeyValueStoreBase:  # , metaclass=ABCMeta):
         # type = 4bits:  $schemaYesNo,$expireYesNo,0,0 + 4 bit version of format now 0
         ttype = 0
 
-        if expire == None:
+        if expire is None:
             expire = 0
 
         if self._schema != b"":
@@ -233,7 +233,7 @@ class KeyValueStoreBase:  # , metaclass=ABCMeta):
         if acl != {} or secret != "":
             res = self.getraw(key, secret=secret, die=False, modecheck="w")
 
-            if res != None:
+            if res is not None:
                 (valOld, owner, schemaOld, expireOld, aclOld) = res
 
                 if schemaOld != self.schema:
@@ -243,7 +243,7 @@ class KeyValueStoreBase:  # , metaclass=ABCMeta):
                 acl.update(aclOld)
 
         else:
-            if value == None:
+            if value is None:
                 raise j.exceptions.Input(message="value needs to be set (not None), key:%s" %
                                          key, level=1, source="", tags="", msgpub="")
 
@@ -268,7 +268,7 @@ class KeyValueStoreBase:  # , metaclass=ABCMeta):
             if "Cannot find" in str(e):
                 return False
             raise e
-        return res != None
+        return res is not None
 
     def get(self, key, secret="", die=False):
         '''
@@ -360,7 +360,7 @@ class KeyValueStoreBase:  # , metaclass=ABCMeta):
 
         indexobj = self.getraw("index", die=False, secret=secret)
 
-        if indexobj == None:
+        if indexobj is None:
             ddict = {}
         else:
             ddict = msgpack.loads(indexobj)
@@ -386,7 +386,7 @@ class KeyValueStoreBase:  # , metaclass=ABCMeta):
 
         indexobj = self.getraw("index", die=False, secret=secret)
 
-        if indexobj == None:
+        if indexobj is None:
             ddict = {}
         else:
             ddict = msgpack.loads(indexobj)

@@ -125,7 +125,7 @@ class ClassDoc:
     def addMethod(self, name, method):
         try:
             source = inspect.getsource(method)
-        except:
+        except BaseException:
             self.errors += '#### Error trying to add %s source in %s.\n' % (name, self.location)
 
         print("ADD METHOD:%s %s" % (self.path, name))
@@ -135,6 +135,7 @@ class ClassDoc:
 
     def undersore_location(self):
         return self.location.replace(".", "_")
+
     def write(self, dest):
         dest2 = j.sal.fs.joinPaths(dest, self.location.split(".")[1], "%s.md" % self.undersore_location())
         destdir = j.sal.fs.getDirName(dest2)
@@ -260,7 +261,7 @@ class ObjectInspector:
                 filepath = inspect.getfile(obj.__class__)
                 if not filepath.startswith(self.base):
                     return
-        except:
+        except BaseException:
             pass
 
         # add the root object to the tree (self.jstree) as its first element (order maintained by ordereddict/pickle)
@@ -296,7 +297,7 @@ class ObjectInspector:
         if obj is None:
             try:
                 obj = eval(objectLocationPath)
-            except:
+            except BaseException:
                 self.raiseError("could not eval:%s" % objectLocationPath)
                 return
         # only process our files
@@ -399,7 +400,7 @@ class ObjectInspector:
                 self.logger.debug("class or instance: %s" % objectLocationPath2)
                 try:
                     filepath = inspect.getfile(objattribute.__class__)
-                except:
+                except BaseException:
                     pass
                 self.jstree[objectLocationPath2] = attrib(
                     objattributename, "class", objattribute.__doc__, objectLocationPath2, filepath)
@@ -416,16 +417,16 @@ class ObjectInspector:
         """
         Writes the documentation on a specified path.
         """
-        self.dest=os.path.normpath(self.dest)
+        self.dest = os.path.normpath(self.dest)
         todelete = []
         summary = {}
         for key, doc in list(self.classDocs.items()):
-            key2 = ".".join(key.split(".")[0:2]) #root items (data,core,application, sal,..)
+            key2 = ".".join(key.split(".")[0:2])  # root items (data,core,application, sal,..)
             if key2 not in summary:
                 summary[key2] = {}
             dest = doc.write(path)
             # remember gitbook info
-            dest=os.path.normpath(dest)
+            dest = os.path.normpath(dest)
             summary[key2][key] = j.sal.fs.pathRemoveDirPart(dest, self.dest)
 
         summarytxt = ""

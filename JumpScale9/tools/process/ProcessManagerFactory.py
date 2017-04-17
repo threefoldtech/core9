@@ -124,7 +124,7 @@ class Process():
         """
         Run the process in the same process
         """
-        if self.method == None:
+        if self.method is None:
             msg = "Cannot start process, method not set."
             raise j.exceptions.Input(message=msg, level=1, source="", tags="", msgpub="")
 
@@ -243,7 +243,7 @@ class Process():
         return (self.state != "running" and self.state != "init")
 
     def sync(self):
-        if self.pid == None:
+        if self.pid is None:
             return self.state
 
         # nothing to do more if the process is done
@@ -286,7 +286,7 @@ class Process():
 
     def wait(self):
         # wait until the process is finished
-        if self.pid == None:
+        if self.pid is None:
             return
 
         try:
@@ -369,7 +369,7 @@ class ProcessManagerFactory:
             print("no clear")
 
             if autowait:
-                if autoclear == False:
+                if not autoclear:
                     raise j.exceptions.Input(message="cannot wait if autoclear=False",
                                              level=1, source="", tags="", msgpub="")
                 while True:

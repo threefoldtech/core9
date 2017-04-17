@@ -66,8 +66,19 @@ class SSHClient(asyncssh.SSHClient):
 
 class AsyncSSHClient:
 
-    def __init__(self, addr='', port=22, login="root", passwd=None, usesproxy=False, forward_agent=True, allow_agent=True,
-                 look_for_keys=True, key_filename=(), passphrase=None, timeout=5.0):
+    def __init__(
+            self,
+            addr='',
+            port=22,
+            login="root",
+            passwd=None,
+            usesproxy=False,
+            forward_agent=True,
+            allow_agent=True,
+            look_for_keys=True,
+            key_filename=(),
+            passphrase=None,
+            timeout=5.0):
         self.addr = addr
         self.port = port
         self.login = login
@@ -131,6 +142,7 @@ class AsyncSSHClient:
         if self._client and self._client.conn:
             self._client.conn.close()
             self.client = None
+
 
 if __name__ == '__main__':
     client = AsyncSSHClient(addr='localhost', port=22, login="root", passwd='rooter')

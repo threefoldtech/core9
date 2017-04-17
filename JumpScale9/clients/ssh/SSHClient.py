@@ -9,6 +9,7 @@ import threading
 import queue
 import io
 
+
 class StreamReader(threading.Thread):
 
     def __init__(self, stream, channel, queue, flag):
@@ -42,8 +43,20 @@ class StreamReader(threading.Thread):
 
 class SSHClient:
 
-    def __init__(self, addr='', port=22, login="root", passwd=None, usesproxy=False, stdout=True, forward_agent=True, allow_agent=True,
-                 look_for_keys=True, key_filename=None, passphrase=None, timeout=5.0):
+    def __init__(
+            self,
+            addr='',
+            port=22,
+            login="root",
+            passwd=None,
+            usesproxy=False,
+            stdout=True,
+            forward_agent=True,
+            allow_agent=True,
+            look_for_keys=True,
+            key_filename=None,
+            passphrase=None,
+            timeout=5.0):
         self._lock = threading.Lock()
         self.port = port
         self.addr = addr
@@ -63,7 +76,7 @@ class SSHClient:
             self.key_filename = key_filename
             self.passphrase = passphrase
 
-        self.logger = j.logger.get("ssh sync client: %s(%s):"%(self.addr,self.port))
+        self.logger = j.logger.get("ssh sync client: %s(%s):" % (self.addr, self.port))
 
         self._transport = None
         self._client = None
@@ -119,7 +132,8 @@ class SSHClient:
         self.logger.info("Test sync ssh connection to %s:%s:%s" % (self.addr, self.port, self.login))
 
         if j.sal.nettools.waitConnectionTest(self.addr, self.port, self.timeout) is False:
-            self.logger.error("Cannot connect to ssh server %s:%s with login:%s and using sshkey:%s" % (self.addr, self.port, self.login, self.key_filename))
+            self.logger.error("Cannot connect to ssh server %s:%s with login:%s and using sshkey:%s" %
+                              (self.addr, self.port, self.login, self.key_filename))
             return None
 
         self.pkey = None
@@ -132,15 +146,23 @@ class SSHClient:
         if self.key_filename:
             self.allow_agent = True
             self.look_for_keys = True
-            if j.clients.ssh.SSHKeyGetPathFromAgent(self.key_filename, die=False)!=None and not self.passphrase:
+            if j.clients.ssh.SSHKeyGetPathFromAgent(self.key_filename, die=False) is not None and not self.passphrase:
                 j.clients.ssh.SSHKeysLoad(self.key_filename)
-
 
         start = j.data.time.getTimeEpoch()
         while start + self.timeout > j.data.time.getTimeEpoch():
             try:
-                self.logger.info("connect to:%s"%self.addr)
-                self._client.connect(self.addr, self.port, username=self.login, password=self.passwd, pkey=self.pkey, allow_agent=self.allow_agent, look_for_keys=self.look_for_keys,timeout=2.0, banner_timeout=3.0)
+                self.logger.info("connect to:%s" % self.addr)
+                self._client.connect(
+                    self.addr,
+                    self.port,
+                    username=self.login,
+                    password=self.passwd,
+                    pkey=self.pkey,
+                    allow_agent=self.allow_agent,
+                    look_for_keys=self.look_for_keys,
+                    timeout=2.0,
+                    banner_timeout=3.0)
                 self.logger.info("connection ok")
                 return self._client
 
@@ -154,7 +176,7 @@ class SSHClient:
                     "Unexpected error in socket connection for ssh. Aborting connection and try again.")
                 self.logger.error(e)
                 self._client.close()
-                #self.reset()
+                # self.reset()
                 time.sleep(1)
                 continue
 
@@ -165,7 +187,6 @@ class SSHClient:
 
         if self._client is None:
             raise j.exceptions.RuntimeError('Impossible to create SSH connection to %s:%s' % (self.addr, self.port))
-
 
     @property
     def client(self):
@@ -272,18 +293,41 @@ class SSHClient:
                 "dest path should be absolute, need / in beginning of dest path")
 
         dest = "%s@%s:%s" % (self.login, self.addr, dest)
-        j.sal.fs.copyDirTree(source, dest, keepsymlinks=True, deletefirst=False,
-                             overwriteFiles=True, ignoredir=[".egg-info", ".dist-info", "__pycache__"], ignorefiles=[".egg-info"], rsync=True,
-                             ssh=True, sshport=self.port, recursive=recursive)
+        j.sal.fs.copyDirTree(
+            source,
+            dest,
+            keepsymlinks=True,
+            deletefirst=False,
+            overwriteFiles=True,
+            ignoredir=[
+                ".egg-info",
+                ".dist-info",
+                "__pycache__"],
+            ignorefiles=[".egg-info"],
+            rsync=True,
+            ssh=True,
+            sshport=self.port,
+            recursive=recursive)
 
     def rsync_down(self, source, dest, source_prefix="", recursive=True):
         if source[0] != "/":
             raise j.exceptions.RuntimeError(
                 "source path should be absolute, need / in beginning of source path")
         source = "%s@%s:%s" % (self.login, self.addr, source)
-        j.sal.fs.copyDirTree(source, dest, keepsymlinks=True, deletefirst=False,
-                             overwriteFiles=True, ignoredir=[".egg-info", ".dist-info"], ignorefiles=[".egg-info"], rsync=True,
-                             ssh=True, sshport=self.port, recursive=recursive)
+        j.sal.fs.copyDirTree(
+            source,
+            dest,
+            keepsymlinks=True,
+            deletefirst=False,
+            overwriteFiles=True,
+            ignoredir=[
+                ".egg-info",
+                ".dist-info"],
+            ignorefiles=[".egg-info"],
+            rsync=True,
+            ssh=True,
+            sshport=self.port,
+            recursive=recursive)
 
     @property
     def cuisine(self):
@@ -298,16 +342,16 @@ class SSHClient:
     def ssh_authorize(self, user, key):
         self.cuisine.ssh.authorize(user, key)
 
-    def portforwardToLocal(self,remoteport,localport):
+    def portforwardToLocal(self, remoteport, localport):
         self.portforwardKill(localport)
-        C="ssh -L %s:localhost:%s root@%s -p %s"%(remoteport,localport,self.addr,self.port)
-        print (C)
-        j.tools.cuisine.local.processmanager.ensure(cmd=C,name="ssh_%s"%localport,wait=0.5)
-        print ("Test tcp port to:%s"%localport)
-        if not j.sal.nettools.waitConnectionTest("127.0.0.1",localport,10):
-            raise RuntimeError("Cannot open ssh forward:%s_%s_%s"%(self,remoteport,localport))
-        print ("Connection ok")
+        C = "ssh -L %s:localhost:%s root@%s -p %s" % (remoteport, localport, self.addr, self.port)
+        print(C)
+        j.tools.cuisine.local.processmanager.ensure(cmd=C, name="ssh_%s" % localport, wait=0.5)
+        print("Test tcp port to:%s" % localport)
+        if not j.sal.nettools.waitConnectionTest("127.0.0.1", localport, 10):
+            raise RuntimeError("Cannot open ssh forward:%s_%s_%s" % (self, remoteport, localport))
+        print("Connection ok")
 
-    def portforwardKill(self,localport):
-        print ("kill portforward %s"%localport)
-        j.tools.cuisine.local.processmanager.stop('ssh_%s'%localport)
+    def portforwardKill(self, localport):
+        print("kill portforward %s" % localport)
+        j.tools.cuisine.local.processmanager.stop('ssh_%s' % localport)

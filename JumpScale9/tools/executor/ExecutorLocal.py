@@ -7,7 +7,7 @@ import os
 class ExecutorLocal(ExecutorBase):
 
     def __init__(self, debug=False, checkok=False):
-        ExecutorBase.__init__(self,  debug=debug, checkok=debug)
+        ExecutorBase.__init__(self, debug=debug, checkok=debug)
 
         self.type = "local"
         self._id = 'localhost'
@@ -15,7 +15,7 @@ class ExecutorLocal(ExecutorBase):
 
     @property
     def logger(self):
-        if self._logger == None:
+        if self._logger is None:
             self._logger = j.logger.get("executor.localhost")
         return self._logger
 
@@ -28,15 +28,15 @@ class ExecutorLocal(ExecutorBase):
         if self.debug:
             print("EXECUTOR:%s" % cmds)
 
-        if outputStderr == None:
+        if outputStderr is None:
             outputStderr = showout
 
-        if checkok == None:
+        if checkok is None:
             checkok = self.checkok
 
         cmds2 = self._transformCmds(cmds, die=die, checkok=checkok, env=env)
 
-        rc, out, err = j.sal.process.execute(cmds2, die=die,  showout=showout,
+        rc, out, err = j.sal.process.execute(cmds2, die=die, showout=showout,
                                              outputStderr=outputStderr, timeout=timeout)
 
         if checkok:
@@ -52,15 +52,34 @@ class ExecutorLocal(ExecutorBase):
         if dest_prefix != "":
             dest = j.sal.fs.joinPaths(dest_prefix, dest)
         if j.sal.fs.isDir(source):
-            j.sal.fs.copyDirTree(source, dest, keepsymlinks=True, deletefirst=False,
-                                 overwriteFiles=True, ignoredir=[".egg-info", ".dist-info"], ignorefiles=[".egg-info"], rsync=True,
-                                 ssh=False, recursive=recursive)
+            j.sal.fs.copyDirTree(
+                source,
+                dest,
+                keepsymlinks=True,
+                deletefirst=False,
+                overwriteFiles=True,
+                ignoredir=[
+                    ".egg-info",
+                    ".dist-info"],
+                ignorefiles=[".egg-info"],
+                rsync=True,
+                ssh=False,
+                recursive=recursive)
         else:
             j.sal.fs.copyFile(source, dest, overwriteFile=True)
 
     def download(self, source, dest, source_prefix=""):
         if source_prefix != "":
             source = j.sal.fs.joinPaths(source_prefix, source)
-        j.sal.fs.copyDirTree(source, dest, keepsymlinks=True, deletefirst=False,
-                             overwriteFiles=True, ignoredir=[".egg-info", ".dist-info"], ignorefiles=[".egg-info"], rsync=True,
-                             ssh=False)
+        j.sal.fs.copyDirTree(
+            source,
+            dest,
+            keepsymlinks=True,
+            deletefirst=False,
+            overwriteFiles=True,
+            ignoredir=[
+                ".egg-info",
+                ".dist-info"],
+            ignorefiles=[".egg-info"],
+            rsync=True,
+            ssh=False)

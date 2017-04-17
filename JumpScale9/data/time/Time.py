@@ -201,7 +201,7 @@ class Time_:
         try:
             datestr = datestr.strip()
             return time.mktime(time.strptime(datestr, "%d/%m/%Y"))
-        except:
+        except BaseException:
             raise ValueError(
                 "Date needs to be formatted as \"16/06/1981\", also check if date is valid, now format = %s" % datestr)
 
@@ -215,9 +215,10 @@ class Time_:
         try:
             hrdatetime = hrdatetime.strip()
             return int(time.mktime(time.strptime(hrdatetime, "%Y/%m/%d %H:%M:%S")))
-        except:
+        except BaseException:
             raise ValueError(
-                "Date needs to be formatted as Needs to be formatted as 16/06/1988 %H:%M:%S, also check if date is valid, now format = %s" % hrdatetime)
+                "Date needs to be formatted as Needs to be formatted as 16/06/1988 %H:%M:%S, also check if date is valid, now format = %s" %
+                hrdatetime)
 
     def any2epoch(self, val, in_list=False):
         """
@@ -239,11 +240,11 @@ class Time_:
         if j.data.types.string.check(val):
             try:
                 return self.HRDateTime2epoch(val)
-            except:
+            except BaseException:
                 pass
             try:
                 return self.HRDatetoEpoch(val)
-            except:
+            except BaseException:
                 pass
         if isinstance(val, datetime.datetime):
             return self.pythonDateTime2Epoch(val)

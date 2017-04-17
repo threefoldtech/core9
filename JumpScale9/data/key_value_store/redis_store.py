@@ -13,7 +13,19 @@ import re
 
 class RedisKeyValueStore(KeyValueStoreBase):
 
-    def __init__(self, name, namespace="db", host='localhost', port=6379, unixsocket=None, db=0, password='', serializers=[], masterdb=None, cache=None, changelog=None):
+    def __init__(
+            self,
+            name,
+            namespace="db",
+            host='localhost',
+            port=6379,
+            unixsocket=None,
+            db=0,
+            password='',
+            serializers=[],
+            masterdb=None,
+            cache=None,
+            changelog=None):
 
         self.redisclient = j.clients.redis.get(host, port, password=password, unixsocket=unixsocket)
         # self.redisclient.port = port

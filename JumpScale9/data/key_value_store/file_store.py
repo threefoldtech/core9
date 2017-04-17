@@ -3,12 +3,14 @@ from JumpScale9 import j
 import shelve
 import re
 
+
 class FileKeyValueStore(KeyValueStoreBase):
     """
     This file store will open the file for writing in the init and do sync for every write/delete entery
     for high performance
     sync simply flush the buffer to disk without having to open/close the file every time
     """
+
     def __init__(self, name, namespace="db", baseDir='/tmp', host='localhost', serializers=[]):
         self._db_path = '{baseDir}/{name}'.format(baseDir=baseDir, name=name)
         self.db = shelve.open(self._db_path, writeback=True)

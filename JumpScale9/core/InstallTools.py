@@ -93,7 +93,8 @@ class SSHMethods():
         self.executeInteractive(cmd)
 
     def SSHAgentCheckKeyIsLoaded(self, keyNamePath):
-        keysloaded = [self.getBaseName(item) for item in self.SSHKeysListFromAgent()]
+        keysloaded = [self.getBaseName(item)
+                      for item in self.SSHKeysListFromAgent()]
         if self.getBaseName(keyNamePath) in keysloaded:
             self.logger.info("ssh key:%s loaded" % keyNamePath)
             return True
@@ -119,7 +120,8 @@ class SSHMethods():
 
         self._loadSSHAgent()
 
-        keysloaded = [self.getBaseName(item) for item in self.SSHKeysListFromAgent()]
+        keysloaded = [self.getBaseName(item)
+                      for item in self.SSHKeysListFromAgent()]
 
         if self.isDir(path):
             keysinfs = [self.getBaseName(item).replace(".pub", "") for item in self.listFilesInDir(
@@ -127,7 +129,8 @@ class SSHMethods():
             keysinfs = [item for item in keysinfs if item not in keysloaded]
 
             res = self.askItemsFromList(
-                keysinfs, "select ssh keys to load, use comma separated list e.g. 1,4,3 and press enter.")
+                keysinfs,
+                "select ssh keys to load, use comma separated list e.g. 1,4,3 and press enter.")
         else:
             res = [self.getBaseName(path).replace(".pub", "")]
             path = self.getParent(path)
@@ -143,7 +146,7 @@ class SSHMethods():
         try:
             # TODO: why do we use subprocess here and not self.execute?
             out = subprocess.check_output(["ssh-add", "-L"])
-        except:
+        except BaseException:
             return None
 
         for line in out.splitlines():
@@ -157,17 +160,20 @@ class SSHMethods():
                     if self.exists("keys/%s" % keyname):
                         keypath = "keys/%s" % keyname
                     else:
-                        raise RuntimeError("could not find keypath:%s" % keypath)
+                        raise RuntimeError(
+                            "could not find keypath:%s" % keypath)
                 return keypath.decode()
         if die:
-            raise RuntimeError("Did not find key with name:%s, check its loaded in ssh-agent with ssh-add -l" % keyname)
+            raise RuntimeError(
+                "Did not find key with name:%s, check its loaded in ssh-agent with ssh-add -l" %
+                keyname)
         return None
 
     def SSHKeyGetFromAgentPub(self, keyname, die=True):
         try:
             # TODO: why do we use subprocess here and not self.execute?
             out = subprocess.check_output(["ssh-add", "-L"])
-        except:
+        except BaseException:
             return None
 
         for line in out.splitlines():
@@ -177,7 +183,9 @@ class SSHMethods():
                 content = content.decode()
                 return content
         if die:
-            raise RuntimeError("Did not find key with name:%s, check its loaded in ssh-agent with ssh-add -l" % keyname)
+            raise RuntimeError(
+                "Did not find key with name:%s, check its loaded in ssh-agent with ssh-add -l" %
+                keyname)
         return None
 
     def SSHKeysListFromAgent(self, keyIncluded=False):
@@ -193,7 +201,8 @@ class SSHMethods():
             if rc == 1 and out.find("The agent has no identities") != -1:
                 return []
             raise RuntimeError("error during listing of keys :%s" % err)
-        keys = [line.split() for line in out.splitlines() if len(line.split()) == 3]
+        keys = [line.split()
+                for line in out.splitlines() if len(line.split()) == 3]
         if keyIncluded:
             return list(map(lambda key: key[2:0:-1], keys))
         else:
@@ -216,7 +225,9 @@ class SSHMethods():
         # cannot upload directly to root dir
         auth_key_path = "/home/%s/.ssh/authorized_keys" % username
         cmd = "ssh %s@%s 'cat %s | sudo tee -a %s '" % username, ip_address, tmpfile, auth_key_path
-        self.logger.info("do the following on the console\nsudo -s\ncat %s >> %s" % (tmpfile, auth_key_path))
+        self.logger.info(
+            "do the following on the console\nsudo -s\ncat %s >> %s" %
+            (tmpfile, auth_key_path))
         self.logger.info(cmd)
         self.executeInteractive(cmd)
 
@@ -235,7 +246,8 @@ class SSHMethods():
                     if str(e).find("No such file") != -1:
                         self.writeFile(tmppath, "")
                     else:
-                        raise RuntimeError("Could not get authorized key,%s" % e)
+                        raise RuntimeError(
+                            "Could not get authorized key,%s" % e)
 
             C = self.readFile(tmppath)
             Cnew = self.readFile(keyname)
@@ -249,7 +261,14 @@ class SSHMethods():
             else:
                 self.logger.info("ssh key was already authorized")
 
-    def SSHAuthorizeKey(self, remoteipaddr, keyname, login="root", passwd=None, sshport=22, removeothers=False):
+    def SSHAuthorizeKey(
+            self,
+            remoteipaddr,
+            keyname,
+            login="root",
+            passwd=None,
+            sshport=22,
+            removeothers=False):
         """
         this required ssh-agent to be loaded !!!
         the keyname is the name of the key as loaded in ssh-agent
@@ -266,15 +285,27 @@ class SSHMethods():
 
         if not self.SSHKeysListFromAgent(self.getBaseName(keyname)):
             self.SSHKeysLoad(self.getParent(keyname))
-        ssh.connect(remoteipaddr, username=login, password=passwd, allow_agent=True, look_for_keys=False)
+        ssh.connect(
+            remoteipaddr,
+            username=login,
+            password=passwd,
+            allow_agent=True,
+            look_for_keys=False)
         self.logger.info("ok")
 
         ftp = ssh.open_sftp()
 
         if login != "root":
-            self.authorize_user(sftp_client=ftp, ip_address=remoteipaddr, keyname=keyname, username=login)
+            self.authorize_user(
+                sftp_client=ftp,
+                ip_address=remoteipaddr,
+                keyname=keyname,
+                username=login)
         else:
-            self.authorize_root(sftp_client=ftp, ip_address=remoteipaddr, keyname=keyname)
+            self.authorize_root(
+                sftp_client=ftp,
+                ip_address=remoteipaddr,
+                keyname=keyname)
 
     def _loadSSHAgent(self, path=None, createkeys=False, killfirst=False):
         """
@@ -288,8 +319,12 @@ class SSHMethods():
         with FileLock('/tmp/ssh-agent'):
             # check if more than 1 agent
             socketpath = self._getSSHSocketpath()
-            res = [item for item in self.execute("ps aux|grep ssh-agent", False, False)
-                   [1].split("\n") if item.find("grep ssh-agent") == -1]
+            res = [
+                item for item in self.execute(
+                    "ps aux|grep ssh-agent",
+                    False,
+                    False)[1].split("\n") if item.find("grep ssh-agent") == -
+                1]
             res = [item for item in res if item.strip() != ""]
             res = [item for item in res if item[-2:] != "-l"]
 
@@ -311,19 +346,22 @@ class SSHMethods():
                 self.createDir(self.getParent(socketpath))
                 # ssh-agent not loaded
                 self.logger.info("load ssh agent")
-                rc, result, err = self.execute("ssh-agent -a %s" % socketpath, die=False,
-                                               showout=False, outputStderr=False)
+                rc, result, err = self.execute(
+                    "ssh-agent -a %s" %
+                    socketpath, die=False, showout=False, outputStderr=False)
 
                 if rc > 0:
                     # could not start ssh-agent
                     raise RuntimeError(
-                        "Could not start ssh-agent, something went wrong,\nstdout:%s\nstderr:%s\n" % (result, err))
+                        "Could not start ssh-agent, something went wrong,\nstdout:%s\nstderr:%s\n" %
+                        (result, err))
                 else:
                     # get pid from result of ssh-agent being started
                     if not self.exists(socketpath):
                         raise RuntimeError(
                             "Serious bug, ssh-agent not started while there was no error, should never get here")
-                    piditems = [item for item in result.split("\n") if item.find("pid") != -1]
+                    piditems = [item for item in result.split(
+                        "\n") if item.find("pid") != -1]
                     # print(piditems)
                     if len(piditems) < 1:
                         print("results was:")
@@ -332,30 +370,39 @@ class SSHMethods():
                         raise RuntimeError("Cannot find items in ssh-add -l")
                     self._initSSH_ENV(True)
                     pid = int(piditems[-1].split(" ")[-1].strip("; "))
-                    self.writeFile(self.joinPaths(self.TMPDIR, "ssh-agent-pid"), str(pid))
+                    self.writeFile(
+                        self.joinPaths(
+                            self.TMPDIR,
+                            "ssh-agent-pid"),
+                        str(pid))
                     self._addSSHAgentToBashProfile()
 
-            # ssh agent should be loaded because ssh-agent socket has been found
+            # ssh agent should be loaded because ssh-agent socket has been
+            # found
             if os.environ.get("SSH_AUTH_SOCK") != socketpath:
                 self._initSSH_ENV(True)
-            rc, result, err = self.execute("ssh-add -l", die=False, showout=False, outputStderr=False)
+            rc, result, err = self.execute(
+                "ssh-add -l", die=False, showout=False, outputStderr=False)
             if rc == 2:
                 # no ssh-agent found
                 print(result)
-                raise RuntimeError("Could not connect to ssh-agent, this is bug, ssh-agent should be loaded by now")
+                raise RuntimeError(
+                    "Could not connect to ssh-agent, this is bug, ssh-agent should be loaded by now")
             elif rc == 1:
                 # no keys but agent loaded
                 result = ""
             elif rc > 0:
                 raise RuntimeError(
-                    "Could not start ssh-agent, something went wrong,\nstdout:%s\nstderr:%s\n" % (result, err))
+                    "Could not start ssh-agent, something went wrong,\nstdout:%s\nstderr:%s\n" %
+                    (result, err))
 
     def SSHAgentAvailable(self):
         if not self.exists(self._getSSHSocketpath()):
             return False
         if "SSH_AUTH_SOCK" not in os.environ:
             self._initSSH_ENV(True)
-        rc, out, err = self.execute("ssh-add -l", showout=False, outputStderr=False, die=False)
+        rc, out, err = self.execute(
+            "ssh-add -l", showout=False, outputStderr=False, die=False)
         if 'The agent has no identities.' in out:
             return True
         if rc != 0:
@@ -383,10 +430,12 @@ class GitMethods():
 
         if ssh == "auto" or ssh == "first":
             ssh = self.SSHAgentAvailable()
-        elif ssh == True or ssh == False:
+        elif ssh or ssh == False:
             pass
         else:
-            raise RuntimeError("ssh needs to be auto, first or True or False: here:'%s'" % ssh)
+            raise RuntimeError(
+                "ssh needs to be auto, first or True or False: here:'%s'" %
+                ssh)
 
         url_pattern_ssh = re.compile('^(git@)(.*?):(.*?)/(.*?)/?$')
         sshmatch = url_pattern_ssh.match(url)
@@ -408,7 +457,7 @@ class GitMethods():
         if not repository_name.endswith('.git'):
             repository_name += '.git'
 
-        if login == 'ssh' or ssh == True:
+        if login == 'ssh' or ssh:
             repository_url = 'git@%(host)s:%(account)s/%(name)s' % {
                 'host': repository_host,
                 'account': repository_account,
@@ -438,8 +487,17 @@ class GitMethods():
 
         return protocol, repository_host, repository_account, repository_name, repository_url
 
-    def getGitRepoArgs(self, url="", dest=None, login=None, passwd=None, reset=False,
-                       branch=None, ssh="auto", codeDir=None, executor=None):
+    def getGitRepoArgs(
+            self,
+            url="",
+            dest=None,
+            login=None,
+            passwd=None,
+            reset=False,
+            branch=None,
+            ssh="auto",
+            codeDir=None,
+            executor=None):
         """
         Extracts and returns data useful in cloning a Git repository.
 
@@ -486,7 +544,8 @@ class GitMethods():
                 raise RuntimeError("dest cannot be None (url is also '')")
             if not self.exists(dest):
                 raise RuntimeError(
-                    "Could not find git repo path:%s, url was not specified so git destination needs to be specified." % (dest))
+                    "Could not find git repo path:%s, url was not specified so git destination needs to be specified." %
+                    (dest))
 
         if login is None and url.find("github.com/") != -1:
             # can see if there if login & passwd in OS env
@@ -499,7 +558,8 @@ class GitMethods():
         protocol, repository_host, repository_account, repository_name, repository_url = self.rewriteGitRepoUrl(
             url=url, login=login, passwd=passwd, ssh=ssh)
 
-        repository_type = repository_host.split('.')[0] if '.' in repository_host else repository_host
+        repository_type = repository_host.split(
+            '.')[0] if '.' in repository_host else repository_host
 
         if not dest:
             if codeDir is None:
@@ -521,8 +581,22 @@ class GitMethods():
 
         return repository_host, repository_type, repository_account, repository_name, dest, repository_url
 
-    def pullGitRepo(self, url="", dest=None, login=None, passwd=None, depth=None, ignorelocalchanges=False,
-                    reset=False, branch=None, tag=None, revision=None, ssh="auto", executor=None, codeDir=None, timeout=600):
+    def pullGitRepo(
+            self,
+            url="",
+            dest=None,
+            login=None,
+            passwd=None,
+            depth=None,
+            ignorelocalchanges=False,
+            reset=False,
+            branch=None,
+            tag=None,
+            revision=None,
+            ssh="auto",
+            executor=None,
+            codeDir=None,
+            timeout=600):
         """
         will clone or update repo
         if dest is None then clone underneath: /opt/code/$type/$account/$repo
@@ -533,67 +607,99 @@ class GitMethods():
         """
         if branch == "":
             branch = None
-        if branch != None and tag != None:
+        if branch is not None and tag is not None:
             raise RuntimeError("only branch or tag can be set")
 
         if ssh == "first" or ssh == "auto":
             try:
-                return self.pullGitRepo(url, dest, login, passwd, depth, ignorelocalchanges,
-                                        reset, branch, tag=tag, revision=revision, ssh=True, executor=executor)
+                return self.pullGitRepo(
+                    url,
+                    dest,
+                    login,
+                    passwd,
+                    depth,
+                    ignorelocalchanges,
+                    reset,
+                    branch,
+                    tag=tag,
+                    revision=revision,
+                    ssh=True,
+                    executor=executor)
             except Exception as e:
                 base, provider, account, repo, dest, url = self.getGitRepoArgs(
                     url, dest, login, passwd, reset=reset, ssh=False, codeDir=codeDir, executor=executor)
                 checkdir = "%s/.git" % (dest)
-                existsGit = self.exists(checkdir) if not executor else executor.exists(checkdir)
+                existsGit = self.exists(
+                    checkdir) if not executor else executor.exists(checkdir)
                 if existsGit:
                     self.delete(checkdir)
-                return self.pullGitRepo(url, dest, login, passwd, depth, ignorelocalchanges,
-                                        reset, branch, tag=tag, revision=revision, ssh=False, executor=executor)
+                return self.pullGitRepo(
+                    url,
+                    dest,
+                    login,
+                    passwd,
+                    depth,
+                    ignorelocalchanges,
+                    reset,
+                    branch,
+                    tag=tag,
+                    revision=revision,
+                    ssh=False,
+                    executor=executor)
 
         base, provider, account, repo, dest, url = self.getGitRepoArgs(
             url, dest, login, passwd, reset=reset, ssh=ssh, codeDir=codeDir, executor=executor)
 
         self.logger.info("%s:pull:%s ->%s" % (executor, url, dest))
 
-        existsDir = self.exists(dest) if not executor else executor.exists(dest)
+        existsDir = self.exists(
+            dest) if not executor else executor.exists(dest)
 
         checkdir = "%s/.git" % (dest)
-        existsGit = self.exists(checkdir) if not executor else executor.exists(checkdir)
+        existsGit = self.exists(
+            checkdir) if not executor else executor.exists(checkdir)
 
         if existsGit:
-            # if we don't specify the branch, try to find the currently checkedout branch
+            # if we don't specify the branch, try to find the currently
+            # checkedout branch
             cmd = 'cd %s; git rev-parse --abbrev-ref HEAD' % dest
-            rc, out, err = self.execute(cmd, die=False, showout=False, executor=executor)
+            rc, out, err = self.execute(
+                cmd, die=False, showout=False, executor=executor)
             if rc == 0:
                 branchFound = out.strip()
             else:  # if we can't retreive current branch, use master as default
                 branchFound = 'master'
                 # raise RuntimeError("Cannot retrieve branch:\n%s\n" % cmd)
 
-            if branch != None and branch != branchFound and ignorelocalchanges == False:
+            if branch is not None and branch != branchFound and ignorelocalchanges == False:
                 raise RuntimeError(
-                    "Cannot pull repo, branch on filesystem is not same as branch asked for.\nBranch asked for:%s\nBranch found:%s\nTo choose other branch do e.g:\nexport JSBRANCH='%s'\n" % (branch, branchFound, branchFound))
+                    "Cannot pull repo, branch on filesystem is not same as branch asked for.\nBranch asked for:%s\nBranch found:%s\nTo choose other branch do e.g:\nexport JSBRANCH='%s'\n" %
+                    (branch, branchFound, branchFound))
 
             if ignorelocalchanges:
-                self.logger.info(("git pull, ignore changes %s -> %s" % (url, dest)))
+                self.logger.info(
+                    ("git pull, ignore changes %s -> %s" %
+                     (url, dest)))
                 cmd = "cd %s;git fetch" % dest
                 if depth is not None:
                     cmd += " --depth %s" % depth
                     self.execute(cmd, executor=executor)
                 if branch is not None:
                     self.logger.info("reset branch to:%s" % branch)
-                    self.execute("cd %s;git fetch; git reset --hard origin/%s" %
-                                 (dest, branch), timeout=timeout, executor=executor)
+                    self.execute(
+                        "cd %s;git fetch; git reset --hard origin/%s" %
+                        (dest, branch), timeout=timeout, executor=executor)
 
             else:
 
-                if branch == None and tag == None:
+                if branch is None and tag is None:
                     branch = branchFound
 
                 # pull
                 self.logger.info(("git pull %s -> %s" % (url, dest)))
                 if url.find("http") != -1:
-                    cmd = "mkdir -p %s;cd %s;git -c http.sslVerify=false pull origin %s" % (dest, dest, branch)
+                    cmd = "mkdir -p %s;cd %s;git -c http.sslVerify=false pull origin %s" % (
+                        dest, dest, branch)
                 else:
                     cmd = "cd %s;git pull origin %s" % (dest, branch)
                 self.logger.info(cmd)
@@ -606,8 +712,8 @@ class GitMethods():
                 extra = "--depth=%s" % depth
             if url.find("http") != -1:
                 if branch is not None:
-                    cmd = "mkdir -p %s;cd %s;git -c http.sslVerify=false clone %s -b %s %s %s" % (self.getParent(dest),
-                                                                                                  self.getParent(dest), extra, branch, url, dest)
+                    cmd = "mkdir -p %s;cd %s;git -c http.sslVerify=false clone %s -b %s %s %s" % (
+                        self.getParent(dest), self.getParent(dest), extra, branch, url, dest)
                 else:
                     cmd = "mkdir -p %s;cd %s;git -c http.sslVerify=false clone %s  %s %s" % (
                         self.getParent(dest), self.getParent(dest), extra, url, dest)
@@ -616,15 +722,15 @@ class GitMethods():
                     cmd = "mkdir -p %s;cd %s;git clone %s -b %s %s %s" % (
                         self.getParent(dest), self.getParent(dest), extra, branch, url, dest)
                 else:
-                    cmd = "mkdir -p %s;cd %s;git clone %s  %s %s" % (self.getParent(dest),
-                                                                     self.getParent(dest), extra, url, dest)
+                    cmd = "mkdir -p %s;cd %s;git clone %s  %s %s" % (
+                        self.getParent(dest), self.getParent(dest), extra, url, dest)
 
             self.logger.info(cmd)
 
             # self.logger.info(str(executor)+" "+cmd)
             self.execute(cmd, timeout=timeout, executor=executor)
 
-        if tag != None:
+        if tag is not None:
             self.logger.info("reset tag to:%s" % tag)
             self.execute("cd %s;git checkout tags/%s" %
                          (dest, tag), timeout=timeout, executor=executor)
@@ -638,7 +744,8 @@ class GitMethods():
 
     def getGitBranch(self, path):
 
-        # if we don't specify the branch, try to find the currently checkedout branch
+        # if we don't specify the branch, try to find the currently checkedout
+        # branch
         cmd = 'cd %s;git rev-parse --abbrev-ref HEAD' % path
         try:
             rc, out, err = self.execute(cmd, showout=False, outputStderr=False)
@@ -646,7 +753,7 @@ class GitMethods():
                 branch = out.strip()
             else:  # if we can't retreive current branch, use master as default
                 branch = 'master'
-        except:
+        except BaseException:
             branch = 'master'
 
         return branch
@@ -703,8 +810,15 @@ class FSMethods():
 
         self.removeSymlink(path)
 
-        if path.strip().rstrip("/") in ["", "/", "/etc", "/root", "/usr",
-                                        "/opt", "/usr/bin", "/usr/sbin", self.CODEDIR]:
+        if path.strip().rstrip("/") in ["",
+                                        "/",
+                                        "/etc",
+                                        "/root",
+                                        "/usr",
+                                        "/opt",
+                                        "/usr/bin",
+                                        "/usr/sbin",
+                                        self.CODEDIR]:
             raise RuntimeError('cannot delete protected dirs')
 
         # if not force and path.find(self.CODEDIR)!=-1:
@@ -726,9 +840,24 @@ class FSMethods():
     def joinPaths(self, *args):
         return os.path.join(*args)
 
-    def copyTree(self, source, dest, keepsymlinks=False, deletefirst=False,
-                 overwriteFiles=True, ignoredir=["*.egg-info", "*.dist-info"], ignorefiles=["*.egg-info"], rsync=True,
-                 ssh=False, sshport=22, recursive=True, rsyncdelete=False, createdir=False, executor=None):
+    def copyTree(
+            self,
+            source,
+            dest,
+            keepsymlinks=False,
+            deletefirst=False,
+            overwriteFiles=True,
+            ignoredir=[
+                "*.egg-info",
+                "*.dist-info"],
+            ignorefiles=["*.egg-info"],
+            rsync=True,
+            ssh=False,
+            sshport=22,
+            recursive=True,
+            rsyncdelete=False,
+            createdir=False,
+            executor=None):
         """
         if ssh format of source or dest is: remoteuser@remotehost:/remote/dir
         """
@@ -750,7 +879,7 @@ class FSMethods():
             excl += "--exclude '*__pycache__*' "
 
             pre = ""
-            if executor == None:
+            if executor is None:
                 if self.isDir(source):
                     if dest[-1] != "/":
                         dest += "/"
@@ -805,7 +934,7 @@ class FSMethods():
                 cmd += " -e 'ssh -o StrictHostKeyChecking=no -p %s' " % sshport
             cmd += " '%s' '%s'" % (source, dest)
             self.logger.info(cmd)
-            if executor != None:
+            if executor is not None:
                 rc, out, err = executor.execute(cmd)
             else:
                 rc, out, err = self.execute(cmd)
@@ -815,12 +944,27 @@ class FSMethods():
         else:
             old_debug = self.debug
             self.debug = False
-            self._copyTree(source, dest, keepsymlinks, deletefirst, overwriteFiles,
-                           ignoredir=ignoredir, ignorefiles=ignorefiles)
+            self._copyTree(
+                source,
+                dest,
+                keepsymlinks,
+                deletefirst,
+                overwriteFiles,
+                ignoredir=ignoredir,
+                ignorefiles=ignorefiles)
             self.debug = old_debug
 
-    def _copyTree(self, src, dst, keepsymlinks=False, deletefirst=False, overwriteFiles=True,
-                  ignoredir=[".egg-info", "__pycache__"], ignorefiles=[".egg-info"]):
+    def _copyTree(
+            self,
+            src,
+            dst,
+            keepsymlinks=False,
+            deletefirst=False,
+            overwriteFiles=True,
+            ignoredir=[
+                ".egg-info",
+                "__pycache__"],
+            ignorefiles=[".egg-info"]):
         """Recursively copy an entire directory tree rooted at src.
         The dst directory may already exist; if not,
         it will be created as well as missing parent directories
@@ -834,7 +978,8 @@ class FSMethods():
         self.logger.info('Copy directory tree from %s to %s' % (src, dst), 6)
         if ((src is None) or (dst is None)):
             raise TypeError(
-                'Not enough parameters passed in system.fs.copyTree to copy directory from %s to %s ' % (src, dst))
+                'Not enough parameters passed in system.fs.copyTree to copy directory from %s to %s ' %
+                (src, dst))
         if self.isDir(src):
             if ignoredir != []:
                 for item in ignoredir:
@@ -863,13 +1008,18 @@ class FSMethods():
                     # self.symlink(linkto, dstname)#, overwriteFiles)
                     try:
                         os.symlink(linkto, dstname)
-                    except:
+                    except BaseException:
                         pass
                         # TODO: very ugly change
                 elif self.isDir(srcname):
                     # print "1:%s %s"%(srcname,dstname)
-                    self.copyTree(srcname, dstname, keepsymlinks, deletefirst,
-                                  overwriteFiles=overwriteFiles, ignoredir=ignoredir)
+                    self.copyTree(
+                        srcname,
+                        dstname,
+                        keepsymlinks,
+                        deletefirst,
+                        overwriteFiles=overwriteFiles,
+                        ignoredir=ignoredir)
                 else:
                     # print "2:%s %s"%(srcname,dstname)
                     extt = self.getFileExtension(srcname)
@@ -881,9 +1031,17 @@ class FSMethods():
                                 continue
                     self.copyFile(srcname, dstname, deletefirst=overwriteFiles)
         else:
-            raise RuntimeError('Source path %s in system.fs.copyTree is not a directory' % src)
+            raise RuntimeError(
+                'Source path %s in system.fs.copyTree is not a directory' %
+                src)
 
-    def copyFile(self, source, dest, deletefirst=False, skipIfExists=False, makeExecutable=False):
+    def copyFile(
+            self,
+            source,
+            dest,
+            deletefirst=False,
+            skipIfExists=False,
+            makeExecutable=False):
         """
         """
         if self.isDir(dest):
@@ -918,9 +1076,13 @@ class FSMethods():
             if self.isDir(path):
                 os.chdir(path)
             else:
-                raise ValueError("Path: %s in system.fs.changeDir is not a Directory" % path)
+                raise ValueError(
+                    "Path: %s in system.fs.changeDir is not a Directory" %
+                    path)
         else:
-            raise RuntimeError("Path: %s in system.fs.changeDir does not exist" % path)
+            raise RuntimeError(
+                "Path: %s in system.fs.changeDir does not exist" %
+                path)
 
     def isDir(self, path, followSoftlink=False):
         """Check if the specified Directory path exists
@@ -970,9 +1132,13 @@ class FSMethods():
             try:
                 rc, result, err = self.execute(cmd)
             except Exception as e:
-                raise RuntimeError("Could not execute junction cmd, is junction installed? Cmd was %s." % cmd)
+                raise RuntimeError(
+                    "Could not execute junction cmd, is junction installed? Cmd was %s." %
+                    cmd)
             if rc != 0:
-                raise RuntimeError("Could not execute junction cmd, is junction installed? Cmd was %s." % cmd)
+                raise RuntimeError(
+                    "Could not execute junction cmd, is junction installed? Cmd was %s." %
+                    cmd)
             if result.lower().find("substitute name") != -1:
                 return True
             else:
@@ -993,7 +1159,9 @@ class FSMethods():
             link = self.readLink(path)
             return self.list(link)
         else:
-            raise ValueError("Specified path: %s is not a Directory in self.listDir" % path)
+            raise ValueError(
+                "Specified path: %s is not a Directory in self.listDir" %
+                path)
 
     def exists(self, path, executor=None):
         if executor:
@@ -1009,13 +1177,14 @@ class FSMethods():
             pass
         elif isinstance(items, str):
             items = self.textstrip(items)
-            items = [item.strip() for item in items.split("\n") if item.strip() != ""]
+            items = [item.strip()
+                     for item in items.split("\n") if item.strip() != ""]
         else:
             raise RuntimeError("input can only be string or list")
 
         for item in items:
             cmd = "pip3 install %s --upgrade" % item
-            if executor == None:
+            if executor is None:
                 self.executeInteractive(cmd)
             else:
                 executor.execute(cmd)
@@ -1051,9 +1220,14 @@ class FSMethods():
 
     def symlinkFilesInDir(self, src, dest, delete=True, includeDirs=False):
         if includeDirs:
-            items = self.listFilesAndDirsInDir(src, recursive=False, followSymlinks=False, listSymlinks=False)
+            items = self.listFilesAndDirsInDir(
+                src, recursive=False, followSymlinks=False, listSymlinks=False)
         else:
-            items = self.listFilesInDir(src, recursive=False, followSymlinks=True, listSymlinks=True)
+            items = self.listFilesInDir(
+                src,
+                recursive=False,
+                followSymlinks=True,
+                listSymlinks=True)
         for item in items:
             dest2 = "%s/%s" % (dest, self.getBaseName(item))
             dest2 = dest2.replace("//", "/")
@@ -1080,7 +1254,9 @@ class FSMethods():
         try:
             return os.path.basename(path.rstrip(os.path.sep))
         except Exception as e:
-            raise RuntimeError('Failed to get base name of the given path: %s, Error: %s' % (path, str(e)))
+            raise RuntimeError(
+                'Failed to get base name of the given path: %s, Error: %s' %
+                (path, str(e)))
 
     def checkDirOrLinkToDir(self, fullpath):
         """
@@ -1122,8 +1298,9 @@ class FSMethods():
             if len(parts) - levelsUp > 0:
                 return parts[len(parts) - levelsUp - 1]
             else:
-                raise RuntimeError("Cannot find part of dir %s levels up, path %s is not long enough" %
-                                   (levelsUp, path))
+                raise RuntimeError(
+                    "Cannot find part of dir %s levels up, path %s is not long enough" %
+                    (levelsUp, path))
         return dname + os.sep
 
     def readLink(self, path):
@@ -1140,7 +1317,9 @@ class FSMethods():
         try:
             return os.readlink(path)
         except Exception as e:
-            raise RuntimeError('Failed to read link with path: %s \nERROR: %s' % (path, str(e)))
+            raise RuntimeError(
+                'Failed to read link with path: %s \nERROR: %s' %
+                (path, str(e)))
 
     def removeLinks(self, path):
         """
@@ -1148,7 +1327,11 @@ class FSMethods():
         """
         if not self.exists(path):
             return
-        items = self._listAllInDir(path=path, recursive=True, followSymlinks=False, listSymlinks=True)
+        items = self._listAllInDir(
+            path=path,
+            recursive=True,
+            followSymlinks=False,
+            listSymlinks=True)
         items = [item for item in items[0] if self.isLink(item)]
         for item in items:
             self.unlink(item)
@@ -1164,11 +1347,20 @@ class FSMethods():
                 names = os.listdir(path)
                 return names
             else:
-                raise ValueError("Specified path: %s is not a Directory in system.fs.listDir" % path)
+                raise ValueError(
+                    "Specified path: %s is not a Directory in system.fs.listDir" %
+                    path)
         else:
-            raise RuntimeError("Specified path: %s does not exist in system.fs.listDir" % path)
+            raise RuntimeError(
+                "Specified path: %s does not exist in system.fs.listDir" %
+                path)
 
-    def listDirsInDir(self, path, recursive=False, dirNameOnly=False, findDirectorySymlinks=True):
+    def listDirsInDir(
+            self,
+            path,
+            recursive=False,
+            dirNameOnly=False,
+            findDirectorySymlinks=True):
         """ Retrieves list of directories found in the specified directory
         @param path: string represents directory path to search in
         @rtype: list
@@ -1189,17 +1381,33 @@ class FSMethods():
         filesreturn = []
         for file in files:
             fullpath = os.path.join(path, file)
-            if (findDirectorySymlinks and self.checkDirOrLinkToDir(fullpath)) or self.isDir(fullpath):
+            if (findDirectorySymlinks and self.checkDirOrLinkToDir(
+                    fullpath)) or self.isDir(fullpath):
                 if dirNameOnly:
                     filesreturn.append(file)
                 else:
                     filesreturn.append(fullpath)
                 if recursive:
-                    filesreturn.extend(self.listDirsInDir(fullpath, recursive, dirNameOnly, findDirectorySymlinks))
+                    filesreturn.extend(
+                        self.listDirsInDir(
+                            fullpath,
+                            recursive,
+                            dirNameOnly,
+                            findDirectorySymlinks))
         return filesreturn
 
-    def listFilesInDir(self, path, recursive=False, filter=None, minmtime=None, maxmtime=None,
-                       depth=None, case_sensitivity='os', exclude=[], followSymlinks=True, listSymlinks=False):
+    def listFilesInDir(
+            self,
+            path,
+            recursive=False,
+            filter=None,
+            minmtime=None,
+            maxmtime=None,
+            depth=None,
+            case_sensitivity='os',
+            exclude=[],
+            followSymlinks=True,
+            listSymlinks=False):
         """Retrieves list of files found in the specified directory
         @param path:       directory path to search in
         @type  path:       string
@@ -1226,8 +1434,17 @@ class FSMethods():
                                                 case_sensitivity=case_sensitivity, exclude=exclude, followSymlinks=followSymlinks, listSymlinks=listSymlinks)
         return filesreturn
 
-    def listFilesAndDirsInDir(self, path, recursive=False, filter=None, minmtime=None,
-                              maxmtime=None, depth=None, type="fd", followSymlinks=True, listSymlinks=False):
+    def listFilesAndDirsInDir(
+            self,
+            path,
+            recursive=False,
+            filter=None,
+            minmtime=None,
+            maxmtime=None,
+            depth=None,
+            type="fd",
+            followSymlinks=True,
+            listSymlinks=False):
         """Retrieves list of files found in the specified directory
         @param path:       directory path to search in
         @type  path:       string
@@ -1254,8 +1471,19 @@ class FSMethods():
             path, recursive, filter, minmtime, maxmtime, depth, type=type, followSymlinks=followSymlinks, listSymlinks=listSymlinks)
         return filesreturn
 
-    def _listAllInDir(self, path, recursive, filter=None, minmtime=None, maxmtime=None, depth=None,
-                      type="df", case_sensitivity='os', exclude=[], followSymlinks=True, listSymlinks=True):
+    def _listAllInDir(
+            self,
+            path,
+            recursive,
+            filter=None,
+            minmtime=None,
+            maxmtime=None,
+            depth=None,
+            type="df",
+            case_sensitivity='os',
+            exclude=[],
+            followSymlinks=True,
+            listSymlinks=True):
         """
         # There are 3 possible options for case-sensitivity for file names
         # 1. `os`: the same behavior as the OS
@@ -1312,7 +1540,8 @@ class FSMethods():
                                 if matcher(fullpath, excludeItem):
                                     exclmatch = True
                         if exclmatch is False:
-                            if not(followSymlinks is False and self.isLink(fullpath)):
+                            if not(
+                                    followSymlinks is False and self.isLink(fullpath)):
                                 r, depth = self._listAllInDir(fullpath, recursive, filter, minmtime, maxmtime, depth=depth,
                                                               type=type, exclude=exclude, followSymlinks=followSymlinks, listSymlinks=listSymlinks)
                                 if len(r) > 0:
@@ -1322,8 +1551,18 @@ class FSMethods():
 
         return filesreturn, depth
 
-    def download(self, url, to="", overwrite=True, retry=3, timeout=0, login="",
-                 passwd="", minspeed=0, multithread=False, curl=False):
+    def download(
+            self,
+            url,
+            to="",
+            overwrite=True,
+            retry=3,
+            timeout=0,
+            login="",
+            passwd="",
+            minspeed=0,
+            multithread=False,
+            curl=False):
         """
         @return path of downloaded file
         @param minspeed is kbytes per sec e.g. 50, if less than 50 kbytes during 10 min it will restart the download (curl only)
@@ -1350,11 +1589,11 @@ class FSMethods():
                     self.logger.info("DOWNLOAD ERROR:%s\n%s" % (url, e))
                     try:
                         handle.close()
-                    except:
+                    except BaseException:
                         pass
                     try:
                         out.close()
-                    except:
+                    except BaseException:
                         pass
                     handle = urlopen(url)
                     nr += 1
@@ -1398,7 +1637,9 @@ class FSMethods():
                     url, to, user, minsp, retry, timeout)
                 rc, out, err = self.execute(cmd, die=False)
             if rc:
-                raise RuntimeError("Could not download:{}.\nErrorcode: {}".format(url, rc))
+                raise RuntimeError(
+                    "Could not download:{}.\nErrorcode: {}".format(
+                        url, rc))
             else:
                 self.touch("%s.downloadok" % to)
         elif multithread:
@@ -1409,13 +1650,23 @@ class FSMethods():
 
         return to
 
-    def downloadExpandTarGz(self, url, destdir, deleteDestFirst=True, deleteSourceAfter=True):
+    def downloadExpandTarGz(
+            self,
+            url,
+            destdir,
+            deleteDestFirst=True,
+            deleteSourceAfter=True):
         self.logger.info((self.getBaseName(url)))
         tmppath = self.getTmpPath(self.getBaseName(url))
         self.download(url, tmppath)
         self.expandTarGz(tmppath, destdir)
 
-    def expandTarGz(self, path, destdir, deleteDestFirst=True, deleteSourceAfter=False):
+    def expandTarGz(
+            self,
+            path,
+            destdir,
+            deleteDestFirst=True,
+            deleteSourceAfter=False):
         import gzip
 
         self.lastdir = os.getcwd()
@@ -1548,8 +1799,18 @@ class FSMethods():
 
 class ExecutorMethods():
 
-    def executeBashScript(self, content="", path=None, die=True, remote=None,
-                          sshport=22, showout=True, outputStderr=True, sshkey="", timeout=600, executor=None):
+    def executeBashScript(
+            self,
+            content="",
+            path=None,
+            die=True,
+            remote=None,
+            sshport=22,
+            showout=True,
+            outputStderr=True,
+            sshkey="",
+            timeout=600,
+            executor=None):
         """
         @param remote can be ip addr or hostname of remote, if given will execute cmds there
         """
@@ -1576,17 +1837,30 @@ class ExecutorMethods():
                 if not self.SSHKeyGetPathFromAgent(sshkey, die=False) is None:
                     self.execute('ssh-add %s' % sshkey)
                 sshkey = '-i %s ' % sshkey.replace('!', '\!')
-            self.execute("scp %s -oStrictHostKeyChecking=no -P %s %s root@%s:%s " %
-                         (sshkey, sshport, path2, remote, tmppathdest), die=die, executor=executor)
-            rc, res, err = self.execute("ssh %s -oStrictHostKeyChecking=no -A -p %s root@%s 'bash %s'" %
-                                        (sshkey, sshport, remote, tmppathdest), die=die, timeout=timeout, executor=executor)
+            self.execute(
+                "scp %s -oStrictHostKeyChecking=no -P %s %s root@%s:%s " %
+                (sshkey, sshport, path2, remote, tmppathdest), die=die, executor=executor)
+            rc, res, err = self.execute(
+                "ssh %s -oStrictHostKeyChecking=no -A -p %s root@%s 'bash %s'" %
+                (sshkey, sshport, remote, tmppathdest), die=die, timeout=timeout, executor=executor)
         else:
-            rc, res, err = self.execute("bash %s" % path2, die=die, showout=showout,
-                                        outputStderr=outputStderr, timeout=timeout, executor=executor)
+            rc, res, err = self.execute(
+                "bash %s" %
+                path2, die=die, showout=showout, outputStderr=outputStderr, timeout=timeout, executor=executor)
         return rc, res, err
 
-    def executeCmds(self, cmdstr, showout=True, outputStderr=True, useShell=True,
-                    log=True, cwd=None, timeout=120, captureout=True, die=True, executor=None):
+    def executeCmds(
+            self,
+            cmdstr,
+            showout=True,
+            outputStderr=True,
+            useShell=True,
+            log=True,
+            cwd=None,
+            timeout=120,
+            captureout=True,
+            die=True,
+            executor=None):
         rc_ = []
         out_ = ""
         for cmd in cmdstr.split("\n"):
@@ -1610,7 +1884,9 @@ class ExecutorMethods():
         """
         @param cmdname is cmd to check e.g. curl
         """
-        rc, out, err = self.execute("which %s" % cmdname, die=False, showout=False, outputStderr=False)
+        rc, out, err = self.execute(
+            "which %s" %
+            cmdname, die=False, showout=False, outputStderr=False)
         if rc == 0:
             return True
         else:
@@ -1629,7 +1905,11 @@ class ExecutorMethods():
         md5sum = md5_string(out)
         modulename = 'JumpScale.jumpscript_%s' % md5sum
 
-        codepath = self.joinPaths(self.getTmpPath(), "jumpscripts", "%s.py" % md5sum)
+        codepath = self.joinPaths(
+            self.getTmpPath(),
+            "jumpscripts",
+            "%s.py" %
+            md5sum)
         self.writeFile(filename=codepath, contents=out)
 
         linecache.checkcache(codepath)
@@ -1647,8 +1927,21 @@ class ExecutorMethods():
         for name, val in list(tags.items()):
             self.actions[name] = eval("self.module.%s" % name)
 
-    def execute(self, command, showout=True, outputStderr=True, useShell=True, log=True, cwd=None, timeout=0, errors=[],
-                ok=[], captureout=True, die=True, async=False, executor=None):
+    def execute(
+            self,
+            command,
+            showout=True,
+            outputStderr=True,
+            useShell=True,
+            log=True,
+            cwd=None,
+            timeout=0,
+            errors=[],
+            ok=[],
+            captureout=True,
+            die=True,
+            async=False,
+            executor=None):
         """
         @param errors is array of statements if found then exit as error
         return rc,out,err
@@ -1656,11 +1949,26 @@ class ExecutorMethods():
 
         command = self.textstrip(command)
         if executor:
-            return executor.execute(command, die=die, checkok=False, showout=True, timeout=timeout)
+            return executor.execute(
+                command,
+                die=die,
+                checkok=False,
+                showout=True,
+                timeout=timeout)
         else:
-            return j.tools.executorLocal.execute(command=command, showout=showout, outputStderr=outputStderr,
-                                                 useShell=useShell, log=log, cwd=cwd, timeout=timeout, errors=errors,
-                                                 ok=ok, captureout=captureout, die=die, async=async)
+            return j.tools.executorLocal.execute(
+                command=command,
+                showout=showout,
+                outputStderr=outputStderr,
+                useShell=useShell,
+                log=log,
+                cwd=cwd,
+                timeout=timeout,
+                errors=errors,
+                ok=ok,
+                captureout=captureout,
+                die=die,
+                async=async)
 
     def psfind(self, name):
         rc, out, err = self.execute("ps ax | grep %s" % name, showout=False)
@@ -1686,7 +1994,9 @@ class ExecutorMethods():
             self.execute("kill -9 %s" % pid, showout=False)
         if self.psfind(name):
             raise RuntimeError("stop debug here")
-            raise RuntimeError("Could not kill:%s, is still, there check if its not autorestarting." % name)
+            raise RuntimeError(
+                "Could not kill:%s, is still, there check if its not autorestarting." %
+                name)
 
 
 class Installer():
@@ -1697,8 +2007,10 @@ class Installer():
 
     def checkPython(self):
         if sys.platform.startswith('darwin'):
-            if len([item for item in do.listDirsInDir("/usr/local/lib") if item.find("python3") != -1]) > 1:
-                raise RuntimeError("Please execute clean.sh in installer of jumpscale, found too many python installs")
+            if len([item for item in do.listDirsInDir(
+                    "/usr/local/lib") if item.find("python3") != -1]) > 1:
+                raise RuntimeError(
+                    "Please execute clean.sh in installer of jumpscale, found too many python installs")
 
     def installJS(self):
         """
@@ -1722,10 +2034,14 @@ class Installer():
         self.debug = True
 
         self.do.executeInteractive("mkdir -p %s/.ssh/" % os.environ["HOME"])
-        self.do.executeInteractive("ssh-keyscan github.com 2> /dev/null  >> {0}/.ssh/known_hosts; ssh-keyscan git.aydo.com 2> /dev/null >> {0}/.ssh/known_hosts".format(
-            os.environ["HOME"]))
+        self.do.executeInteractive(
+            "ssh-keyscan github.com 2> /dev/null  >> {0}/.ssh/known_hosts; ssh-keyscan git.aydo.com 2> /dev/null >> {0}/.ssh/known_hosts".format(
+                os.environ["HOME"]))
         self.logger.info("pull core")
-        self.do.pullGitRepo(args2['JSGIT'], branch=args2['JSBRANCH'], ssh="first")
+        self.do.pullGitRepo(
+            args2['JSGIT'],
+            branch=args2['JSBRANCH'],
+            ssh="first")
         src = "%s/github/jumpscale/jumpscale_core9/lib/JumpScale" % self.do.CODEDIR
         self.debug = False
 
@@ -1750,7 +2066,8 @@ class Installer():
         # self.do.symlinkFilesInDir(src, destjs, includeDirs=True)
 
         for item in ["InstallTools", "ExtraTools"]:
-            src = "%s/github/jumpscale/jumpscale_core9/install/%s.py" % (do.CODEDIR, item)
+            src = "%s/github/jumpscale/jumpscale_core9/install/%s.py" % (
+                do.CODEDIR, item)
             dest2 = "%s/%s.py" % (dest, item)
             self.do.symlink(src, dest2)
             # dest2 = "%s/%s.py" % (destjs, item)
@@ -1793,7 +2110,10 @@ class Installer():
 
         self.logger.info("Get atYourService metadata.")
 
-        self.do.pullGitRepo(args2['AYSGIT'], branch=args2['AYSBRANCH'], ssh="first")
+        self.do.pullGitRepo(
+            args2['AYSGIT'],
+            branch=args2['AYSBRANCH'],
+            ssh="first")
 
         self.logger.info("install was successfull")
         self.logger.info("to use do 'js'")
@@ -1805,7 +2125,7 @@ class Installer():
             try:
                 self.do.writeFile(ppath, "")
                 self._readonly = False
-            except:
+            except BaseException:
                 self._readonly = True
             self.do.delete(ppath)
         return self._readonly
@@ -1847,7 +2167,9 @@ class Installer():
             if "DIR" in key:
                 config["dirs"][key] = val
         configJSON = yaml.dump(config, default_flow_style=False)
-        do.writeFile("%s/jumpscale/system.yaml" % os.environ["CFGDIR"], configJSON)
+        do.writeFile(
+            "%s/jumpscale/system.yaml" %
+            os.environ["CFGDIR"], configJSON)
 
         C = """
         # By default, AYS will use the JS redis. This is for quick testing
@@ -1862,7 +2184,8 @@ class Installer():
 
         if "AYSGIT" not in os.environ or os.environ["AYSGIT"].strip() == "":
             os.environ["AYSGIT"] = "https://github.com/Jumpscale/ays_jumpscale9"
-        if "AYSBRANCH" not in os.environ or os.environ["AYSBRANCH"].strip() == "":
+        if "AYSBRANCH" not in os.environ or os.environ["AYSBRANCH"].strip(
+        ) == "":
             os.environ["AYSBRANCH"] = "master"
         # C = C.format(**os.environ)
 
@@ -1879,7 +2202,9 @@ class Installer():
             - 'j.data.hrd'
             - 'j.application'
         """
-        self.do.writeFile("%s/jumpscale/logging.yaml" % os.environ["CFGDIR"], C)
+        self.do.writeFile(
+            "%s/jumpscale/logging.yaml" %
+            os.environ["CFGDIR"], C)
 
         C = """
 
@@ -1937,10 +2262,11 @@ class Installer():
             C = C.replace("$pythonpath", ".:$JSBASE/lib:$_OLD_PYTHONPATH")
         else:
             C = C.replace(
-                "$pythonpath", ".:$JSBASE/lib:$JSBASE/lib/lib-dynload/:$JSBASE/bin:$JSBASE/lib/python.zip:$JSBASE/lib/plat-x86_64-linux-gnu:$_OLD_PYTHONPATH")
+                "$pythonpath",
+                ".:$JSBASE/lib:$JSBASE/lib/lib-dynload/:$JSBASE/bin:$JSBASE/lib/python.zip:$JSBASE/lib/plat-x86_64-linux-gnu:$_OLD_PYTHONPATH")
         envfile = "%s/env.sh" % os.environ["JSBASE"]
 
-        if self.readonly is False or die == True:
+        if self.readonly is False or die:
             self.do.writeFile(envfile, C)
 
         # pythonversion = '3' if os.environ.get('PYTHONVERSION') == '3' else ''
@@ -1975,7 +2301,8 @@ class Installer():
                 # in system
                 self.logger.info("jspython in system")
                 dest = "/usr/local/bin/jspython"
-                C2_insystem = C2_insystem.replace('$BASEDIR', os.environ["JSBASE"])
+                C2_insystem = C2_insystem.replace(
+                    '$BASEDIR', os.environ["JSBASE"])
                 self.do.writeFile(dest, C2_insystem)
 
             self.do.chmod(dest, 0o770)
@@ -2022,8 +2349,18 @@ class Installer():
             rm -rf /opt/redis/
             """
             CMDS = CMDS.replace("$BASEDIR", self.BASE)
-            self.do.executeCmds(CMDS, showout=False, outputStderr=False, useShell=True, log=False,
-                                cwd=None, timeout=60, errors=[], ok=[], captureout=False, die=False)
+            self.do.executeCmds(
+                CMDS,
+                showout=False,
+                outputStderr=False,
+                useShell=True,
+                log=False,
+                cwd=None,
+                timeout=60,
+                errors=[],
+                ok=[],
+                captureout=False,
+                die=False)
 
             for PYTHONVERSION in ["3.5", "3.4", "3.3", "2.7", ""]:
                 CMDS = """
@@ -2036,8 +2373,18 @@ class Installer():
                 rm -rf /usr/local/lib/python%(pythonversion)s/dist-packages/JumpScale/
                 rm -rf /usr/local/lib/python%(pythonversion)s/dist-packages/jumpscale/
                 """ % {'pythonversion': PYTHONVERSION}
-                self.do.executeCmds(CMDS, showout=False, outputStderr=False, useShell=True, log=False,
-                                    cwd=None, timeout=60, errors=[], ok=[], captureout=False, die=False)
+                self.do.executeCmds(
+                    CMDS,
+                    showout=False,
+                    outputStderr=False,
+                    useShell=True,
+                    log=False,
+                    cwd=None,
+                    timeout=60,
+                    errors=[],
+                    ok=[],
+                    captureout=False,
+                    die=False)
 
     def updateSystem(self):
 
@@ -2092,7 +2439,8 @@ class Installer():
     def replacesitecustomize(self):
         raise RuntimeError("not implemented")
         if not self.TYPE == "WIN":
-            ppath = "/usr/lib/python%s/sitecustomize.py" % os.environ.get('PYTHONVERSION', '')
+            ppath = "/usr/lib/python%s/sitecustomize.py" % os.environ.get(
+                'PYTHONVERSION', '')
             if ppath.find(ppath):
                 os.remove(ppath)
             self.symlink("%s/utils/sitecustomize.py" % self.BASE, ppath)
@@ -2100,7 +2448,8 @@ class Installer():
             def do(path, dirname, names):
                 if path.find("sitecustomize") != -1:
                     self.symlink("%s/utils/sitecustomize.py" % self.BASE, path)
-            self.logger.info("walk over /usr to find sitecustomize and link to new one")
+            self.logger.info(
+                "walk over /usr to find sitecustomize and link to new one")
             os.path.walk("/usr", do, "")
             os.path.walk("/etc", do, "")
 
@@ -2109,7 +2458,8 @@ class Installer():
         [self.do.delete(item) for item in self.do.listDirsInDir(
             do.getPythonLibSystem()) if item.find(".egg-info") != -1]
         # [do.delete(item) for item in self.do.listDirsInDir(do.getPythonLibSystem()) if item.find(".dist-info")!=-1]
-        [self.do.delete(item) for item in self.do.listDirsInDir(do.getPythonLibSystem()) if item.find(".egg") != -1]
+        [self.do.delete(item) for item in self.do.listDirsInDir(
+            do.getPythonLibSystem()) if item.find(".egg") != -1]
 
         self.do.execute("rm -rf %s/pip*" % self.do.getPythonLibSystem())
         self.do.execute("rm -rf %s/pip*" % self.do.getBinDirSystem())
@@ -2123,7 +2473,14 @@ class Installer():
         self.do.execute("pip3 install --upgrade setuptools")
 
         #"pyvim"
-        items = ["jedi", "python-prompt-toolkit", "ipython", "ptpython", "ptpdb", "pymux", "click"]
+        items = [
+            "jedi",
+            "python-prompt-toolkit",
+            "ipython",
+            "ptpython",
+            "ptpdb",
+            "pymux",
+            "click"]
         for item in items:
             self.do.pullGitRepo("git@github.com:Jumpscale/%s.git" % item)
             path = self.do.joinPaths(do.CODEDIR, "github", "jumpscale", item)
@@ -2250,13 +2607,16 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
         TT = pytoml.loads(T)
 
         for key, val in TT["dirs"].items():
-            val = val.replace("~", os.environ["HOME"]).replace("//", "/").rstrip("/")
+            val = val.replace(
+                "~", os.environ["HOME"]).replace(
+                "//", "/").rstrip("/")
             if not j.sal.fs.exists(val):
                 j.sal.fs.createDir(val)
             TT["dirs"][key] = val
 
         if counter > 9:
-            raise RuntimeError("cannot convert default configfile, template arguments still in")
+            raise RuntimeError(
+                "cannot convert default configfile, template arguments still in")
 
         # get env dir arguments & overrule them in jumpscale config
         for key, val in os.environ.items():
@@ -2266,30 +2626,62 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
         j.core.state.configUpdate(TT, False)  # will not overwrite
 
         # COPY the jumpscale commands
-        js9_codedir = j.sal.fs.getParent(j.sal.fs.getParent(j.sal.fs.getDirName(
-            j.sal.fs.getPathOfRunningFunction(j.logger.__init__))))
+        js9_codedir = j.sal.fs.getParent(
+            j.sal.fs.getParent(
+                j.sal.fs.getDirName(
+                    j.sal.fs.getPathOfRunningFunction(
+                        j.logger.__init__))))
         cmdsDir = j.sal.fs.joinPaths(js9_codedir, "cmds")
 
         for item in j.sal.fs.listFilesInDir(cmdsDir):
-            j.sal.fs.symlink(item, "/usr/local/bin/%s" % j.sal.fs.getBaseName(item), overwriteTarget=True)
+            j.sal.fs.symlink(
+                item,
+                "/usr/local/bin/%s" %
+                j.sal.fs.getBaseName(item),
+                overwriteTarget=True)
 
     def fixCodeChangeDirVars(self, branch="8.2.0"):
         """
         walk over code dir & find all known old dir arguments & change them to new naming convention
         """
 
-        repos = ["github/jumpscale/dockers", "github/jumpscale/ays_jumpscale9", "github/jumpscale/jscockpit",
-                 "github/jumpscale/jumpscale_portal8"]
+        repos = [
+            "github/jumpscale/dockers",
+            "github/jumpscale/ays_jumpscale9",
+            "github/jumpscale/jscockpit",
+            "github/jumpscale/jumpscale_portal8"]
         # repos = ["github/jumpscale/jumpscale_core9"] #BE VERY CAREFUL IF YOU DO
         # THIS ONE, THIS FUNCTION WILL BE CHANGED TOO, NEED TO COPY FIRST
-        tochange = ["logDir", "pidDir", "hrdDir", "goDir", "nimDir", "codeDir", "binDir",
-                    "jsLibDir", "libDir", "tmplsDir", "homeDir", "baseDir", "tmpDir", "varDir"]
-        changeName = {"tmplsDir": "TEMPLATEDIR", "cfgDir": "JSCFGDIR", "appDir": "JSAPPSDIR", "jsBase": "JSBASEDIR"}
+        tochange = [
+            "logDir",
+            "pidDir",
+            "hrdDir",
+            "goDir",
+            "nimDir",
+            "codeDir",
+            "binDir",
+            "jsLibDir",
+            "libDir",
+            "tmplsDir",
+            "homeDir",
+            "baseDir",
+            "tmpDir",
+            "varDir"]
+        changeName = {
+            "tmplsDir": "TEMPLATEDIR",
+            "cfgDir": "JSCFGDIR",
+            "appDir": "JSAPPSDIR",
+            "jsBase": "JSBASEDIR"}
 
         def do(ffilter):
             for repo in repos:
                 rpath = "%s/%s" % (self.CODEDIR, repo)
-                for fpath in self.listFilesInDir(rpath, recursive=True, filter=ffilter, followSymlinks=False, listSymlinks=False):
+                for fpath in self.listFilesInDir(
+                        rpath,
+                        recursive=True,
+                        filter=ffilter,
+                        followSymlinks=False,
+                        listSymlinks=False):
                     content = self.readFile(fpath)
                     content1 = content + ""  # make sure we have copy
                     for key, val in changeName.items():
@@ -2298,10 +2690,26 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
                         content1 = content1.replace("\"%s" % key, "\"%s" % val)
                         content1 = content1.replace("'%s" % key, "'%s" % val)
                     for key in tochange:
-                        content1 = content1.replace("$%s" % key, "$%s" % key.upper())
-                        content1 = content1.replace(".%s" % key, ".%s" % key.upper())
-                        content1 = content1.replace("\"%s" % key, "\"%s" % key.upper())
-                        content1 = content1.replace("'%s" % key, "'%s" % key.upper())
+                        content1 = content1.replace(
+                            "$%s" %
+                            key,
+                            "$%s" %
+                            key.upper())
+                        content1 = content1.replace(
+                            ".%s" %
+                            key,
+                            ".%s" %
+                            key.upper())
+                        content1 = content1.replace(
+                            "\"%s" %
+                            key,
+                            "\"%s" %
+                            key.upper())
+                        content1 = content1.replace(
+                            "'%s" %
+                            key,
+                            "'%s" %
+                            key.upper())
                     content1 = content1.replace("$JSBASEDIR", "$BASEDIR")
                     content1 = content1.replace("$jsBase", "$JSBASEDIR")
                     content1 = content1.replace("$jsBASE", "$JSBASEDIR")
@@ -2326,10 +2734,13 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
     def whoami(self):
         if self._whoami is not None:
             return self._whoami
-        rc, result, err = self.execute("whoami", die=False, showout=False, outputStderr=False)
+        rc, result, err = self.execute(
+            "whoami", die=False, showout=False, outputStderr=False)
         if rc > 0:
             # could not start ssh-agent
-            raise RuntimeError("Could not call whoami,\nstdout:%s\nstderr:%s\n" % (result, err))
+            raise RuntimeError(
+                "Could not call whoami,\nstdout:%s\nstderr:%s\n" %
+                (result, err))
         else:
             self._whoami = result.strip()
         return self._whoami

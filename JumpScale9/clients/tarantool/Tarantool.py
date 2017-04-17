@@ -9,7 +9,7 @@ import tarantool
 
 try:
     import tarantool
-except:
+except BaseException:
     rc, out, err = j.sal.process.execute("pip3 install tarantool", die=True, showout=False, ignoreErrorOutput=False)
     import tarantool
 
@@ -186,8 +186,12 @@ class TarantoolFactory:
 
         cuisine.tmux.createWindow("zconfig", "tarantool")
 
-        cuisine.tmux.executeInScreen("zconfig", "tarantool",
-                                     "cd $TMPDIR;rm -rf tarantool;mkdir tarantool;cd tarantool;tarantool %s" % luapath, replaceArgs=True)
+        cuisine.tmux.executeInScreen(
+            "zconfig",
+            "tarantool",
+            "cd $TMPDIR;rm -rf tarantool;mkdir tarantool;cd tarantool;tarantool %s" %
+            luapath,
+            replaceArgs=True)
 
     def get(self, ipaddr="localhost", port=3301, login="guest", password=None, fromcache=True):
         key = "%s_%s" % (ipaddr, port)

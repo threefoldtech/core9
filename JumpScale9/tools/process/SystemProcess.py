@@ -164,7 +164,7 @@ class SystemProcess:
                     if showout:
                         try:
                             print((line.strip()))
-                        except:
+                        except BaseException:
                             pass
                     if captureout:
                         out += line
@@ -183,7 +183,7 @@ class SystemProcess:
                     p.kill()
                     break
 
-        if path != None:
+        if path is not None:
             self.delete(path)
 
         if rc != 999:
@@ -241,8 +241,8 @@ class SystemProcess:
         # TODO: *2 check if this works on windows
         # TODO: *2 there is an ugly error when there is a timeout (on some systems seems to work though)
 
-        if cwd != None:
-            if useShell == False:
+        if cwd is not None:
+            if not useShell:
                 raise j.exceptions.Input(message="when using cwd, useshell needs to be used",
                                          level=1, source="", tags="", msgpub="")
             if "cd %s;" % cwd not in command:
@@ -387,7 +387,7 @@ class SystemProcess:
                 raise j.exceptions.RuntimeError(
                     "Error durring execution!\nCommand: %s\nErrormessage: %s" % (command, output))
             return exitcode, output
-        except:
+        except BaseException:
             raise j.exceptions.RuntimeError('Failed to execute the specified command: %s' % command)
 
     def executeCode(self, code, params=None):
@@ -485,7 +485,7 @@ class SystemProcess:
             try:
                 handle = win32api.OpenProcess(win32con.PROCESS_TERMINATE, False, pid)
                 win32process.TerminateProcess(handle, 0)
-            except:
+            except BaseException:
                 raise
 
     def getPidsByFilterSortable(self, filterstr, sortkey=None):

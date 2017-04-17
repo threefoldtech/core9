@@ -6,6 +6,7 @@ from ExecutorAsyncSSH import ExecutorAsyncSSH
 from ExecutorG8Core import ExecutorG8Core
 import threading
 
+
 class ExecutorFactory:
     _lock = threading.Lock()
     _executors = {}
@@ -19,7 +20,15 @@ class ExecutorFactory:
         @param keyname is name of key (pub)
         @param pubkey is the content of the pub key
         """
-        executor = ExecutorSSH(addr, port=port, login=login, passwd=passwd, pubkey=pubkey, key_filename=keyname, look_for_keys=True, allow_agent=True)
+        executor = ExecutorSSH(
+            addr,
+            port=port,
+            login=login,
+            passwd=passwd,
+            pubkey=pubkey,
+            key_filename=keyname,
+            look_for_keys=True,
+            allow_agent=True)
         executor.pushkey()
 
     def getSSHViaProxy(self, jumphost, jmphostuser, host, username, port, identityfile, proxycommand=None):
@@ -123,15 +132,15 @@ class ExecutorFactory:
             key = '%s:%s:%s' % (addr, port, login)
             if key not in self._executors_async or usecache is False:
                 self._executors_async[key] = ExecutorAsyncSSH(addr=addr,
-                                                        port=port,
-                                                        login=login,
-                                                        passwd=passwd,
-                                                        debug=debug,
-                                                        allow_agent=allow_agent,
-                                                        look_for_keys=look_for_keys,
-                                                        timeout=timeout,
-                                                        key_filename=key_filename,
-                                                        passphrase=passphrase)
+                                                              port=port,
+                                                              login=login,
+                                                              passwd=passwd,
+                                                              debug=debug,
+                                                              allow_agent=allow_agent,
+                                                              look_for_keys=look_for_keys,
+                                                              timeout=timeout,
+                                                              key_filename=key_filename,
+                                                              passphrase=passphrase)
 
             return self._executors_async[key]
 
@@ -139,7 +148,7 @@ class ExecutorFactory:
         return ExecutorAgent2(addr, debug=debug, checkok=debug)
 
     def getG8CoreBased(self, host='localhost', port=6379, password=None, container_id=None):
-        return ExecutorG8Core(host=host, port=port,  password=password, container_id=container_id)
+        return ExecutorG8Core(host=host, port=port, password=password, container_id=container_id)
 
     def reset(self, executor):
         """

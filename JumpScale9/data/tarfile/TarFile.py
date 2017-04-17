@@ -85,7 +85,7 @@ class TarFile:
         @param files: Filenames to extract
         @type files: iterable
         '''
-        if not self.mode is TarFileFactory.READ:
+        if self.mode is not TarFileFactory.READ:
             raise j.exceptions.RuntimeError('Can only extract archives opened for reading')
 
         if not j.data.types.path.check(destination_path):

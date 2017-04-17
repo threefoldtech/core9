@@ -61,7 +61,15 @@ class GitFactory:
         else:
             gitpath = dest
 
-        return (repository_host, repository_type, repository_account, repository_name, repository_url, branch, gitpath, path)
+        return (
+            repository_host,
+            repository_type,
+            repository_account,
+            repository_name,
+            repository_url,
+            branch,
+            gitpath,
+            path)
 
     def getContentInfoFromURL(self, url):
         """
@@ -275,7 +283,11 @@ class GitFactory:
 
     def getGitReposListLocal(self, provider="", account="", name="", errorIfNone=True):
         repos = {}
-        for top in j.sal.fs.listDirsInDir(j.dirs.CODEDIR, recursive=False, dirNameOnly=True, findDirectorySymlinks=True):
+        for top in j.sal.fs.listDirsInDir(
+                j.dirs.CODEDIR,
+                recursive=False,
+                dirNameOnly=True,
+                findDirectorySymlinks=True):
             if provider != "" and provider != top:
                 continue
             for accountfound in j.sal.fs.listDirsInDir("%s/%s" % (j.dirs.CODEDIR, top),
@@ -284,7 +296,13 @@ class GitFactory:
                     continue
                 accountfounddir = "/%s/%s/%s" % (j.dirs.CODEDIR, top, accountfound)
                 for reponame in j.sal.fs.listDirsInDir(
-                        "%s/%s/%s" % (j.dirs.CODEDIR, top, accountfound), recursive=False, dirNameOnly=True, findDirectorySymlinks=True):
+                    "%s/%s/%s" %
+                    (j.dirs.CODEDIR,
+                     top,
+                     accountfound),
+                    recursive=False,
+                    dirNameOnly=True,
+                        findDirectorySymlinks=True):
                     if name != "" and name != reponame:
                         continue
                     repodir = "%s/%s/%s/%s" % (j.dirs.CODEDIR, top, accountfound, reponame)

@@ -2,7 +2,7 @@ from JumpScale9 import j
 try:
     from watchdog.events import FileSystemEventHandler
     from watchdog.observers import Observer
-except:
+except BaseException:
     print("WARNING: watchdog not installed properly, will resync every 30 sec only.")
 import time
 # import os
@@ -76,7 +76,7 @@ class MyFSEventHandler(FileSystemEventHandler):
                     if error:
                         try:
                             print(e)
-                        except:
+                        except BaseException:
                             pass
                         j.tools.develop.syncCode()
                         break
@@ -316,19 +316,50 @@ class DevelopToolsFactory:
                         dest = "root@%s:%s/JumpScale/" % (node.addr, node.cuisine.core.dir_paths['LIBDIR'])
                         source2 = source + "/lib/JumpScale/"
 
-                        j.sal.fs.copyDirTree(source2, dest, ignoredir=[
-                                             '.egg-info', '.dist-info', '__pycache__', ".git"], rsync=True, ssh=True, sshport=node.port, recursive=True, rsyncdelete=rsyncdelete)
+                        j.sal.fs.copyDirTree(
+                            source2,
+                            dest,
+                            ignoredir=[
+                                '.egg-info',
+                                '.dist-info',
+                                '__pycache__',
+                                ".git"],
+                            rsync=True,
+                            ssh=True,
+                            sshport=node.port,
+                            recursive=True,
+                            rsyncdelete=rsyncdelete)
 
                         source2 = source + "/install/InstallTools.py"
                         dest = "root@%s:%s/JumpScale/InstallTools.py" % (node.addr,
                                                                          node.cuisine.core.dir_paths['LIBDIR'])
-                        j.sal.fs.copyDirTree(source2, dest, ignoredir=[
-                                             '.egg-info', '.dist-info', '__pycache__', ".git"], rsync=True, ssh=True, sshport=node.port, recursive=False)
+                        j.sal.fs.copyDirTree(
+                            source2,
+                            dest,
+                            ignoredir=[
+                                '.egg-info',
+                                '.dist-info',
+                                '__pycache__',
+                                ".git"],
+                            rsync=True,
+                            ssh=True,
+                            sshport=node.port,
+                            recursive=False)
 
                         source2 = source + "/install/ExtraTools.py"
                         dest = "root@%s:%s/JumpScale/ExtraTools.py" % (node.addr, node.cuisine.core.dir_paths['LIBDIR'])
-                        j.sal.fs.copyDirTree(source2, dest, ignoredir=[
-                                             '.egg-info', '.dist-info', '__pycache__', ".git"], rsync=True, ssh=True, sshport=node.port, recursive=False)
+                        j.sal.fs.copyDirTree(
+                            source2,
+                            dest,
+                            ignoredir=[
+                                '.egg-info',
+                                '.dist-info',
+                                '__pycache__',
+                                ".git"],
+                            rsync=True,
+                            ssh=True,
+                            sshport=node.port,
+                            recursive=False)
 
                     else:
                         node.cuisine.core.run("mkdir -p %s/%s" %
@@ -337,8 +368,19 @@ class DevelopToolsFactory:
                             rsyncdelete2 = True
                         else:
                             rsyncdelete2 = rsyncdelete
-                        j.sal.fs.copyDirTree(source, dest, ignoredir=[
-                                             '.egg-info', '.dist-info', '__pycache__', ".git"], rsync=True, ssh=True, sshport=node.port, recursive=True, rsyncdelete=rsyncdelete2)
+                        j.sal.fs.copyDirTree(
+                            source,
+                            dest,
+                            ignoredir=[
+                                '.egg-info',
+                                '.dist-info',
+                                '__pycache__',
+                                ".git"],
+                            rsync=True,
+                            ssh=True,
+                            sshport=node.port,
+                            recursive=True,
+                            rsyncdelete=rsyncdelete2)
                 else:
                     raise j.exceptions.RuntimeError("only ssh nodes supported")
 

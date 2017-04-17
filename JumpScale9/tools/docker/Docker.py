@@ -131,7 +131,7 @@ class Docker:
             for item in self.client.containers(all=all):
                 try:
                     name = str(item["Names"][0].strip("/").strip())
-                except:
+                except BaseException:
                     continue
                 id = str(item["Id"].strip())
                 self._containers[id] = Container(name, id, self.client)
@@ -350,9 +350,31 @@ class Docker:
             self.logger.info('starting aysfs: %s' % fs.getName())
             fs.start()
 
-    def create(self, name="", ports="", vols="", volsro="", stdout=True, base="jumpscale/ubuntu1604", nameserver=["8.8.8.8"],
-               replace=True, cpu=None, mem=0, ssh=True, myinit=True, sharecode=False, sshkeyname="", sshpubkey="",
-               setrootrndpasswd=True, rootpasswd="", jumpscalebranch="master", aysfs=[], detach=False, privileged=False, getIfExists=True, weavenet=False):
+    def create(
+            self,
+            name="",
+            ports="",
+            vols="",
+            volsro="",
+            stdout=True,
+            base="jumpscale/ubuntu1604",
+            nameserver=["8.8.8.8"],
+            replace=True,
+            cpu=None,
+            mem=0,
+            ssh=True,
+            myinit=True,
+            sharecode=False,
+            sshkeyname="",
+            sshpubkey="",
+            setrootrndpasswd=True,
+            rootpasswd="",
+            jumpscalebranch="master",
+            aysfs=[],
+            detach=False,
+            privileged=False,
+            getIfExists=True,
+            weavenet=False):
         """
         Creates a new container.
 
@@ -456,7 +478,7 @@ class Docker:
         for key, path in list(volsdict.items()):
             # j.sal.fs.createDir(path)  # create the path on hostname
             binds[path] = {"bind": key, "ro": False}
-            binds2.append("%s:%s"%(path, key))
+            binds2.append("%s:%s" % (path, key))
             volskeys.append(key)
 
         for key, path in list(volsdictro.items()):
@@ -487,16 +509,42 @@ class Docker:
             nameserver = None
 
         for k, v in portsdict.items():
-            if type(k) == tuple and len(k) == 2:
+            if isinstance(k, tuple) and len(k) == 2:
                 portsdict["%s/%s" % (k[0], k[1])] = v
                 portsdict.pop(k)
 
-        host_config = self.client.create_host_config(binds=binds2, port_bindings=portsdict, lxc_conf=None,
-                                publish_all_ports=False, links=None, privileged=privileged, dns=nameserver, dns_search=None,
-                                volumes_from=None, network_mode=None)
-        res = self.client.create_container(image=base, command=cmd, hostname=hostname, user="root",
-                                           detach=detach, stdin_open=False, tty=True, mem_limit=mem, ports=list(portsdict.keys()), environment=None, volumes=volskeys,
-                                           network_disabled=False, name=name, entrypoint=None, cpu_shares=cpu, working_dir=None, domainname=None, memswap_limit=None, host_config=host_config)
+        host_config = self.client.create_host_config(
+            binds=binds2,
+            port_bindings=portsdict,
+            lxc_conf=None,
+            publish_all_ports=False,
+            links=None,
+            privileged=privileged,
+            dns=nameserver,
+            dns_search=None,
+            volumes_from=None,
+            network_mode=None)
+        res = self.client.create_container(
+            image=base,
+            command=cmd,
+            hostname=hostname,
+            user="root",
+            detach=detach,
+            stdin_open=False,
+            tty=True,
+            mem_limit=mem,
+            ports=list(
+                portsdict.keys()),
+            environment=None,
+            volumes=volskeys,
+            network_disabled=False,
+            name=name,
+            entrypoint=None,
+            cpu_shares=cpu,
+            working_dir=None,
+            domainname=None,
+            memswap_limit=None,
+            host_config=host_config)
         if res["Warnings"] is not None:
             raise j.exceptions.RuntimeError(
                 "Could not create docker, res:'%s'" % res)
@@ -504,7 +552,6 @@ class Docker:
         id = res["Id"]
 
         # TODO: *1 docker module no longer working
-
 
         res = self.client.start(container=id)
 

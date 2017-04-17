@@ -5,7 +5,7 @@ import sys
 
 try:
     import pyximport
-except:
+except BaseException:
     rc, out, err = j.sal.process.execute("pip3 install cython", die=True, showout=False, ignoreErrorOutput=False)
     import pyximport
 

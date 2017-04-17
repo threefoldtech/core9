@@ -2,9 +2,10 @@ from JumpScale9 import j
 from ExecutorBase import ExecutorBase
 try:
     import g8core
-except:
+except BaseException:
     logger = j.logger.get("g8core")
     logger.error("cannot find g8core")
+
 
 class ExecutorG8Core(ExecutorBase):
     """Executor that talks with a g8os/core0 node"""
@@ -27,7 +28,7 @@ class ExecutorG8Core(ExecutorBase):
         if self.debug:
             print("EXECUTOR:%s" % cmds)
 
-        if checkok == None:
+        if checkok is None:
             checkok = self.checkok
 
         cmds2 = self._transformCmds(cmds, die=die, checkok=checkok, env=env)

@@ -91,16 +91,16 @@ class GogsClient:
 
         try:
             self.repoGet(testrep, "root")
-        except:
+        except BaseException:
             self.repoCreate(reponame=testrep, username="root", description="simple test repo")
         try:
             self.userGet(testuser)
-        except:
+        except BaseException:
             self.userCreate(testuser, testuser, "test_user@fake.com")
 
         try:
             self.organizationGet(testorg)
-        except:
+        except BaseException:
             self.organizationCreate(testorg)
         dump_all()
 
@@ -570,7 +570,16 @@ class GogsClient:
         else:
             raise NotFoundException("User or repo does not exist")
 
-    def issueCreate(self, reponame, title, owner=None, description=None, assignee=None, milestone=None, labels=None, closed=None):
+    def issueCreate(
+            self,
+            reponame,
+            title,
+            owner=None,
+            description=None,
+            assignee=None,
+            milestone=None,
+            labels=None,
+            closed=None):
         """
         create issue
         @milestone  = int
@@ -749,7 +758,8 @@ class GogsClient:
         for repo in repos:
             repoid, fullreponame, reposshurl = repo
             reponame = fullreponame.split('/')[-1]
-            if reponame.startswith("proj_") or reponame.startswith("env_") or reponame.startswith("org_")or reponame.startswith("cockpit_"):
+            if reponame.startswith("proj_") or reponame.startswith(
+                    "env_") or reponame.startswith("org_")or reponame.startswith("cockpit_"):
                 types = types_proj
             else:
                 types = types_code

@@ -10,7 +10,7 @@ if "JSBRANCH" in os.environ:
 else:
     branch = "master"
 
-if not "TMPDIR" in os.environ:
+if "TMPDIR" not in os.environ:
     os.environ["TMPDIR"] = "/tmp"
     # raise RuntimeError("TMPDIR should be there")
 
@@ -45,7 +45,6 @@ do = InstallTools.do
 # there are many more functions available in jumpscale
 
 # FROM now on there is a do. variable which has many features, please investigate
-
 
 
 print("install jumpscale9")

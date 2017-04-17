@@ -13,14 +13,16 @@ class State():
         self._config = None
         self._config_changed = False
         if "VARDIR" in os.environ:
-            # print("VARDIR DEFINED", sep=' ', end='n', file=sys.stdout, flush=False)
-            self._vardir = j.sal.fs.pathNormalize(j.sal.fs.joinPaths(os.environ["VARDIR"], "js9"))
+            #print("VARDIR DEFINED", sep=' ', end='n', file=sys.stdout, flush=False)
+            self._vardir = j.sal.fs.pathNormalize(
+                j.sal.fs.joinPaths(os.environ["VARDIR"], "js9"))
         else:
-            self._vardir = j.sal.fs.pathNormalize(path="%s/js9/var" % os.environ["HOME"])
+            self._vardir = j.sal.fs.pathNormalize(
+                path="%s/js9/var" % os.environ["HOME"])
 
     @property
     def config(self):
-        if self._config == None:
+        if self._config is None:
             if not self._exists("cfg"):
                 self._config = {}
                 self._config_changed = True
@@ -35,13 +37,14 @@ class State():
         if key in self.config:
             return self.config[key]
         else:
-            if defval != None:
+            if defval is not None:
                 if set:
                     self.configSet(key, defval)
                 return defval
             else:
-                raise j.exceptions.Input(message="could not find config key:%s in executor:%s" %
-                                         (key, self), level=1, source="", tags="", msgpub="")
+                raise j.exceptions.Input(
+                    message="could not find config key:%s in executor:%s" %
+                    (key, self), level=1, source="", tags="", msgpub="")
 
     def configSet(self, key, val, save=True):
         """
@@ -70,7 +73,8 @@ class State():
                 self.configSet(key0, val0, save=False)
             else:
                 if not j.data.types.dict.check(val0):
-                    raise RuntimeError("first level in config needs to be a dict ")
+                    raise RuntimeError(
+                        "first level in config needs to be a dict ")
                 for key1, val1 in val0.items():
                     if key1 not in self.config[key0]:
                         self._config[key0][key1] = val1
@@ -83,9 +87,10 @@ class State():
 
     def configSave(self):
         if self.readonly:
-            raise j.exceptions.Input(message="cannot write config to '%s', because is readonly" %
-                                     self, level=1, source="", tags="", msgpub="")
-        if self._config_changed == False:
+            raise j.exceptions.Input(
+                message="cannot write config to '%s', because is readonly" %
+                self, level=1, source="", tags="", msgpub="")
+        if not self._config_changed:
             return
         data = pytoml.dumps(self.config, sort_keys=True)
         # self.logger.info("config save")
@@ -127,7 +132,7 @@ class State():
         return path
 
     def _set(self, cat="cfg", data="", key=None):
-        if self.db != None:
+        if self.db is not None:
             from IPython import embed
             print("DEBUG NOW sdat")
             embed()
@@ -138,7 +143,7 @@ class State():
             j.sal.fs.writeFile(filename=path, contents=data, append=False)
 
     def _exists(self, cat="cfg", data="", key=None):
-        if self.db != None:
+        if self.db is not None:
             from IPython import embed
             print("DEBUG NOW wewe")
             embed()
@@ -148,7 +153,7 @@ class State():
             return j.sal.fs.exists(path, followlinks=True)
 
     def _get(self, cat="cfg", data="", key=None):
-        if self.db != None:
+        if self.db is not None:
             from IPython import embed
             print("DEBUG NOW 2323")
             embed()

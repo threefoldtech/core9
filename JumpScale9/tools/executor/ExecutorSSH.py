@@ -283,9 +283,21 @@ class ExecutorSSH(ExecutorBase):
         if dest[0] != "/":
             raise j.exceptions.RuntimeError("need / in beginning of dest path")
         dest = "root@%s:%s" % (self.addr, dest)
-        j.sal.fs.copyDirTree(source, dest, keepsymlinks=True, deletefirst=False,
-                             overwriteFiles=True, ignoredir=[".egg-info", ".dist-info"], ignorefiles=[".egg-info"], rsync=True,
-                             ssh=True, sshport=self.port, recursive=recursive, createdir=createdir)
+        j.sal.fs.copyDirTree(
+            source,
+            dest,
+            keepsymlinks=True,
+            deletefirst=False,
+            overwriteFiles=True,
+            ignoredir=[
+                ".egg-info",
+                ".dist-info"],
+            ignorefiles=[".egg-info"],
+            rsync=True,
+            ssh=True,
+            sshport=self.port,
+            recursive=recursive,
+            createdir=createdir)
 
     def download(self, source, dest, source_prefix="", recursive=True):
         if source_prefix != "":
@@ -293,9 +305,20 @@ class ExecutorSSH(ExecutorBase):
         if source[0] != "/":
             raise j.exceptions.RuntimeError("need / in beginning of source path")
         source = "root@%s:%s" % (self.addr, source)
-        j.sal.fs.copyDirTree(source, dest, keepsymlinks=True, deletefirst=False,
-                             overwriteFiles=True, ignoredir=[".egg-info", ".dist-info"], ignorefiles=[".egg-info"], rsync=True,
-                             ssh=True, sshport=self.port, recursive=recursive)
+        j.sal.fs.copyDirTree(
+            source,
+            dest,
+            keepsymlinks=True,
+            deletefirst=False,
+            overwriteFiles=True,
+            ignoredir=[
+                ".egg-info",
+                ".dist-info"],
+            ignorefiles=[".egg-info"],
+            rsync=True,
+            ssh=True,
+            sshport=self.port,
+            recursive=recursive)
 
     def __repr__(self):
         return ("Executor ssh: %s (%s)" % (self.addr, self.port))

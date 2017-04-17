@@ -24,7 +24,15 @@ class RedisFactory:
         self._redisq = {}
         self._config = {}
 
-    def get(self, ipaddr="localhost", port=6379, password="", fromcache=True, unixsocket=None, ardb_patch=False, **args):
+    def get(
+            self,
+            ipaddr="localhost",
+            port=6379,
+            password="",
+            fromcache=True,
+            unixsocket=None,
+            ardb_patch=False,
+            **args):
         if unixsocket is None:
             key = "%s_%s" % (ipaddr, port)
         else:
@@ -60,7 +68,7 @@ class RedisFactory:
                 conn.settimeout(timeout)
             try:
                 conn.connect((ipaddr, port))
-            except:
+            except BaseException:
                 return False
         finally:
             if conn:

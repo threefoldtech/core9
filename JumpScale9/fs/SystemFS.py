@@ -205,7 +205,8 @@ class SystemFS:
             self.logger.debug('Copy directory tree from %s to %s' % (src, dst))
             if ((src is None) or (dst is None)):
                 raise TypeError(
-                    'Not enough parameters passed in system.fs.copyDirTree to copy directory from %s to %s ' % (src, dst))
+                    'Not enough parameters passed in system.fs.copyDirTree to copy directory from %s to %s ' %
+                    (src, dst))
             if j.sal.fs.isDir(src):
                 names = os.listdir(src)
 
@@ -1004,7 +1005,7 @@ class SystemFS:
             else:
                 raise j.exceptions.RuntimeError(
                     'Cannot create a hard link on windows')
-        except:
+        except BaseException:
             raise j.exceptions.RuntimeError(
                 'Failed to hardLinkFile from %s to %s' % (source, destin))
 
@@ -1046,7 +1047,7 @@ class SystemFS:
                 return True
             self.logger.debug('path %s is not an empty directory' % path)
             return False
-        except:
+        except BaseException:
             raise j.exceptions.RuntimeError(
                 'Failed to check if the specified path: %s is an empty directory...in system.fs.isEmptyDir' % path)
 
@@ -1071,7 +1072,7 @@ class SystemFS:
 
             self.logger.debug('path %s is not a file' % path)
             return False
-        except:
+        except BaseException:
             raise j.exceptions.RuntimeError(
                 'Failed to check if the specified path: %s is a file...in system.fs.isFile' % path)
 
@@ -1127,7 +1128,7 @@ class SystemFS:
             raise TypeError('Path is None in system.fs.statPath')
         try:
             return os.stat(path, follow_symlinks=follow_symlinks)
-        except:
+        except BaseException:
             raise OSError(
                 'Failed to perform stat system call on the specific path: %s in system.fs.statPath' % (path))
 
@@ -1163,7 +1164,7 @@ class SystemFS:
                 "filename is not a file so cannot unlink")
         try:
             os.unlink(filename)
-        except:
+        except BaseException:
             raise OSError(
                 'Failed to unlink the specified file path: %s in system.fs.unlinkFile' % filename)
 
@@ -1179,7 +1180,7 @@ class SystemFS:
             raise TypeError('File name is None in system.fs.unlink')
         try:
             os.unlink(filename)
-        except:
+        except BaseException:
             raise OSError(
                 'Failed to unlink the specified file path: [%s] in system.ds.unlink' % filename)
 
@@ -1615,9 +1616,18 @@ class SystemFS:
         from JumpScale.core.main import Dirs
         return Dirs.pathToUnicode(path)
 
-    def targzCompress(self, sourcepath, destinationpath, followlinks=False, destInTar="", pathRegexIncludes=['.[a-zA-Z0-9]*'],
-                      pathRegexExcludes=[], contentRegexIncludes=[], contentRegexExcludes=[], depths=[],
-                      extrafiles=[]):
+    def targzCompress(
+            self,
+            sourcepath,
+            destinationpath,
+            followlinks=False,
+            destInTar="",
+            pathRegexIncludes=['.[a-zA-Z0-9]*'],
+            pathRegexExcludes=[],
+            contentRegexIncludes=[],
+            contentRegexExcludes=[],
+            depths=[],
+            extrafiles=[]):
         """
         @param sourcepath: Source directory .
         @param destination: Destination filename.
@@ -1642,7 +1652,7 @@ class SystemFS:
         if not j.sal.fs.exists(j.sal.fs.getDirName(destinationpath)):
             j.sal.fs.createDir(j.sal.fs.getDirName(destinationpath))
         t = tarfile.open(name=destinationpath, mode='w:gz')
-        if not(followlinks != False or destInTar != "" or pathRegexIncludes != ['.*'] or pathRegexExcludes != []
+        if not(followlinks or destInTar != "" or pathRegexIncludes != ['.*'] or pathRegexExcludes != []
                or contentRegexIncludes != [] or contentRegexExcludes != [] or depths != []):
             t.add(sourcepath, "/")
         else:
@@ -1664,10 +1674,18 @@ class SystemFS:
             params = {}
             params["t"] = t
             params["destintar"] = destInTar
-            j.sal.fs.walker.walk(root=sourcepath, callback=addToTar, arg=params,
-                                 recursive=True, includeFolders=False,
-                                 pathRegexIncludes=pathRegexIncludes, pathRegexExcludes=pathRegexExcludes, contentRegexIncludes=contentRegexIncludes,
-                                 contentRegexExcludes=contentRegexExcludes, depths=depths, followlinks=False)
+            j.sal.fs.walker.walk(
+                root=sourcepath,
+                callback=addToTar,
+                arg=params,
+                recursive=True,
+                includeFolders=False,
+                pathRegexIncludes=pathRegexIncludes,
+                pathRegexExcludes=pathRegexExcludes,
+                contentRegexIncludes=contentRegexIncludes,
+                contentRegexExcludes=contentRegexExcludes,
+                depths=depths,
+                followlinks=False)
 
             if extrafiles != []:
                 for extrafile in extrafiles:

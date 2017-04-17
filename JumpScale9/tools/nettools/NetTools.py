@@ -48,7 +48,7 @@ class NetTools:
                 conn.settimeout(timeout)
             try:
                 conn.connect((ipaddr, port))
-            except:
+            except BaseException:
                 return False
         finally:
             if conn:
@@ -107,7 +107,7 @@ class NetTools:
             import urllib.request
             import urllib.parse
             import urllib.error
-        except:
+        except BaseException:
             import urllib.parse as urllib
 
         try:
@@ -194,7 +194,8 @@ class NetTools:
             retVal = ctypes.windll.iphlpapi.GetTcpTable(ctypes.byref(tcpTable), ctypes.byref(dwSize), 0)
             if not retVal == 0:
                 raise j.exceptions.RuntimeError(
-                    "j.sal.nettools.checkListenPort: The function iphlpapi.GetTcpTable returned error number %s" % retVal)
+                    "j.sal.nettools.checkListenPort: The function iphlpapi.GetTcpTable returned error number %s" %
+                    retVal)
 
             # We can't iterate over the table the usual way as tcpTable.table isn't a Python table structure.
             for i in range(tcpTable.dwNumEntries):
@@ -425,7 +426,7 @@ class NetTools:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
             s.connect((ip, port))
-        except:
+        except BaseException:
             raise j.exceptions.RuntimeError("Cannot connect to %s:%s, check network configuration" % (ip, port))
         return s.getsockname()[0]
 
@@ -523,7 +524,9 @@ class NetTools:
                 return []
             result = []
             match = re.search(
-                "^\s+inet\s+(?P<ipaddress>[\d\.]+)\s+.*netmask\s+(?P<netmask>[a-f\d]{8})\s?(broadcast)?\s?(?P<broadcast>[\d\.]+)?$", output, re.MULTILINE)
+                "^\s+inet\s+(?P<ipaddress>[\d\.]+)\s+.*netmask\s+(?P<netmask>[a-f\d]{8})\s?(broadcast)?\s?(?P<broadcast>[\d\.]+)?$",
+                output,
+                re.MULTILINE)
             if not match:
                 return []
             ip = match.group('ipaddress')
@@ -552,7 +555,7 @@ class NetTools:
 
     def getMacAddress(self, interface):
         """Return the MAC address of this interface"""
-        if not interface in self.getNics():
+        if interface not in self.getNics():
             raise LookupError("Interface %s not found on the system" % interface)
         if j.core.platformtype.myplatform.isLinux or j.core.platformtype.myplatform.isESX():
             if j.sal.fs.exists("/sys/class/net"):
@@ -659,7 +662,8 @@ class NetTools:
                     raise j.exceptions.RuntimeError(
                         'Could not get the MAC address for [%s] because "ip" is not found' % s)
                 mo = re.search(
-                    '\d:\s+\w+:\s+.*\n\s+.+\s+(?P<mac>([a-fA-F0-9]{2}[:|\-]?){6}).+\n\s+inet\s%s[^0-9]+' % ipaddress, stdout, re.MULTILINE)
+                    '\d:\s+\w+:\s+.*\n\s+.+\s+(?P<mac>([a-fA-F0-9]{2}[:|\-]?){6}).+\n\s+inet\s%s[^0-9]+' %
+                    ipaddress, stdout, re.MULTILINE)
                 if mo:
                     return self.pm_formatMacAddress(mo.groupdict()['mac'])
             raise j.exceptions.RuntimeError("MAC address for [%s] not found" % ipaddress)
@@ -733,7 +737,7 @@ class NetTools:
                 for i, item in enumerate(ipList):
                     try:
                         ipList[i] = int(item)
-                    except:
+                    except BaseException:
                         return False
                     if not isinstance(ipList[i], int):
                         self.logger.warning('[%s] is not a valid ip address, octects should be integers' % ipaddress)
@@ -867,7 +871,8 @@ class NetTools:
                     self._promptcalled = True
                     return self._user, self._passwd
                 raise j.exceptions.RuntimeError(
-                    'Could not authenticate with the given authentication user:%s and password:%s' % (self._user, self._passwd))
+                    'Could not authenticate with the given authentication user:%s and password:%s' %
+                    (self._user, self._passwd))
 
         urlopener = myURLOpener(username, passwd)
 
@@ -893,7 +898,8 @@ class NetTools:
         ) else "domainname" if j.core.platformtype.myplatform.isSolaris() else ""
         if not cmd:
             raise PlatformNotSupportedError(
-                'Platform "%s" is not supported. Command is only supported on Linux and Solaris' % j.core.platformtype.name)
+                'Platform "%s" is not supported. Command is only supported on Linux and Solaris' %
+                j.core.platformtype.name)
 
         exitCode, domainName, err = j.sal.process.execute(cmd, showout=False)
 

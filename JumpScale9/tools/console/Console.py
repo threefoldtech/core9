@@ -11,9 +11,11 @@ import os
 if j.core.platformtype.myplatform.isWindows():
     import msvcrt
 
-    def clear(): return os.system('cls')
+    def clear():
+        return os.system('cls')
 else:
-    def clear(): return os.system('clear')
+    def clear():
+        return os.system('clear')
 
 
 IPREGEX = "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
@@ -83,7 +85,7 @@ class Console:
         """
         try:
             line = str(line)
-        except:
+        except BaseException:
             raise ValueError("Could not convert text to string in system class.")
         return line
 
@@ -110,8 +112,9 @@ class Console:
             width = self.width
         maxMessageLength = width - len(prefix)  # - maxLengthStatusType
         if maxMessageLength < 5:
-            raise j.exceptions.Input("Cannot format message for screen, not enough width\nwidht:%s prefixwidth:%s maxlengthstatustype:%s" % (
-                width, len(prefix), maxMessageLength), "console")
+            raise j.exceptions.Input(
+                "Cannot format message for screen, not enough width\nwidht:%s prefixwidth:%s maxlengthstatustype:%s" %
+                (width, len(prefix), maxMessageLength), "console")
 
         out = []
         for line in message.split("\n"):
@@ -194,14 +197,14 @@ class Console:
         for key in list(dictionary.keys()):
             try:
                 self.echoWithPrefix(str(dictionary[key]), key, withStar, indent)
-            except:
+            except BaseException:
                 raise j.exceptions.Input("Could not convert item of dictionary %s to string" % key, "console.echodict")
 
     def transformDictToMessage(self, dictionary, withStar=False, indent=None):
         for key in list(dictionary.keys()):
             try:
                 self.formatMessage(str(dictionary[key]), key, withStar, indent)
-            except:
+            except BaseException:
                 raise j.exceptions.Input("Could not convert item of dictionary %s to string" %
                                          key, "console.transformDictToMessage")
 
@@ -223,7 +226,7 @@ class Console:
         @returns: Response provided by the user
         @rtype: string
         """
-        if j.application.interactive != True:
+        if not j.application.interactive:
             raise j.exceptions.Input("Cannot ask a string in a non interactive mode.", "console.askstring")
         if validate and not isinstance(validate, collections.Callable):
             raise TypeError('The validate argument should be a callable')
@@ -245,7 +248,8 @@ class Console:
                 self.echo("Please insert a valid value!")
                 retryCount = retryCount - 1
         raise ValueError(
-            "Console.askString() failed: tried %d times but user didn't fill out a value that matches '%s'." % (retry, regex))
+            "Console.askString() failed: tried %d times but user didn't fill out a value that matches '%s'." %
+            (retry, regex))
 
     def askPassword(self, question, confirm=True, regex=None, retry=-1, validate=None):
         """Present a password input question to the user
@@ -260,7 +264,7 @@ class Console:
         @returns: Password provided by the user
         @rtype: string
         """
-        if j.application.interactive != True:
+        if not j.application.interactive:
             raise j.exceptions.Input("Cannot ask a password in a non interactive mode.",
                                      "console.askpasswd.noninteractive")
         if validate and not isinstance(validate, collections.Callable):
@@ -290,8 +294,9 @@ class Console:
             if failed:
                 self.echo("Invalid password!")
                 retryCount = retryCount - 1
-        raise j.exceptions.Input(("Console.askPassword() failed: tried %s times but user didn't fill out a value that matches '%s'." % (
-            retry, regex)), "console.askpasswd")
+        raise j.exceptions.Input(
+            ("Console.askPassword() failed: tried %s times but user didn't fill out a value that matches '%s'." %
+             (retry, regex)), "console.askpasswd")
 
     def askInteger(self, question, defaultValue=None, minValue=None, maxValue=None, retry=-1, validate=None):
         """Get an integer response on asked question
@@ -305,18 +310,18 @@ class Console:
 
         @return: integer representing the response on the question
         """
-        if j.application.interactive != True:
+        if not j.application.interactive:
             raise j.exceptions.Input("Cannot ask an integer in a non interactive mode.")
         if validate and not isinstance(validate, collections.Callable):
             raise TypeError('The validate argument should be a callable')
-        if not minValue is None and not maxValue is None:
+        if minValue is None and maxValue is not not None:
             question += " (%d-%d)" % (minValue, maxValue)
-        elif not minValue is None:
+        elif minValue is not None:
             question += " (min. %d)" % minValue
-        elif not maxValue is None:
+        elif maxValue is not None:
             question += " (max. %d)" % maxValue
 
-        if not defaultValue is None:
+        if defaultValue is not None:
             defaultValue = int(defaultValue)
             question += " [%d]" % defaultValue
         question += ": "
@@ -328,7 +333,7 @@ class Console:
                 response = input(question).rstrip(chr(13))
             else:
                 response = input(question).rstrip(chr(13))
-            if response == "" and not defaultValue is None:
+            if response == "" and defaultValue is not None:
                 return defaultValue
             if (re.match("^-?[0-9]+$", response.strip())) and (not validate or validate(response)):
                 responseInt = int(response.strip())
@@ -338,7 +343,8 @@ class Console:
             retryCount = retryCount - 1
 
         raise ValueError(
-            "Console.askInteger() failed: tried %d times but user didn't fill out a value that matches '%s'." % (retry, response))
+            "Console.askInteger() failed: tried %d times but user didn't fill out a value that matches '%s'." %
+            (retry, response))
 
     def askYesNo(self, message=""):
         '''Display a yes/no question and loop until a valid answer is entered
@@ -349,7 +355,7 @@ class Console:
         @return: Positive or negative answer
         @rtype: bool
         '''
-        if j.application.interactive != True:
+        if not j.application.interactive:
             raise j.exceptions.Input("Cannot ask a yes/no question in a non interactive mode.",
                                      "console.askyesno.notinteractive")
 
@@ -387,9 +393,9 @@ class Console:
 
         def all_between(l, min, max):
             for i in l:
-                if (not min is None) and i < min:
+                if (min is not None) and i < min:
                     return False
-                elif (not max is None) and i > max:
+                elif (max is not None) and i > max:
                     return False
             return True
 
@@ -567,9 +573,10 @@ class Console:
         if len(choicearray) == 1:
             self.echo("Found exactly one choice: %s" % (choicearray[0]))
             return choicearray[0]
-        if j.application.interactive != True:
+        if not j.application.interactive:
             raise j.exceptions.Input(
-                "Cannot ask a choice in an list of items in a non interactive mode.", "console.askchoice.noninteractive")
+                "Cannot ask a choice in an list of items in a non interactive mode.",
+                "console.askchoice.noninteractive")
         descr = descr or "\nMake a selection please: "
 
         if sort and isinstance(choicearray, (tuple, list)):
@@ -600,7 +607,7 @@ class Console:
         return valuearray[result - 1]
 
     def askChoiceMultiple(self, choicearray, descr=None, sort=True):
-        if j.application.interactive != True:
+        if not j.application.interactive:
             raise j.exceptions.Input("Cannot ask a choice in an list of items in a non interactive mode.",
                                      "console.askChoiceMultiple.notinteractive")
         if not choicearray:
@@ -663,9 +670,9 @@ class Console:
         # setup the environment
         self._old_stdout = sys.stdout
         self._old_stderr = sys.stderr
-        if self.stdout == None or reset:
+        if self.stdout is None or reset:
             self.stdout = TextIOWrapper(BytesIO(), sys.stdout.encoding)
-        if self.stderr == None or reset:
+        if self.stderr is None or reset:
             self.stderr = TextIOWrapper(BytesIO(), sys.stderr.encoding)
 
     def printOutput(self):
@@ -673,9 +680,9 @@ class Console:
 
     def enableOutput(self):
         # restore stdout
-        if self.stdout != None:
+        if self.stdout is not None:
             self.stdout.close()
-        if self.stderr != None:
+        if self.stderr is not None:
             self.stderr.close()
         sys.stdout = self._old_stdout
         sys.stderr = self._old_stderr

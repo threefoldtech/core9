@@ -36,7 +36,7 @@ class MemoryKeyValueStore(KeyValueStoreBase):
             # else:
             #     print ("not expired: %s/%s"%(self.expire[key],j.data.time.epoch))
         if not self.exists(key):
-            if die == False:
+            if not die:
                 return None
             raise j.exceptions.RuntimeError("Could not find object with category %s key %s" % (self.category, key))
         return self.db[key]
@@ -44,7 +44,7 @@ class MemoryKeyValueStore(KeyValueStoreBase):
     def getraw(self, key, secret="", die=False, modecheck="r"):
         key = str(key)
         if not self.exists(key):
-            if die == False:
+            if not die:
                 return None
             else:
                 raise j.exceptions.RuntimeError("Could not find object with category %s key %s" % (self.category, key))
@@ -57,12 +57,12 @@ class MemoryKeyValueStore(KeyValueStoreBase):
         """
         # print("Expire0:%s"%expire)
         key = str(key)
-        if expire != None and expire != 0:
+        if expire is not None and expire != 0:
             self.expire[key] = j.data.time.epoch + expire
             # print("expire:%s:%s now(%s)"%(key,self.expire[key],j.data.time.epoch))
         self.db[key] = value
 
-    def delete(self,  key, secret=""):
+    def delete(self, key, secret=""):
         key = str(key)
         if key in self.expire:
             self.expire.pop(key)

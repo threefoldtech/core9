@@ -83,7 +83,7 @@ class GitClient:
     def getBranchOrTag(self):
         try:
             return 'tag', self.repo.git.describe('--tags')
-        except:
+        except BaseException:
             return 'branch', self.branchName
 
     def switchBranch(self, branchName, create=True):  # NOQA
@@ -345,5 +345,5 @@ docs/_build/
         try:
             cmd = 'cd {path}; git describe --tags'.format(path=self.baseDir)
             return 'tag', j.tools.cuisine.local.core.run(cmd)[1]
-        except:
+        except BaseException:
             return 'branch', self.repo.head.ref.name

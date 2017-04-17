@@ -296,8 +296,7 @@ else:
             gc.disable()
             try:
                 self.pid = os.fork()
-            except:
-                if gc_was_enabled:
+            except BaseException: if gc_was_enabled:
                     gc.enable()
                 raise
             self._child_created = True
@@ -345,8 +344,7 @@ else:
                     else:
                         os.execvpe(executable, args, env)
 
-                except:
-                    exc_type, exc_value, tb = sys.exc_info()
+                except BaseException:                    exc_type, exc_value, tb = sys.exc_info()
                     # Save the traceback and attach it to the exception object
                     exc_lines = traceback.format_exception(exc_type,
                                                            exc_value,

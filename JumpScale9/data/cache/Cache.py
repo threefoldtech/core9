@@ -15,7 +15,7 @@ class Cache:
         @param id is a unique id for the cache
         db = when none then will be in memory
         """
-        if db == None:
+        if db is None:
             db = MemoryKeyValueStore(name=id, namespace="cache")
         if id not in self._cache:
             self._cache[id] = CacheCategory(id=id, db=db, expiration=expiration)
@@ -54,7 +54,7 @@ class Cache:
             try:
                 c.get("somethingElse")
             except Exception as e:
-                if not "Cannot get 'somethingElse' from cache" in str(e):
+                if "Cannot get 'somethingElse' from cache" not in str(e):
                     raise RuntimeError("error in test. non expected output")
 
             print("expiration test")
@@ -85,7 +85,7 @@ class CacheCategory():
         self.db.delete(key)
 
     def set(self, key, value, expire=None):
-        if expire == None:
+        if expire is None:
             expire = self.expiration
         self.db.set(key, value, expire=expire)
 
@@ -93,8 +93,8 @@ class CacheCategory():
         # check if key exists then return (only when no refresh)
         res = self.db.get(key)
         # print("res:%s"%res)
-        if refresh or res == None:
-            if method == None:
+        if refresh or res is None:
+            if method is None:
                 raise j.exceptions.RuntimeError("Cannot get '%s' from cache,not found & method None" % key)
             # print("cache miss")
             val = method(**kwargs)
@@ -104,7 +104,7 @@ class CacheCategory():
             self.set(key, val)
             return val
         else:
-            if res == None:
+            if res is None:
                 raise j.exceptions.RuntimeError("Cannot get '%s' from cache" % key)
             return res
 

@@ -402,7 +402,7 @@ class ErrorConditionHandler:
                     if j.system.unix.checkApplicationInstalled(app):
                         editor = app
                         return editor
-                except:
+                except BaseException:
                     pass
             return "less"
 
@@ -425,16 +425,14 @@ class ErrorConditionHandler:
                     try:
                         res = j.tools.console.askString(
                             "\nAn error has occurred. Do you want do you want to do? (s=stop, c=continue, t=getTrace)")
-                    except:
-                        # print "ERROR IN ASKSTRING TO SEE IF WE HAVE TO USE
+                    except BaseException:                        # print "ERROR IN ASKSTRING TO SEE IF WE HAVE TO USE
                         # EDITOR"
                         res = "s"
                 else:
                     try:
                         res = j.tools.console.askString(
                             "\nAn error has occurred. Do you want do you want to do? (s=stop, c=continue, t=getTrace, d=debug)")
-                    except:
-                        # print "ERROR IN ASKSTRING TO SEE IF WE HAVE TO USE
+                    except BaseException:                        # print "ERROR IN ASKSTRING TO SEE IF WE HAVE TO USE
                         # EDITOR"
                         res = "s"
                 if res == "t":

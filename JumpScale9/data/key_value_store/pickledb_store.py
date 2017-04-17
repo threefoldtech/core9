@@ -3,6 +3,7 @@ from JumpScale9 import j
 import pickledb
 import re
 
+
 class PickleDBStore(KeyValueStoreBase):
     def __init__(self, name, namespace="db", baseDir='/tmp', host='localhost', serializers=[]):
         self._db_path = '{baseDir}/{name}'.format(baseDir=baseDir, name=name)

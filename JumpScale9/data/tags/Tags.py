@@ -3,7 +3,7 @@
 from JumpScale import j
 try:
     from urllib.parse import unquote, quote
-except:
+except BaseException:
     from urllib.parse import unquote, quote
 import re
 matchquote = re.compile(r'\'[^\']*\'')

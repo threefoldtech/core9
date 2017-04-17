@@ -4,6 +4,7 @@ import yaml
 from SerializerBase import *
 from collections import OrderedDict
 
+
 class SerializerYAML(SerializerBase):
 
     def __init__(self):
@@ -32,13 +33,13 @@ class SerializerYAML(SerializerBase):
             raise j.exceptions.Input(message=error, level=1, source="", tags="", msgpub="")
         return r
 
-
     def ordered_load(self, stream, Loader=yaml.Loader, object_pairs_hook=OrderedDict):
         """
         load a yaml stream and keep the order
         """
         class OrderedLoader(Loader):
             pass
+
         def construct_mapping(loader, node):
             loader.flatten_mapping(node)
             return object_pairs_hook(loader.construct_pairs(node))

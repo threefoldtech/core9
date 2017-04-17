@@ -3,6 +3,7 @@ import time
 import libtmux as tmuxp
 import os
 
+
 class Session:
 
     def __init__(self, session):
@@ -258,7 +259,7 @@ class Tmux:
             s = tmuxp.Server()
             s.list_sessions()
         except Exception as e:
-            session1=s.new_session(firstWindow)
+            session1 = s.new_session(firstWindow)
         return s
 
     def getSession(self, name, reset=False, attach=False, firstWindow="ignore"):
@@ -286,12 +287,12 @@ class Tmux:
         self.sessions[name] = Session(res)
         return self.sessions[name]
 
-    def execute(self, cmd,session="main",window="main",pane="main"):
+    def execute(self, cmd, session="main", window="main", pane="main"):
         """
         """
-        s=self.getSession(session)
-        w=s.getWindow(window)
-        p=w.getPane(pane)
+        s = self.getSession(session)
+        w = s.getWindow(window)
+        p = w.getPane(pane)
         p.execute(cmd)
 
     def createPanes4x4(self, sessionName="main", windowName="actions", reset=True):
@@ -310,7 +311,7 @@ class Tmux:
             a = window.getPane(paneName)
             try:
                 count = int(a.name.decode())
-            except:
+            except BaseException:
                 count = int(a.name)
             b = a.splitHorizontal("b")  # first split
             a.splitHorizontal("P%s2" % count, "P%s1" % count)

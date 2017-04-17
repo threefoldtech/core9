@@ -330,7 +330,7 @@ def main():
                       'process', metavar='GID', type='int')
 
     # Only parse until a '--' argument
-    if not '--' in sys.argv:
+    if '--' not in sys.argv:
         raise j.exceptions.RuntimeError('No -- argument found')
 
     begin_idx = 0 if sys.argv[0] != '-c' else 1
@@ -376,6 +376,7 @@ def main():
                 pass
 
     os.execlp(args[0], *args)
+
 
 if __name__ == '__main__':
     main()

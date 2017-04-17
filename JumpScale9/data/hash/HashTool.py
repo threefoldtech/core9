@@ -6,7 +6,7 @@ import hashlib
 import binascii
 try:
     from pyblake2 import blake2b
-except:
+except BaseException:
     rc, out, err = j.sal.process.execute("pip3 install pyblake2", die=True, showout=False, ignoreErrorOutput=False)
 
 
@@ -54,6 +54,7 @@ class HashTool:
         output of the hash functions are string representation, when you need a smaller representation you can go to binary
         """
         return binascii.hexlify(bin)
+
 
 import zlib
 
@@ -246,6 +247,7 @@ def blake2_file(path):
 #         s = s.encode('utf-8')
 #     impl = hashlib.md5(s)
 #     return impl.hexdigest()
+
 
 __all__ = list()
 

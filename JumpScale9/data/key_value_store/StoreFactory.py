@@ -35,37 +35,36 @@ class StoreFactory:
 
     def test(self):
 
-
-        for db in [j.servers.kvs.getRedisStore(name="kvs", namespace="testdb"),j.servers.kvs.getMemoryStore()]:
+        for db in [j.servers.kvs.getRedisStore(name="kvs", namespace="testdb"), j.servers.kvs.getMemoryStore()]:
 
             print(db)
             db.destroy()
 
-            assert []==db.list()
+            assert [] == db.list()
 
-            #some basic tests
+            # some basic tests
 
             db.set("mykey33", "string")
-            val2=db.get("mykey33")
-            assert "string"==val2
+            val2 = db.get("mykey33")
+            assert "string" == val2
 
-            val=db.set("mykey34", b"byte")
-            val2=db.get("mykey34")
-            assert b"byte"==val2
+            val = db.set("mykey34", b"byte")
+            val2 = db.get("mykey34")
+            assert b"byte" == val2
 
-            val=db.set("mykey35", [1,2,3])
-            val2=db.get("mykey35")
-            assert [1,2,3]==val2
+            val = db.set("mykey35", [1, 2, 3])
+            val2 = db.get("mykey35")
+            assert [1, 2, 3] == val2
 
-            if db.type=="redis" or db.type=="mem":
-                assert []!=db.keys
+            if db.type == "redis" or db.type == "mem":
+                assert [] != db.keys
 
             db.destroy()
-            assert []==db.keys
+            assert [] == db.keys
 
-            #test now expiration
+            # test now expiration
             print("expiration test")
-            db.set("mykey", "string",expire=1)
+            db.set("mykey", "string", expire=1)
 
             assert "string" == db.get("mykey")
             time.sleep(2)
@@ -75,7 +74,7 @@ class StoreFactory:
             db.destroy()
 
         # cache = j.servers.kvs.getRedisCacheLocal()
-        cache=None #NOT IMPLEMENTED YET
+        cache = None  # NOT IMPLEMENTED YET
 
         serializer = j.data.serializer.json
         db = j.servers.kvs.getRedisStore(name="kvs", namespace="testdb", serializers=[serializer], cache=cache)
@@ -105,7 +104,11 @@ class StoreFactory:
         except Exception as e:
             if "because mode 'w' is not allowed" not in str(e):
                 raise j.exceptions.Input(
-                    message="test failed, should not be allowed writing because of acl", level=1, source="", tags="", msgpub="")
+                    message="test failed, should not be allowed writing because of acl",
+                    level=1,
+                    source="",
+                    tags="",
+                    msgpub="")
 
         # on my laptop performance is 50k+ per sec, so good enough for now
         def encodetest():
@@ -134,7 +137,7 @@ class StoreFactory:
 
         # the std redis is not on tcp, so this will not work in all cases, had to modify
 
-        if self._redisCacheLocal == None:
+        if self._redisCacheLocal is None:
             cache = self.getRedisStore(
                 name='kvs-cache',
                 namespace='cache',
@@ -199,8 +202,19 @@ class StoreFactory:
         from servers.key_value_store.memory_store import MemoryKeyValueStore
         return MemoryKeyValueStore(name=name, namespace=namespace)
 
-    def getRedisStore(self, name="core", namespace='db', host='localhost', port=None, unixsocket=None, db=0, password='',
-                      serializers=None, masterdb=None, cache=None, changelog=None):
+    def getRedisStore(
+            self,
+            name="core",
+            namespace='db',
+            host='localhost',
+            port=None,
+            unixsocket=None,
+            db=0,
+            password='',
+            serializers=None,
+            masterdb=None,
+            cache=None,
+            changelog=None):
         '''
         Gets a memory key value store.
 
@@ -234,8 +248,19 @@ class StoreFactory:
 
         return res
 
-    def getARDBStore(self, name="core", namespace='db', host='localhost', port=16379, unixsocket=None, db=0, password='',
-                      serializers=None, masterdb=None, cache=None, changelog=None):
+    def getARDBStore(
+            self,
+            name="core",
+            namespace='db',
+            host='localhost',
+            port=16379,
+            unixsocket=None,
+            db=0,
+            password='',
+            serializers=None,
+            masterdb=None,
+            cache=None,
+            changelog=None):
         '''
         Gets a memory key value store.
 

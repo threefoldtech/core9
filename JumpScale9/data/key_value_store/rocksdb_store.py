@@ -8,7 +8,16 @@ class RocksDBKeyValueStore(KeyValueStoreBase):
     """
     Warning: this rockdb implementation doesn't support anything except get/set
     """
-    def __init__(self, name, namespace=None, dbpath='/tmp/default.db', serializers=[], masterdb=None, cache=None, changelog=None):
+
+    def __init__(
+            self,
+            name,
+            namespace=None,
+            dbpath='/tmp/default.db',
+            serializers=[],
+            masterdb=None,
+            cache=None,
+            changelog=None):
         if namespace:
             print("Warning: namespace is not supported with rockdb backend")
 
@@ -53,7 +62,7 @@ class RocksDBKeyValueStore(KeyValueStoreBase):
         return self.rocksdb.delete(self._getKey(key))
 
     def _exists(self, key):
-        return (self.rocksdb.get(self._getKey(key)) != None)
+        return (self.rocksdb.get(self._getKey(key)) is not None)
 
     """
     def increment(self, key):
