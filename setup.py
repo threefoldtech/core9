@@ -15,5 +15,5 @@ setup(name='jumpscale_core9',
           'ipython',
           'colored_traceback',
           'pystache',
-
+          'libtmux'
       ])

@@ -121,27 +121,23 @@ class RedisFactory:
             print("started")
             time.sleep(1)
 
-        elif j.tools.cuisine.local.core.isCygwin:
-            cmd = "redis-server --maxmemory 100000000 & "
-            print("start redis in background (win)")
-            os.system(cmd)
-        elif j.tools.cuisine.local.core.isLinux:
-            cmd = "echo never > /sys/kernel/mm/transparent_hugepage/enabled"
-            os.system(cmd)
-            cmd = "sysctl vm.overcommit_memory=1"
-            os.system(cmd)
-            # redis_bin = '%s/bin/redis-server' % j.dirs.JSBASEDIR
-            # if 'redis-server' not in os.listdir(path='%s/bin/' % j.dirs.JSBASEDIR):
-            #     url = "https://stor.jumpscale.org/public/redis-server"
-            #     j.tools.cuisine.local.core.file_download(url, to=redis_bin, overwrite=False, retry=3)
-            # import subprocess
-            # os.sync()
-            # j.sal.fs.chmod(redis_bin, 0o550)
-            if j.tools.cuisine.local.core.isAlpine:
-                j.tools.cuisine.local.package.install("redis")
-            else:
-                j.tools.cuisine.local.package.install("redis-server")
-            redis_bin = "redis-server"
-            cmd = "%s  --port 0 --unixsocket %s/redis.sock --maxmemory 100000000" % (redis_bin, tmpdir)
-            print("start redis in background (linux)")
-            j.tools.cuisine.local.processmanager.ensure('redis_js', cmd)
+        # elif j.core.platformtype.myplatform.isCygwin:
+        #     cmd = "redis-server --maxmemory 100000000 & "
+        #     print("start redis in background (win)")
+        #     os.system(cmd)
+        elif j.core.platformtype.myplatform.isLinux:
+            if j.core.platformtype.myplatform.isAlpine:
+                os.system("apk add redis")
+            elif j.core.platformtype.myplatform.isUbuntu:
+                os.system("apt install redis")
+
+        cmd = "echo never > /sys/kernel/mm/transparent_hugepage/enabled"
+        os.system(cmd)
+        cmd = "sysctl vm.overcommit_memory=1"
+        os.system(cmd)
+
+        redis_bin = "redis-server"
+        cmd = "%s  --port 0 --unixsocket %s/redis.sock --maxmemory 100000000" % (redis_bin, j.dirs.TMPDIR)
+        print(cmd)
+        print("start redis in tmux (linux)")
+        j.tools.tmux.execute(cmd, session='main', window='main', pane='tmux')
