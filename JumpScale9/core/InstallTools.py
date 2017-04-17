@@ -2190,6 +2190,9 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
             raise RuntimeError("cannot set debug, system is in readonly.")
 
     def initEnv(self, executor=None):
+        """
+        @type executor: ExecutorBase
+        """
 
         T = '''
         [dirs]
@@ -2261,6 +2264,14 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
                 TT["dirs"][key] = val
 
         j.core.state.configUpdate(TT, False)  # will not overwrite
+
+        # COPY the jumpscale commands
+        js9_codedir = j.sal.fs.getParent(j.sal.fs.getParent(j.sal.fs.getDirName(
+            j.sal.fs.getPathOfRunningFunction(j.logger.__init__))))
+        cmdsDir = j.sal.fs.joinPaths(js9_codedir, "cmds")
+
+        for item in j.sal.fs.listFilesInDir(cmdsDir):
+            j.sal.fs.symlink(item, "/opt/local/bin/%s" % j.sal.fs.getBaseName(item), overwriteTarget=True)
 
     def fixCodeChangeDirVars(self, branch="8.2.0"):
         """

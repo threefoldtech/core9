@@ -133,7 +133,7 @@ class LoggerFactory:
         if filter:
             self.handlers.consoleHandler.addFilter(ModuleFilter(filter))
 
-    def get(self, name=None, enable_only_me=False):  # -> logging.Logger
+    def get(self, name=None, enable_only_me=False) -> JSLogger:
         """
         Return a logger with the given name. Name will be prepend with 'j.' so
         every logger return by this function is a child of the jumpscale root logger 'j'

@@ -13,9 +13,10 @@ class State():
         self._config = None
         self._config_changed = False
         if "VARDIR" in os.environ:
+            # print("VARDIR DEFINED", sep=' ', end='n', file=sys.stdout, flush=False)
             self._vardir = j.sal.fs.pathNormalize(j.sal.fs.joinPaths(os.environ["VARDIR"], "js9"))
         else:
-            self._vardir = j.sal.fs.pathNormalize(path="~/js9")
+            self._vardir = j.sal.fs.pathNormalize(path="%s/js9/var" % os.environ["HOME"])
 
     @property
     def config(self):

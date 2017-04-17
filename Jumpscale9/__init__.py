@@ -71,6 +71,9 @@ j.core.state = State()
 from .core.InstallTools import InstallTools
 j.do = InstallTools()
 
+if "dirs" not in j.core.state.config:
+    j.do.initEnv()
+
 from .core.Dirs import Dirs
 j.dirs = Dirs()
 
@@ -97,9 +100,6 @@ j.tools.jsloader = JSLoader()
 
 j.logger.init()
 
-
-if "dirs" not in j.core.state.config:
-    j.do.initEnv()
 
 # logger = j.logger.get("init")
 # logger.debug("Init Done")
