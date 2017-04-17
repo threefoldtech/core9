@@ -97,5 +97,9 @@ j.tools.jsloader = JSLoader()
 
 j.logger.init()
 
+
+if "dirs" not in j.core.state.config:
+    j.do.initEnv()
+
 # logger = j.logger.get("init")
 # logger.debug("Init Done")

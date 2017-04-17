@@ -12,7 +12,7 @@ JumpScale is a cloud automation product and a branch from what used to be Pylabs
 - this means will be installed in a local docker
 - see https://github.com/Jumpscale/developer
 
-## how to install from master without development env
+## how to install from master on own system (not in docker development mode)
 Should be executed under root.
 
 ```

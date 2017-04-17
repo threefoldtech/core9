@@ -29,9 +29,6 @@ class Dirs:
         '''jumpscale sandbox base folder'''
         self.__jslocation__ = "j.dirs"
 
-        if "dirs" not in j.core.state.config:
-            j.do.initEnv()
-
         for key, val in j.core.state.config["dirs"].items():
             self.__dict__[key] = val
 
