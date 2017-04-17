@@ -2189,7 +2189,7 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
         else:
             raise RuntimeError("cannot set debug, system is in readonly.")
 
-    def initEnv(self, env, executor=None):
+    def initEnv(self, executor=None):
 
         T = '''
         [dirs]

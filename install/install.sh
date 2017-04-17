@@ -112,6 +112,7 @@ function pip_install {
     cd $TMPDIR
     rm -rf get-pip.py
     curl -k https://bootstrap.pypa.io/get-pip.py > get-pip.py;python3 get-pip.py
+    pip3 install --upgrade pip
     pip3 install --upgrade redis
     pip3 install --upgrade colorlog
     pip3 install --upgrade pytoml
@@ -144,26 +145,8 @@ clean_system
 pip_install
 
 set -ex
-
-cd $STARTDIR
-
-#need to remove, if you want to develop you need to call the install from the code directory
-rm -f $TMPDIR/bootstrap.py
-rm -f $TMPDIR/InstallTools.py
-rm -f $TMPDIR/dependencies.py
-
-if [ -e "bootstrap.py" ]; then
-    cp  -f bootstrap.py $TMPDIR/bootstrap.py
-    cp  -f InstallTools.py $TMPDIR/InstallTools.py
-    cp  -f dependencies.py $TMPDIR/dependencies.py
-else
-    curl -k https://raw.githubusercontent.com/Jumpscale/jumpscale_core9/$JSBRANCH/install/bootstrap.py?$RANDOM  > $TMPDIR/bootstrap.py
-    curl -k https://raw.githubusercontent.com/Jumpscale/jumpscale_core9/$JSBRANCH/install/InstallTools.py?$RANDOM > $TMPDIR/InstallTools.py
-    curl -k https://raw.githubusercontent.com/Jumpscale/jumpscale_core9/$JSBRANCH/install/dependencies.py?$RANDOM > $TMPDIR/dependencies.py
-fi
-
-
-cd $TMPDIR
-python3 bootstrap.py
+curl https://raw.githubusercontent.com/Jumpscale/developer/master/jsinit.sh?$RANDOM > $TMPDIR/jsinstall.sh; sh $TMPDIR/jsinstall.sh
+source ~/jsenv.sh
+pip3 install -e $CODEDIR/github/jumpscale/core9 --upgrade
 
 cd $STARTDIR

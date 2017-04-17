@@ -97,5 +97,5 @@ j.tools.jsloader = JSLoader()
 
 j.logger.init()
 
-logger = j.logger.get("init")
-logger.debug("Init Done")
+# logger = j.logger.get("init")
+# logger.debug("Init Done")

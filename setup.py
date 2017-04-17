@@ -7,4 +7,13 @@ setup(name='jumpscale_core9',
       author='GIG',
       author_email='info@gig.tech',
       license='Apache',
-      packages=['Jumpscale9'])
+      packages=['Jumpscale9'],
+      install_requires=[
+          'redis',
+          'colorlog',
+          'pytoml',
+          'ipython',
+          'colored_traceback',
+          'pystache',
+
+      ])
