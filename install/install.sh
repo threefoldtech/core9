@@ -127,22 +127,25 @@ function pip_install {
 
 }
 
-if [ "$(uname)" == "Darwin" ]; then
-    # Do something under Mac OS X platform
-    export LANG=C; export LC_ALL=C
-    osx_install
-elif [ -e /etc/alpine-release ]; then
-    alpine_install
-elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-    # export LC_ALL='C.UTF-8'
-    ubuntu_unstall
-elif [ "$(expr substr $(uname -s) 1 9)" == "CYGWIN_NT" ]; then
-    cygwin_install
-fi
+#DONE IN THE jsinit.sh ...
+#
+# if [ "$(uname)" == "Darwin" ]; then
+#     # Do something under Mac OS X platform
+#     export LANG=C; export LC_ALL=C
+#     osx_install
+# elif [ -e /etc/alpine-release ]; then
+#     alpine_install
+# elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+#     # export LC_ALL='C.UTF-8'
+#     ubuntu_unstall
+# elif [ "$(expr substr $(uname -s) 1 9)" == "CYGWIN_NT" ]; then
+#     cygwin_install
+# fi
 
 clean_system
 
-pip_install
+#happens in the jsinit
+# pip_install
 
 set -ex
 curl https://raw.githubusercontent.com/Jumpscale/developer/master/jsinit.sh?$RANDOM > $TMPDIR/jsinstall.sh; sh $TMPDIR/jsinstall.sh
