@@ -4,6 +4,7 @@ import os.path
 import hashlib
 # import re
 import fnmatch
+import inspect
 # import time
 import shutil
 # import errno
@@ -32,9 +33,7 @@ class SystemFS:
     def __init__(self):
         self.__jslocation__ = "j.sal.fs"
         self.logger = j.logger.get("j.sal.fs")
-        self.logger.disabled = True
-
-        # self.walker = SystemFSWalker()
+        # self.logger.disabled = True
 
     def copyFile(self, fileFrom, to, createDirIfNeeded=False, overwriteFile=True):
         """Copy file
@@ -855,6 +854,9 @@ class SystemFS:
 
         return filesreturn, depth
 
+    def getPathOfRunningFunction(self, function):
+        return inspect.getfile(function)
+
     def changeFileNames(self, toReplace, replaceWith, pathToSearchIn,
                         recursive=True, filter=None, minmtime=None, maxmtime=None):
         """
@@ -916,9 +918,9 @@ class SystemFS:
         result = []
         for file in j.sal.fs.listFilesInDir(path, recursive=recursive, filter=filter):
             if file.endswith(".py"):
-                filename = file.split(os.sep)[-1]
-                scriptname = filename.rsplit(".", 1)[0]
-                result.append(scriptname)
+                # filename = file.split(os.sep)[-1]
+                # scriptname = filename.rsplit(".", 1)[0]
+                result.append(file)
         return result
 
     def move(self, source, destin):
@@ -1370,128 +1372,6 @@ class SystemFS:
     def getFolderMD5sum(self, folder):
         files = sorted(self.walk(folder, recurse=1))
         return self.md5sum(files)
-
-    def walkExtended(self, root, recurse=0, dirPattern='*', filePattern='*',
-                     followSoftLinks=True, dirs=True, files=True):
-        """
-        Extended Walk version: seperate dir and file pattern
-        @param  root                : start directory to start the search.
-        @type   root                : string
-        @param  recurse             : search also in subdirectories.
-        @type   recurse             : number
-        @param  dirPattern          : search pattern to match directory names. Wildcards can be included.
-        @type   dirPattern          : string
-        @param  filePattern         : search pattern to match file names. Wildcards can be included.
-        @type   filePattern         : string
-        @param  followSoftLinks     : determine if links must be followed.
-        @type   followSoftLinks     : boolean
-        @param  dirs                : determine to return dir results.
-        @type   dirs                : boolean
-        @param  files               : determine to return file results.
-        @type   files               : boolean
-
-        @return                     : List of files and / or directories that match the search patterns.
-        @rtype                      : list of strings
-
-        General guidelines in the usage of the method be means of some examples come next. For the example in /tmp there is
-
-        * a file test.rtt
-        * and ./folder1/subfolder/subsubfolder/small_test/test.rtt
-
-        To find the first test you can use
-           j.sal.fs.walkExtended('/tmp/', dirPattern="*tmp*", filePattern="*.rtt")
-        To find only the second one you could use
-           j.sal.fs.walkExtended('tmp', recurse=0, dirPattern="*small_test*", filePattern="*.rtt", dirs=False)
-        """
-        self.logger.debug('Scanning directory (walk) %s' % root, 6)
-        result = []
-        try:
-            names = os.listdir(root)
-        except os.error:
-            return result  # TODO: P2 is this correct?
-
-        dirPattern = dirPattern or '*'
-        dirPatList = dirPattern.split(';')
-        filePattern = filePattern or '*'
-        filePatList = filePattern.split(';')
-
-        for name in names:
-            fullname = os.path.normpath(os.path.join(root, name))
-            if self.isFile(fullname, followSoftLinks):
-                fileOK = False
-                dirOK = False
-                for fPat in filePatList:
-                    if (fnmatch.fnmatch(name, fPat)):
-                        fileOK = True
-                for dPat in dirPatList:
-                    if (fnmatch.fnmatch(os.path.dirname(fullname), dPat)):
-                        dirOK = True
-                if fileOK and dirOK and files:
-                    result.append(fullname)
-            if self.isDir(fullname, followSoftLinks):
-                for dPat in dirPatList:
-                    if (fnmatch.fnmatch(name, dPat) and dirs):
-                        result.append(fullname)
-            if recurse:
-                result = result + self.walkExtended(root=fullname,
-                                                    recurse=recurse,
-                                                    dirPattern=dirPattern,
-                                                    filePattern=filePattern,
-                                                    followSoftLinks=followSoftLinks,
-                                                    dirs=dirs,
-                                                    files=files)
-
-        return result
-
-    def walk(self, root, recurse=0, pattern='*', return_folders=0,
-             return_files=1, followSoftlinks=True, str=False, depth=None):
-        """This is to provide ScanDir similar function
-        It is going to be used wherever some one wants to list all files and subfolders
-        under one given directly with specific or none matchers
-        """
-        # initialize
-        result = []
-        if depth is not None:
-            if depth == 0:
-                return result
-            depth -= 1
-        if str:
-            os.path.supports_unicode_filenames = True
-
-        self.logger.debug('Scanning directory (walk)%s' % root)
-        # initialize
-        result = []
-
-        # must have at least root folder
-        try:
-            names = os.listdir(root)
-        except os.error:
-            return result
-
-        # expand pattern
-        pattern = pattern or '*'
-        pat_list = pattern.split(';')
-
-        # check each file
-        for name in names:
-            fullname = os.path.normpath(os.path.join(root, name))
-
-            # grab if it matches our pattern and entry type
-            for pat in pat_list:
-                if (fnmatch.fnmatch(name, pat)):
-
-                    if (self.isFile(fullname, followSoftlinks) and return_files) or (
-                            return_folders and self.isDir(fullname, followSoftlinks)):
-                        result.append(fullname)
-                    continue
-
-            # recursively scan other folders, appending results
-            if recurse:
-                if self.isDir(fullname) and not self.isLink(fullname):
-                    result = result + \
-                        self.walk(fullname, recurse, pattern, return_folders,
-                                  return_files, followSoftlinks, depth=depth)
-        return result
 
     def getTmpDirPath(self, create=True):
         """

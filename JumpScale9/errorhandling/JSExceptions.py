@@ -8,7 +8,7 @@ class BaseJSException(Exception):
             level = 1
             tags = "cat:%s" % level
         super().__init__(message)
-        j.errorconditionhandler.setExceptHook()
+        j.errorhandler.setExceptHook()
         self.message = message
         self.level = level
         self.source = source

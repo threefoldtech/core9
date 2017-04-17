@@ -40,11 +40,12 @@ j = Jumpscale9()
 from .data.text.Text import Text
 j.data.text = Text()
 
-from .logging.LoggerFactory import LoggerFactory
-j.logger = LoggerFactory()
-
 from .data.types.Types import Types
 j.data.types = Types()
+
+from .logging.LoggerFactory import LoggerFactory
+j.logger = LoggerFactory()
+j.logger.enableConsoleHandler()
 
 from .fs.SystemFS import SystemFS
 j.sal.fs = SystemFS()
@@ -73,15 +74,20 @@ j.do = InstallTools()
 from .core.Dirs import Dirs
 j.dirs = Dirs()
 
+from .data.idgenerator.IDGenerator import IDGenerator
+j.data.idgenerator = IDGenerator()
 
-from IPython import embed
-print("DEBUG NOW 8787")
-embed()
-raise RuntimeError("stop debug here")
+from .data.time.Time import Time_
+j.data.time = Time_()
+
+from .errorhandling.ErrorConditionHandler import ErrorConditionHandler
+j.errorhandler = ErrorConditionHandler()
+
 
 from .core.Application import Application
 j.application = Application()
 
+j.logger.set_mode("DEV")
 
 from .fs.SystemFSWalker import SystemFSWalker
 j.sal.fswalker = SystemFSWalker
@@ -89,5 +95,7 @@ j.sal.fswalker = SystemFSWalker
 from .tools.loader.JSLoader import JSLoader
 j.tools.jsloader = JSLoader()
 
-from .errorhandling.ErrorConditionHandler import ErrorConditionHandler
-j.errorhandler = ErrorConditionHandler()
+j.logger.init()
+
+logger = j.logger.get("init")
+logger.debug("Init Done")

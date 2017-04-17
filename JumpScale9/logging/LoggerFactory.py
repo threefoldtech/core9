@@ -1,18 +1,16 @@
 from JumpScale9 import j
-
+import logging
 from .JSLogger import JSLogger
 from .Filter import ModuleFilter
 import time
-import logging
-
-import sys
+from colorlog import ColoredFormatter
+import os
+# import sys
 # def embed():
 #     return "embed" in sys.__dict__
 #
 # if not embed():
 #     import logging.handlers
-from colorlog import ColoredFormatter
-import os
 
 
 FILE_FORMAT = '%(asctime)s - %(pathname)s:%(lineno)d - %(levelname)-8s - %(message)s'
@@ -100,7 +98,6 @@ class LoggerFactory:
         self._quiet = False
 
         self.logging = logging.getLogger(self.root_logger_name)
-        # self.logging.addHandler(logging.NullHandler())
 
     def test(self):
 
@@ -130,13 +127,13 @@ class LoggerFactory:
         # FOLLOWING PROVES THAT THE LOOKING FOR FILE & PATH INFO IS THE SLOWING DOWN FACTOR
         # j.tools.performancetrace.profile("perftest(logger)", globals=locals())  # {"perftest": perftest}
 
-    def init(self, mode, level, filter=[]):
+    def init(self, mode="DEV", level=10, filter=[]):
         self.set_mode(mode.upper())
         self.set_level(level)
         if filter:
             self.handlers.consoleHandler.addFilter(ModuleFilter(filter))
 
-    def get(self, name=None, enable_only_me=False) -> logging.Logger:
+    def get(self, name=None, enable_only_me=False):  # -> logging.Logger
         """
         Return a logger with the given name. Name will be prepend with 'j.' so
         every logger return by this function is a child of the jumpscale root logger 'j'
@@ -162,13 +159,12 @@ class LoggerFactory:
         if not name.startswith(self.root_logger_name):
             name = "%s.%s" % (self.root_logger_name, name)
 
-        logger = logging.getLogger(name)
+        logger1 = JSLogger(name)
 
         if enable_only_me:
-            logger = JSLogger(name)
-            logger.enable_only_me()
+            logger1.enable_only_me()
 
-        return logger
+        return logger1
 
     def set_quiet(self, quiet):
         self._quiet = quiet
@@ -192,10 +188,6 @@ class LoggerFactory:
         """
         for handler in self.handlers._all:
             handler.setLevel(level)
-
-    def log(self, msg=None, level=logging.INFO, category="j"):
-        logger = j.logger.get(category)
-        logger.log(level, msg)
 
     def enableMemHandler(self):
         self.logging.handlers = []
@@ -224,7 +216,7 @@ class LoggerFactory:
         self.logging.propagate = False
         logging.lastResort = None
         self.enableConsoleHandler()
-        self.logging.addHandler(self.handlers.fileRotateHandler)
+        # self.logging.addHandler(self.handlers.fileRotateHandler)
 
     def __fileRotateHandler(self, name='jumpscale'):
         if not j.sal.fs.exists("%s/log/" % j.dirs.VARDIR):

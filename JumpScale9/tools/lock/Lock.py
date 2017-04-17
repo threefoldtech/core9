@@ -237,7 +237,7 @@ class Lock:
 #         except:
 #             return
 #         if int(pid) != os.getpid():
-#             j.errorconditionhandler.raiseWarning(
+#             j.errorhandler.raiseWarning(
 #                 "Lock %r not owned by this process" % lockname)
 #             return
 #

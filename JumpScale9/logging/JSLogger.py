@@ -20,11 +20,11 @@ class JSLogger(logging.Logger):
 
         """
         if self.isEnabledFor(logging.ERROR):
-            eco = j.errorconditionhandler.getErrorConditionObject(
+            eco = j.errorhandler.getErrorConditionObject(
                 ddict={}, msg=msg, msgpub=msg, category=self.name,
                 level=logging.ERROR, type=logging.getLevelName(logging.ERROR),
                 tb=None, tags='')
-            j.errorconditionhandler._send2Redis(eco)
+            j.errorhandler._send2Redis(eco)
 
             self._log(logging.ERROR, msg, args, **kwargs)
 
@@ -38,12 +38,12 @@ class JSLogger(logging.Logger):
         logger.critical("Houston, we have a %s", "major disaster", exc_info=1)
         """
         if self.isEnabledFor(logging.CRITICAL):
-            eco = j.errorconditionhandler.getErrorConditionObject(
+            eco = j.errorhandler.getErrorConditionObject(
                 ddict={}, msg=msg, msgpub=msg, category=self.name,
                 level=logging.CRITICAL, type=logging.getLevelName(
                     logging.CRITICAL),
                 tb=None, tags='')
-            j.errorconditionhandler._send2Redis(eco)
+            j.errorhandler._send2Redis(eco)
 
             self._log(logging.CRITICAL, msg, args, **kwargs)
 

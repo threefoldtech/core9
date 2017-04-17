@@ -41,38 +41,38 @@
 ## default configuration
 
 ```toml
-
 [dirs]
 HOMEDIR = "~"
 TMPDIR = "/tmp"
-VARDIR = "$HOMEDIR/js9/var"
-BASEDIR = "$HOMEDIR/js9"
-CFGDIR = "$VARDIR/cfg"
-DATADIR = "$VARDIR/data"
-CODEDIR = "$HOMEDIR/code"
-BUILDDIR = "$VARDIR/build"
-LIBDIR = "$HOMEDIR/lib/"
-TEMPLATEDIR = "$BASEDIR/templates"
+VARDIR = "{{HOMEDIR}}/js9/var"
+BASEDIR = "{{HOMEDIR}}/js9"
+CFGDIR = "{{VARDIR}}/cfg"
+DATADIR = "{{VARDIR}}/data"
+CODEDIR = "{{HOMEDIR}}/code"
+BUILDDIR = "{{VARDIR}}/build"
+LIBDIR = "{{BASEDIR}}/lib/"
+TEMPLATEDIR = "{{BASEDIR}}/templates"
 
 [email]
 from = "kristof@incubaid.com"
 smtp_port = 443
 smtp_server = ""
 
-[git]
-js9 = ""
-
 [git.ays]
-branch = ""
-url = ""
+branch = "master"
+url = "https://github.com/Jumpscale/ays9.git"
 
 [git.js]
-branch = ""
-url = ""
+branch = "master"
+url = "https://github.com/Jumpscale/core9.git"
 
 [system]
 debug = true
 readonly = false
+
+[grid]
+gid = 0
+nid = 0
 
 [redis]
 port = 6379

@@ -29,7 +29,7 @@ class ErrorConditionObject(BaseException):
             self.__dict__ = ddict
         else:
 
-            btkis, filename0, linenr0, func0 = j.errorconditionhandler.getErrorTraceKIS(
+            btkis, filename0, linenr0, func0 = j.errorhandler.getErrorTraceKIS(
                 tb=tb)
 
             # if len(btkis)>1:
@@ -192,7 +192,7 @@ class ErrorConditionObject(BaseException):
             # j.events.inputerror_warning("Errorcondition was thrown with wrong level, needs to be max 4.\n%s"%str(self.errormessage),"eco.check.level")
             self.level = 4
 
-        res = j.errorconditionhandler._send2Redis(self)
+        res = j.errorhandler._send2Redis(self)
         if res is not None:
             self.__dict__ = res
 
@@ -243,7 +243,7 @@ class ErrorConditionObject(BaseException):
 
     # def getBacktrace(self,btkis=None,filename0=None,linenr0=None,func0=None):
     #     if btkis==None:
-    #         btkis,filename0,linenr0,func0=j.errorconditionhandler.getErrorTraceKIS()
+    #         btkis,filename0,linenr0,func0=j.errorhandler.getErrorTraceKIS()
     #     out=""
     #     # out="File:'%s'\nFunction:'%s'\n"%(filename0,func0)
     #     # out+="Linenr:%s\n*************************************************************\n\n"%linenr0

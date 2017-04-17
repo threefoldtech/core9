@@ -1,4 +1,5 @@
 from JumpScale9 import j
+# import os
 
 
 class JSLoader():
@@ -26,40 +27,31 @@ class JSLoader():
 
     # import json
 
-    def findModules(self, path, embed=False):
+    def findModules(self, path=""):
         """
         walk over code files & find locations for jumpscale modules
 
         return as dict
         """
+        if path == "":
+            path = j.sal.fs.getParent(j.sal.fs.getDirName(j.sal.fs.getPathOfRunningFunction(j.application.__init__)))
 
         result = {}
 
         self.logger.info("findmodules in %s" % path)
 
-        for rootfolder in j.do.listDirsInDir(superroot, False, True):
-            fullpath0 = os.path.join(superroot, rootfolder)
-            if rootfolder.startswith("_"):
+        for classfile in j.sal.fs.listPyScriptsInDir(path):
+            basename = j.do.getBaseName(classfile)
+            if basename.startswith("_"):
                 continue
-            for module in j.do.listDirsInDir(fullpath0, False, True):
-                fullpath = os.path.join(superroot, rootfolder, module)
-                if module.startswith("_"):
-                    continue
+            # look for files starting with Capital
+            if str(basename[0]) != str(basename[0].upper()):
+                continue
 
-                for classfile in j.do.listFilesInDir(fullpath, False, "*.py"):
-                    basename = j.do.getBaseName(classfile)
-                    if basename.startswith("_"):
-                        continue
-                    # look for files starting with Capital
-                    if str(basename[0]) != str(basename[0].upper()):
-                        continue
-
-                    for (classname, location) in self.findJumpscaleLocationsInFile(classfile):
-                        if classname is not None:
-                            loc = ".".join(location.split(".")[:-1])
-                            item = location.split(".")[-1]
-                            if loc not in result:
-                                result[loc] = []
-                            result[loc].append((classfile, classname, item))
-
-        j.do.writeFile(libMetadataPath, json.dumps(result))
+            for (classname, location) in self.findJumpscaleLocationsInFile(classfile):
+                if classname is not None:
+                    loc = ".".join(location.split(".")[:-1])
+                    item = location.split(".")[-1]
+                    if loc not in result:
+                        result[loc] = []
+                    result[loc].append((classfile, classname, item))

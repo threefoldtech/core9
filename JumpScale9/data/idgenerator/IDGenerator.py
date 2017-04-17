@@ -1,7 +1,7 @@
 
 from JumpScale9 import j
 import random
-import sys
+# import sys
 import string
 
 
@@ -12,8 +12,13 @@ class IDGenerator:
     """
 
     def __init__(self):
-        self.__jslocation__ = "j.data.idgenerator"
-        self.cryptogen = random.SystemRandom()
+        self._cryptogen = ""
+
+    @property
+    def cryptogen(self):
+        if self._cryptogen == "":
+            self._cryptogen = random.SystemRandom()
+        return self._cryptogen
 
     def generateRandomInt(self, fromInt, toInt):
         """

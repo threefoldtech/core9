@@ -1,29 +1,25 @@
-
-import sys
 import os
-import inspect
-
 from JumpScale9 import j
 
 
-def embed():
-    return "embed" in sys.__dict__
-
-
-def pathToUnicode(path):
-    """
-    Convert path to unicode. Use the local filesystem encoding. Will return
-    path unmodified if path already is unicode.
-
-    @param path: path to convert to unicode
-    @type path: basestring
-    @return: unicode path
-    @rtype: unicode
-    """
-    if isinstance(path, str):
-        return path
-
-    return path.decode(sys.getfilesystemencoding())
+# def embed():
+#     return "embed" in sys.__dict__
+#
+#
+# def pathToUnicode(path):
+#     """
+#     Convert path to unicode. Use the local filesystem encoding. Will return
+#     path unmodified if path already is unicode.
+#
+#     @param path: path to convert to unicode
+#     @type path: basestring
+#     @return: unicode path
+#     @rtype: unicode
+#     """
+#     if isinstance(path, str):
+#         return path
+#
+#     return path.decode(sys.getfilesystemencoding())
 
 
 class Dirs:
@@ -32,29 +28,9 @@ class Dirs:
     def __init__(self):
         '''jumpscale sandbox base folder'''
         self.__jslocation__ = "j.dirs"
-        self.__initialized = False  # bool
 
-        import sys
-        self.BASEDIR = j.do.BASEDIR
-        self.JSBASEDIR = j.do.JSBASEDIR
-        self.HOMEDIR = os.environ["HOME"]
-        self.CFGDIR = os.environ["CFGDIR"]
-        self.TMPDIR = os.environ["TMPDIR"]
-        self.init()
-
-    def normalize(self, path):
-        """
-        """
-        if path:
-            if "~" in path:
-                path = path.replace("~", j.dirs.HOMEDIR)
-            path = j.sal.fs.pathDirClean(path)
-        return path
-
-    def init(self):
-        for key, val in os.environ.items():
-            if "DIR" in key:
-                self.__dict__[key] = val
+        for key, val in j.core.state.config["dirs"].items():
+            self.__dict__[key] = val
 
     def replaceTxtDirVars(self, txt, additionalArgs={}):
         """
@@ -83,6 +59,10 @@ class Dirs:
             txt = txt.replace("$%s" % key, str(value))
         return txt
 
+    @property
+    def JSLIBDIR(self):
+        return j.sal.fs.getParent(j.sal.fs.getDirName(j.sal.fs.getPathOfRunningFunction(j.logger.__init__)))
+
     def replaceFilesDirVars(self, path, recursive=True, filter=None, additionalArgs={}):
         if j.sal.fs.isFile(path):
             paths = [path]
@@ -95,36 +75,26 @@ class Dirs:
             if content2 != content:
                 j.sal.fs.writeFile(filename=path, contents=content2)
 
-    def _createDir(self, path):
-        try:
-            if not os.path.exists(path):
-                os.makedirs(path)
-        except:
-            pass
-
-    def _getParent(self, path):
-        """
-        Returns the parent of the path:
-        /dir1/dir2/file_or_dir -> /dir1/dir2/
-        /dir1/dir2/            -> /dir1/
-        TODO: why do we have 2 implementations which are almost the same see getParentDirName()
-        """
-        parts = path.split(os.sep)
-        if parts[-1] == '':
-            parts = parts[:-1]
-        parts = parts[:-1]
-        if parts == ['']:
-            return os.sep
-        return os.sep.join(parts)
-
-    def _getLibPath(self):
-        parent = self._getParent
-        libDir = parent(parent(__file__))
-        libDir = os.path.abspath(libDir).rstrip("/")
-        return libDir
-
-    def getPathOfRunningFunction(self, function):
-        return inspect.getfile(function)
+    # def _getParent(self, path):
+    #     """
+    #     Returns the parent of the path:
+    #     /dir1/dir2/file_or_dir -> /dir1/dir2/
+    #     /dir1/dir2/            -> /dir1/
+    #     TODO: why do we have 2 implementations which are almost the same see getParentDirName()
+    #     """
+    #     parts = path.split(os.sep)
+    #     if parts[-1] == '':
+    #         parts = parts[:-1]
+    #     parts = parts[:-1]
+    #     if parts == ['']:
+    #         return os.sep
+    #     return os.sep.join(parts)
+    #
+    # def _getLibPath(self):
+    #     parent = self._getParent
+    #     libDir = parent(parent(__file__))
+    #     libDir = os.path.abspath(libDir).rstrip("/")
+    #     return libDir
 
     def __str__(self):
         out = ""

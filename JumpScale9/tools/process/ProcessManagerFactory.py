@@ -149,7 +149,7 @@ class Process():
             self._setSuccess(res)
 
         except Exception as e:
-            eco = j.errorconditionhandler.processPythonExceptionObject(e)
+            eco = j.errorhandler.processPythonExceptionObject(e)
             self._setException(eco.toJson())
 
         finally:
@@ -201,7 +201,7 @@ class Process():
                 res = self.method(**self.args)
 
             except Exception as e:
-                eco = j.errorconditionhandler.processPythonExceptionObject(e)
+                eco = j.errorhandler.processPythonExceptionObject(e)
 
                 self._setException(eco.toJson())
                 self._clean()

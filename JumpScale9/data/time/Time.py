@@ -1,5 +1,8 @@
 
 from JumpScale9 import j
+import datetime
+import time
+from .TimeInterval import TimeInterval
 
 import struct
 
@@ -10,11 +13,6 @@ TIMES = {'s': 1,
          'w': 3600 * 24 * 7
          }
 
-import datetime
-import time
-
-from TimeInterval import TimeInterval
-
 
 class Time_:
     """
@@ -23,7 +21,6 @@ class Time_:
     """
 
     def __init__(self):
-        self.__jslocation__ = "j.data.time"
         self.timeinterval = TimeInterval
 
     @property

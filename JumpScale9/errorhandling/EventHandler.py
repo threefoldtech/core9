@@ -25,7 +25,7 @@ class EventHandler:
         """
         will NOT die
         """
-        j.errorconditionhandler.raiseWarning(
+        j.errorhandler.raiseWarning(
             message=msg, msgpub=msgpub, tags='category:%s' % category, level=level)
 
     def inputerror_critical(self, msg, category="", msgpub=""):
@@ -39,5 +39,5 @@ class EventHandler:
     def inputerror_warning(self, msg, category="", msgpub="", level=5):
         """
         """
-        j.errorconditionhandler.raiseWarning(
+        j.errorhandler.raiseWarning(
             message=msg, msgpub=msgpub, tags='category:%s' % category, level=level)

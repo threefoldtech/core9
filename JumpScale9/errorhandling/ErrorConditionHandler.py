@@ -3,26 +3,18 @@ import traceback
 import string
 import inspect
 import imp
-
-
-def embed():
-    return "embed" in sys.__dict__
-
-
+from .JSExceptions import *
+import JumpScale9.errorhandling.JSExceptions as JSExceptions
+from .ErrorConditionObject import ErrorConditionObject
 import colored_traceback
-colored_traceback.add_hook(always=True)
-
 from JumpScale9 import j
 
 
-def embed():
-    return "embed" in sys.__dict__
+# def embed():
+#     return "embed" in sys.__dict__
 
 
-if not embed():
-    from JumpScale.core.errorhandling.ErrorConditionObject import ErrorConditionObject, LEVELMAP
-else:
-    from ErrorConditionObject import ErrorConditionObject, LEVELMAP
+colored_traceback.add_hook(always=True)
 
 
 # class BaseException(Exception):
@@ -38,9 +30,6 @@ else:
 
 #     __repr__ = __str__
 
-from JSExceptions import *
-import JSExceptions
-
 
 class ErrorConditionHandler:
 
@@ -51,22 +40,24 @@ class ErrorConditionHandler:
         self.haltOnError = haltOnError
         self.setExceptHook()
         self.lastEco = None
-        self.escalateToRedis = None
+        self.escalateToRedis = False
+        self._escalateToRedisFunction = None
+        self._scriptsInRedis = False
         self.exceptions = JSExceptions
         j.exceptions = JSExceptions
 
-    def _send2Redis(self, eco):
-        if embed():
-            return
-        if self.escalateToRedis is None:
+    def _registerScrips(self):
+        if self._scriptsInRedis is False:
             luapath = "%s/core/errorhandling/eco.lua" % j.dirs.JSLIBDIR
-            if j.sal.fs.exists(path=luapath):
-                lua = j.sal.fs.fileGetContents(luapath)
-                self.escalateToRedis = j.core.db.register_script(lua)
+            lua = j.sal.fs.fileGetContents(luapath)
+            self._escalateToRedisFunction = j.core.db.register_script(lua)
+            self._scriptsInRedis = True
 
-        if self.escalateToRedis is not None:
+    def _send2Redis(self, eco):
+        if self.escalateToRedis:
+            self._registerScrips()
             data = eco.toJson()
-            res = self.escalateToRedis(
+            res = self._escalateToRedisFunction(
                 keys=["queues:eco", "eco:incr", "eco:occurrences", "eco:objects", "eco:last"], args=[eco.key, data])
             res = j.data.serializer.json.loads(res)
             return res
@@ -168,10 +159,10 @@ class ErrorConditionHandler:
         else:
             codetrace = True
 
-        if hasattr(exceptionObject, "whoami"):
-            whoami = exceptionObject.whoami
-        else:
-            whoami = ""
+        # if hasattr(exceptionObject, "whoami"):
+        #     whoami = exceptionObject.whoami
+        # else:
+        #     whoami = ""
 
         if hasattr(exceptionObject, "eco"):
             eco = exceptionObject.eco
@@ -183,30 +174,30 @@ class ErrorConditionHandler:
         else:
             level = 1
 
-        if hasattr(exceptionObject, "actionkey"):
-            actionkey = exceptionObject.actionkey
-        else:
-            actionkey = ""
+        # if hasattr(exceptionObject, "actionkey"):
+        #     actionkey = exceptionObject.actionkey
+        # else:
+        #     actionkey = ""
 
         if hasattr(exceptionObject, "msgpub"):
             msgpub = exceptionObject.msgpub
         else:
             msgpub = ""
 
-        if hasattr(exceptionObject, "source"):
-            source = exceptionObject.source
-        else:
-            source = ""
+        # if hasattr(exceptionObject, "source"):
+        #     source = exceptionObject.source
+        # else:
+        #     source = ""
 
         if hasattr(exceptionObject, "type"):
             type = exceptionObject.type
         else:
             type = "UNKNOWN"
 
-        if hasattr(exceptionObject, "actionkey"):
-            actionkey = exceptionObject.actionkey
-        else:
-            actionkey = ""
+        # if hasattr(exceptionObject, "actionkey"):
+        #     actionkey = exceptionObject.actionkey
+        # else:
+        #     actionkey = ""
 
         if hasattr(exceptionObject, "message"):
             message = exceptionObject.message

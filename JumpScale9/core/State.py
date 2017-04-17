@@ -11,7 +11,7 @@ class State():
         self.readonly = False
         self.db = j.clients.redis.get4core()
         self._config = None
-
+        self._config_changed = False
         if "VARDIR" in os.environ:
             self._vardir = j.sal.fs.pathNormalize(j.sal.fs.joinPaths(os.environ["VARDIR"], "js9"))
         else:
@@ -78,6 +78,7 @@ class State():
                         if overwrite:
                             self._config[key0][key1] = val1
                             self._config_changed = True
+        self.configSave()
 
     def configSave(self):
         if self.readonly:

@@ -4,65 +4,27 @@ import sys
 import atexit
 import struct
 from collections import namedtuple
-# import yaml
+
 
 WhoAmI = namedtuple('WhoAmI', 'gid nid pid')
-
-
-def embed():
-    return "embed" in sys.__dict__
-
-
-class Config:
-
-    def __getattribute__(self, attr):
-        config = {}
-        config_files = [f.path for f in os.scandir(j.dirs.JSCFGDIR) if f.is_file()]
-        # config_files = [f.path for f in os.scandir(config_path) if f.is_file()]
-        for config_file in config_files:
-            # support yaml, hrd, toml
-            if config_file.endswith('.yaml'):
-                with open(config_file, 'r') as conf:
-                    cfg = yaml.load(conf)
-            elif config_file.endswith('.hrd'):
-                cfg = j.data.hrd.get(config_file)
-                cfg = cfg.getHRDAsDict()
-            else:
-                cfg = j.sal.fs.fileGetContents(config_file)  # TODO support more common formats
-            config[os.path.basename(config_file).split('.')[0]] = cfg
-        return config
 
 
 class Application:
 
     def __init__(self):
-        self.__jslocation__ = "j.application"
-        self.logger = None
-        self.state = "UNKNOWN"
-        # self.state = None
-        self.appname = 'starting'
-        self.agentid = "starting"
-        self._calledexit = False
-        self.skipTraceback = False
-        self._debug = True
 
-        self._config = None
+        self.logger = j.logger.get("application")
+
+        self.state = "UNKNOWN"
+        self.appname = 'UNKNOWN'
+
+        self._debug = j.core.state.config["system"]["debug"]
+
+        self.config = j.core.state.config
 
         self._systempid = None
-        self._whoAmiBytestr = None
+        self._whoAmIBytestr = None
         self._whoAmi = None
-
-        self.gridInitialized = False
-        self.noremote = False
-        # just to get started for keyvalue store, needs to become unique per owner (user)
-        self.owner = 'b9aac92c78cb1d664eed21e8445f2e56'
-
-        self.jid = 0
-
-        if 'JSBASE' in os.environ:
-            self.sandbox = True
-        else:
-            self.sandbox = False
 
         self.interactive = True
         self._fixlocale = False
@@ -74,12 +36,13 @@ class Application:
         if j.core.db != None:
             for key in j.core.db.keys():
                 j.core.db.delete(key)
-        j.dirs.init()
         self.reload()
 
     def reload(self):
-        from JumpScale import findModules
-        findModules()
+        from IPython import embed
+        print("DEBUG NOW application implement reload")
+        embed()
+        raise RuntimeError("stop debug here")
 
     @property
     def debug(self):
@@ -88,7 +51,6 @@ class Application:
     @debug.setter
     def debug(self, value):
         self._debug = value
-        j.do.debug = value
 
     def break_into_jshell(self, msg="DEBUG NOW"):
         if self.debug is True:
@@ -118,61 +80,49 @@ class Application:
         o
 
     def init(self):
-        j.errorconditionhandler.setExceptHook()
-        j.dirs.init()
 
-        if not embed() and self.config.jumpscale is not None:
-            logging_cfg = self.config.jumpscale.get('logging')
-            if not logging_cfg:
-                # auto recover logging settings
-                j.do.installer._writeLoggingEnv(j.dirs.JSCFGDIR)
-                logging_cfg = self.config.jumpscale.get('logging')
-            level = logging_cfg.get('level', 'DEBUG')
-            mode = logging_cfg.get('mode', 'DEV')
-            filter_module = logging_cfg.get('filter', [])
-            j.logger.init(mode, level, filter_module)
-        else:
-            j.logger.init("DEV", "INFO", [])
+        # if not embed() and self.config.jumpscale is not None:
+        #     logging_cfg = self.config.jumpscale.get('logging')
+        #     if not logging_cfg:
+        #         # auto recover logging settings
+        #         j.do.installer._writeLoggingEnv(j.dirs.JSCFGDIR)
+        #         logging_cfg = self.config.jumpscale.get('logging')
+        #     level = logging_cfg.get('level', 'DEBUG')
+        #     mode = logging_cfg.get('mode', 'DEV')
+        #     filter_module = logging_cfg.get('filter', [])
+        #     j.logger.init(mode, level, filter_module)
+        # else:
+        #     j.logger.init("DEV", "INFO", [])
 
         if self._fixlocale:
             self.fixlocale()
 
-        self.logger = j.logger.get("j.application")
-
-    def useCurrentDirAsHome(self):
-        """
-        use current directory as home for JumpScale
-        e.g. /optrw/jumpscale9
-        there needs to be a env.sh in that dir
-        will also empty redis
-        """
-        if not j.sal.fs.exists("env.sh"):
-            raise j.exceptions.RuntimeError(
-                "Could not find env.sh in current directory, please go to root of jumpscale e.g. /optrw/jumpscale9")
-        # C=j.sal.fs.fileGetContents("env.sh")
-        # C2=""
-        # for line in C.split("\n"):
-        #     if line.startswith("export JSBASE"):
-        #         line="export JSBASE=/optrw/jumpscale9"
-        #     C2+="%s\n"%line
-        # j.sal.fs.fileGetContents("env.sh",C2)
-        j.core.db.flushall()
-        j.do.installer.writeenv(base=j.sal.fs.getcwd())
-        j.core.db.flushall()
+    # def useCurrentDirAsHome(self):
+    #     """
+    #     use current directory as home for JumpScale
+    #     e.g. /optrw/jumpscale9
+    #     there needs to be a env.sh in that dir
+    #     will also empty redis
+    #     """
+    #     if not j.sal.fs.exists("env.sh"):
+    #         raise j.exceptions.RuntimeError(
+    #             "Could not find env.sh in current directory, please go to root of jumpscale e.g. /optrw/jumpscale9")
+    #     # C=j.sal.fs.fileGetContents("env.sh")
+    #     # C2=""
+    #     # for line in C.split("\n"):
+    #     #     if line.startswith("export JSBASE"):
+    #     #         line="export JSBASE=/optrw/jumpscale9"
+    #     #     C2+="%s\n"%line
+    #     # j.sal.fs.fileGetContents("env.sh",C2)
+    #     j.core.db.flushall()
+    #     j.do.installer.writeenv(base=j.sal.fs.getcwd())
+    #     j.core.db.flushall()
 
     @property
-    def config(self):
-        if embed():
-            return None
-        if self._config is None:
-            self._config = Config()
-        return self._config
-
-    @property
-    def whoAmiBytestr(self):
+    def whoAmIBytestr(self):
         if self._whoAmi is None:
             self._initWhoAmI()
-        return self._whoAmiBytestr
+        return self._whoAmIBytestr
 
     @property
     def whoAmI(self):
@@ -186,35 +136,13 @@ class Application:
             self._systempid = os.getpid()
         return self._systempid
 
-    def _initWhoAmI(self, reload=False):
-        """
-        when in grid:
-            is gid,nid,pid
-        """
-        if reload:
-            self._config = None
-
-        if self.config.jumpscale is not None and self.config.jumpscale['system'].get('grid', False):
-            nodeid = int(self.config.jumpscale['system']['grid'].get("node.id", 0))
-            gridid = int(self.config.jumpscale['system']['grid'].get("id", 0))
-            self.logger.debug("gridid:%s,nodeid:%s" % (gridid, nodeid))
-        else:
-            gridid = 0
-            nodeid = 0
-
-        self._whoAmi = WhoAmI(gid=gridid, nid=nodeid, pid=0)
-        self._whoAmiBytestr = struct.pack("<hhh", self.whoAmI.pid, self.whoAmI.nid, self.whoAmI.gid)
-
-    def initGrid(self):
-        if not self.gridInitialized:
-            j.core.grid.init()
-            self.gridInitialized = True
+    def _initWhoAmI(self):
+        self._whoAmi = WhoAmI(gid=int(self.config['grid']["gid"]), nid=int(
+            self.config['grid']["nid"]), pid=self.systempid)
+        self._whoAmIBytestr = struct.pack("<IHH", self.whoAmI.pid, self.whoAmI.nid, self.whoAmI.gid)
 
     def getWhoAmiStr(self):
         return "_".join([str(item) for item in self.whoAmI])
-
-    def getAgentId(self):
-        return "%s_%s" % (self.whoAmI.gid, self.whoAmI.nid)
 
     def start(self, name=None):
         '''Start the application
@@ -306,7 +234,7 @@ class Application:
         # Both are wrong! One should call j.application.stop(<exitcode>)
         # TODO: can we get the line of code which called sys.exit here?
 
-        #j.logger.log("UNCLEAN EXIT OF APPLICATION, SHOULD HAVE USED j.application.stop()", 4)
+        # j.logger.log("UNCLEAN EXIT OF APPLICATION, SHOULD HAVE USED j.application.stop()", 4)
         import sys
         if not self._calledexit:
             self.stop(stop=False)

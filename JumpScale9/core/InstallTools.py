@@ -1700,18 +1700,12 @@ class Installer():
             if len([item for item in do.listDirsInDir("/usr/local/lib") if item.find("python3") != -1]) > 1:
                 raise RuntimeError("Please execute clean.sh in installer of jumpscale, found too many python installs")
 
-    def installJS(self, JSBASE="", CODEDIR="",
-                  JSGIT="https://github.com/Jumpscale/jumpscale_core9.git", JSBRANCH="master",
-                  AYSGIT="https://github.com/Jumpscale/ays_jumpscale", AYSBRANCH="master", EMAIL="", FULLNAME=""):
+    def installJS(self):
         """
-        @param codedir is the location where the code will be installed, code which get's checked out from github
-        @param base is location of root of JumpScale
-
-        JSGIT & AYSGIT allow us to chose other install sources for jumpscale as well as AtYourService repo
-
-        IMPORTANT: if env var's are set they get priority
-
         """
+
+        self.initEnv(env=os.environ)
+
         # everything else is dangerous now
         copybinary = True
 
@@ -2168,7 +2162,11 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
 
         self.init()
 
-        self.logger = logger
+        self.logger = j.logger.get("installtools")
+
+    @property
+    def config(self):
+        return j.core.state.config
 
     @property
     def env(self):
@@ -2177,34 +2175,19 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
     @property
     def debug(self):
         if self.config != {}:
-            return self.config["system"]["DEBUG"]
+            return self.config["system"]["debug"]
         else:
-            return os.environ["DEBUG"]
+            return os.environ["debug"]
 
     @debug.setter
     def debug(self, value):
         if not isinstance(value, bool):
             raise RuntimeError("input for debug needs to be bool")
         if self.config != {}:
-            self.config["system"]["DEBUG"] = value
+            self.config["system"]["debug"] = value
+            j.core.state.configSave()
         else:
             raise RuntimeError("cannot set debug, system is in readonly.")
-
-    @property
-    def sandbox(self):
-        if self.config != {}:
-            return self.config["system"]["SANDBOX"]
-        else:
-            return False
-
-    @sandbox.setter
-    def sandbox(self, value):
-        if not isinstance(value, bool):
-            raise RuntimeError("input for SANDBOX needs to be bool")
-        if self.config != {}:
-            self.config["system"]["SANDBOX"] = value
-        else:
-            raise RuntimeError("cannot set sandbox config arg, system is in readonly.")
 
     def initEnv(self, env, executor=None):
 
@@ -2226,20 +2209,22 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
         smtp_port = 443
         smtp_server = ""
 
-        [git]
-        js9 = ""
-
         [git.ays]
-        branch = ""
-        url = ""
+        branch = "master"
+        url = "https://github.com/Jumpscale/ays9.git"
 
         [git.js]
-        branch = ""
-        url = ""
+        branch = "master"
+        url = "https://github.com/Jumpscale/core9.git"
+
 
         [system]
         debug = true
         readonly = false
+
+        [grid]
+        gid = 0
+        nid = 0
 
         [redis]
         port = 6379
@@ -2260,13 +2245,14 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
             T = pystache.render(T, **TT["dirs"])
             counter += 1
         TT = pytoml.loads(T)
+
         for key, val in TT["dirs"].items():
             val = val.replace("~", os.environ["HOME"]).replace("//", "/").rstrip("/")
             if not j.sal.fs.exists(val):
                 j.sal.fs.createDir(val)
             TT["dirs"][key] = val
 
-        if counter > 0:
+        if counter > 9:
             raise RuntimeError("cannot convert default configfile, template arguments still in")
 
         # get env dir arguments & overrule them in jumpscale config
@@ -2317,7 +2303,6 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
     def init(self):
 
         self.myplatform = self.platformtype.myplatform
-        self.initEnv(env=os.environ)
 
     @property
     def epoch(self):
