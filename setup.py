@@ -1,4 +1,4 @@
-from setuptools import setup
+from distutils.core import setup
 
 setup(name='jumpscale_core9',
       version='9.0.0',
@@ -7,5 +7,4 @@ setup(name='jumpscale_core9',
       author='GIG',
       author_email='info@gig.tech',
       license='Apache',
-      packages=['Jumpscale9'],
-      zip_safe=False)
+      packages=['Jumpscale9'])

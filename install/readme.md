@@ -25,5 +25,5 @@ example through ipython
 ```
 source /opt/jumpscale9/env.sh
 ipython
-from JumpScale import j
+from JumpScale9 import j
 ```

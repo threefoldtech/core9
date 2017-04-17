@@ -15,22 +15,8 @@
 
 ## principles
 
-- jumpscale can work without any configuration information, only some preset ENV variables are required (see below and they are by default)
-- installtools.py works with these basics & is all which is required
-
-## where are things stored
-
-- the default set of config arguments is
-
-```bash
-export HOMEDIR=~
-export VARDIR=$HOMEDIR/js9/
-export SSHKEYNAME=id_rsa
-export DATADIR=$HOMEDIR/data
-export CODEDIR=$HOMEDIR/code
-export REDISHOST=localhost
-export REDISPORT=6379
-```
+- jumpscale can work without any configuration information
+- configuration is in redis or in 1 file on the filesystem
 
 ### order of loading info
 
@@ -43,11 +29,58 @@ export REDISPORT=6379
 ### redis
 
 - js9:cfg:config = toml file
-- js9:state:$stateName = toml file
-- js9:cache:$cacheName:$key = any format, std expiration 1h
+- js9:state:$stateName:$key = binary
+- js9:cache:$cacheName:$key = binary, std expiration 1h
 
 ### filesystem
 
 - ```$VARDIR/cfg/config.toml```
 - ```$VARDIR/state/$name.toml```
 - ```$VARDIR/cache/$cachename/$key``` #binary data as a file (first 4 bytes = expiration in epoch, 4 bytes metadata, rest is the binary )
+
+## default configuration
+
+```toml
+
+[dirs]
+HOMEDIR = "~"
+TMPDIR = "/tmp"
+VARDIR = "$HOMEDIR/js9/var"
+BASEDIR = "$HOMEDIR/js9"
+CFGDIR = "$VARDIR/cfg"
+DATADIR = "$VARDIR/data"
+CODEDIR = "$HOMEDIR/code"
+BUILDDIR = "$VARDIR/build"
+LIBDIR = "$HOMEDIR/lib/"
+TEMPLATEDIR = "$BASEDIR/templates"
+
+[email]
+from = "kristof@incubaid.com"
+smtp_port = 443
+smtp_server = ""
+
+[git]
+js9 = ""
+
+[git.ays]
+branch = ""
+url = ""
+
+[git.js]
+branch = ""
+url = ""
+
+[system]
+debug = true
+readonly = false
+
+[redis]
+port = 6379
+addr = "localhost"
+
+[me]
+fullname = "Kristof De Spiegeleer"
+
+[ssh]
+SSHKEYNAME = "id_rsa"
+```

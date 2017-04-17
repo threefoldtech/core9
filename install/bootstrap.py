@@ -52,4 +52,4 @@ print("install jumpscale9")
 do.installer.prepare()
 do.installer.installJS()
 
-from JumpScale import j
+from JumpScale9 import j

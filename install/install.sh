@@ -116,6 +116,8 @@ function pip_install {
     pip3 install --upgrade colorlog
     pip3 install --upgrade pytoml
     pip3 install --upgrade ipython
+    pip3 install --upgrade colored_traceback
+    pip3 install pystache
     # pip3 install --upgrade pip setuptools
     # pip3 install --upgrade pyyaml
     # pip3 install --upgrade uvloop

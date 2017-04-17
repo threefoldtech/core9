@@ -1,375 +1,33 @@
+# from JumpScale9.tools.lock.Lock import FileLock
+from JumpScale9 import j
+
 import sys
-import random
+# import random
 # import asyncio
 # import selectors
-import threading
-import queue
 
 from urllib.request import urlopen
 
 import os
 import tarfile
 import shutil
-import tempfile
+# import tempfile
 import platform
 import subprocess
 import time
+import pystache
+import pytoml
 import fnmatch
-from subprocess import Popen
+# from subprocess import Popen
 import re
-import inspect
+# import inspect
 # import yaml
 import importlib
-import fcntl
-
-# INITIALIZATION OF STD logging
-import logging
-import logging.handlers
-CONSOLE_FORMAT = '%(cyan)s[%(asctime)s]%(reset)s - %(filename)-20s:%(lineno)-4d:%(name)-30s - %(log_color)s%(levelname)-8s%(reset)s - %(message)s'
-from colorlog import ColoredFormatter
-
-
-class LimitFormater(ColoredFormatter):
-
-    def __init__(self, fmt, datefmt, reset, log_colors, secondary_log_colors, style, lenght):
-        super(LimitFormater, self).__init__(
-            fmt=fmt,
-            datefmt=datefmt,
-            reset=reset,
-            log_colors=log_colors,
-            secondary_log_colors=secondary_log_colors,
-            style=style)
-        self.lenght = lenght
-
-    def format(self, record):
-        if len(record.pathname) > self.lenght:
-            record.pathname = "..." + record.pathname[-self.lenght:]
-        return super(LimitFormater, self).format(record)
-
-
-formatter = LimitFormater(
-    fmt=CONSOLE_FORMAT,
-    datefmt="%a%d %H:%M",
-    reset=True,
-    log_colors={
-        'DEBUG':    'cyan',
-        'INFO':     'green',
-        'WARNING':  'yellow',
-        'ERROR':    'red',
-        'CRITICAL': 'red,bg_white',
-    },
-    secondary_log_colors={},
-    style='%',
-    lenght=37
-)
-
-ch = logging.StreamHandler()
-
-# ch.setLevel(logging.INFO)
-ch.setFormatter(formatter)
-
-logger = logging.getLogger("installtools")
-logger.addHandler(ch)
-logger.setLevel(logging.DEBUG)
-
-# CustomTimeoutError from RuntimeError to keep execute interface consistent
+# import fcntl
 
 
 class TimeoutError(RuntimeError, TimeoutError):
     pass
-
-
-class PlatformTypes:
-
-    def __init__(self):
-        self.__jslocation__ = "j.core.platformtype"
-        self._myplatform = None
-        self._platformParents = {}
-        self._platformParents["unix"] = ["generic"]
-        self._platformParents["linux"] = ["unix"]
-        self._platformParents["linux32"] = ["linux"]
-        self._platformParents["linux64"] = ["linux"]
-        self._platformParents["unix32"] = ["unix"]
-        self._platformParents["unix64"] = ["unix"]
-        self._platformParents["alpine"] = ["linux64"]
-        self._platformParents["alpine64"] = ["linux64"]
-        self._platformParents["alpine64"] = ["alpine"]
-        self._platformParents["alpine32"] = ["linux32"]
-        self._platformParents["alpine32"] = ["alpine"]
-        self._platformParents["ubuntu"] = ["linux"]
-        self._platformParents["ubuntu64"] = ["ubuntu", "linux64"]
-        self._platformParents["ubuntu32"] = ["ubuntu", "linux32"]
-        self._platformParents["mint64"] = ["mint", "ubuntu64"]
-        self._platformParents["mint32"] = ["mint", "ubuntu32"]
-        self._platformParents["win"] = ["generic"]
-        self._platformParents["win32"] = ["win"]
-        self._platformParents["win64"] = ["win"]
-        self._platformParents["win7"] = ["win"]
-        self._platformParents["win8"] = ["win"]
-        self._platformParents["vista"] = ["win"]
-        self._platformParents["cygwin32"] = ["cygwin"]
-        self._platformParents["cygwin64"] = ["cygwin"]
-        self._platformParents["win2008_64"] = ["win64"]
-        self._platformParents["win2012_64"] = ["win64"]
-        self._platformParents["cygwin_nt-10.064"] = ["win64", "cygwin64"]
-        self._platformParents["cygwin_nt-10.032"] = ["win32", "cygwin32"]
-        self._platformParents["arch"] = ["linux"]
-        self._platformParents["arch32"] = ["arch", "linux32"]
-        self._platformParents["arch64"] = ["arch", "linux64"]
-        self._platformParents["darwin32"] = ["darwin", "unix32"]
-        self._platformParents["darwin64"] = ["darwin", "unix64"]
-        self._platformParents["debian"] = ["ubuntu"]
-        self._platformParents["debian32"] = ["debian", "linux32"]
-        self._platformParents["debian64"] = ["debian", "linux64"]
-
-    @property
-    def myplatform(self):
-        if self._myplatform is None:
-            self._myplatform = PlatformType()
-        return self._myplatform
-
-    def getParents(self, name):
-        res = [name]
-        res = self._getParents(name, res)
-        return res
-
-    def _getParents(self, name, res=[]):
-        if name in self._platformParents:
-            for item in self._platformParents[name]:
-                if item not in res:
-                    res.append(item)
-                res = self._getParents(item, res)
-        return res
-
-    def get(self, executor=None):
-        """
-        @param executor is an executor object, None or $hostname:$port or $ipaddr:$port or $hostname or $ipaddr
-        """
-        return PlatformType(executor=executor)
-
-
-class PlatformType:
-
-    def __init__(self, name="", executor=None):
-        self.myplatform = name
-        if executor == None:
-            self.executor = j.tools.executor.getLocal()
-        else:
-            self.executor = executor
-        self.cache = j.data.cache.get("platformtype" + str(self.executor.id), reset=True)
-
-        if name == "":
-            self._getPlatform()
-
-    @property
-    def platformtypes(self):
-        def get():
-            platformtypes = j.core.platformtype.getParents(self.myplatform)
-            platformtypes = [item for item in platformtypes if item != ""]
-            return platformtypes
-        return self.cache.get("platformtypes", get)
-
-    @property
-    def uname(self):
-        def get():
-            # print("CMD: uname -mnprs")
-            rc, self._uname, err = self.executor.execute("uname -mnprs", showout=False, timeout=3, die=True)
-            # print("OK")
-            self._uname = self._uname.strip()
-            if self._uname.find("warning: setlocale") != -1:
-                j.application._fixlocale = True
-                os.environ["LC_ALL"] = 'C.UTF-8'
-                os.environ["TERMINFO"] = 'xterm-256colors'
-            _uname = self._uname.split("\n")[0]
-            return _uname
-        self._uname = self.cache.get("uname", get)
-        self._osname0, self._hostname0, self._version, self._cpu, self._platform = self._uname.split(
-            " ")
-        return self._uname
-
-    @property
-    def hostname(self):
-        self.uname
-        return self._hostname0.split(".")[0]
-
-    @property
-    def is64bit(self):
-        self.uname
-        self._is64bit = "64" in self._cpu
-        return self._is64bit
-
-    @property
-    def is32bit(self):
-        self.uname
-        self._is64bit = "32" in self._cpu
-        return self._is64bit
-
-    @property
-    def osversion(self):
-        self.osname  # will populate the version
-        return self.cache.get("osversion")
-
-    @property
-    def osname(self):
-        def get():
-            self.uname
-            self._osname = self._osname0.lower()
-            self._osversion = "unknown"
-            if self._osname not in ["darwin"] and not self._osname.startswith("cygwin"):
-
-                rc, lsbcontent, err = self.executor.cuisine.core.run(
-                    "cat /etc/lsb-release", replaceArgs=False, showout=False, die=False)
-                if rc == 0:
-                    import re
-                    try:
-                        self._osname = re.findall(
-                            "DISTRIB_ID=(\w+)", lsbcontent)[0].lower()
-                        self._osversion = re.findall(
-                            "DISTRIB_RELEASE=([\w.]+)", lsbcontent)[0].lower()
-                    except IndexError as e:
-                        raise RuntimeError("Can't parse /etc/lsb-release")
-                else:
-                    pkgman2dist = {
-                        'pacman': 'arch', 'apt-get': 'ubuntu', 'yum': 'fedora', 'apk': 'alpine'}
-                    for pkgman, dist in pkgman2dist.items():
-                        rc, _, err = self.executor.execute("which %s" % pkgman, showout=False, die=False)
-                        if rc == 0:
-                            self._osname = pkgman2dist[pkgman]
-                            break
-                    else:
-                        raise j.exceptions.RuntimeError("Couldn't define os version.")
-            self.cache.set("osversion", self._osversion)
-            return self._osname
-
-        return self.cache.get("osname", get)
-
-    def checkMatch(self, match):
-        """
-        match is in form of linux64,darwin
-        if any of the items e.g. darwin is in getMyRelevantPlatforms then return True
-        """
-        tocheck = self.platformtypes
-        matches = [item.strip().lower()
-                   for item in match.split(",") if item.strip() != ""]
-        for match in matches:
-            if match in tocheck:
-                return True
-        return False
-
-    def _getPlatform(self):
-
-        if self.is32bit:
-            name = "%s32" % (self.osname)
-        else:
-            name = "%s64" % (self.osname)
-
-        self.myplatform = name
-
-    def has_parent(self, name):
-        return name in self.platformtypes
-
-    def dieIfNotPlatform(self, platform):
-        if not self.has_parent(platform):
-            raise j.exceptions.RuntimeError(
-                "Can not continue, supported platform is %s, this platform is %s" % (platform, self.myplatform))
-
-    def isUnix(self):
-        '''Checks whether the platform is Unix-based'''
-        return self.has_parent("unix")
-
-    def isWindows(self):
-        '''Checks whether the platform is Windows-based'''
-        return self.has_parent("win")
-
-    def isLinux(self):
-        '''Checks whether the platform is Linux-based'''
-        return self.has_parent("linux")
-
-    def isOSX(self):
-        return self.has_parent("darwin")
-
-    def isUbuntu(self):
-        return self.has_parent("ubuntu")
-
-    def isGeneric(self):
-        '''Checks whether the platform is generic (they all should)'''
-        return self.has_parent("generic")
-
-    def isXen(self):
-        '''Checks whether Xen support is enabled'''
-        return j.sal.process.checkProcessRunning('xen') == 0
-
-    def isVirtualBox(self):
-        '''Check whether the system supports VirtualBox'''
-        if self.isWindows():
-            # TODO: P3 Implement proper check if VBox on Windows is supported
-            return False
-        exitcode, stdout, stderr = j.sal.process.run(
-            'lsmod |grep vboxdrv |grep -v grep', stopOnError=False)
-        return exitcode == 0
-
-    def isHyperV(self):
-        '''Check whether the system supports HyperV'''
-        # TODO: should be moved to _getPlatform & proper parent definition
-        if self.isWindows():
-            import winreg as wr
-            try:
-                virt = wr.OpenKey(
-                    wr.HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Virtualization', 0, wr.KEY_READ | wr.KEY_WOW64_64KEY)
-                wr.QueryValueEx(virt, 'Version')
-            except WindowsError:
-                return False
-            return True
-        return False
-
-    def __str__(self):
-        return str(self.myplatform)
-
-    __repr__ = __str__
-
-
-class FileLock():
-
-    def __init__(self, fname):
-        self._fname = fname
-        self._f = None
-
-    def __enter__(self):
-        self._f = open(self._fname, 'w')
-        fcntl.lockf(self._f, fcntl.LOCK_EX)
-
-    def __exit__(self, *exit):
-        try:
-            fcntl.lockf(self._f, fcntl.LOCK_UN)
-        finally:
-            self._f.close()
-
-
-class UI():
-
-    def askItemsFromList(self, items, msg=""):
-        if len(items) == 0:
-            return []
-        if msg != "":
-            print(msg)
-        nr = 0
-        for item in items:
-            nr += 1
-            print(" - %s: %s" % (nr, item))
-        print("select item(s) from list (nr or comma separated list of nr, * is all)")
-        item = input()
-        if item.strip() == "*":
-            return items
-        elif item.find(",") != -1:
-            res = []
-            itemsselected = [item.strip() for item in item.split(",") if item.strip() != ""]
-            for item in itemsselected:
-                item = int(item) - 1
-                res.append(items[item])
-            return res
-        else:
-            item = int(item) - 1
-            return [items[item]]
 
 
 class SSHMethods():
@@ -1029,36 +687,7 @@ class FSMethods():
     def touch(self, path):
         self.writeFile(path, "")
 
-    def textstrip(self, content, ignorecomments=False):
-        # remove all spaces at beginning & end of line when relevant
-
-        # find generic prepend for full file
-        minchars = 9999
-        prechars = 0
-        for line in content.split("\n"):
-            if line.strip() == "":
-                continue
-            if ignorecomments:
-                if line.strip().startswith('#') and not line.strip().startswith("#!"):
-                    continue
-            prechars = len(line) - len(line.lstrip())
-            # print ("'%s':%s:%s"%(line,prechars,minchars))
-            if prechars < minchars:
-                minchars = prechars
-
-        if minchars > 0:
-
-            # if first line is empty, remove
-            lines = content.split("\n")
-            if len(lines) > 0:
-                if lines[0].strip() == "":
-                    lines.pop(0)
-            content = "\n".join(lines)
-
-            # remove the prechars
-            content = "\n".join([line[minchars:] for line in content.split("\n")])
-
-        return content
+    textstrip = j.data.text.strip
 
     def writeFile(self, path, content, strip=True):
 
@@ -1917,42 +1546,7 @@ class FSMethods():
         return self.extra.getWalker(self)
 
 
-class DB():
-    def __init__(self):
-        from IPython import embed
-        print("DEBUG NOW DB")
-        embed()
-        raise RuntimeError("stop debug here")
-
-
 class ExecutorMethods():
-
-    def isUbuntu(self):
-        from IPython import embed
-        self.logger.info("DEBUG NOW test if is ubuntu")
-        embed()
-        raise RuntimeError("stop debug here")
-        if sys.platform.lower().find("linux") != -1:
-            return True
-        return False
-
-    def isLinux(self):
-        if sys.platform.lower().find("linux") != -1:
-            return True
-        return False
-
-    def isMac(self):
-        if sys.platform.lower().find("darwin") != -1:
-            return True
-        return False
-
-    def isAlpine(self):
-        return self.exists("/etc/alpine-release")
-
-    def isWindows(self):
-        if sys.platform.startswith("win") == 1:
-            return True
-        return False
 
     def executeBashScript(self, content="", path=None, die=True, remote=None,
                           sshport=22, showout=True, outputStderr=True, sshkey="", timeout=600, executor=None):
@@ -2061,160 +1655,12 @@ class ExecutorMethods():
         """
 
         command = self.textstrip(command)
-
         if executor:
             return executor.execute(command, die=die, checkok=False, showout=True, timeout=timeout)
-
-        if "\n" in command:
-            path = self.getTmpPath("doexecute_%s.bash" % random.randrange(0, 10000000))
-            self.logger.info("execbash:\n'''%s\n%s'''\n" % (path, command))
-            if die:
-                command = "set -ex\n%s" % command
-            self.writeFile(path, command + "\n")
-            command = "bash %s" % path
         else:
-            # self.logger.info("exec:%s" % command)
-            path = None
-
-        os.environ["PYTHONUNBUFFERED"] = "1"
-        ON_POSIX = 'posix' in sys.builtin_module_names
-
-        popenargs = {}
-        if hasattr(subprocess, "_mswindows"):
-            mswindows = subprocess._mswindows
-        else:
-            mswindows = subprocess.mswindows
-
-        # if not mswindows:
-        #     # Reset all signals before calling execlp but after forking. This
-        #     # fixes Python issue 1652 (http://bugs.python.org/issue1652) and
-        #     # jumpscale ticket 189
-        #     def reset_signals():
-        #         '''Reset all signals to SIG_DFL'''
-        #         for i in range(1, signal.NSIG):
-        #             if signal.getsignal(i) != signal.SIG_DFL:
-        #                 try:
-        #                     signal.signal(i, signal.SIG_DFL)
-        #                 except OSError:
-        #                     # Skip, can't set this signal
-        #                     pass
-        #     popenargs["preexec_fn"]=reset_signals
-
-        p = Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=ON_POSIX,
-                  shell=useShell, env=os.environ, universal_newlines=False, cwd=cwd, bufsize=0, **popenargs)
-
-        if async:
-            return p
-
-        class StreamReader(threading.Thread):
-
-            def __init__(self, stream, queue, flag):
-                super(StreamReader, self).__init__()
-                self.stream = stream
-                self.queue = queue
-                self.flag = flag
-                self._stopped = False
-                self.setDaemon(True)
-
-            def run(self):
-                while not self.stream.closed and not self._stopped:
-                    buf = self.stream.readline()
-                    if len(buf) > 0:
-                        self.queue.put((self.flag, buf))
-                    else:
-                        break
-                self.stream.close()
-                self.queue.put(('T', self.flag))
-
-        import codecs
-
-        serr = os.fdopen(p.stderr.fileno(), 'r', encoding='UTF-8')
-        sout = os.fdopen(p.stdout.fileno(), 'r', encoding='UTF-8')
-        inp = queue.Queue()
-
-        outReader = StreamReader(sout, inp, 'O')
-        errReader = StreamReader(serr, inp, 'E')
-
-        outReader.start()
-        errReader.start()
-
-        start = time.time()
-
-        err = ""
-        out = ""
-        rc = 1000
-
-        out_eof = False
-        err_eof = False
-
-        while not out_eof or not err_eof:
-            # App still working
-            try:
-                chan, line = inp.get(block=True, timeout=1.0)
-                if chan == 'T':
-                    if line == 'O':
-                        out_eof = True
-                    elif line == 'E':
-                        err_eof = True
-                    continue
-
-                if ok != []:
-                    for item in ok:
-                        if line.find(item) != -1:
-                            rc = 0
-                            break
-                if errors != []:
-                    for item in errors:
-                        if line.find(item) != -1:
-                            rc = 997
-                            break
-                    if rc == 997 or rc == 0:
-                        break
-
-                if chan == 'O':
-                    if showout:
-                        try:
-                            print((line.strip()))
-                        except:
-                            pass
-                    if captureout:
-                        out += line
-                elif chan == 'E':
-                    if outputStderr:
-                        print(("E:%s" % line.strip()))
-                    if captureout:
-                        err += line
-
-            except queue.Empty:
-                pass
-            if timeout > 0:
-                if time.time() > start + timeout:
-                    print("TIMEOUT")
-                    rc = 999
-                    p.kill()
-                    break
-
-        if path != None:
-            self.delete(path)
-
-        if rc != 999:
-            outReader.join()
-            errReader.join()
-            p.wait()
-        if rc == 1000:
-            rc = p.returncode
-
-        if rc == 999 and die:
-            raise TimeoutError("\nOUT:\n%s\nSTDERR:\n%s\nERROR: Cannot execute (TIMEOUT):'%s'\nreturncode (%s)" %
-                               (out, err, command, rc))
-
-        if rc > 0 and die:
-            if err:
-                raise RuntimeError("Could not execute cmd:\n'%s'\nerr:\n%s" % (command, err))
-            else:
-                raise RuntimeError("Could not execute cmd:\n'%s'\nout:\n%s" % (command, out))
-
-        return rc, out, err
+            return j.tools.executorLocal.execute(command=command, showout=showout, outputStderr=outputStderr,
+                                                 useShell=useShell, log=log, cwd=cwd, timeout=timeout, errors=errors,
+                                                 ok=ok, captureout=captureout, die=die, async=async)
 
     def psfind(self, name):
         rc, out, err = self.execute("ps ax | grep %s" % name, showout=False)
@@ -2242,25 +1688,12 @@ class ExecutorMethods():
             raise RuntimeError("stop debug here")
             raise RuntimeError("Could not kill:%s, is still, there check if its not autorestarting." % name)
 
-    def removeFromAutostart(self, name):
-        if self.isMac():
-            items = ["~/Library/LaunchAgents", "/Library/LaunchAgents", "/Library/LaunchDaemons",
-                     "/System/Library/LaunchAgents", "/System/Library/LaunchDaemons"]
-            for item in items:
-                item = item.replace("~", os.environ["HOME"])
-                for item2 in self.listFilesInDir(item):
-                    if name in item2:
-                        self.logger.info("Remove autostart:%s" % item2)
-                        self.execute("sudo rm -f %s" % item2)
-        else:
-            raise RuntimeError("not implemented")
-
 
 class Installer():
 
     def __init__(self):
         self._readonly = None
-        self.logger = logger
+        self.logger = j.logger.get("installer")
 
     def checkPython(self):
         if sys.platform.startswith('darwin'):
@@ -2717,7 +2150,7 @@ class Installer():
         #     self.do.copyTree(src, dest)
 
 
-class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods, UI):
+class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
 
     def __init__(self, debug=False):
 
@@ -2725,6 +2158,8 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods, UI):
         self._asyncLoaded = False
         self._deps = None
         self._config = None
+
+        self.platformtype = j.core.platformtype
 
         self.installer = Installer()
         self.installer.do = self
@@ -2745,55 +2180,6 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods, UI):
             return self.config["system"]["DEBUG"]
         else:
             return os.environ["DEBUG"]
-
-    @property
-    def CODEDIR(self):
-        if self.config != {}:
-            return self.config["dirs"]["CODEDIR"]
-        else:
-            return os.environ["CODEDIR"]
-
-    @property
-    def JSBASEDIR(self):
-        if self.config != {}:
-            return self.config["dirs"]["JSBASEDIR"]
-        else:
-            return os.environ["JSBASEDIR"]
-
-    @property
-    def BASEDIR(self):
-        if self.config != {}:
-            return self.config["dirs"]["BASEDIR"]
-        else:
-            return os.environ["BASEDIR"]
-
-    @property
-    def CFGDIR(self):
-        # IMPORTANT can never come from configfile!
-        return os.environ["CFGDIR"]
-
-    @property
-    def TMPDIR(self):
-        if self.config != {}:
-            return self.config["dirs"]["TMPDIR"]
-        else:
-            if self.exists("/tmp"):
-                os.environ["TMPDIR"] = "/tmp"
-            return os.environ["TMPDIR"]
-
-    @property
-    def DATADIR(self):
-        if self.config != {}:
-            return self.config["dirs"]["DATADIR"]
-        else:
-            return os.environ["DATADIR"]
-
-    @property
-    def VARDIR(self):
-        if self.config != {}:
-            return self.config["dirs"]["VARDIR"]
-        else:
-            return os.environ["VARDIR"]
 
     @debug.setter
     def debug(self, value):
@@ -2820,148 +2206,75 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods, UI):
         else:
             raise RuntimeError("cannot set sandbox config arg, system is in readonly.")
 
-    @property
-    def configPath(self):
-        return '%s/jumpscale/system.yaml' % self.CFGDIR
-
-    @property
-    def config(self):
-        if self._config == None:
-            if self.exists(self.configPath):
-                with open(self.configPath, 'r') as conf:
-                    self._config = yaml.load(conf)
-            else:
-                self._config = {}
-        return self._config
-
-    def configDestroy(self):
-        self.remove(self.configPath)
-
-    def configSet(self, category, key, value):
-        c = self.config
-        c[category][key] = value
-        with open(self.configPath, 'w') as outfile:
-            yaml.dump(c, outfile, default_flow_style=False)
-
-    @property
-    def dependencies(self):
-        if self._deps == None:
-            path = "%s/lib/JumpScale/install/dependencies.py" % os.environ["JSBASE"]
-            if not self.exists(path):
-                path = '%s/dependencies.py' % os.environ["TMPDIR"]
-            if not self.exists(path):
-                path = "/tmp/dependencies.py"
-            if not self.exists(path):
-                raise RuntimeError("Could not find dependencies file in %s" % path)
-
-            loader = importlib.machinery.SourceFileLoader("deps", path)
-            handle = loader.load_module("deps")
-            self._deps = handle.dependencies(self)
-        return self._deps
-
     def initEnv(self, env, executor=None):
 
-        if executor:
-            curdir = executor.curpath
-        else:
-            curdir = os.getcwd()
+        T = '''
+        [dirs]
+        HOMEDIR = "~"
+        TMPDIR = "/tmp"
+        VARDIR = "{{HOMEDIR}}/js9/var"
+        BASEDIR = "{{HOMEDIR}}/js9"
+        CFGDIR = "{{VARDIR}}/cfg"
+        DATADIR = "{{VARDIR}}/data"
+        CODEDIR = "{{HOMEDIR}}/code"
+        BUILDDIR = "{{VARDIR}}/build"
+        LIBDIR = "{{BASEDIR}}/lib/"
+        TEMPLATEDIR = "{{BASEDIR}}/templates"
 
-        def exists(path):
-            if executor == None:
-                return self.exists(path)
-            else:
-                return executor.exists(path)
+        [email]
+        from = "kristof@incubaid.com"
+        smtp_port = 443
+        smtp_server = ""
 
-        from IPython import embed
-        print("DEBUG NOW initENV")
-        embed()
-        raise RuntimeError("stop debug here")
+        [git]
+        js9 = ""
 
-        args2 = dict(map(lambda item: (item, ''), ["JSGIT", "JSBRANCH", "CFGDIR",
-                                                   "AYSGIT", "AYSBRANCH", "CODEDIR",
-                                                   "EMAIL", "FULLNAME", "JSBASE"]))
-        # walk over all var's & set defaults or get them from env
-        for var in args2.copy():
-            if var in os.environ:
-                args2[var] = os.environ[var]
-            else:
-                args2[var] = eval(var)
+        [git.ays]
+        branch = ""
+        url = ""
 
-        os.environ.update(args2)
+        [git.js]
+        branch = ""
+        url = ""
 
-        if "DEBUG" in env and str(env["DEBUG"]).lower() in ["true", "1", "yes"]:
-            env["DEBUG"] = "1"
-        else:
-            env["DEBUG"] = "0"
+        [system]
+        debug = true
+        readonly = false
 
-        if "READONLY" in env and str(env["READONLY"]).lower() in ["true", "1", "yes"]:
-            env["READONLY"] = "1"
-            self.readonly = True
-        else:
-            env["READONLY"] = "0"
-            self.readonly = False
+        [redis]
+        port = 6379
+        addr = "localhost"
 
-        if "AYSBRANCH" not in env and "JSBRANCH" in env:
-            env["AYSBRANCH"] = env["JSBRANCH"]
+        [me]
+        fullname = "Kristof De Spiegeleer"
 
-        # if we start from a directory where there is a env.sh then we use that as base
-        if not "BASEDIR" in env:
-            if exists("%s/env.sh" % curdir) and exists("%s/js.sh" % (curdir)):
-                env["BASEDIR"] = os.getcwd()
-            else:
-                # ON OSX WE ALSO NEED TO SUPPORT /opt !!!
-                if not self.TYPE.startswith("LINUX") and not self.TYPE.startswith("OSX"):
-                    env["BASEDIR"] = "%s/opt" % env['HOME']
-                else:
-                    env["BASEDIR"] = "/opt"
+        [ssh]
+        SSHKEYNAME = "id_rsa"
+        '''
+        T = j.data.text.strip(T)
 
-        if not "JSBASE" in env:
-            env["JSBASE"] = "%s/jumpscale9" % env["BASEDIR"]
+        # will replace  ~ and the variables
+        counter = 0
+        while "{{" in T and counter < 10:
+            TT = pytoml.loads(T)
+            T = pystache.render(T, **TT["dirs"])
+            counter += 1
+        TT = pytoml.loads(T)
+        for key, val in TT["dirs"].items():
+            val = val.replace("~", os.environ["HOME"]).replace("//", "/").rstrip("/")
+            if not j.sal.fs.exists(val):
+                j.sal.fs.createDir(val)
+            TT["dirs"][key] = val
 
-        if not "VARDIR" in env:
-            # ON OSX WE ALSO NEED TO SUPPORT /opt !!!
-            if not self.TYPE.startswith("LINUX") and not self.TYPE.startswith("OSX"):
-                env["VARDIR"] = "%s/optvar" % env['HOME']
-            else:
-                env["VARDIR"] = "/optvar"
+        if counter > 0:
+            raise RuntimeError("cannot convert default configfile, template arguments still in")
 
-        env["HOMEDIR"] = env["HOME"]
+        # get env dir arguments & overrule them in jumpscale config
+        for key, val in os.environ.items():
+            if "DIR" in key and key in TT["dirs"]:
+                TT["dirs"][key] = val
 
-        if not "CFGDIR" in env:
-            env["CFGDIR"] = "%s/cfg" % env["VARDIR"]
-
-        if exists("/tmp"):
-            if not self.TYPE.startswith("LINUX") and not self.TYPE.startswith("OSX"):
-                env["TMPDIR"] = "%s/tmp" % env['HOME']
-            else:
-                env["TMPDIR"] = "/tmp"
-        if not "TMPDIR" in env:
-            raise RuntimeError("Cannot define a tmp dir, set env variable")
-
-        change = {}
-        change["JSAPPSDIR"] = lambda x: "%s/apps" % x["JSBASE"]
-        change["JSBASEDIR"] = lambda x: x["JSBASE"]
-        change["BINDIR"] = lambda x: "%s/bin" % x["JSBASE"]
-        change["DATADIR"] = lambda x: "%s/data" % x["VARDIR"]
-        change["CODEDIR"] = lambda x: "%s/code" % x["BASEDIR"]
-        change["BUILDDIR"] = lambda x: "%s/build" % x["VARDIR"]
-        change["LOGDIR"] = lambda x: "%s/log" % x["VARDIR"]
-        change["PIDDIR"] = lambda x: "%s/pid" % x["CFGDIR"]
-        change["HRDDIR"] = lambda x: "%s/hrd" % x["CFGDIR"]
-        change["GOROOTDIR"] = lambda x: "%s/go/root/" % x["BASEDIR"]
-        change["GOPATHDIR"] = lambda x: "%s/go/proj/" % x["BASEDIR"]
-        change["NIMDIR"] = lambda x: "%s/nim/" % x["BASEDIR"]
-        change["JSLIBDIR"] = lambda x: "%s/lib/JumpScale/" % x["JSBASE"]
-        change["JSLIBEXTDIR"] = lambda x: "%s/lib/JumpScaleExtra/" % x["JSBASE"]
-        change["JSCFGDIR"] = lambda x: "%s/jumpscale/" % x["CFGDIR"]
-        change["LIBDIR"] = lambda x: "%s/lib/" % x["BASEDIR"]
-        change['TEMPLATEDIR'] = lambda x: "%s/templates" % x["BASEDIR"]
-
-        for key, method in change.items():
-            if key not in env:
-                env[key] = method(env)
-
-        return env
+        j.core.state.configUpdate(TT, False)  # will not overwrite
 
     def fixCodeChangeDirVars(self, branch="8.2.0"):
         """
@@ -3003,36 +2316,8 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods, UI):
 
     def init(self):
 
-        self.platformtypes = PlatformTypes()
-
-        # mypath=inspect.getfile(self.__init__)
-
-        from IPython import embed
-        print("DEBUG NOW init")
-        embed()
-        raise RuntimeError("stop debug here")
-
-        if platform.system().lower() == "windows" or platform.system().lower() == "cygwin_nt-10.0":
-            # self.TYPE = "WIN"
-            # os.environ["JSBASE"] = "%s/" % os.environ["JSBASE"].replace("\\", "/")
-            raise RuntimeError("windows not supported yet")
-        elif sys.platform.startswith("darwin"):
-            if sys.platform.startswith("darwin"):
-                self.TYPE = "OSX"
-        elif sys.platform.startswith("linux"):
-            self.TYPE = "LINUX"
-        else:
-            raise RuntimeError("Jumpscale only supports windows 7+, macosx, ubuntu 12+")
-
+        self.myplatform = self.platformtype.myplatform
         self.initEnv(env=os.environ)
-        self.TYPE += platform.architecture()[0][:2]
-
-    def initCreateDirs4System(self):
-        items = [item for item in self.initEnv(env=os.environ, executor=None) if item.endswith("DIR")]
-        for item in items:
-            path = os.environ[item]
-            # self.logger.info(path)
-            self.createDir(path)
 
     @property
     def epoch(self):
@@ -3052,21 +2337,6 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods, UI):
         else:
             self._whoami = result.strip()
         return self._whoami
-
-    @property
-    def extra(self):
-        """
-        will get extra install tools lib
-        """
-        if not self._extratools:
-            if not self.exists("ExtraTools.py"):
-                url = "https://raw.githubusercontent.com/Jumpscale/jumpscale_core/master/install/ExtraTools.py"
-                self.download(url, "%s/ExtraTools.py" % self.TMPDIR)
-                if self.TMPDIR not in sys.path:
-                    sys.path.append(self.TMPDIR)
-            from ExtraTools import extra
-            self._extratools = extra
-        return self._extratools
 
 
 do = InstallTools()
