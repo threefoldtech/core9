@@ -1,4 +1,5 @@
 from JumpScale import j
+
 # import sys
 import os
 # import re
@@ -19,10 +20,10 @@ def _useELFtrick(file):
     return result
 
 
-class PlatformTypes:
+class PlatformTypes():
 
     def __init__(self):
-        self.__jslocation__ = "j.core.platformtype"
+        # JSBase.__init__(self)
         self._myplatform = None
         self._platformParents = {}
         self._platformParents["unix"] = ["generic"]
@@ -61,6 +62,7 @@ class PlatformTypes:
         self._platformParents["debian"] = ["ubuntu"]
         self._platformParents["debian32"] = ["debian", "linux32"]
         self._platformParents["debian64"] = ["debian", "linux64"]
+
 
     @property
     def myplatform(self):
@@ -107,9 +109,10 @@ class PlatformTypes:
 #         return exitcode, output.decode(), error.decode()
 
 
-class PlatformType:
+class PlatformType():
 
     def __init__(self, name="", executor=None):
+        # JSBase.__init__(self)
         self.myplatform = name
         self._platformtypes = None
         self._uname = None
@@ -128,7 +131,7 @@ class PlatformType:
     @property
     def platformtypes(self):
         if self._platformtypes is None:
-            platformtypes = j.core.platformtype.getParents(self.myplatform)
+            platformtypes = j.tools.platformtype.getParents(self.myplatform)
             self._platformtypes = [
                 item for item in platformtypes if item != ""]
         return self._platformtypes
