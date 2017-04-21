@@ -2,7 +2,7 @@
 
 import sys
 
-from JumpScale9 import j
+from JumpScale import j
 
 import argparse
 j.application.start("jsshell")

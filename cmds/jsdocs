@@ -9,7 +9,7 @@ parser = cmdutils.ArgumentParser()
 
 commands = ['generate']
 parser.add_argument("action", choices=commands, help='Command to perform')
-  
+
 
 class Parser(HTMLParser):
     def __init__(self):
@@ -19,7 +19,7 @@ class Parser(HTMLParser):
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
         # if 'id' in attrs and attrs['id'] == 'jumpscale-api':
-        self.tb.start(tag, dict(attrs)) 
+        self.tb.start(tag, dict(attrs))
 
     def handle_endtag(self, tag):
         self.tb.end(tag)

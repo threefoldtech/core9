@@ -63,7 +63,6 @@ class PlatformTypes():
         self._platformParents["debian32"] = ["debian", "linux32"]
         self._platformParents["debian64"] = ["debian", "linux64"]
 
-
     @property
     def myplatform(self):
         if self._myplatform is None:
@@ -131,7 +130,7 @@ class PlatformType():
     @property
     def platformtypes(self):
         if self._platformtypes is None:
-            platformtypes = j.tools.platformtype.getParents(self.myplatform)
+            platformtypes = j.core.platformtype.getParents(self.myplatform)
             self._platformtypes = [
                 item for item in platformtypes if item != ""]
         return self._platformtypes
