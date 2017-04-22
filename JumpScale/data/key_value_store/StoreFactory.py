@@ -1,6 +1,6 @@
 from JumpScale import j
 
-from servers.key_value_store.store import KeyValueStoreBase
+from .servers.key_value_store.store import KeyValueStoreBase
 import time
 
 
@@ -11,7 +11,8 @@ class StoreFactory:
     '''
 
     def __init__(self):
-        self.__jslocation__ = "j.servers.kvs"
+        self.__jslocation__ = "j.data.kvs"
+        self.__imports__ = "msgpack"
         self._cache = dict()
         self._redisCacheLocal = None
 

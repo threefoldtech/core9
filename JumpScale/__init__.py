@@ -22,25 +22,6 @@ class Core():
     def __init__(self):
         pass
 
-class JSBase:
-
-    def __init__(self):
-        self.__j=None
-        self.__logger=None
-
-
-    @property
-    def j(self):
-        if self.__logger==None:
-            self.__logger=self.j.logger.get()
-        return self.__logger
-
-    # @property
-    # def j(self):
-    #     if self.__j==None:
-    #         from JumpScale import JumpScale2
-    #         self.__j= JumpScale2()
-    #     return self.__j
 
 class Jumpscale9():
 
@@ -76,8 +57,8 @@ j.tools.executorLocal = ExecutorLocal()  # needed in platformtypes
 from .core.PlatformTypes import PlatformTypes
 j.core.platformtype = PlatformTypes()
 
-from .data.cache.Cache import Cache
-j.data.cache = Cache()
+# from .data.cache.Cache import Cache
+# j.data.cache = Cache()
 
 from .clients.redis.RedisFactory import RedisFactory
 j.clients.redis = RedisFactory()

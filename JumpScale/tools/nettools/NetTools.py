@@ -37,6 +37,7 @@ class NetTools:
 
     def __init__(self):
         self.__jslocation__ = "j.sal.nettools"
+        self.__imports__ = "netaddr"
         self.logger = j.logger.get('j.sal.nettools')
         self._windowsNetworkInfo = None
 

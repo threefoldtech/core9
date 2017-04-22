@@ -4,6 +4,7 @@ import os
 
 # ONLY DEVELOPED NOW FOR CONFIG, REST NEEDS TO BE DONE
 
+
 class State():
 
     def __init__(self):
@@ -11,6 +12,7 @@ class State():
         self._db = None
         self._config = None
         self._config_changed = False
+        self.__jslocation__ = "j.core.state"
 
     @property
     def db(self):

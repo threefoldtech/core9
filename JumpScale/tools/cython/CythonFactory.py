@@ -3,11 +3,7 @@ import inspect
 from JumpScale import j
 import sys
 
-try:
-    import pyximport
-except BaseException:
-    rc, out, err = j.sal.process.execute("pip3 install cython", die=True, showout=False, ignoreErrorOutput=False)
-    import pyximport
+import pyximport
 
 
 class CythonFactory:
@@ -22,7 +18,8 @@ class CythonFactory:
     """
 
     def __init__(self):
-        self.__jslocation__ = "j.core.cython"
+        self.__jslocation__ = "j.tools.cython"
+        self.__imports__ = "cython"
         self.__path = ""
         self._currentPath
 

@@ -15,6 +15,8 @@ class Application:
 
         self.logger = j.logger.get("application")
 
+        self._calledexit = False
+
         self.state = "UNKNOWN"
         self.appname = 'UNKNOWN'
 
@@ -28,6 +30,7 @@ class Application:
 
         self.interactive = True
         self._fixlocale = False
+        self.__jslocation__ = "j.core.application"
 
     def reset(self):
         """

@@ -1,12 +1,9 @@
 
 import pylzma
-from SerializerBase import *
+from SerializerBase import SerializerBase
 
 
 class SerializerLZMA(SerializerBase):
-
-    def __init__(self):
-        self.__jslocation__ = "j.data.serializer.lzma"
 
     def dumps(self, obj):
         return pylzma.compress(obj)

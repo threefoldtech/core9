@@ -9,6 +9,8 @@ class Cache:
 
     def __init__(self):
         self._cache = {}
+        self.__jslocation__ = "j.data.cache"
+        self.__imports__ = "msgpack"
 
     def get(self, id="main", db=None, reset=False, expiration=60):
         """

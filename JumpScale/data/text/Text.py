@@ -1,7 +1,8 @@
 import time
 from JumpScale import j
 import re
-import os
+import socket
+# import os
 import textwrap
 import unicodedata
 import math
@@ -14,7 +15,7 @@ from builtins import str
 
 try:
     import pygments.lexers
-    from pygments.formatters import get_formatter_by_name
+    # from pygments.formatters import get_formatter_by_name
     pygmentsObj = True
     import sys
 except BaseException:
@@ -140,7 +141,7 @@ class Text:
             instr = self.strip(instr)
         if wrap > 0:
             instr = self.wrap(instr, wrap)
-            flatten = True
+            # flatten = True
         if instr is None:
             return
         ind = indentchar * nspaces
@@ -228,7 +229,7 @@ class Text:
         """
         out = ""
         txt = txt.rstrip("\n")
-        l = len(prefix)
+        # l = len(prefix)
         for line in txt.split("\n"):
             if line.find(prefix) > -1:
                 out += "%s\n" % (line.split(prefix, 1)[1])
@@ -310,7 +311,7 @@ class Text:
         if content.strip() == "":
             return None, content
 
-        endlf = content[-1] == "\n"
+        # endlf = content[-1] == "\n"
         ttype = None
 
         out = ""
@@ -549,10 +550,10 @@ class Text:
             async def echo('f',g = 1, x=[1,2,3])
 
         """
-        async = False
+        # async = False
         definition = ''
         if line.find('async') == 0:
-            async = True
+            # async = True
             line = line[len('async '):]
 
         definition, args = line.split("(", 1)
@@ -813,9 +814,9 @@ class Text:
         value2 = value2.replace("\\D", ":")
         value2 = value2.replace("\\N", "\n")
         value2 = value2.replace("\\n", "\n")
-        change = False
-        if value != value2:
-            change = True
+        # change = False
+        # if value != value2:
+        #     change = True
         if value2.strip() == "":
             return value2
         if value2.strip().strip('\'').startswith("[") and value2.strip().strip('\'').endswith("]"):

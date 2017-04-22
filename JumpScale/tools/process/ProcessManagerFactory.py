@@ -338,7 +338,7 @@ class ProcessManagerFactory:
         self.processes = {}
         self.timeout = 5400
         self.log = j.logger.get('processmanager')
-        self.log.addHandler(j.logger._LoggerFactory__fileRotateHandler('processmanager'))
+        # self.log.addHandler(j.logger._LoggerFactory__fileRotateHandler('processmanager'))
 
     def clearCaches(self):
         """

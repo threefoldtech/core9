@@ -1,13 +1,10 @@
 
 import pytoml
 
-from SerializerBase import *
+from SerializerBase import SerializerBase
 
 
 class SerializerTOML(SerializerBase):
-
-    def __init__(self):
-        self.__jslocation__ = "j.data.serializer.toml"
 
     def dumps(self, obj):
         return pytoml.dumps(obj)

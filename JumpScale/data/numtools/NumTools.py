@@ -6,6 +6,7 @@ class NumTools:
 
     def __init__(self):
         self.__jslocation__ = "j.tools.numtools"
+        self.__imports__ = "numtools"
         self.currencies = {}
 
     def _getYearFromMonthId(self, monthid, startyear=0):

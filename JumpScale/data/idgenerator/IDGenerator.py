@@ -13,6 +13,7 @@ class IDGenerator:
 
     def __init__(self):
         self._cryptogen = ""
+        self.__jslocation__ = "j.data.idgenerator"
 
     @property
     def cryptogen(self):

@@ -19,6 +19,7 @@ class SystemProcess:
 
     def __init__(self):
         self.logger = j.logger.get('j.sal.process')
+        self.__jslocation__ = "j.sal.process"
 
     def executeWithoutPipe(self, command, die=True, printCommandToStdout=False):
         """

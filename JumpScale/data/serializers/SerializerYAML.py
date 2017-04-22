@@ -1,13 +1,10 @@
 import yaml
 from collections import OrderedDict
-
+from JumpScale import j
 from .SerializerBase import SerializerBase
 
 
 class SerializerYAML(SerializerBase):
-
-    def __init__(self):
-        self.__jslocation__ = "j.data.serializer.yaml"
 
     def dumps(self, obj, default_flow_style=False):
         return yaml.dump(obj, default_flow_style=default_flow_style)
@@ -30,7 +27,6 @@ class SerializerYAML(SerializerBase):
             error += "\nyaml could not parse:\n%s\n" % s
             error += '\npath:%s\n' % path
             raise j.exceptions.Input(message=error, level=1, source="", tags="", msgpub="")
-        return r
 
     def ordered_load(self, stream, Loader=yaml.Loader, object_pairs_hook=OrderedDict):
         """

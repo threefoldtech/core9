@@ -30,6 +30,7 @@ class Types:
         self.json = JSON()
         self.email = Email()
         self.date = Date()
+        self.__jslocation__ = "j.data.types"
 
     def getTypeClass(self, ttype):
         """

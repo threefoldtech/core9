@@ -4,9 +4,6 @@ from .SerializerBase import SerializerBase
 
 class SerializerBase64(SerializerBase):
 
-    def __init__(self):
-        self.__jslocation__ = "j.data.serializer.base64"
-
     def dumps(self, s):
         if j.data.types.string.check(s):
             b = s.encode()

@@ -1,8 +1,8 @@
 import json
 from JumpScale import j
-from Message import Message
-import Sender
-from utils import get_msg_path, get_json_msg
+from .Message import Message
+import JumpScale.data.email.Sender as Sender
+from .utils import get_msg_path, get_json_msg
 
 
 class EmailTool:

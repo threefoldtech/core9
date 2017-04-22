@@ -63,6 +63,8 @@ class PlatformTypes():
         self._platformParents["debian32"] = ["debian", "linux32"]
         self._platformParents["debian64"] = ["debian", "linux64"]
 
+        self.__jslocation__ = "j.core.platformtype"
+
     @property
     def myplatform(self):
         if self._myplatform is None:

@@ -22,6 +22,7 @@ class Time_:
 
     def __init__(self):
         self.timeinterval = TimeInterval
+        self.__jslocation__ = "j.data.time"
 
     @property
     def epoch(self):

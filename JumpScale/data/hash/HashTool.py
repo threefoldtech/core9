@@ -4,16 +4,14 @@ from JumpScale import j
 
 import hashlib
 import binascii
-try:
-    from pyblake2 import blake2b
-except BaseException:
-    rc, out, err = j.sal.process.execute("pip3 install pyblake2", die=True, showout=False, ignoreErrorOutput=False)
+from pyblake2 import blake2b
 
 
 class HashTool:
 
     def __init__(self):
         self.__jslocation__ = "j.data.hash"
+        self.__imports__ = "pyblake2"
 
     def hashDir(self, rootpath):
         """

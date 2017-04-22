@@ -1,12 +1,9 @@
 
 import msgpack
-from SerializerBase import *
+from SerializerBase import SerializerBase
 
 
 class SerializerMSGPack(SerializerBase):
-
-    def __init__(self):
-        self.__jslocation__ = "j.data.serializer.msgpack"
 
     def dumps(self, obj):
         return msgpack.packb(obj, use_bin_type=True)

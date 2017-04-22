@@ -1,9 +1,9 @@
 from JumpScale import j
 
-from ExecutorSSH import *
-from ExecutorLocal import *
-from ExecutorAsyncSSH import ExecutorAsyncSSH
-from ExecutorG8Core import ExecutorG8Core
+from .ExecutorSSH import *
+from .ExecutorLocal import *
+from .ExecutorAsyncSSH import ExecutorAsyncSSH
+from .ExecutorG8Core import ExecutorG8Core
 import threading
 
 

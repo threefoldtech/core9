@@ -7,11 +7,7 @@ import tarantool
 # sys.path.append(".")
 # from tarantool_queue import *
 
-try:
-    import tarantool
-except BaseException:
-    rc, out, err = j.sal.process.execute("pip3 install tarantool", die=True, showout=False, ignoreErrorOutput=False)
-    import tarantool
+import tarantool
 
 
 class Tarantool():
@@ -130,6 +126,7 @@ class TarantoolFactory:
 
     def __init__(self):
         self.__jslocation__ = "j.clients.tarantool"
+        self.__imports__ = "tarantool"
         self._tarantool = {}
         self._tarantoolq = {}
         # self._config = {}

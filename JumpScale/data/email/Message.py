@@ -1,5 +1,5 @@
 from JumpScale import j
-from utils import get_msg_path
+from .utils import get_msg_path
 
 
 class attrdict(dict):

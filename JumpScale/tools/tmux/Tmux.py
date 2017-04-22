@@ -248,7 +248,8 @@ class Pane:
 class Tmux:
 
     def __init__(self):
-        self.__jslocation__ = "j.sal.tmux"
+        self.__jslocation__ = "j.tools.tmux"
+        self.__imports__ = "libtmux"
         self.sessions = {}
         # tmuxpath=j.sal.fs.joinPaths(j.dirs.TMPDIR,"tmux")
         # os.environ["TMUX_TMPDIR"]=tmuxpath

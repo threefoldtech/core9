@@ -1,5 +1,5 @@
 from JumpScale import j
-from ExecutorBase import ExecutorBase
+from .ExecutorBase import ExecutorBase
 try:
     import g8core
 except BaseException:

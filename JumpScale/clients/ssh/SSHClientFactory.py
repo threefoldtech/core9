@@ -37,6 +37,7 @@ class SSHClientFactory:
 
     def __init__(self):
         self.__jslocation__ = "j.clients.ssh"
+        self.__imports__ = "paramiko"
 
     def reset(self):
         with self._lock:

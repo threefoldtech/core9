@@ -5,7 +5,7 @@ from .Redis import Redis
 from .RedisQueue import RedisQueue
 import os
 import time
-import sys
+# import sys
 from redis._compat import nativestr
 # import itertools
 import socket
@@ -18,6 +18,7 @@ class RedisFactory:
 
     def __init__(self):
         self.clearCache()
+        self.__jslocation__ = "j.clients.redis"
 
     def clearCache(self):
         self._redis = {}
@@ -82,7 +83,7 @@ class RedisFactory:
         try:
             j.core.db.set("internal.last", 0)
             return True
-        except Exception as e:
+        except:
             db = None
 
         return db
@@ -122,22 +123,24 @@ class RedisFactory:
             j.sal.process.execute("redis-cli -s %s/redis.sock shutdown" %
                                   j.do.TMPDIR, die=False, showout=False, outputStderr=False)
             j.sal.process.execute("redis-cli shutdown", die=False, showout=False, outputStderr=False)
-            j.do.killall("redis")
-            cmd = "redis-server --port 6379 --unixsocket %s/redis.sock --maxmemory 100000000 --daemonize yes" % tmpdir  # 100MB
-            print("start redis in background (osx)")
-            os.system(cmd)
-            print("started")
-            time.sleep(1)
-
-        # elif j.core.platformtype.myplatform.isCygwin:
-        #     cmd = "redis-server --maxmemory 100000000 & "
-        #     print("start redis in background (win)")
-        #     os.system(cmd)
         elif j.core.platformtype.myplatform.isLinux:
             if j.core.platformtype.myplatform.isAlpine:
                 os.system("apk add redis")
             elif j.core.platformtype.myplatform.isUbuntu:
                 os.system("apt install redis")
+        else:
+            raise RuntimeError("platform not supported for start redis")
+
+        j.do.killall("redis")
+        # cmd = "redis-server --port 6379 --unixsocket %s/redis.sock --maxmemory 100000000 --daemonize yes" % tmpdir  # 100MB
+        # print("start redis in background (osx)")
+        # os.system(cmd)
+        # print("started")
+        # time.sleep(1)
+        # elif j.core.platformtype.myplatform.isCygwin:
+        #     cmd = "redis-server --maxmemory 100000000 & "
+        #     print("start redis in background (win)")
+        #     os.system(cmd)
 
         cmd = "echo never > /sys/kernel/mm/transparent_hugepage/enabled"
         os.system(cmd)

@@ -12,6 +12,7 @@ class ExecutorLocal(ExecutorBase):
         self.type = "local"
         self._id = 'localhost'
         self._logger = None
+        self.__jslocation__ = "j.tools.executorLocal"
 
     @property
     def logger(self):

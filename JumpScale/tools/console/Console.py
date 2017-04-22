@@ -314,7 +314,7 @@ class Console:
             raise j.exceptions.Input("Cannot ask an integer in a non interactive mode.")
         if validate and not isinstance(validate, collections.Callable):
             raise TypeError('The validate argument should be a callable')
-        if minValue is None and maxValue is not not None:
+        if minValue is None and maxValue is not None:
             question += " (%d-%d)" % (minValue, maxValue)
         elif minValue is not None:
             question += " (min. %d)" % minValue

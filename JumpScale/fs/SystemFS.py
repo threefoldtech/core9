@@ -13,6 +13,7 @@ from stat import ST_MTIME
 
 from JumpScale import j
 
+
 def cleanupString(string, replacewith="_", regex="([^A-Za-z0-9])"):
     '''Remove all non-numeric or alphanumeric characters'''
     # Please don't use the logging system here. The logging system

@@ -1,10 +1,9 @@
-from .SerializerBase import *
+from .SerializerBase import SerializerBase
 
 
 class SerializerBlowfish(SerializerBase):
 
     def __init__(self,):
-        self.__jslocation__ = "j.data.serializer.blowfish"
         self.encrkey = ""
         self.c = None
 

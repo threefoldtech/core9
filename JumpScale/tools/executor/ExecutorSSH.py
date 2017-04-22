@@ -1,4 +1,4 @@
-.from JumpScale import j
+from JumpScale import j
 from .ExecutorBase import *
 import os
 

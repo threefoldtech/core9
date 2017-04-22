@@ -90,7 +90,7 @@ class Handlers():
 class LoggerFactory:
 
     def __init__(self):
-        self.__jslocation__ = "j.logger"
+        self.__jslocation__ = "j.core.logger"
         self.root_logger_name = 'j'
         self.handlers = Handlers()
 

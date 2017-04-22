@@ -2129,204 +2129,204 @@ class Installer():
                 self._readonly = True
             self.do.delete(ppath)
         return self._readonly
-
-    def writeEnv(self):
-
-        self.logger.info("WRITENV")
-
-        self.do.initCreateDirs4System()
-
-        self.do.createDir("%s/jumpscale" % os.environ["CFGDIR"])
-        config = {}
-        cats = {
-            "identity": ["EMAIL", "FULLNAME", "GITHUBUSER"],
-            "system": ["AYSBRANCH", "JSBRANCH", "DEBUG", "SANDBOX"]
-        }
-        for category, items in cats.items():
-            config[category] = {}
-            for item in items:
-
-                if item not in os.environ:
-                    if item in ["DEBUG", "SANDBOX"]:
-                        config[category][item] = False
-                    else:
-                        config[category][item] = ""
-                else:
-                    if item in ["DEBUG", "SANDBOX"]:
-                        config[category][item] = str(os.environ[item]) == 1
-                    else:
-                        config[category][item] = os.environ[item]
-
-                        if category == "dirs":
-                            while os.environ[item][-1] == "/":
-                                os.environ[item] = os.environ[item][:-1]
-                            os.environ[item] += "/"
-
-        config["dirs"] = {}
-        for key, val in os.environ.items():
-            if "DIR" in key:
-                config["dirs"][key] = val
-        configJSON = yaml.dump(config, default_flow_style=False)
-        do.writeFile(
-            "%s/jumpscale/system.yaml" %
-            os.environ["CFGDIR"], configJSON)
-
-        C = """
-        # By default, AYS will use the JS redis. This is for quick testing
-        # and development. To configure a persistent/different redis, uncomment
-        # and change the redis config
-
-        # redis:
-        #   host: "localhost"
-        #   port: 6379
-
-        """
-
-        if "AYSGIT" not in os.environ or os.environ["AYSGIT"].strip() == "":
-            os.environ["AYSGIT"] = "https://github.com/Jumpscale/ays_jumpscale9"
-        if "AYSBRANCH" not in os.environ or os.environ["AYSBRANCH"].strip(
-        ) == "":
-            os.environ["AYSBRANCH"] = "master"
-        # C = C.format(**os.environ)
-
-        hpath = "%s/jumpscale/ays.yaml" % os.environ["CFGDIR"]
-        if not self.do.exists(path=hpath):
-            self.do.writeFile(hpath, C)
-
-        C = """
-        mode: 'DEV'
-        level: 'DEBUG'
-
-        filter:
-            - 'j.sal.fs'
-            - 'j.data.hrd'
-            - 'j.application'
-        """
-        self.do.writeFile(
-            "%s/jumpscale/logging.yaml" %
-            os.environ["CFGDIR"], C)
-
-        C = """
-
-        deactivate () {
-            export PATH=$_OLD_PATH
-            unset _OLD_PATH
-            export LD_LIBRARY_PATH=$_OLD_LD_LIBRARY_PATH
-            unset _OLD_LD_LIBRARY_PATH
-            export PYTHONPATH=$_OLD_PYTHONPATH
-            unset _OLD_PYTHONPATH
-            export PS1=$_OLD_PS1
-            unset _OLD_PS1
-            unset JSBASE
-            unset PYTHONHOME
-            if [ -n "$BASH" -o -n "$ZSH_VERSION" ] ; then
-                    hash -r 2>/dev/null
-            fi
-        }
-
-        if [[ "$JSBASE" == "$BASEDIR" && "$PYTHONPATH" =~ .*jumpscale9.* ]]; then
-           return 0
-        fi
-
-        export JSBASE=$BASEDIR
-
-        export _OLD_PATH=$PATH
-        export _OLD_LDLIBRARY_PATH=$LD_LIBRARY_PATH
-        export _OLD_PS1=$PS1
-        export _OLD_PYTHONPATH=$PYTHONPATH
-
-        export PATH=$JSBASE/bin:$PATH
-
-        export LUA_PATH="/opt/jumpscale9/lib/lua/?.lua;./?.lua;/opt/jumpscale9/lib/lua/?/?.lua;/opt/jumpscale9/lib/lua/tarantool/?.lua;/opt/jumpscale9/lib/lua/?/init.lua"
-
-        $pythonhome
-        export PYTHONPATH=$pythonpath
-
-        export LD_LIBRARY_PATH=$JSBASE/bin
-        export PS1="(JS8) $PS1"
-        if [ -n "$BASH" -o -n "$ZSH_VERSION" ] ; then
-                hash -r 2>/dev/null
-        fi
-        """
-        C = C.replace("$BASEDIR", os.environ["JSBASE"])
-
-        if self.do.sandbox:
-            C = C.replace('$pythonhome', 'export PYTHONHOME=$JSBASE/bin')
-        else:
-            C = C.replace('$pythonhome', '')
-
-        if self.do.TYPE.startswith("OSX"):
-            pass
-            # C = C.replace("$pythonpath",
-            # ".:$JSBASE/lib:$JSBASE/lib/lib-dynload/:$JSBASE/bin:$JSBASE/lib/plat-x86_64-linux-gnu:/usr/local/lib/python3.5/site-packages:/usr/local/Cellar/python3/3.5.1/Frameworks/Python.framework/Versions/3.5/lib/python3.5:/usr/local/Cellar/python3/3.5.1/Frameworks/Python.framework/Versions/3.5/lib/python3.5/plat-darwin:/usr/local/Cellar/python3/3.5.1/Frameworks/Python.framework/Versions/3.5/lib/python3.5/lib-dynload")
-            C = C.replace("$pythonpath", ".:$JSBASE/lib:$_OLD_PYTHONPATH")
-        else:
-            C = C.replace(
-                "$pythonpath",
-                ".:$JSBASE/lib:$JSBASE/lib/lib-dynload/:$JSBASE/bin:$JSBASE/lib/python.zip:$JSBASE/lib/plat-x86_64-linux-gnu:$_OLD_PYTHONPATH")
-        envfile = "%s/env.sh" % os.environ["JSBASE"]
-
-        if self.readonly is False or die:
-            self.do.writeFile(envfile, C)
-
-        # pythonversion = '3' if os.environ.get('PYTHONVERSION') == '3' else ''
-
-        C2 = """
-        #!/bin/bash
-        # set -x
-        source $BASEDIR/env.sh
-        exec $JSBASE/bin/python3 -q "$@"
-        """
-
-        C2_insystem = """
-        #!/bin/bash
-        # set -x
-        source $BASEDIR/env.sh
-        exec python3 -q "$@"
-        """
-
-        # C2=C2.format(base=basedir, env=envfile)
-        if self.readonly is False:
-
-            self.do.delete("/usr/bin/jspython")  # to remove link
-            self.do.delete("%s/bin/jspython" % os.environ["JSBASE"])
-            self.do.delete("/usr/local/bin/jspython")
-
-            if self.do.sandbox:
-                self.logger.info("jspython in sandbox")
-                dest = "%s/bin/jspython" % os.environ["JSBASE"]
-                C2 = C2.replace('$BASEDIR', os.environ["JSBASE"])
-                self.do.writeFile(dest, C2)
-            else:
-                # in system
-                self.logger.info("jspython in system")
-                dest = "/usr/local/bin/jspython"
-                C2_insystem = C2_insystem.replace(
-                    '$BASEDIR', os.environ["JSBASE"])
-                self.do.writeFile(dest, C2_insystem)
-
-            self.do.chmod(dest, 0o770)
-
-            # change site.py file
-            def changesite(path):
-                if self.do.exists(path=path):
-                    C = self.do.readFile(path)
-                    out = ""
-                    for line in C.split("\n"):
-                        if line.find("ENABLE_USER_SITE") == 0:
-                            line = "ENABLE_USER_SITE = False"
-                        if line.find("USER_SITE") == 0:
-                            line = "USER_SITE = False"
-                        if line.find("USER_BASE") == 0:
-                            line = "USER_BASE = False"
-
-                        out += "%s\n" % line
-                    self.do.writeFile(path, out)
-            changesite("%s/lib/site.py" % os.environ["JSBASE"])
-            # if insystem:
-            #     changesite("/usr/local/lib/python3/dist-packages/site.py"%basedir)
-
-        # custom install items
+    #
+    # def writeEnv(self):
+    #
+    #     self.logger.info("WRITENV")
+    #
+    #     self.do.initCreateDirs4System()
+    #
+    #     self.do.createDir("%s/jumpscale" % os.environ["CFGDIR"])
+    #     config = {}
+    #     cats = {
+    #         "identity": ["EMAIL", "FULLNAME", "GITHUBUSER"],
+    #         "system": ["AYSBRANCH", "JSBRANCH", "DEBUG", "SANDBOX"]
+    #     }
+    #     for category, items in cats.items():
+    #         config[category] = {}
+    #         for item in items:
+    #
+    #             if item not in os.environ:
+    #                 if item in ["DEBUG", "SANDBOX"]:
+    #                     config[category][item] = False
+    #                 else:
+    #                     config[category][item] = ""
+    #             else:
+    #                 if item in ["DEBUG", "SANDBOX"]:
+    #                     config[category][item] = str(os.environ[item]) == 1
+    #                 else:
+    #                     config[category][item] = os.environ[item]
+    #
+    #                     if category == "dirs":
+    #                         while os.environ[item][-1] == "/":
+    #                             os.environ[item] = os.environ[item][:-1]
+    #                         os.environ[item] += "/"
+    #
+    #     config["dirs"] = {}
+    #     for key, val in os.environ.items():
+    #         if "DIR" in key:
+    #             config["dirs"][key] = val
+    #     configJSON = yaml.dump(config, default_flow_style=False)
+    #     do.writeFile(
+    #         "%s/jumpscale/system.yaml" %
+    #         os.environ["CFGDIR"], configJSON)
+    #
+    #     C = """
+    #     # By default, AYS will use the JS redis. This is for quick testing
+    #     # and development. To configure a persistent/different redis, uncomment
+    #     # and change the redis config
+    #
+    #     # redis:
+    #     #   host: "localhost"
+    #     #   port: 6379
+    #
+    #     """
+    #
+    #     if "AYSGIT" not in os.environ or os.environ["AYSGIT"].strip() == "":
+    #         os.environ["AYSGIT"] = "https://github.com/Jumpscale/ays_jumpscale9"
+    #     if "AYSBRANCH" not in os.environ or os.environ["AYSBRANCH"].strip(
+    #     ) == "":
+    #         os.environ["AYSBRANCH"] = "master"
+    #     # C = C.format(**os.environ)
+    #
+    #     hpath = "%s/jumpscale/ays.yaml" % os.environ["CFGDIR"]
+    #     if not self.do.exists(path=hpath):
+    #         self.do.writeFile(hpath, C)
+    #
+    #     C = """
+    #     mode: 'DEV'
+    #     level: 'DEBUG'
+    #
+    #     filter:
+    #         - 'j.sal.fs'
+    #         - 'j.data.hrd'
+    #         - 'j.application'
+    #     """
+    #     self.do.writeFile(
+    #         "%s/jumpscale/logging.yaml" %
+    #         os.environ["CFGDIR"], C)
+    #
+    #     C = """
+    #
+    #     deactivate () {
+    #         export PATH=$_OLD_PATH
+    #         unset _OLD_PATH
+    #         export LD_LIBRARY_PATH=$_OLD_LD_LIBRARY_PATH
+    #         unset _OLD_LD_LIBRARY_PATH
+    #         export PYTHONPATH=$_OLD_PYTHONPATH
+    #         unset _OLD_PYTHONPATH
+    #         export PS1=$_OLD_PS1
+    #         unset _OLD_PS1
+    #         unset JSBASE
+    #         unset PYTHONHOME
+    #         if [ -n "$BASH" -o -n "$ZSH_VERSION" ] ; then
+    #                 hash -r 2>/dev/null
+    #         fi
+    #     }
+    #
+    #     if [[ "$JSBASE" == "$BASEDIR" && "$PYTHONPATH" =~ .*jumpscale9.* ]]; then
+    #        return 0
+    #     fi
+    #
+    #     export JSBASE=$BASEDIR
+    #
+    #     export _OLD_PATH=$PATH
+    #     export _OLD_LDLIBRARY_PATH=$LD_LIBRARY_PATH
+    #     export _OLD_PS1=$PS1
+    #     export _OLD_PYTHONPATH=$PYTHONPATH
+    #
+    #     export PATH=$JSBASE/bin:$PATH
+    #
+    #     export LUA_PATH="/opt/jumpscale9/lib/lua/?.lua;./?.lua;/opt/jumpscale9/lib/lua/?/?.lua;/opt/jumpscale9/lib/lua/tarantool/?.lua;/opt/jumpscale9/lib/lua/?/init.lua"
+    #
+    #     $pythonhome
+    #     export PYTHONPATH=$pythonpath
+    #
+    #     export LD_LIBRARY_PATH=$JSBASE/bin
+    #     export PS1="(JS8) $PS1"
+    #     if [ -n "$BASH" -o -n "$ZSH_VERSION" ] ; then
+    #             hash -r 2>/dev/null
+    #     fi
+    #     """
+    #     C = C.replace("$BASEDIR", os.environ["JSBASE"])
+    #
+    #     if self.do.sandbox:
+    #         C = C.replace('$pythonhome', 'export PYTHONHOME=$JSBASE/bin')
+    #     else:
+    #         C = C.replace('$pythonhome', '')
+    #
+    #     if self.do.TYPE.startswith("OSX"):
+    #         pass
+    #         # C = C.replace("$pythonpath",
+    #         # ".:$JSBASE/lib:$JSBASE/lib/lib-dynload/:$JSBASE/bin:$JSBASE/lib/plat-x86_64-linux-gnu:/usr/local/lib/python3.5/site-packages:/usr/local/Cellar/python3/3.5.1/Frameworks/Python.framework/Versions/3.5/lib/python3.5:/usr/local/Cellar/python3/3.5.1/Frameworks/Python.framework/Versions/3.5/lib/python3.5/plat-darwin:/usr/local/Cellar/python3/3.5.1/Frameworks/Python.framework/Versions/3.5/lib/python3.5/lib-dynload")
+    #         C = C.replace("$pythonpath", ".:$JSBASE/lib:$_OLD_PYTHONPATH")
+    #     else:
+    #         C = C.replace(
+    #             "$pythonpath",
+    #             ".:$JSBASE/lib:$JSBASE/lib/lib-dynload/:$JSBASE/bin:$JSBASE/lib/python.zip:$JSBASE/lib/plat-x86_64-linux-gnu:$_OLD_PYTHONPATH")
+    #     envfile = "%s/env.sh" % os.environ["JSBASE"]
+    #
+    #     if self.readonly is False or die:
+    #         self.do.writeFile(envfile, C)
+    #
+    #     # pythonversion = '3' if os.environ.get('PYTHONVERSION') == '3' else ''
+    #
+    #     C2 = """
+    #     #!/bin/bash
+    #     # set -x
+    #     source $BASEDIR/env.sh
+    #     exec $JSBASE/bin/python3 -q "$@"
+    #     """
+    #
+    #     C2_insystem = """
+    #     #!/bin/bash
+    #     # set -x
+    #     source $BASEDIR/env.sh
+    #     exec python3 -q "$@"
+    #     """
+    #
+    #     # C2=C2.format(base=basedir, env=envfile)
+    #     if self.readonly is False:
+    #
+    #         self.do.delete("/usr/bin/jspython")  # to remove link
+    #         self.do.delete("%s/bin/jspython" % os.environ["JSBASE"])
+    #         self.do.delete("/usr/local/bin/jspython")
+    #
+    #         if self.do.sandbox:
+    #             self.logger.info("jspython in sandbox")
+    #             dest = "%s/bin/jspython" % os.environ["JSBASE"]
+    #             C2 = C2.replace('$BASEDIR', os.environ["JSBASE"])
+    #             self.do.writeFile(dest, C2)
+    #         else:
+    #             # in system
+    #             self.logger.info("jspython in system")
+    #             dest = "/usr/local/bin/jspython"
+    #             C2_insystem = C2_insystem.replace(
+    #                 '$BASEDIR', os.environ["JSBASE"])
+    #             self.do.writeFile(dest, C2_insystem)
+    #
+    #         self.do.chmod(dest, 0o770)
+    #
+    #         # change site.py file
+    #         def changesite(path):
+    #             if self.do.exists(path=path):
+    #                 C = self.do.readFile(path)
+    #                 out = ""
+    #                 for line in C.split("\n"):
+    #                     if line.find("ENABLE_USER_SITE") == 0:
+    #                         line = "ENABLE_USER_SITE = False"
+    #                     if line.find("USER_SITE") == 0:
+    #                         line = "USER_SITE = False"
+    #                     if line.find("USER_BASE") == 0:
+    #                         line = "USER_BASE = False"
+    #
+    #                     out += "%s\n" % line
+    #                 self.do.writeFile(path, out)
+    #         changesite("%s/lib/site.py" % os.environ["JSBASE"])
+    #         # if insystem:
+    #         #     changesite("/usr/local/lib/python3/dist-packages/site.py"%basedir)
+    #
+    #     # custom install items
 
     def cleanSystem(self):
         # TODO *2 no longer complete
@@ -2580,6 +2580,7 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
 
         [system]
         debug = true
+        autopip = false
         readonly = false
 
         [grid]
