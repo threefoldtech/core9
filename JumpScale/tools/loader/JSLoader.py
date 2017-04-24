@@ -59,6 +59,7 @@ class Jumpscale9():
 j = Jumpscale9()
 j.logger=j.core.logger
 j.application=j.core.application
+j.do = j.core.installtools
 
 """
 
@@ -165,6 +166,7 @@ class JSLoader():
 
     def findJumpscaleLocationsInFile(self, path):
         res = {}
+        print("load %s" % path)
         C = j.sal.fs.readFile(path)
         classname = None
         for line in C.split("\n"):

@@ -1179,16 +1179,17 @@ class SystemFS:
             raise OSError(
                 'Failed to unlink the specified file path: [%s] in system.ds.unlink' % filename)
 
-    def fileGetContents(self, filename):
+    def fileGetContents(self, filename, encoding="utf-8"):
         """Read a file and get contents of that file
         @param filename: string (filename to open for reading )
         @rtype: string representing the file contents
+        @param encoding utf-8 or ascii
         """
         if filename is None:
             raise TypeError('File name is None in system.fs.fileGetContents')
         self.logger.debug('Opened file %s for reading' % filename)
         self.logger.debug('Reading file %s' % filename)
-        with open(filename) as fp:
+        with open(filename, encoding=encoding) as fp:
             data = fp.read()
         self.logger.debug('File %s is closed after reading' % filename)
         return data

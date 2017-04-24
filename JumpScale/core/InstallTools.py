@@ -2505,6 +2505,8 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
 
     def __init__(self, debug=False):
 
+        self.__jslocation__ = "j.core.installtools"
+
         self._extratools = False
         self._asyncLoaded = False
         self._deps = None
@@ -2520,6 +2522,17 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
         self.init()
 
         self.logger = j.logger.get("installtools")
+
+    @property
+    def mascot(self):
+        mascotpath = "%s/.mascot.txt" % os.environ["GIGHOME"]
+        if not j.sal.fs.exists(mascotpath):
+            print("env has not been installed properly, please follow init instructions on https://github.com/Jumpscale/developer")
+            sys.exit(1)
+            from IPython import embed
+            print("DEBUG NOW 87878")
+            embed()
+            raise RuntimeError("stop debug here")
 
     @property
     def config(self):

@@ -2,7 +2,19 @@
 from JumpScale.core.JSBase import JSBase
 
 
+from JumpScale.clients.git.GitFactory import GitFactory
+from JumpScale.clients.http.HttpClient import HttpClient
+from JumpScale.clients.redis.RedisFactory import RedisFactory
+
+
+class clients:
+    git = GitFactory()
+    http = HttpClient()
+    redis = RedisFactory()
+
+
 from JumpScale.core.Application import Application
+from JumpScale.core.InstallTools import InstallTools
 from JumpScale.core.PlatformTypes import PlatformTypes
 from JumpScale.core.State import State
 from JumpScale.logging.LoggerFactory import LoggerFactory
@@ -10,9 +22,29 @@ from JumpScale.logging.LoggerFactory import LoggerFactory
 
 class core:
     application = Application()
+    installtools = InstallTools()
     platformtype = PlatformTypes()
     state = State()
     logger = LoggerFactory()
+
+
+from JumpScale.data.idgenerator.IDGenerator import IDGenerator
+from JumpScale.data.regex.RegexTools import RegexTools
+from JumpScale.data.serializers.SerializersFactory import SerializersFactory
+from JumpScale.data.tags.TagsFactory import TagsFactory
+from JumpScale.data.text.Text import Text
+from JumpScale.data.time.Time import Time_
+from JumpScale.data.types.Types import Types
+
+
+class data:
+    idgenerator = IDGenerator()
+    regex = RegexTools()
+    serializer = SerializersFactory()
+    tags = TagsFactory()
+    text = Text()
+    time = Time_()
+    types = Types()
 
 
 from JumpScale.data.email.Email import EmailTool
@@ -36,36 +68,6 @@ class tools:
     tmux = Tmux()
 
 
-from JumpScale.data.idgenerator.IDGenerator import IDGenerator
-from JumpScale.data.regex.RegexTools import RegexTools
-from JumpScale.data.serializers.SerializersFactory import SerializersFactory
-from JumpScale.data.tags.TagsFactory import TagsFactory
-from JumpScale.data.text.Text import Text
-from JumpScale.data.time.Time import Time_
-from JumpScale.data.types.Types import Types
-
-
-class data:
-    idgenerator = IDGenerator()
-    regex = RegexTools()
-    serializer = SerializersFactory()
-    tags = TagsFactory()
-    text = Text()
-    time = Time_()
-    types = Types()
-
-
-from JumpScale.clients.git.GitFactory import GitFactory
-from JumpScale.clients.http.HttpClient import HttpClient
-from JumpScale.clients.redis.RedisFactory import RedisFactory
-
-
-class clients:
-    git = GitFactory()
-    http = HttpClient()
-    redis = RedisFactory()
-
-
 from JumpScale.fs.SystemFS import SystemFS
 from JumpScale.fs.SystemFSWalker import SystemFSWalker
 from JumpScale.tools.nettools.NetTools import NetTools
@@ -87,13 +89,14 @@ class sal:
 class Jumpscale9():
 
     def __init__(self):
-            self.core=core()
-            self.tools=tools()
-            self.data=data()
             self.clients=clients()
+            self.core=core()
+            self.data=data()
+            self.tools=tools()
             self.sal=sal()
 
 j = Jumpscale9()
 j.logger=j.core.logger
 j.application=j.core.application
+j.do = j.core.installtools
 
