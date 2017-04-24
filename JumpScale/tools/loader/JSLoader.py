@@ -55,6 +55,7 @@ class Jumpscale9():
         {{#locations}}
             self.{{name}}={{name}}()
         {{/locations}}
+
 j = Jumpscale9()
 j.logger=j.core.logger
 j.application=j.core.application
@@ -128,6 +129,7 @@ class JSLoader():
                     exec("from %s import %s" % (importlocation, classname))
                     res2["location"].append(res3)
                 except Exception as e:
+                    print("import error:\n%s\n" % e)
                     if not self.autopip:
                         continue
                     if importItems == []:

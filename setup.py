@@ -10,14 +10,14 @@ setup(
     license='Apache',
     packages=['JumpScale'],
     install_requires=[
-      'redis',
-      'colorlog',
-      'pytoml',
-      'ipython',
-      'colored_traceback',
-      'pystache',
-      'libtmux',
-      'httplib2',
-      'pyyaml'
-     ]
+        'redis',
+        'colorlog',
+        'pytoml',
+        'ipython',
+        'colored_traceback',
+        'pystache',
+        'libtmux',
+        'httplib2',
+        'netaddr'
+    ]
 )
