@@ -1,4 +1,7 @@
 #! /usr/bin/env python3
 
 from JumpScale import j
+
+print(j.do.mascot)
 j.tools.jsloader.generate()
+j.do.initEnv()

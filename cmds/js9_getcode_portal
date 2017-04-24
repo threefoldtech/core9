@@ -1,5 +1,9 @@
 #! /usr/bin/env python3
 
 from JumpScale.init import j
-j.do.mascot
+
+print(j.do.mascot)
 j.clients.git.pullGitRepo("git@github.com:Jumpscale/portal9.git")
+
+path = "%s/github/jumpscale/portal9" % j.dirs.CODEDIR
+j.do.execute("cd %s;sh install.sh" % path)

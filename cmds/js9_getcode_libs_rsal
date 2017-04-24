@@ -1,0 +1,18 @@
+#! /usr/bin/env python3
+from JumpScale.init import j
+
+print(j.do.mascot)
+
+
+j.clients.git.pullGitRepo("git@github.com:Jumpscale/lib9.git")
+j.clients.git.pullGitRepo("git@github.com:Jumpscale/ays9.git")
+j.clients.git.pullGitRepo("git@github.com:Jumpscale/rsal9.git")
+
+path = "%s/github/jumpscale/lib9" % j.dirs.CODEDIR
+j.do.execute("cd %s;sh install.sh" % path)
+
+path = "%s/github/jumpscale/rsal9" % j.dirs.CODEDIR
+j.do.execute("cd %s;sh install.sh" % path)
+
+path = "%s/github/jumpscale/ays9" % j.dirs.CODEDIR
+j.do.execute("cd %s;sh install.sh" % path)

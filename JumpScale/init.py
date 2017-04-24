@@ -14,6 +14,7 @@ class clients:
 
 
 from JumpScale.core.Application import Application
+from JumpScale.core.Dirs import Dirs
 from JumpScale.core.InstallTools import InstallTools
 from JumpScale.core.PlatformTypes import PlatformTypes
 from JumpScale.core.State import State
@@ -22,6 +23,7 @@ from JumpScale.logging.LoggerFactory import LoggerFactory
 
 class core:
     application = Application()
+    dirs = Dirs()
     installtools = InstallTools()
     platformtype = PlatformTypes()
     state = State()
@@ -99,4 +101,5 @@ j = Jumpscale9()
 j.logger=j.core.logger
 j.application=j.core.application
 j.do = j.core.installtools
+j.dirs = j.core.dirs
 

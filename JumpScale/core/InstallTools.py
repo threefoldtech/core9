@@ -430,7 +430,7 @@ class GitMethods():
 
         if ssh == "auto" or ssh == "first":
             ssh = self.SSHAgentAvailable()
-        elif ssh or ssh == False:
+        elif ssh or ssh is False:
             pass
         else:
             raise RuntimeError(
@@ -564,7 +564,7 @@ class GitMethods():
         if not dest:
             if codeDir is None:
                 if not executor:
-                    codeDir = self.CODEDIR
+                    codeDir = j.dirs.CODEDIR
                 else:
                     codeDir = executor.cuisine.core.dir_paths['CODEDIR']
             dest = '%(codedir)s/%(type)s/%(account)s/%(repo_name)s' % {
@@ -671,7 +671,7 @@ class GitMethods():
                 branchFound = 'master'
                 # raise RuntimeError("Cannot retrieve branch:\n%s\n" % cmd)
 
-            if branch is not None and branch != branchFound and ignorelocalchanges == False:
+            if branch is not None and branch != branchFound and ignorelocalchanges is False:
                 raise RuntimeError(
                     "Cannot pull repo, branch on filesystem is not same as branch asked for.\nBranch asked for:%s\nBranch found:%s\nTo choose other branch do e.g:\nexport JSBRANCH='%s'\n" %
                     (branch, branchFound, branchFound))
@@ -766,9 +766,9 @@ class FSMethods():
 
     def getPythonLibSystem(self, jumpscale=False):
         PYTHONVERSION = platform.python_version()
-        if self.TYPE.startswith("OSX"):
+        if j.core.platformtype.myplatform.isMac:
             destjs = "/usr/local/lib/python3.6/site-packages"
-        elif self.TYPE.startswith("WIN"):
+        elif j.core.platformtype.myplatform.isWindows:
             destjs = "/usr/lib/python3.4/site-packages"
         else:
             if PYTHONVERSION == '2':
@@ -818,10 +818,10 @@ class FSMethods():
                                         "/opt",
                                         "/usr/bin",
                                         "/usr/sbin",
-                                        self.CODEDIR]:
+                                        j.dirs.CODEDIR]:
             raise RuntimeError('cannot delete protected dirs')
 
-        # if not force and path.find(self.CODEDIR)!=-1:
+        # if not force and path.find(j.dirs.CODEDIR)!=-1:
         #     raise RuntimeError('cannot delete protected dirs')
 
         if self.debug:
@@ -1200,13 +1200,13 @@ class FSMethods():
             self.removeSymlink(dest)
 
         if delete:
-            if self.TYPE == "WIN":
+            if j.core.platformtype.myplatform.isWindows:
                 self.removeSymlink(dest)
                 self.delete(dest)
             else:
                 self.delete(dest)
 
-        if self.TYPE == "WIN":
+        if j.core.platformtype.myplatform.isWindows:
             cmd = "junction %s %s 2>&1 > null" % (dest, src)
             os.system(cmd)
             # raise RuntimeError("not supported on windows yet")
@@ -1218,7 +1218,7 @@ class FSMethods():
             if not self.exists(dest):
                 os.symlink(src, dest)
 
-    def symlinkFilesInDir(self, src, dest, delete=True, includeDirs=False):
+    def symlinkFilesInDir(self, src, dest, delete=True, includeDirs=False, makeExecutable=False):
         if includeDirs:
             items = self.listFilesAndDirsInDir(
                 src, recursive=False, followSymlinks=False, listSymlinks=False)
@@ -1233,9 +1233,13 @@ class FSMethods():
             dest2 = dest2.replace("//", "/")
             self.logger.info(("link %s:%s" % (item, dest2)))
             self.symlink(item, dest2, delete=delete)
+            if makeExecutable:
+                # print("executable:%s" % dest2)
+                self.chmod(dest2, 0o770)
+                self.chmod(item, 0o770)
 
     def removeSymlink(self, path):
-        if self.TYPE == "WIN":
+        if j.core.platformtype.myplatform.isWindows:
             try:
                 cmd = "junction -d %s 2>&1 > null" % (path)
                 self.logger.info(cmd)
@@ -1680,7 +1684,7 @@ class FSMethods():
         if deleteDestFirst:
             self.delete(destdir)
 
-        if self.TYPE == "WIN":
+        if j.core.platformtype.myplatform.isWindows:
             cmd = "gzip -d %s" % path
             os.system(cmd)
         else:
@@ -1957,18 +1961,10 @@ class ExecutorMethods():
                 timeout=timeout)
         else:
             return j.tools.executorLocal.execute(
-                command=command,
+                command,
                 showout=showout,
                 outputStderr=outputStderr,
-                useShell=useShell,
-                log=log,
-                cwd=cwd,
-                timeout=timeout,
-                errors=errors,
-                ok=ok,
-                captureout=captureout,
-                die=die,
-                async=async)
+                die=die)
 
     def psfind(self, name):
         rc, out, err = self.execute("ps ax | grep %s" % name, showout=False)
@@ -2388,7 +2384,7 @@ class Installer():
 
     def updateSystem(self):
 
-        if self.TYPE.startswith("UBUNTU"):
+        if j.core.platformtype.myplatform.isUbuntu:
             CMDS = """
             apt-get update
             apt-get autoremove
@@ -2397,7 +2393,7 @@ class Installer():
             """
             self.do.executeCmds(CMDS)
 
-        elif self.TYPE.startswith("OSX"):
+        elif j.core.platformtype.myplatform.isMac:
             CMDS = """
             brew update
             brew upgrade
@@ -2438,7 +2434,7 @@ class Installer():
 
     def replacesitecustomize(self):
         raise RuntimeError("not implemented")
-        if not self.TYPE == "WIN":
+        if not j.core.platformtype.myplatform.isWindows:
             ppath = "/usr/lib/python%s/sitecustomize.py" % os.environ.get(
                 'PYTHONVERSION', '')
             if ppath.find(ppath):
@@ -2529,10 +2525,7 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
         if not j.sal.fs.exists(mascotpath):
             print("env has not been installed properly, please follow init instructions on https://github.com/Jumpscale/developer")
             sys.exit(1)
-            from IPython import embed
-            print("DEBUG NOW 87878")
-            embed()
-            raise RuntimeError("stop debug here")
+        return self.readFile(mascotpath)
 
     @property
     def config(self):
@@ -2654,6 +2647,12 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
                 j.sal.fs.getBaseName(item),
                 overwriteTarget=True)
 
+        self.linkJSCommandsToSystem()
+
+    def linkJSCommandsToSystem(self):
+        src = "%s/github/jumpscale/core9/cmds/" % j.dirs.CODEDIR
+        self.symlinkFilesInDir(src, "/usr/local/bin", delete=True, includeDirs=False, makeExecutable=True)
+
     def fixCodeChangeDirVars(self, branch="8.2.0"):
         """
         walk over code dir & find all known old dir arguments & change them to new naming convention
@@ -2689,7 +2688,7 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
 
         def do(ffilter):
             for repo in repos:
-                rpath = "%s/%s" % (self.CODEDIR, repo)
+                rpath = "%s/%s" % (j.dirs.CODEDIR, repo)
                 for fpath in self.listFilesInDir(
                         rpath,
                         recursive=True,
