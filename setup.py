@@ -8,7 +8,7 @@ setup(
     author='GreenItGlobe',
     author_email='info@gig.tech',
     license='Apache',
-    packages=['JumpScale'],
+    packages=['JumpScale9'],
     install_requires=[
         'redis',
         'colorlog',
