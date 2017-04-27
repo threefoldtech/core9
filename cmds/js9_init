@@ -1,7 +1,38 @@
 #! /usr/bin/env python3
 
-from JumpScale import j
+# from js9 import j
+# needs to be the original one because am generating the above one
+from JumpScale9 import j
+import sys
 
 print(j.do.mascot)
-j.tools.jsloader.generate()
+# j.tools.jsloader.generate()
+
+
+def findSitePath():
+    for item in sys.path:
+        if "/site-packages" in item:
+            return item
+
+
+sitePath = findSitePath()
+
+# j.tools.jsloader.generate(out="%s/js_init.py" % (sitePath))
+
+todo = []
+todo.append(("lib9", "JumpScale9Lib"))
+todo.append(("core9", "JumpScale9"))
+
+moduleList = {}
+
+
+for item, libname in todo:
+    path = "%s/github/jumpscale/%s/%s/" % (j.dirs.CODEDIR, item, libname)
+
+    if j.sal.fs.exists(path, followlinks=True):
+        moduleList = j.tools.jsloader.findModules(path=path, moduleList=moduleList)
+
+out = "%s/js9.py" % (sitePath)
+j.tools.jsloader.generate(path, out=out, moduleList=moduleList)
+
 j.do.initEnv()

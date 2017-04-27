@@ -18,6 +18,10 @@ setup(
         'pystache',
         'libtmux',
         'httplib2',
-        'netaddr'
+        'netaddr',
+        'python-dateutil',
+        'requests',
+        'path.py',
+        'click'
     ]
 )

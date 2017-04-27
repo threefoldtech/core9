@@ -45,7 +45,7 @@ By default the output level to the console is set to INFO and the output level t
 Example of Development mode output:
 
 ```python
-from JumpScale import j
+from js9 import j
 
 class TestLog(object):
     def __init__(self):
@@ -100,7 +100,7 @@ The output of the `foo()` method of this simple `TestLog` class will be:
 
 ```python
 import logging
-from JumpScale import j
+from js9 import j
 
 
 def foo():

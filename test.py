@@ -1,4 +1,4 @@
-from JumpScale.init import j
+from js9 import j
 
 
 from IPython import embed

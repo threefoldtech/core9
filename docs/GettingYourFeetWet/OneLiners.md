@@ -113,10 +113,10 @@ def hash_fd(fd, alg):
 You can easily convert from a size unit to another (from MB to KB maybe) or display what unit fits a number the best
 
 ```ipython
-In [41]: j.data.units.sizes.converToBestUnit(2048*2**5, 'M')
+In [41]: j.data_units.sizes.converToBestUnit(2048*2**5, 'M')
 Out[41]: (65.536, 'G')
 
-In [42]: j.data.units.sizes.toSize(2048*2**5, 'M', 'G')
+In [42]: j.data_units.sizes.toSize(2048*2**5, 'M', 'G')
 Out[42]: 65.536
 ```
 

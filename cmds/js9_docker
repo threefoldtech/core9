@@ -1,5 +1,5 @@
 #!/usr/bin/env jspython
-from JumpScale import j
+from js9 import j
 import click
 
 @click.group()
