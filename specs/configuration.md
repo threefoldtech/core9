@@ -40,21 +40,45 @@
 
 ## default configuration
 
+if container:
+
 ```toml
 [dirs]
 HOMEDIR = "~"
 TMPDIR = "/tmp"
-VARDIR = "{{HOMEDIR}}/js9/var"
-BASEDIR = "{{HOMEDIR}}/js9"
+VARDIR = "/optvar/var"
+BASEDIR = "/opt/jumpscale9"
 CFGDIR = "{{VARDIR}}/cfg"
 DATADIR = "{{VARDIR}}/data"
-CODEDIR = "{{HOMEDIR}}/code"
+CODEDIR = "/opt/code"
+BUILDDIR = "{{VARDIR}}/build"
+LIBDIR = "{{BASEDIR}}/lib/"
+TEMPLATEDIR = "{{BASEDIR}}/templates"
+```
+
+else:
+
+```toml
+[dirs]
+HOMEDIR = "~"
+TMPDIR = "/tmp"
+VARDIR = "{{GIGDIR}}/var"
+BASEDIR = "{{GIGDIR}}/gig"
+CFGDIR = "{{VARDIR}}/cfg"
+DATADIR = "{{VARDIR}}/data"
+CODEDIR = "{{GIGDIR}}/code"
 BUILDDIR = "{{VARDIR}}/build"
 LIBDIR = "{{BASEDIR}}/lib/"
 TEMPLATEDIR = "{{BASEDIR}}/templates"
 
+```
+
+then add
+
+```toml
+
 [email]
-from = "kristof@incubaid.com"
+from = "info@incubaid.com"
 smtp_port = 443
 smtp_server = ""
 
@@ -66,9 +90,12 @@ url = "https://github.com/Jumpscale/ays9.git"
 branch = "master"
 url = "https://github.com/Jumpscale/core9.git"
 
+
 [system]
 debug = true
+autopip = false
 readonly = false
+container = false
 
 [grid]
 gid = 0
@@ -83,4 +110,5 @@ fullname = "Kristof De Spiegeleer"
 
 [ssh]
 SSHKEYNAME = "id_rsa"
+
 ```

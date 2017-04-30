@@ -28,6 +28,9 @@ class Dirs:
     def __init__(self):
         '''jumpscale sandbox base folder'''
         self.__jslocation__ = "j.core.dirs"
+        self.reload()
+
+    def reload(self):
 
         for key, val in j.core.state.config["dirs"].items():
             self.__dict__[key] = val

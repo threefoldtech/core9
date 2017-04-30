@@ -23,8 +23,9 @@ class State():
     @property
     def _vardir(self):
         if "VARDIR" in os.environ:
-            return os.path.normpath(os.path.join(os.environ["VARDIR"], "js9"))
-        return os.path.normpath(os.path.join(os.environ.get("HOME", '/root'), 'js9/var'))
+            return os.path.normpath(os.path.join(os.environ["VARDIR"]))
+        else:
+            raise RuntimeError("Cannot find VARDIR in env")
 
     @property
     def config(self):
@@ -62,6 +63,7 @@ class State():
             val2 = None
         if val != val2:
             self.config[key] = val
+            print("config set %s:%s" % (key, val))
             # print("config changed")
             self._config_changed = True
             if save:

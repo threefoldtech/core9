@@ -8,7 +8,7 @@ if [ -d "/tmp" ]; then
 fi
 
 #TO RESET, to develop faster uncomment
-rm -f $TMPDIR/js9/
+rm -f $TMPDIR/gig/
 
 cd $TMPDIR
 function clean_system {

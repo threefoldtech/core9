@@ -818,7 +818,7 @@ class FSMethods():
                                         "/opt",
                                         "/usr/bin",
                                         "/usr/sbin",
-                                        j.dirs.CODEDIR]:
+                                        "/opt/code"]:
             raise RuntimeError('cannot delete protected dirs')
 
         # if not force and path.find(j.dirs.CODEDIR)!=-1:
@@ -1995,508 +1995,6 @@ class ExecutorMethods():
                 name)
 
 
-class Installer():
-
-    def __init__(self):
-        self._readonly = None
-        self.logger = j.logger.get("installer")
-
-    def checkPython(self):
-        if sys.platform.startswith('darwin'):
-            if len([item for item in do.listDirsInDir(
-                    "/usr/local/lib") if item.find("python3") != -1]) > 1:
-                raise RuntimeError(
-                    "Please execute clean.sh in installer of jumpscale, found too many python installs")
-
-    def installJS(self):
-        """
-        """
-
-        self.initEnv(env=os.environ)
-
-        # everything else is dangerous now
-        copybinary = True
-
-        tmpdir = self.do.TMPDIR
-
-        # if base != "":
-        #     os.environ["JSBASE"] = base
-
-        if CODEDIR != "":
-            os.environ["CODEDIR"] = CODEDIR
-
-        self.do.init()
-
-        self.debug = True
-
-        self.do.executeInteractive("mkdir -p %s/.ssh/" % os.environ["HOME"])
-        self.do.executeInteractive(
-            "ssh-keyscan github.com 2> /dev/null  >> {0}/.ssh/known_hosts; ssh-keyscan git.aydo.com 2> /dev/null >> {0}/.ssh/known_hosts".format(
-                os.environ["HOME"]))
-        self.logger.info("pull core")
-        self.do.pullGitRepo(
-            args2['JSGIT'],
-            branch=args2['JSBRANCH'],
-            ssh="first")
-        src = "%s/github/jumpscale/jumpscale_core9/lib/JumpScale" % self.do.CODEDIR
-        self.debug = False
-
-        if self.do.TYPE.startswith("OSX"):
-            self.do.delete("/usr/local/lib/python2.7/site-packages/JumpScale")
-            self.do.delete("/usr/local/lib/python3.5/site-packages/JumpScale")
-
-        # destjs = self.do.getPythonLibSystem(jumpscale=True)
-        # self.do.delete(destjs)
-        # self.do.createDir(destjs)
-
-        base = args2["JSBASE"]
-
-        self.do.createDir("%s/lib" % base)
-        self.do.createDir("%s/bin" % base)
-        # self.do.createDir("%s/hrd/system"%base)
-        # self.do.createDir("%s/hrd/apps"%base)
-
-        dest = "%s/lib/JumpScale" % base
-        self.do.createDir(dest)
-        self.do.symlinkFilesInDir(src, dest, includeDirs=True)
-        # self.do.symlinkFilesInDir(src, destjs, includeDirs=True)
-
-        for item in ["InstallTools", "ExtraTools"]:
-            src = "%s/github/jumpscale/jumpscale_core9/install/%s.py" % (
-                do.CODEDIR, item)
-            dest2 = "%s/%s.py" % (dest, item)
-            self.do.symlink(src, dest2)
-            # dest2 = "%s/%s.py" % (destjs, item)
-            # self.do.symlink(src, dest2)
-
-        src = "%s/github/jumpscale/jumpscale_core9/shellcmds" % self.do.CODEDIR
-
-        dest = "/usr/local/bin"
-        self.do.symlinkFilesInDir(src, dest)
-
-        dest = "%s/bin" % base
-        self.do.symlinkFilesInDir(src, dest)
-
-        # DO NOT LOAD AUTOCOMPLETE AUTOMATICALLY
-        #         # create ays,jsdocker completion based on click magic variables
-        #         with open(os.path.expanduser("~/.bashrc"), "a") as f:
-        #             f.write('''
-        # eval "$(_AYS_COMPLETE=source ays)"
-        # eval "$(_JSDOCKER_COMPLETE=source jsdocker)"\n
-        #             ''')
-
-        # link python
-        src = "/usr/bin/python3.6"
-        if self.do.exists(src):
-            # self.do.delete("/usr/bin/python")
-            if not self.do.TYPE.startswith("OSX"):
-                # self.do.symlink(src, "%s/bin/python"%base)
-                self.do.symlink(src, "%s/bin/python3" % base)
-                # self.do.symlink(src, "/usr/bin/python")
-
-        # if self.do.TYPE.startswith("OSX"):
-        #     src="/usr/local/bin/python3"
-        #     self.do.symlink(src, "%s/bin/python"%base)
-        #     self.do.symlink(src, "%s/bin/python3"%base)
-        #     self.do.symlink(src, "%s/bin/python3.5"%base)
-
-        self.writeEnv()
-
-        sys.path.insert(0, "%s/lib" % base)
-
-        self.logger.info("Get atYourService metadata.")
-
-        self.do.pullGitRepo(
-            args2['AYSGIT'],
-            branch=args2['AYSBRANCH'],
-            ssh="first")
-
-        self.logger.info("install was successfull")
-        self.logger.info("to use do 'js'")
-
-    @property
-    def readonly(self):
-        if self._readonly is None:
-            ppath = "%s/bin/_writetest" % os.environ["JSBASE"]
-            try:
-                self.do.writeFile(ppath, "")
-                self._readonly = False
-            except BaseException:
-                self._readonly = True
-            self.do.delete(ppath)
-        return self._readonly
-    #
-    # def writeEnv(self):
-    #
-    #     self.logger.info("WRITENV")
-    #
-    #     self.do.initCreateDirs4System()
-    #
-    #     self.do.createDir("%s/jumpscale" % os.environ["CFGDIR"])
-    #     config = {}
-    #     cats = {
-    #         "identity": ["EMAIL", "FULLNAME", "GITHUBUSER"],
-    #         "system": ["AYSBRANCH", "JSBRANCH", "DEBUG", "SANDBOX"]
-    #     }
-    #     for category, items in cats.items():
-    #         config[category] = {}
-    #         for item in items:
-    #
-    #             if item not in os.environ:
-    #                 if item in ["DEBUG", "SANDBOX"]:
-    #                     config[category][item] = False
-    #                 else:
-    #                     config[category][item] = ""
-    #             else:
-    #                 if item in ["DEBUG", "SANDBOX"]:
-    #                     config[category][item] = str(os.environ[item]) == 1
-    #                 else:
-    #                     config[category][item] = os.environ[item]
-    #
-    #                     if category == "dirs":
-    #                         while os.environ[item][-1] == "/":
-    #                             os.environ[item] = os.environ[item][:-1]
-    #                         os.environ[item] += "/"
-    #
-    #     config["dirs"] = {}
-    #     for key, val in os.environ.items():
-    #         if "DIR" in key:
-    #             config["dirs"][key] = val
-    #     configJSON = yaml.dump(config, default_flow_style=False)
-    #     do.writeFile(
-    #         "%s/jumpscale/system.yaml" %
-    #         os.environ["CFGDIR"], configJSON)
-    #
-    #     C = """
-    #     # By default, AYS will use the JS redis. This is for quick testing
-    #     # and development. To configure a persistent/different redis, uncomment
-    #     # and change the redis config
-    #
-    #     # redis:
-    #     #   host: "localhost"
-    #     #   port: 6379
-    #
-    #     """
-    #
-    #     if "AYSGIT" not in os.environ or os.environ["AYSGIT"].strip() == "":
-    #         os.environ["AYSGIT"] = "https://github.com/Jumpscale/ays_jumpscale9"
-    #     if "AYSBRANCH" not in os.environ or os.environ["AYSBRANCH"].strip(
-    #     ) == "":
-    #         os.environ["AYSBRANCH"] = "master"
-    #     # C = C.format(**os.environ)
-    #
-    #     hpath = "%s/jumpscale/ays.yaml" % os.environ["CFGDIR"]
-    #     if not self.do.exists(path=hpath):
-    #         self.do.writeFile(hpath, C)
-    #
-    #     C = """
-    #     mode: 'DEV'
-    #     level: 'DEBUG'
-    #
-    #     filter:
-    #         - 'j.sal.fs'
-    #         - 'j.data.hrd'
-    #         - 'j.application'
-    #     """
-    #     self.do.writeFile(
-    #         "%s/jumpscale/logging.yaml" %
-    #         os.environ["CFGDIR"], C)
-    #
-    #     C = """
-    #
-    #     deactivate () {
-    #         export PATH=$_OLD_PATH
-    #         unset _OLD_PATH
-    #         export LD_LIBRARY_PATH=$_OLD_LD_LIBRARY_PATH
-    #         unset _OLD_LD_LIBRARY_PATH
-    #         export PYTHONPATH=$_OLD_PYTHONPATH
-    #         unset _OLD_PYTHONPATH
-    #         export PS1=$_OLD_PS1
-    #         unset _OLD_PS1
-    #         unset JSBASE
-    #         unset PYTHONHOME
-    #         if [ -n "$BASH" -o -n "$ZSH_VERSION" ] ; then
-    #                 hash -r 2>/dev/null
-    #         fi
-    #     }
-    #
-    #     if [[ "$JSBASE" == "$BASEDIR" && "$PYTHONPATH" =~ .*jumpscale9.* ]]; then
-    #        return 0
-    #     fi
-    #
-    #     export JSBASE=$BASEDIR
-    #
-    #     export _OLD_PATH=$PATH
-    #     export _OLD_LDLIBRARY_PATH=$LD_LIBRARY_PATH
-    #     export _OLD_PS1=$PS1
-    #     export _OLD_PYTHONPATH=$PYTHONPATH
-    #
-    #     export PATH=$JSBASE/bin:$PATH
-    #
-    #     export LUA_PATH="/opt/jumpscale9/lib/lua/?.lua;./?.lua;/opt/jumpscale9/lib/lua/?/?.lua;/opt/jumpscale9/lib/lua/tarantool/?.lua;/opt/jumpscale9/lib/lua/?/init.lua"
-    #
-    #     $pythonhome
-    #     export PYTHONPATH=$pythonpath
-    #
-    #     export LD_LIBRARY_PATH=$JSBASE/bin
-    #     export PS1="(JS8) $PS1"
-    #     if [ -n "$BASH" -o -n "$ZSH_VERSION" ] ; then
-    #             hash -r 2>/dev/null
-    #     fi
-    #     """
-    #     C = C.replace("$BASEDIR", os.environ["JSBASE"])
-    #
-    #     if self.do.sandbox:
-    #         C = C.replace('$pythonhome', 'export PYTHONHOME=$JSBASE/bin')
-    #     else:
-    #         C = C.replace('$pythonhome', '')
-    #
-    #     if self.do.TYPE.startswith("OSX"):
-    #         pass
-    #         # C = C.replace("$pythonpath",
-    #         # ".:$JSBASE/lib:$JSBASE/lib/lib-dynload/:$JSBASE/bin:$JSBASE/lib/plat-x86_64-linux-gnu:/usr/local/lib/python3.5/site-packages:/usr/local/Cellar/python3/3.5.1/Frameworks/Python.framework/Versions/3.5/lib/python3.5:/usr/local/Cellar/python3/3.5.1/Frameworks/Python.framework/Versions/3.5/lib/python3.5/plat-darwin:/usr/local/Cellar/python3/3.5.1/Frameworks/Python.framework/Versions/3.5/lib/python3.5/lib-dynload")
-    #         C = C.replace("$pythonpath", ".:$JSBASE/lib:$_OLD_PYTHONPATH")
-    #     else:
-    #         C = C.replace(
-    #             "$pythonpath",
-    #             ".:$JSBASE/lib:$JSBASE/lib/lib-dynload/:$JSBASE/bin:$JSBASE/lib/python.zip:$JSBASE/lib/plat-x86_64-linux-gnu:$_OLD_PYTHONPATH")
-    #     envfile = "%s/env.sh" % os.environ["JSBASE"]
-    #
-    #     if self.readonly is False or die:
-    #         self.do.writeFile(envfile, C)
-    #
-    #     # pythonversion = '3' if os.environ.get('PYTHONVERSION') == '3' else ''
-    #
-    #     C2 = """
-    #     #!/bin/bash
-    #     # set -x
-    #     source $BASEDIR/env.sh
-    #     exec $JSBASE/bin/python3 -q "$@"
-    #     """
-    #
-    #     C2_insystem = """
-    #     #!/bin/bash
-    #     # set -x
-    #     source $BASEDIR/env.sh
-    #     exec python3 -q "$@"
-    #     """
-    #
-    #     # C2=C2.format(base=basedir, env=envfile)
-    #     if self.readonly is False:
-    #
-    #         self.do.delete("/usr/bin/jspython")  # to remove link
-    #         self.do.delete("%s/bin/jspython" % os.environ["JSBASE"])
-    #         self.do.delete("/usr/local/bin/jspython")
-    #
-    #         if self.do.sandbox:
-    #             self.logger.info("jspython in sandbox")
-    #             dest = "%s/bin/jspython" % os.environ["JSBASE"]
-    #             C2 = C2.replace('$BASEDIR', os.environ["JSBASE"])
-    #             self.do.writeFile(dest, C2)
-    #         else:
-    #             # in system
-    #             self.logger.info("jspython in system")
-    #             dest = "/usr/local/bin/jspython"
-    #             C2_insystem = C2_insystem.replace(
-    #                 '$BASEDIR', os.environ["JSBASE"])
-    #             self.do.writeFile(dest, C2_insystem)
-    #
-    #         self.do.chmod(dest, 0o770)
-    #
-    #         # change site.py file
-    #         def changesite(path):
-    #             if self.do.exists(path=path):
-    #                 C = self.do.readFile(path)
-    #                 out = ""
-    #                 for line in C.split("\n"):
-    #                     if line.find("ENABLE_USER_SITE") == 0:
-    #                         line = "ENABLE_USER_SITE = False"
-    #                     if line.find("USER_SITE") == 0:
-    #                         line = "USER_SITE = False"
-    #                     if line.find("USER_BASE") == 0:
-    #                         line = "USER_BASE = False"
-    #
-    #                     out += "%s\n" % line
-    #                 self.do.writeFile(path, out)
-    #         changesite("%s/lib/site.py" % os.environ["JSBASE"])
-    #         # if insystem:
-    #         #     changesite("/usr/local/lib/python3/dist-packages/site.py"%basedir)
-    #
-    #     # custom install items
-
-    def cleanSystem(self):
-        # TODO *2 no longer complete
-        if self.do.TYPE.startswith("UBUNTU"):
-            # pythonversion = os.environ.get('PYTHONVERSION', '')
-            self.logger.info("clean platform")
-            CMDS = """
-            pip uninstall JumpScale-core
-            # killall tmux  #dangerous
-            killall redis-server
-            rm /usr/local/bin/js*
-            rm /usr/local/bin/ays*
-            rm -rf $BASEDIR/lib/JumpScale
-            rm -rf /opt/sentry/
-            sudo stop redisac
-            sudo stop redisp
-            sudo stop redism
-            sudo stop redisc
-            killall redis-server
-            rm -rf /opt/redis/
-            """
-            CMDS = CMDS.replace("$BASEDIR", self.BASE)
-            self.do.executeCmds(
-                CMDS,
-                showout=False,
-                outputStderr=False,
-                useShell=True,
-                log=False,
-                cwd=None,
-                timeout=60,
-                errors=[],
-                ok=[],
-                captureout=False,
-                die=False)
-
-            for PYTHONVERSION in ["3.5", "3.4", "3.3", "2.7", ""]:
-                CMDS = """
-                rm -rf /usr/local/lib/python%(pythonversion)s/dist-packages/jumpscale*
-                rm -rf /usr/local/lib/python%(pythonversion)s/site-packages/jumpscale*
-                rm -rf /usr/local/lib/python%(pythonversion)s/dist-packages/JumpScale*
-                rm -rf /usr/local/lib/python%(pythonversion)s/site-packages/JumpScale*
-                rm -rf /usr/local/lib/python%(pythonversion)s/site-packages/JumpScale/
-                rm -rf /usr/local/lib/python%(pythonversion)s/site-packages/jumpscale/
-                rm -rf /usr/local/lib/python%(pythonversion)s/dist-packages/JumpScale/
-                rm -rf /usr/local/lib/python%(pythonversion)s/dist-packages/jumpscale/
-                """ % {'pythonversion': PYTHONVERSION}
-                self.do.executeCmds(
-                    CMDS,
-                    showout=False,
-                    outputStderr=False,
-                    useShell=True,
-                    log=False,
-                    cwd=None,
-                    timeout=60,
-                    errors=[],
-                    ok=[],
-                    captureout=False,
-                    die=False)
-
-    def updateSystem(self):
-
-        if j.core.platformtype.myplatform.isUbuntu:
-            CMDS = """
-            apt-get update
-            apt-get autoremove
-            apt-get -f install -y
-            apt-get upgrade -y
-            """
-            self.do.executeCmds(CMDS)
-
-        elif j.core.platformtype.myplatform.isMac:
-            CMDS = """
-            brew update
-            brew upgrade
-            """
-            self.do.executeCmds(CMDS)
-
-    def installpip(self):
-        tmpdir = self.do.config["dirs"]["TMPDIR"]
-        if not self.do.exists(self.do.joinPaths(tmpdir, "get-pip.py")):
-            if not self.do.TYPE.startswith("WIN"):
-                cmd = "cd %s;curl -k https://bootstrap.pypa.io/get-pip.py > get-pip.py;python3 get-pip.py" % self.do.config[
-                    "dirs"]["TMPDIR"]
-                self.do.execute(cmd)
-
-    def prepare(self):
-        self.do.initCreateDirs4System()
-
-        self.logger.info("prepare")
-
-        # self.checkPython()
-
-        # self.installpip()
-
-        if sys.platform.startswith('win'):
-            raise RuntimeError("windows not supported yet in js9")
-        elif sys.platform.startswith('darwin'):
-            self.do.dependencies.osx()
-
-        self.do.dependencies.base()
-
-    def gitConfig(self, name, email):
-        if name == "":
-            name = email
-        if email == "":
-            raise RuntimeError("email cannot be empty")
-        self.do.execute("git config --global user.email \"%s\"" % email)
-        self.do.execute("git config --global user.name \"%s\"" % name)
-
-    def replacesitecustomize(self):
-        raise RuntimeError("not implemented")
-        if not j.core.platformtype.myplatform.isWindows:
-            ppath = "/usr/lib/python%s/sitecustomize.py" % os.environ.get(
-                'PYTHONVERSION', '')
-            if ppath.find(ppath):
-                os.remove(ppath)
-            self.symlink("%s/utils/sitecustomize.py" % self.BASE, ppath)
-
-            def do(path, dirname, names):
-                if path.find("sitecustomize") != -1:
-                    self.symlink("%s/utils/sitecustomize.py" % self.BASE, path)
-            self.logger.info(
-                "walk over /usr to find sitecustomize and link to new one")
-            os.path.walk("/usr", do, "")
-            os.path.walk("/etc", do, "")
-
-    def develtools(self):
-
-        [self.do.delete(item) for item in self.do.listDirsInDir(
-            do.getPythonLibSystem()) if item.find(".egg-info") != -1]
-        # [do.delete(item) for item in self.do.listDirsInDir(do.getPythonLibSystem()) if item.find(".dist-info")!=-1]
-        [self.do.delete(item) for item in self.do.listDirsInDir(
-            do.getPythonLibSystem()) if item.find(".egg") != -1]
-
-        self.do.execute("rm -rf %s/pip*" % self.do.getPythonLibSystem())
-        self.do.execute("rm -rf %s/pip*" % self.do.getBinDirSystem())
-
-        # self.do.pullGitRepo("https://github.com/pypa/pip")
-        # self.do.execute("cd %s;python3 setup.py install"%do.getGitRepoArgs("https://github.com/pypa/pip")[4])
-
-        "https://bootstrap.pypa.io/get-pip.py"
-        tmpfile = self.do.download("https://bootstrap.pypa.io/get-pip.py")
-        self.do.execute("python3 %s" % tmpfile)
-        self.do.execute("pip3 install --upgrade setuptools")
-
-        #"pyvim"
-        items = [
-            "jedi",
-            "python-prompt-toolkit",
-            "ipython",
-            "ptpython",
-            "ptpdb",
-            "pymux",
-            "click"]
-        for item in items:
-            self.do.pullGitRepo("git@github.com:Jumpscale/%s.git" % item)
-            path = self.do.joinPaths(do.CODEDIR, "github", "jumpscale", item)
-            cmd = "cd %s;python3 jsinstall.py" % path
-            self.logger.info(cmd)
-            self.do.execute(cmd)
-
-        self.do.pullGitRepo("https://github.com/vinta/awesome-python")
-
-        # if self.do.TYPE.startswith("OSX"):
-        #     dest = "%s/Library/Application Support/Sublime Text 3/Packages" % os.environ["HOME"]
-        #     src = "%s/opt/code/github/jumpscale/jumpscale_core9/tools/sublimetext/" % os.environ["HOME"]
-        # else:
-        #     self.logger.info("implement develtools")
-        #     import ipdb
-        #     ipdb.set_trace()
-        # if self.do.exists(src) and self.do.exists(dest):
-        #     self.do.copyTree(src, dest)
-
-
 class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
 
     def __init__(self, debug=False):
@@ -2510,18 +2008,24 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
 
         self.platformtype = j.core.platformtype
 
-        self.installer = Installer()
-        self.installer.do = self
-
         self.embed = False
 
-        self.init()
+        self.myplatform = self.platformtype.myplatform
+
+        if self.exists("/root/.iscontainer"):
+            os.environ["GIGDIR"] = "/root/gig"
+            os.environ["VARDIR"] = "/optvar"
+        else:
+            if "GIGDIR" not in os.environ:
+                os.environ["GIGDIR"] = "%s/gig" % os.environ["HOME"]
+            if "VARDIR" not in os.environ:
+                os.environ["VARDIR"] = "%s/var/" % os.environ["GIGDIR"]
 
         self.logger = j.logger.get("installtools")
 
     @property
     def mascot(self):
-        mascotpath = "%s/.mascot.txt" % os.environ["GIGHOME"]
+        mascotpath = "%s/.mascot.txt" % os.environ["GIGDIR"]
         if not j.sal.fs.exists(mascotpath):
             print("env has not been installed properly, please follow init instructions on https://github.com/Jumpscale/developer")
             sys.exit(1)
@@ -2537,10 +2041,14 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
 
     @property
     def debug(self):
-        if self.config != {}:
-            return self.config["system"]["debug"]
-        else:
-            return os.environ["debug"]
+        return self.config["system"]["debug"]
+
+    @property
+    def container(self):
+        """
+        means we don't work with ssh-agent ...
+        """
+        return self.config["system"]["container"]
 
     @debug.setter
     def debug(self, value):
@@ -2552,26 +2060,60 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
         else:
             raise RuntimeError("cannot set debug, system is in readonly.")
 
-    def initEnv(self, executor=None):
+    @container.setter
+    def container(self, value):
+        if not isinstance(value, bool):
+            raise RuntimeError("input for container needs to be bool")
+        if self.config != {}:
+            self.config["system"]["container"] = value
+            j.core.state.configSave()
+        else:
+            raise RuntimeError("cannot set container, system is in readonly.")
+
+    def initEnv(self):
         """
         @type executor: ExecutorBase
         """
 
-        T = '''
+        if self.exists("/root/.iscontainer"):
+            container = True
+        else:
+            container = False
+
+        if container:
+            T = '''
         [dirs]
         HOMEDIR = "~"
         TMPDIR = "/tmp"
-        VARDIR = "{{HOMEDIR}}/js9/var"
-        BASEDIR = "{{HOMEDIR}}/js9"
+        VARDIR = "/optvar"
+        BASEDIR = "/opt/jumpscale9"
         CFGDIR = "{{VARDIR}}/cfg"
         DATADIR = "{{VARDIR}}/data"
-        CODEDIR = "{{HOMEDIR}}/code"
+        CODEDIR = "/opt/code"
         BUILDDIR = "{{VARDIR}}/build"
         LIBDIR = "{{BASEDIR}}/lib/"
         TEMPLATEDIR = "{{BASEDIR}}/templates"
 
+            '''
+        else:
+            T = '''
+        [dirs]
+        HOMEDIR = "~"
+        TMPDIR = "/tmp"
+        VARDIR = "{{GIGDIR}}/var"
+        BASEDIR = "{{GIGDIR}}/gig"
+        CFGDIR = "{{VARDIR}}/cfg"
+        DATADIR = "{{VARDIR}}/data"
+        CODEDIR = "{{GIGDIR}}/code"
+        BUILDDIR = "{{VARDIR}}/build"
+        LIBDIR = "{{BASEDIR}}/lib/"
+        TEMPLATEDIR = "{{BASEDIR}}/templates"
+
+            '''
+
+        T += '''
         [email]
-        from = "kristof@incubaid.com"
+        from = "info@incubaid.com"
         smtp_port = 443
         smtp_server = ""
 
@@ -2588,6 +2130,7 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
         debug = true
         autopip = false
         readonly = false
+        container = false
 
         [grid]
         gid = 0
@@ -2604,6 +2147,7 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
         SSHKEYNAME = "id_rsa"
         '''
         T = j.data.text.strip(T)
+        T = T.replace("{{GIGDIR}}", os.environ["GIGDIR"])
 
         # will replace  ~ and the variables
         counter = 0
@@ -2625,12 +2169,23 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
             raise RuntimeError(
                 "cannot convert default configfile, template arguments still in")
 
-        # get env dir arguments & overrule them in jumpscale config
-        for key, val in os.environ.items():
-            if "DIR" in key and key in TT["dirs"]:
-                TT["dirs"][key] = val
+        if not container:
+            # get env dir arguments & overrule them in jumpscale config
+            for key, val in os.environ.items():
+                if "DIR" in key and key in TT["dirs"]:
+                    TT["dirs"][key] = val
 
-        j.core.state.configUpdate(TT, False)  # will not overwrite
+        if container:
+            TT["system"]["container"] = True
+
+        if container:
+            j.core.state.configUpdate(TT, True)  # will overwrite
+        else:
+            j.core.state.configUpdate(TT, False)  # will not overwrite
+
+        print(j.core.state.config)
+
+        self.initDevelContainer()
 
         # COPY the jumpscale commands
         js9_codedir = j.sal.fs.getParent(
@@ -2650,91 +2205,87 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
         self.linkJSCommandsToSystem()
 
     def linkJSCommandsToSystem(self):
-        src = "%s/github/jumpscale/core9/cmds/" % j.dirs.CODEDIR
+        src = "%s/github/jumpscale/core9/cmds/" % j.core.state.config["dirs"]["CODEDIR"]
         self.symlinkFilesInDir(src, "/usr/local/bin", delete=True, includeDirs=False, makeExecutable=True)
 
-    def fixCodeChangeDirVars(self, branch="8.2.0"):
-        """
-        walk over code dir & find all known old dir arguments & change them to new naming convention
-        """
-
-        repos = [
-            "github/jumpscale/dockers",
-            "github/jumpscale/ays_jumpscale9",
-            "github/jumpscale/jscockpit",
-            "github/jumpscale/jumpscale_portal8"]
-        # repos = ["github/jumpscale/jumpscale_core9"] #BE VERY CAREFUL IF YOU DO
-        # THIS ONE, THIS FUNCTION WILL BE CHANGED TOO, NEED TO COPY FIRST
-        tochange = [
-            "logDir",
-            "pidDir",
-            "hrdDir",
-            "goDir",
-            "nimDir",
-            "codeDir",
-            "binDir",
-            "jsLibDir",
-            "libDir",
-            "tmplsDir",
-            "homeDir",
-            "baseDir",
-            "tmpDir",
-            "varDir"]
-        changeName = {
-            "tmplsDir": "TEMPLATEDIR",
-            "cfgDir": "JSCFGDIR",
-            "appDir": "JSAPPSDIR",
-            "jsBase": "JSBASEDIR"}
-
-        def do(ffilter):
-            for repo in repos:
-                rpath = "%s/%s" % (j.dirs.CODEDIR, repo)
-                for fpath in self.listFilesInDir(
-                        rpath,
-                        recursive=True,
-                        filter=ffilter,
-                        followSymlinks=False,
-                        listSymlinks=False):
-                    content = self.readFile(fpath)
-                    content1 = content + ""  # make sure we have copy
-                    for key, val in changeName.items():
-                        content1 = content1.replace("$%s" % key, "$%s" % val)
-                        content1 = content1.replace(".%s" % key, ".%s" % val)
-                        content1 = content1.replace("\"%s" % key, "\"%s" % val)
-                        content1 = content1.replace("'%s" % key, "'%s" % val)
-                    for key in tochange:
-                        content1 = content1.replace(
-                            "$%s" %
-                            key,
-                            "$%s" %
-                            key.upper())
-                        content1 = content1.replace(
-                            ".%s" %
-                            key,
-                            ".%s" %
-                            key.upper())
-                        content1 = content1.replace(
-                            "\"%s" %
-                            key,
-                            "\"%s" %
-                            key.upper())
-                        content1 = content1.replace(
-                            "'%s" %
-                            key,
-                            "'%s" %
-                            key.upper())
-                    content1 = content1.replace("$JSBASEDIR", "$BASEDIR")
-                    content1 = content1.replace("$jsBase", "$JSBASEDIR")
-                    content1 = content1.replace("$jsBASE", "$JSBASEDIR")
-                    if content1 != content:
-                        self.writeFile(fpath, content1, strip=False)
-        do("*.py")
-        do("*.md")
-        do("*.txt")
-
-    def init(self):
-
-        self.myplatform = self.platformtype.myplatform
+    # def fixCodeChangeDirVars(self, branch="8.2.0"):
+    #     """
+    #     walk over code dir & find all known old dir arguments & change them to new naming convention
+    #     """
+    #
+    #     repos = [
+    #         "github/jumpscale/dockers",
+    #         "github/jumpscale/ays_jumpscale9",
+    #         "github/jumpscale/jscockpit",
+    #         "github/jumpscale/jumpscale_portal8"]
+    #     # repos = ["github/jumpscale/jumpscale_core9"] #BE VERY CAREFUL IF YOU DO
+    #     # THIS ONE, THIS FUNCTION WILL BE CHANGED TOO, NEED TO COPY FIRST
+    #     tochange = [
+    #         "logDir",
+    #         "pidDir",
+    #         "hrdDir",
+    #         "goDir",
+    #         "nimDir",
+    #         "codeDir",
+    #         "binDir",
+    #         "jsLibDir",
+    #         "libDir",
+    #         "tmplsDir",
+    #         "homeDir",
+    #         "baseDir",
+    #         "tmpDir",
+    #         "varDir"]
+    #     changeName = {
+    #         "tmplsDir": "TEMPLATEDIR",
+    #         "cfgDir": "JSCFGDIR",
+    #         "appDir": "JSAPPSDIR",
+    #         "jsBase": "JSBASEDIR"}
+    #
+    #     def do(ffilter):
+    #         for repo in repos:
+    #             rpath = "%s/%s" % (j.dirs.CODEDIR, repo)
+    #             for fpath in self.listFilesInDir(
+    #                     rpath,
+    #                     recursive=True,
+    #                     filter=ffilter,
+    #                     followSymlinks=False,
+    #                     listSymlinks=False):
+    #                 content = self.readFile(fpath)
+    #                 content1 = content + ""  # make sure we have copy
+    #                 for key, val in changeName.items():
+    #                     content1 = content1.replace("$%s" % key, "$%s" % val)
+    #                     content1 = content1.replace(".%s" % key, ".%s" % val)
+    #                     content1 = content1.replace("\"%s" % key, "\"%s" % val)
+    #                     content1 = content1.replace("'%s" % key, "'%s" % val)
+    #                 for key in tochange:
+    #                     content1 = content1.replace(
+    #                         "$%s" %
+    #                         key,
+    #                         "$%s" %
+    #                         key.upper())
+    #                     content1 = content1.replace(
+    #                         ".%s" %
+    #                         key,
+    #                         ".%s" %
+    #                         key.upper())
+    #                     content1 = content1.replace(
+    #                         "\"%s" %
+    #                         key,
+    #                         "\"%s" %
+    #                         key.upper())
+    #                     content1 = content1.replace(
+    #                         "'%s" %
+    #                         key,
+    #                         "'%s" %
+    #                         key.upper())
+    #                 content1 = content1.replace("$JSBASEDIR", "$BASEDIR")
+    #                 content1 = content1.replace("$jsBase", "$JSBASEDIR")
+    #                 content1 = content1.replace("$jsBASE", "$JSBASEDIR")
+    #                 if content1 != content:
+    #                     self.writeFile(fpath, content1, strip=False)
+    #     do("*.py")
+    #     do("*.md")
+    #     do("*.txt")
 
     @property
     def epoch(self):
@@ -2757,6 +2308,24 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
         else:
             self._whoami = result.strip()
         return self._whoami
+
+    def initDevelContainer(self):
+
+        C = """
+        #this is the main env file which needs to be sourced for any action we do on our platform
+
+        clear
+
+        cat ~/gig/.mascot.txt
+
+        set -e
+        export GIGDIR=/root/gig
+        export PS1="gig:\h:\w$\[$(tput sgr0)\]"
+        """
+
+        if self.container:
+            self.writeFile("/root/.jsenv.sh", C)
+            self.writeFile("/root/.bash_profile", "source /root/.jsenv.sh\n")
 
 
 do = InstallTools()
