@@ -926,20 +926,20 @@ class FSMethods():
                 cmd += " -rLptgo --partial %s" % excl
             if not recursive:
                 cmd += " --exclude \"*/\""
-            if self.debug:
-                cmd += ' --progress'
+            # if self.debug:
+            #     cmd += ' --progress'
             if rsyncdelete:
                 cmd += " --delete"
             if ssh:
                 cmd += " -e 'ssh -o StrictHostKeyChecking=no -p %s' " % sshport
             cmd += " '%s' '%s'" % (source, dest)
-            self.logger.info(cmd)
+            # self.logger.info(cmd)
             if executor is not None:
-                rc, out, err = executor.execute(cmd)
+                rc, out, err = executor.execute(cmd, showout=False)
             else:
-                rc, out, err = self.execute(cmd)
-            print(rc)
-            print(out)
+                rc, out, err = self.execute(cmd, showout=False, outputStderr=False)
+            # print(rc)
+            # print(out)
             return
         else:
             old_debug = self.debug
@@ -2025,7 +2025,7 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
 
     @property
     def mascot(self):
-        mascotpath = "%s/.mascot.txt" % os.environ["GIGDIR"]
+        mascotpath = "%s/.mascot.txt" % os.environ["HOME"]
         if not j.sal.fs.exists(mascotpath):
             print("env has not been installed properly, please follow init instructions on https://github.com/Jumpscale/developer")
             sys.exit(1)
@@ -2184,9 +2184,7 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
         else:
             j.core.state.configUpdate(TT, False)  # will not overwrite
 
-        print(j.core.state.config)
-
-        self.initDevelContainer()
+        # print(j.core.state.config)
 
         # COPY the jumpscale commands
         js9_codedir = j.sal.fs.getParent(

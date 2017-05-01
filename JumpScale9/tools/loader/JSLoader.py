@@ -98,31 +98,37 @@ class JSLoader():
 
     def __init__(self):
         self.logger = j.logger.get("jsloader")
-        self.autopip = j.application.config["system"].get("autopip") == True
         self.__jslocation__ = "j.tools.jsloader"
 
-    def _installDevelopmentEnv(self):
+    @property
+    def autopip(self):
+        return j.application.config["system"].get("autopip") == True
 
-        cmd = "apk add gcc"
-        # apt-get install python3-dev
-        from IPython import embed
-        print("DEBUG NOW _installDevelopmentEnv")
-        embed()
-        raise RuntimeError("stop debug here")
+    def _installDevelopmentEnv(self):
+        cmd = "apt-get install python3-dev libssl-dev -y"
+        j.do.execute(cmd)
+        j.do.execute("pip3 install pudb")
 
     def _findSitePath(self):
+        res = ""
         for item in sys.path:
             if "/site-packages" in item:
-                return item
+                if res == "" or len(item) < len(res):
+                    res = item
+        if res != "":
+            return res
         for item in sys.path:
             if "/dist-packages" in item:
-                return item
-        raise RuntimeError("Could not find sitepath")
+                if res == "" or len(item) < len(res):
+                    res = item
+        if res == "":
+            raise RuntimeError("Could not find sitepath")
+        return res
 
     @property
     def initPath(self):
         path = self._findSitePath() + "/js9.py"
-
+        # print("initpath:%s" % path)
         j.sal.fs.remove(path)
         # if not j.sal.fs.exists(path, followlinks=True):
         j.sal.fs.writeFile(filename=path, contents="from JumpScale9 import j\n", append=False)
@@ -132,10 +138,7 @@ class JSLoader():
     def _pip(self, item):
         rc, out, err = j.sal.process.execute("pip3 install %s" % item, die=False)
         if rc > 0:
-            if "command 'gcc' failed" in out:
-                if self.coreOnly:
-                    # will not install dependencies which rely on development env
-                    return 1
+            if "gcc' failed" in out:
                 self._installDevelopmentEnv()
                 rc, out, err = j.sal.process.execute("pip3 install %s" % item, die=False)
         if rc > 0:
@@ -144,8 +147,12 @@ class JSLoader():
 
     def generate(self, path="", out="", moduleList={}, codecompleteOnly=False):
         # basedir = j.sal.fs.getParent(j.sal.fs.getDirName(j.sal.fs.getPathOfRunningFunction(j.application.__init__)))
-        if out == "" or out == None:
-            out = self.initPath
+        if out == "" or out is None:
+            if codecompleteOnly:
+                out = "/root/gig/python_libs/js9.py"
+            else:
+                out = self.initPath
+                print("* js9 path:%s" % out)
         else:
             self.initPath  # to make sure empty one is created
 
@@ -224,7 +231,7 @@ class JSLoader():
             if len(content0.strip().split("\n")) > 4:
                 content += content0
 
-            print(res2)
+            # print(res2)
 
         content += pystache.render(GEN_END, **jlocations)
         j.sal.fs.writeFile(out, content)

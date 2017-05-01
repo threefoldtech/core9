@@ -19,7 +19,11 @@ function valid () {
   fi
 }
 
-trap valid ERR
+function nothing () {
+    echo > /dev/null
+}
+
+touch /tmp/lastcommandoutput.txt
 
 source ~/.jsenv.sh
 
@@ -44,30 +48,39 @@ function getcode {
 }
 
 function linkcmds {
-    if [ -z "$CODEDIR" ]; then
-        echo "Please define name of docker instance by setting variable: iname"
-        exit 1
+    if [ -z "$iname" ]; then
+        if [ -z "$CODEDIR" ]; then
+            echo "Please define name of docker instance by setting variable: iname"
+            exit 1
+        fi
+        #link all our command lines relevant to jumpscale development env
+        rm -f /usr/local/bin/js9*
+        rm -rf /usr/local/bin/cmds*
+        if [ -e /root/.iscontainer ]; then
+            #we are in container
+            echo "* link commands to container"
+            set -x
+            find  $CODEDIR/github/jumpscale/core9/cmds -exec ln -s {} "/usr/local/bin/" \;
+            rm -rf /usr/local/bin/cmds
+            find  $CODEDIR/github/jumpscale/developer/cmds_guest -exec ln -s {} "/usr/local/bin/" \;
+            rm -rf /usr/local/bin/cmds_guest
+        else
+            echo "* link commands to local environment"
+            find  $CODEDIR/github/jumpscale/developer/cmds_host -exec ln -s {} "/usr/local/bin/" \;
+            rm -rf /usr/local/bin/cmds_host
+        fi
+    else
+        echo "* link commands to container"
+        docker exec -t $iname bash -c 'source /root/.jsenv.sh;source $CODEDIR/github/jumpscale/core9/cmds/js9_base;linkcmds' > /tmp/lastcommandoutput.txt 2>&1
     fi
-    echo "* link commands to local environment"
-    #link all our command lines relevant to jumpscale development env
-    rm -f /usr/local/bin/js9*
-    rm -rf /usr/local/bin/cmds*
-    find  $CODEDIR/github/jumpscale/developer/cmds_host -exec ln -s {} "/usr/local/bin/" \;
-    rm -rf /usr/local/bin/cmds_host
-    if [ -e /root/.iscontainer ]; then
-        #we are in container
-        find  $CODEDIR/github/jumpscale/core9/cmds -exec ln -s {} "/usr/local/bin/" \;
-        rm -rf /usr/local/bin/cmds
-        find  $CODEDIR/github/jumpscale/developer/cmds_guest -exec ln -s {} "/usr/local/bin/" \;
-        rm -rf /usr/local/bin/cmds_guest
-    fi
+
 }
 
 function initssh {
-    if [ -e /root/.iscontainer ]; then
-        echo "Can only execute this in host"
-        exit 1
-    fi
+    # if [ -e /root/.iscontainer ]; then
+    #     echo "Can only execute this in host"
+    #     exit 1
+    # fi
     if [ -z "$iname" ]; then
         echo "Please define name of docker instance by setting variable: iname"
         exit 1
@@ -103,7 +116,7 @@ function cleanup {
         exit 1
     fi
     echo "* cleanup"
-    docker exec -t $iname bash -c 'cleanup'
+    docker exec -t $iname bash -c 'js9_cleanup' > /tmp/lastcommandoutput.txt 2>&1
 }
 
 function commitdocker {
@@ -136,7 +149,7 @@ function initjs {
 
 function copyfiles {
     echo "* sync files"
-    docker exec -t $iname bash -c 'rsync -rav /opt/code/github/jumpscale/developer/scripts/files/ /' > /tmp/lastcommandoutput.txt 2>&1
+    docker exec -t $iname bash -c 'rsync -rav /opt/code/github/jumpscale/developer/files_guest/ /' > /tmp/lastcommandoutput.txt 2>&1
 
 }
 
@@ -167,3 +180,6 @@ if [ -z "$CODEDIR" ]; then
     echo "and restart shell."
     exit 1
 fi
+
+trap valid ERR
+cat ~/.mascot.txt

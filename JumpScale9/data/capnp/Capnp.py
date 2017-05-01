@@ -5,7 +5,7 @@ import os
 import capnp
 from collections import OrderedDict
 import capnp
-from ModelBase import *
+from .ModelBase import *
 # from ModelBase1 import *
 
 
@@ -42,7 +42,7 @@ class Capnp:
 
     def __init__(self):
         self.__jslocation__ = "j.data.capnp"
-        self.__imports__ = "capnp"
+        self.__imports__ = "pycapnp"
         self._cache = {}
         self._capnpVarDir = j.sal.fs.joinPaths(j.dirs.VARDIR, "capnp")
         j.sal.fs.createDir(self._capnpVarDir)

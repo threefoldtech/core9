@@ -1,4 +1,5 @@
 from JumpScale9 import j
+import git
 
 
 class GitClient:
@@ -67,7 +68,6 @@ class GitClient:
     def repo(self):
         # Load git when we absolutly need it cause it does not work in gevent
         # mode
-        import git
         if not self._repo:
             if not j.sal.fs.exists(self.BASEDIR):
                 j.tools.cuisine.local.core.run(

@@ -11,6 +11,7 @@ class GitFactory:
         self.getGitRepoArgs = j.do.getGitRepoArgs
         self.rewriteGitRepoUrl = j.do.rewriteGitRepoUrl
         self.getGitBranch = j.do.getGitBranch
+        self.__jslocation__ = "j.clients.git"
 
     def parseUrl(self, url):
         """

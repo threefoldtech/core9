@@ -5,7 +5,7 @@ from js9 import j
 #
 # import os
 # import psutil
-from NodeBase import NodeBase
+from .NodeBase import NodeBase
 
 
 class NodeHost(NodeBase):

@@ -1,8 +1,8 @@
 from distutils.core import setup
 
 setup(
-    name='JumpScale',
-    version='9.0.0a1',
+    name='JumpScale9',
+    version='9.0.0',
     description='Automation framework for cloud workloads',
     url='https://github.com/Jumpscale/core9',
     author='GreenItGlobe',
@@ -22,6 +22,7 @@ setup(
         'python-dateutil',
         'requests',
         'path.py',
-        'click'
+        'click',
+        'gitpython'
     ]
 )
