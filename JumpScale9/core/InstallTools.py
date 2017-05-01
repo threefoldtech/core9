@@ -2142,6 +2142,7 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
 
         [me]
         fullname = "Kristof De Spiegeleer"
+        loginname = "despiegk"
 
         [ssh]
         SSHKEYNAME = "id_rsa"
@@ -2308,24 +2309,6 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
         else:
             self._whoami = result.strip()
         return self._whoami
-
-    def initDevelContainer(self):
-
-        C = """
-        #this is the main env file which needs to be sourced for any action we do on our platform
-
-        clear
-
-        cat ~/gig/.mascot.txt
-
-        set -e
-        export GIGDIR=/root/gig
-        export PS1="gig:\h:\w$\[$(tput sgr0)\]"
-        """
-
-        if self.container:
-            self.writeFile("/root/.jsenv.sh", C)
-            self.writeFile("/root/.bash_profile", "source /root/.jsenv.sh\n")
 
 
 do = InstallTools()

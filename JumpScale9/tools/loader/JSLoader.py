@@ -114,6 +114,9 @@ class JSLoader():
         for item in sys.path:
             if "/site-packages" in item:
                 return item
+        for item in sys.path:
+            if "/dist-packages" in item:
+                return item
         raise RuntimeError("Could not find sitepath")
 
     @property
