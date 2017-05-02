@@ -88,7 +88,14 @@ def jscode(action, name, url, message, branch, accounts, update, force=False, de
         _status_action()
     repos = _search_repos(accounts, name, interactive=not force)
 
-    for provider, account, reponame, branch, client, path in repos:
+    for provider, account, reponame, branchExisting, client, path in repos:
+
+        if not client.remoteUrl.startswith("git"):
+
+            from IPython import embed
+            print("DEBUG NOW 87")
+            embed()
+            raise RuntimeError("stop debug here")
 
         if action == "update" and deletechanges:
             print(("force update %s/%s/%s" % (provider, account, reponame)))
@@ -98,13 +105,6 @@ def jscode(action, name, url, message, branch, accounts, update, force=False, de
             client.update(force=True)
             continue
 
-        # elif action == "update":
-        #     # j.do.pullGitRepo(client.remoteUrl, dest=None, depth=None,
-        #     #                  ignorelocalchanges=deletechanges, reset=False, branch=branch)
-        #     client.update(force=True)
-        #
-        # # TODO: is dirty hack, am sure there are better ways
-
         nrmods = 0
         if action in ['status', 'commit', 'update', 'push']:
 
@@ -113,28 +113,26 @@ def jscode(action, name, url, message, branch, accounts, update, force=False, de
             nrmods = len(mods["D"]) + len(mods["M"]) + len(mods["N"]) + len(mods["R"])
 
             if onlychanges and nrmods == 0:
-                continue
+                if action != 'update' and action != 'update':
+                    continue
 
-            # lrev,lid,provider,branch,user,msg,ddate=client.client.tip()
+            # if branch is not None:
+            #     if branch != client.branchName:
+            #         print(("set branch:%s" % branch))
+            #         client.switchBranch(branch, create=True)
+
+            # lrev = client.repo.head.commit.hexsha
             branch = client.branchName
 
-            if branch is not None:
-                if branch != branch:
-                    print(("set branch:%s" % branch))
-                    client.switchBranch(branch, create=True)
-
-            lrev = client.repo.head.commit.hexsha
-            branch = client.branchName
-
-            reposync = "?"
-            remotelastrevision = "?"
+            # reposync = "?"
+            # remotelastrevision = "?"
 
             if nrmods > 0:
                 reposync = "N"
 
-            print("%-15s %-25s %-10s n%-3s:m%-3s:d%-3s:r%-6s reposync:%-9s" %
+            print("%-15s %-25s %-10s n%-3s:m%-3s:d%-3s:r%-6s" %
                   (account, reponame, client.branchName, len(mods["N"]), len(mods["M"]), len(mods["D"]),
-                   len(mods["R"]), reposync))
+                   len(mods["R"])))
 
         if action in ['commit', 'update', 'push']:
             if nrmods == 0:
