@@ -42,6 +42,8 @@ todo = []
 todo.append(("lib9", "JumpScale9Lib"))
 todo.append(("core9", "JumpScale9"))
 todo.append(("ays9", "JumpScale9AYS"))
+todo.append(("prefab9", "JumpScale9Prefab"))
+todo.append(("portal9", "JumpScale9Portal"))
 
 moduleList = {}
 
