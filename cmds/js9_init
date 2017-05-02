@@ -1,8 +1,14 @@
 #! /usr/bin/env python3
 
+
 # from js9 import j
 # needs to be the original one because am generating the above one
 from JumpScale9 import j
+
+from JumpScale9.data.capnp.Capnp import Capnp
+j.data.capnp = Capnp()
+
+
 import sys
 
 print(j.do.mascot)
@@ -36,7 +42,7 @@ def copyPyLibs():
         j.sal.fs.remove(item)
 
 
-copyPyLibs()
+# copyPyLibs()
 
 todo = []
 todo.append(("lib9", "JumpScale9Lib"))
