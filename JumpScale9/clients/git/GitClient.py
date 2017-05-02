@@ -55,10 +55,7 @@ class GitClient:
         return self.__repr__()
 
     def setRemoteURL(self, url):
-        from IPython import embed
-        print("DEBUG NOW i87")
-        embed()
-        raise RuntimeError("stop debug here")
+        j.sal.process.executeWithoutPipe("cd %s;git remote set-url origin '%s'" % (self.BASEDIR, url))
 
     @property
     def remoteUrl(self):
