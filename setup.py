@@ -23,6 +23,6 @@ setup(
         'requests',
         'path.py',
         'click',
-        'gitpython'
+        'gitpython',
     ]
 )
