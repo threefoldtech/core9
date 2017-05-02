@@ -27,7 +27,7 @@ import sys
 # """
 
 GEN_START = """
-#from JumpScale9.core.JSBase import JSBase
+from JumpScale9.core.JSBase import JSBase
 import os
 os.environ["LC_ALL"]='en_US.UTF-8'
 """
@@ -228,7 +228,7 @@ class JSLoader():
                 content0 = pystache.render(GEN2, **res2)
             else:
                 content0 = pystache.render(GEN, **res2)
-            if len(content0.strip().split("\n")) > 4:
+            if len([item for item in content0.split("\n") if item.strip() != ""]) > 4:
                 content += content0
 
             # print(res2)

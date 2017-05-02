@@ -26,12 +26,12 @@ class Profile:
 
     def load(self):
         self.home = self.bash.home
-        self.cuisine = self.bash.cuisine
+        self.prefab = self.bash.prefab
         self._env = {}
         self._path = []
         self._includes = []
 
-        content = self.cuisine.core.file_read(self.pathProfile)
+        content = self.prefab.core.file_read(self.pathProfile)
 
         for match in Profile.env_pattern.finditer(content):
             self._env[match.group(1)] = match.group(2)
@@ -45,7 +45,7 @@ class Profile:
         else:
             _path = set()
         # make sure to add the js bin dir to the path
-        _path.add(self.cuisine.core.dir_paths['BINDIR'])
+        _path.add(self.prefab.core.dir_paths['BINDIR'])
 
         for item in _path:
             if item.strip() == "":
@@ -120,7 +120,7 @@ class Profile:
         """
         while self.envExists(key):
             path = self.envGet(key)
-            self.cuisine.core.dir_remove(path)
+            self.prefab.core.dir_remove(path)
             self.envDelete(key)
 
     def __str__(self):
@@ -160,14 +160,14 @@ class Profile:
         @param includeInDefaultProfile, if True then will include in the default profile
         """
 
-        self.cuisine.core.file_write(self.pathProfile, str(self), showout=True)
+        self.prefab.core.file_write(self.pathProfile, str(self), showout=True)
 
         # make sure we include our custom profile in the default
         if includeInDefaultProfile is True:
             if self.pathProfile != self.bash.profileDefault.pathProfile:
                 print("INCLUDE IN DEFAULT PROFILE:%s" % self.pathProfile)
                 out = ""
-                inProfile = self.cuisine.core.file_read(self.bash.profileDefault.pathProfile)
+                inProfile = self.prefab.core.file_read(self.bash.profileDefault.pathProfile)
                 for line in inProfile.split("\n"):
                     if line.find(self.pathProfile) != -1:
                         continue
@@ -175,13 +175,13 @@ class Profile:
 
                 out += "\nsource %s\n" % self.pathProfile
                 if out.replace("\n", "") != inProfile.replace("\n", ""):
-                    self.cuisine.core.file_write(self.bash.profileDefault.pathProfile, out)
+                    self.prefab.core.file_write(self.bash.profileDefault.pathProfile, out)
                     self.bash.profileDefault.load()
 
         self.bash.reset()  # do not remove !
 
     def getLocaleItems(self, force=False, showout=False):
-        out = self.cuisine.core.run("locale -a")[1]
+        out = self.prefab.core.run("locale -a")[1]
         return out.split("\n")
 
     def fixlocale(self):
@@ -219,7 +219,7 @@ class Bash:
         else:
             self.executor = j.tools.executorLocal
 
-        self.cuisine = self.executor.cuisine
+        self.prefab = self.executor.prefab
         self.reset()
 
     def reset(self):
@@ -232,13 +232,13 @@ class Bash:
 
     @property
     def home(self):
-        return self.executor.cuisine.core.dir_paths["HOMEDIR"]
+        return self.executor.prefab.core.dir_paths["HOMEDIR"]
 
     def cmdGetPath(self, cmd, die=True):
         """
         checks cmd Exists and returns the path
         """
-        rc, out, err = self.cuisine.core.run("which %s" % cmd, die=False, showout=False, profile=True)
+        rc, out, err = self.prefab.core.run("which %s" % cmd, die=False, showout=False, profile=True)
         if rc > 0:
             if die:
                 raise j.exceptions.RuntimeError("Did not find command: %s" % cmd)
@@ -248,8 +248,8 @@ class Bash:
 
     def profileGet(self, path="~/.profile_js"):
         path = path.replace("~", self.home)
-        if not self.cuisine.core.file_exists(path):
-            self.cuisine.core.file_write(path, "")
+        if not self.prefab.core.file_exists(path):
+            self.prefab.core.file_write(path, "")
         return Profile(self, path)
 
     @property
@@ -267,7 +267,7 @@ class Bash:
             path = ""
             for attempt in [".profile", ".bash_profile"]:
                 ppath = j.sal.fs.joinPaths(self.home, attempt)
-                if self.cuisine.core.file_exists(ppath):
+                if self.prefab.core.file_exists(ppath):
                     path = ppath
             if path == "":
                 path = "~/.bash_profile"
@@ -279,15 +279,15 @@ class Bash:
         return self.profileDefault.pathProfile
 
     def fixlocale(self):
-        self.cuisine.bash.profileJS.fixlocale()
-        self.cuisine.bash.profileJS.save(True)  # will make sure it gets in default profile
+        self.prefab.bash.profileJS.fixlocale()
+        self.prefab.bash.profileJS.save(True)  # will make sure it gets in default profile
 
     def envSet(self, key, val):
-        self.cuisine.bash.profileJS.envSet(key, val)
-        self.cuisine.bash.profileJS.save(True)
+        self.prefab.bash.profileJS.envSet(key, val)
+        self.prefab.bash.profileJS.save(True)
 
     def envGet(self, key):
-        return self.cuisine.bash.profileJS.envGet(key)
+        return self.prefab.bash.profileJS.envGet(key)
 
     def envDelete(self, key):
-        return self.cuisine.bash.profileJS.envDelete(key)
+        return self.prefab.bash.profileJS.envDelete(key)

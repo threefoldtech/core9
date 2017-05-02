@@ -26,25 +26,25 @@ class MyFSEventHandler(FileSystemEventHandler):
             error = False
             for node in j.tools.develop.nodes:
                 if error is False:
-                    if node.cuisine.core.isJS8Sandbox:
+                    if node.prefab.core.isJS8Sandbox:
                         sep = "jumpscale_core9/lib/JumpScale/"
                         sep_cmds = "jumpscale_core9/shellcmds/"
                         if changedfile.find(sep) != -1:
                             dest0 = changedfile.split(sep)[1]
-                            dest = j.sal.fs.joinPaths(node.cuisine.core.dir_paths['LIBDIR'], 'JumpScale', dest0)
+                            dest = j.sal.fs.joinPaths(node.prefab.core.dir_paths['LIBDIR'], 'JumpScale', dest0)
                         elif changedfile.find(sep_cmds) != -1:
                             dest0 = changedfile.split(sep_cmds)[1]
-                            dest = j.sal.fs.joinPaths(node.cuisine.core.dir_paths['BINDIR'], dest0)
+                            dest = j.sal.fs.joinPaths(node.prefab.core.dir_paths['BINDIR'], dest0)
                         elif changedfile.find("/.git/") != -1:
                             return
                         elif changedfile.find("/__pycache__/") != -1:
                             return
                         elif j.sal.fs.getBaseName(changedfile) in ["InstallTools.py", "ExtraTools.py"]:
                             base = j.sal.fs.getBaseName(changedfile)
-                            dest = j.sal.fs.joinPaths(node.cuisine.core.dir_paths['LIBDIR'], 'JumpScale', base)
+                            dest = j.sal.fs.joinPaths(node.prefab.core.dir_paths['LIBDIR'], 'JumpScale', base)
                         else:
                             destpart = changedfile.split("jumpscale/", 1)[-1]
-                            dest = j.sal.fs.joinPaths(node.cuisine.core.dir_paths['CODEDIR'], destpart)
+                            dest = j.sal.fs.joinPaths(node.prefab.core.dir_paths['CODEDIR'], destpart)
                     else:
                         if changedfile.find("/.git/") != -1:
                             return
@@ -52,7 +52,7 @@ class MyFSEventHandler(FileSystemEventHandler):
                             return
                         else:
                             destpart = changedfile.split("code/", 1)[-1]
-                            dest = j.sal.fs.joinPaths(node.cuisine.core.dir_paths['CODEDIR'], destpart)
+                            dest = j.sal.fs.joinPaths(node.prefab.core.dir_paths['CODEDIR'], destpart)
                     e = ""
                     if action == "copy":
                         print("copy: %s %s:%s" % (changedfile, node, dest))
@@ -130,15 +130,15 @@ class DebugSSHNode:
     @property
     def executor(self):
         self.test()
-        return self._cuisine._executor
+        return self._prefab._executor
 
     @property
-    def cuisine(self):
+    def prefab(self):
         self.test()
         if self.port == 0:
-            return j.tools.cuisine.local
+            return j.tools.prefab.local
         else:
-            return self.sshclient.cuisine
+            return self.sshclient.prefab
 
     @property
     def sshclient(self):
@@ -303,17 +303,17 @@ class DevelopToolsFactory:
             for node in self.nodes:
                 if node.port != 0:
 
-                    node.cuisine.core.isJS8Sandbox = False
+                    node.prefab.core.isJS8Sandbox = False
 
-                    if not node.cuisine.core.isJS8Sandbox:
+                    if not node.prefab.core.isJS8Sandbox:
                         # non sandboxed mode, need to sync to \
                         dest = "root@%s:%s/%s" % (node.addr,
-                                                  node.cuisine.core.dir_paths['CODEDIR'], source.split("code/", 1)[1])
+                                                  node.prefab.core.dir_paths['CODEDIR'], source.split("code/", 1)[1])
                     else:
-                        dest = "root@%s:%s/%s" % (node.addr, node.cuisine.core.dir_paths['CODEDIR'], destpart)
+                        dest = "root@%s:%s/%s" % (node.addr, node.prefab.core.dir_paths['CODEDIR'], destpart)
 
-                    if destpart == "jumpscale_core9" and node.cuisine.core.isJS8Sandbox:
-                        dest = "root@%s:%s/JumpScale/" % (node.addr, node.cuisine.core.dir_paths['LIBDIR'])
+                    if destpart == "jumpscale_core9" and node.prefab.core.isJS8Sandbox:
+                        dest = "root@%s:%s/JumpScale/" % (node.addr, node.prefab.core.dir_paths['LIBDIR'])
                         source2 = source + "/lib/JumpScale/"
 
                         j.sal.fs.copyDirTree(
@@ -332,7 +332,7 @@ class DevelopToolsFactory:
 
                         source2 = source + "/install/InstallTools.py"
                         dest = "root@%s:%s/JumpScale/InstallTools.py" % (node.addr,
-                                                                         node.cuisine.core.dir_paths['LIBDIR'])
+                                                                         node.prefab.core.dir_paths['LIBDIR'])
                         j.sal.fs.copyDirTree(
                             source2,
                             dest,
@@ -347,7 +347,7 @@ class DevelopToolsFactory:
                             recursive=False)
 
                         source2 = source + "/install/ExtraTools.py"
-                        dest = "root@%s:%s/JumpScale/ExtraTools.py" % (node.addr, node.cuisine.core.dir_paths['LIBDIR'])
+                        dest = "root@%s:%s/JumpScale/ExtraTools.py" % (node.addr, node.prefab.core.dir_paths['LIBDIR'])
                         j.sal.fs.copyDirTree(
                             source2,
                             dest,
@@ -362,9 +362,9 @@ class DevelopToolsFactory:
                             recursive=False)
 
                     else:
-                        node.cuisine.core.run("mkdir -p %s/%s" %
-                                              (node.cuisine.core.dir_paths['CODEDIR'], source.split("code/", 1)[1]))
-                        if node.cuisine.core.isJS8Sandbox:
+                        node.prefab.core.run("mkdir -p %s/%s" %
+                                              (node.prefab.core.dir_paths['CODEDIR'], source.split("code/", 1)[1]))
+                        if node.prefab.core.isJS8Sandbox:
                             rsyncdelete2 = True
                         else:
                             rsyncdelete2 = rsyncdelete

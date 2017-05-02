@@ -121,7 +121,7 @@ class SSHClientFactory:
                 self.cache.pop(key)
 
     def SSHKeyGetFromAgentPub(self, keyname="", die=True):
-        rc, out, err = j.tools.cuisine.local.core.run("ssh-add -L", die=False)
+        rc, out, err = j.tools.executorLocal.execute("ssh-add -L", die=False)
         if rc > 1:
             err = "Error looking for key in ssh-agent: %s", out
             if die:

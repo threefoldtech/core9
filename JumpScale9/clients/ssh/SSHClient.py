@@ -80,7 +80,7 @@ class SSHClient:
 
         self._transport = None
         self._client = None
-        self._cuisine = None
+        self._prefab = None
         self.usesproxy = usesproxy
 
     def _test_local_agent(self):
@@ -330,23 +330,23 @@ class SSHClient:
             recursive=recursive)
 
     @property
-    def cuisine(self):
-        if not self.usesproxy and self._cuisine is None:
+    def prefab(self):
+        if not self.usesproxy and self._prefab is None:
             executor = j.tools.executor.getSSHBased(self.addr, self.port, self.login, self.passwd)
-            self._cuisine = executor.cuisine
+            self._prefab = executor.prefab
         if self.usesproxy:
             ex = j.tools.executor.getSSHViaProxy(self.host)
-            self._cuisine = j.tools.cuisine.get(self)
-        return self._cuisine
+            self._prefab = j.tools.prefab.get(self)
+        return self._prefab
 
     def ssh_authorize(self, user, key):
-        self.cuisine.ssh.authorize(user, key)
+        self.prefab.ssh.authorize(user, key)
 
     def portforwardToLocal(self, remoteport, localport):
         self.portforwardKill(localport)
         C = "ssh -L %s:localhost:%s root@%s -p %s" % (remoteport, localport, self.addr, self.port)
         print(C)
-        j.tools.cuisine.local.processmanager.ensure(cmd=C, name="ssh_%s" % localport, wait=0.5)
+        j.tools.prefab.local.processmanager.ensure(cmd=C, name="ssh_%s" % localport, wait=0.5)
         print("Test tcp port to:%s" % localport)
         if not j.sal.nettools.waitConnectionTest("127.0.0.1", localport, 10):
             raise RuntimeError("Cannot open ssh forward:%s_%s_%s" % (self, remoteport, localport))
@@ -354,4 +354,4 @@ class SSHClient:
 
     def portforwardKill(self, localport):
         print("kill portforward %s" % localport)
-        j.tools.cuisine.local.processmanager.stop('ssh_%s' % localport)
+        j.tools.prefab.local.processmanager.stop('ssh_%s' % localport)

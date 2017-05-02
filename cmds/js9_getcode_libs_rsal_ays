@@ -6,15 +6,15 @@ print(j.do.mascot)
 
 j.clients.git.pullGitRepo("git@github.com:Jumpscale/lib9.git")
 j.clients.git.pullGitRepo("git@github.com:Jumpscale/ays9.git")
-j.clients.git.pullGitRepo("git@github.com:Jumpscale/joystick9.git")
+j.clients.git.pullGitRepo("git@github.com:Jumpscale/prefab9.git")
 
 path = "%s/github/jumpscale/lib9" % j.dirs.CODEDIR
 j.do.execute("cd %s;sh install.sh" % path)
 
-path = "%s/github/jumpscale/joystick9" % j.dirs.CODEDIR
+path = "%s/github/jumpscale/prefab9" % j.dirs.CODEDIR
 j.do.execute("cd %s;sh install.sh" % path)
 
 path = "%s/github/jumpscale/ays9" % j.dirs.CODEDIR
 j.do.execute("cd %s;sh install.sh" % path)
 
-js9_init
+j.do.execute("js9_init")

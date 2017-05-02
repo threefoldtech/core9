@@ -173,7 +173,7 @@ class PlatformType():
     def osversion(self):
         self.uname
         # if self._osversion is None:
-        #     rc, lsbcontent, err = self.executor.cuisine.core.run(
+        #     rc, lsbcontent, err = self.executor.prefab.core.run(
         #         "cat /etc/lsb-release", replaceArgs=False, showout=False, die=False)
         #     if rc == 0:
         #         import re

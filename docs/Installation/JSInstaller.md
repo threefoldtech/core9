@@ -35,11 +35,11 @@ installJS(self,base="",clean=False,insystem=True,GITHUBUSER="",GITHUBPASSWD="",C
 To minimize the size of the installation some of the dependencies were opted to be installed separately, only
 dependencies which affect modular components of JumpScale where moved out to allow JumpScale's key components to function
 normally without the dependencies. For example:
- - a module such as [**cuisine**](../../Cuisine/Cuisine.md) dependeds on  [**paramiko**](http://docs.paramiko.org/en/2.0/)
+ - a module such as [**prefab**](../../Cuisine/Cuisine.md) dependeds on  [**paramiko**](http://docs.paramiko.org/en/2.0/)
 
 To install the dependencies run this command in the shell:
 ```shell
-js 'j.tools.cuisine.local.development.js8.installDeps()'
+js 'j.tools.prefab.local.development.js8.installDeps()'
 ```
 
 Here is a list of the dependencies:

@@ -1,7 +1,7 @@
 
 import re
 import sys
-from js9 import j
+from JumpScale9 import j
 # from JumpScale.core.types import IPv4Address, IPv4Range
 import textwrap
 import string

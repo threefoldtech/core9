@@ -105,4 +105,7 @@ j.clients.git = GitFactory()
 from .tools.path.PathFactory import PathFactory
 j.tools.path = PathFactory()
 
+from .tools.console.Console import Console
+j.tools.console = Console()
+
 j.logger.init()

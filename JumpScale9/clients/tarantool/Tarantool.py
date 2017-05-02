@@ -130,10 +130,10 @@ class TarantoolFactory:
         self._tarantool = {}
         self._tarantoolq = {}
         # self._config = {}
-        # self._cuisine = j.tools.cuisine.get()
+        # self._prefab = j.tools.prefab.get()
 
-    # def getInstance(self, cuisine):
-    #     self._cuisine = cuisine
+    # def getInstance(self, prefab):
+    #     self._prefab = prefab
     #     return self
 
     def deployRun(self, addr, passwd, port=3333, bootstrap=""):
@@ -150,7 +150,7 @@ class TarantoolFactory:
                 end)
 
         """
-        cuisine = j.tools.cuisine.get(addr)
+        prefab = j.tools.prefab.get(addr)
 
         if bootstrap == "":
             bootstrap = """
@@ -162,9 +162,9 @@ class TarantoolFactory:
                     box.schema.user.grant('$user', 'read,write,execute', 'universe')
                     """
 
-        cuisine.fw.allowIncoming(port)
+        prefab.fw.allowIncoming(port)
 
-        cuisine.core.run("apt-get install tarantool -y")
+        prefab.core.run("apt-get install tarantool -y")
 
         LUA = """
         box.cfg{listen = $port}
@@ -175,15 +175,15 @@ class TarantoolFactory:
         LUA = LUA.replace("$passwd", passwd)
         LUA = LUA.replace("$port", str(port))
 
-        luapath = cuisine.core.replace("$TMPDIR/tarantool.lua")
+        luapath = prefab.core.replace("$TMPDIR/tarantool.lua")
 
         print("write lua startup to:%s" % luapath)
 
-        cuisine.core.file_write(luapath, LUA)
+        prefab.core.file_write(luapath, LUA)
 
-        cuisine.tmux.createWindow("zconfig", "tarantool")
+        prefab.tmux.createWindow("zconfig", "tarantool")
 
-        cuisine.tmux.executeInScreen(
+        prefab.tmux.executeInScreen(
             "zconfig",
             "tarantool",
             "cd $TMPDIR;rm -rf tarantool;mkdir tarantool;cd tarantool;tarantool %s" %

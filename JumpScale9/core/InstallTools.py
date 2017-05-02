@@ -566,7 +566,7 @@ class GitMethods():
                 if not executor:
                     codeDir = j.dirs.CODEDIR
                 else:
-                    codeDir = executor.cuisine.core.dir_paths['CODEDIR']
+                    codeDir = executor.prefab.core.dir_paths['CODEDIR']
             dest = '%(codedir)s/%(type)s/%(account)s/%(repo_name)s' % {
                 'codedir': codeDir,
                 'type': repository_type.lower(),
@@ -903,8 +903,8 @@ class FSMethods():
                     dest = dest.split(':')[1] if ':' in dest else dest
             else:
                 if not sys.platform.startswith("darwin"):
-                    executor.cuisine.package.ensure('rsync')
-                if executor.cuisine.core.dir_exists(source):
+                    executor.prefab.package.ensure('rsync')
+                if executor.prefab.core.dir_exists(source):
                     if dest[-1] != "/":
                         dest += "/"
                     if source[-1] != "/":

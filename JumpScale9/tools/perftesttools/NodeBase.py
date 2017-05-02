@@ -38,7 +38,7 @@ class NodeBase(MonitorTools):
         self.debug = False
 
         print("ssh init %s" % self)
-        self.ssh = j.tools.cuisine.get(j.tools.executor.get(ipaddr, sshport))
+        self.ssh = j.tools.prefab.get(j.tools.executor.get(ipaddr, sshport))
         if self.key and self.key != '':
             self.fabric.env["key"] = self.key
         print("OK")

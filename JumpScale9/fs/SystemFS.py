@@ -275,7 +275,7 @@ class SystemFS:
             cmd += " '%s' '%s'" % (src, dst)
             print(cmd)
 
-            return j.tools.cuisine.local.core.run(cmd)[1]
+            return j.tools.executorLocal.execute(cmd)[1]
 
     def removeDirTree(self, path, onlyLogWarningOnRemoveError=False):
         """Recursively delete a directory tree.

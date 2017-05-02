@@ -13,7 +13,7 @@ class ExecutorBase:
         self.debug = debug
         self.checkok = checkok
 
-        self._cuisine = None
+        self._prefab = None
         self._config = None
         self._config_changed = False
         self._env = None
@@ -42,7 +42,7 @@ class ExecutorBase:
             if self.exists("$VARDIR/jsexecutor.json") == False:
                 self._config = {}
             else:
-                data = self.cuisine.core.file_read("$VARDIR/jsexecutor.json")
+                data = self.prefab.core.file_read("$VARDIR/jsexecutor.json")
                 self._config = j.data.serializer.json.loads(data)
 
         return self._config
@@ -87,7 +87,7 @@ class ExecutorBase:
             return
         data = j.data.serializer.json.dumps(self.config, sort_keys=True, indent=True)
         self.logger.info("config save")
-        self.cuisine.core.file_write("$VARDIR/jsexecutor.json", data, showout=False)
+        self.prefab.core.file_write("$VARDIR/jsexecutor.json", data, showout=False)
         self._config_changed = False
 
     def configReset(self):
@@ -162,19 +162,19 @@ class ExecutorBase:
         return cmds
 
     @property
-    def cuisine(self):
-        if self._cuisine is None:
-            self._cuisine = j.tools.cuisine.get(self)
-            self._cuisine.executor = self
+    def prefab(self):
+        if self._prefab is None:
+            self._prefab = j.tools.prefab.get(self)
+            self._prefab.executor = self
             try:
-                self._cuisine.sshclient = self.sshclient
+                self._prefab.sshclient = self.sshclient
             except BaseException:
                 pass
-        return self._cuisine
+        return self._prefab
 
     def exists(self, path):
-        cuisine = self._cuisine or self.cuisine
-        return self._cuisine.core.exists(path)
+        prefab = self._prefab or self.prefab
+        return self._prefab.core.exists(path)
 
     # interface to implement by child classes
     def execute(self, cmds, die=True, checkok=None, showout=True, timeout=0, env={}):

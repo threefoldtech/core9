@@ -70,7 +70,7 @@ class GitClient:
         # mode
         if not self._repo:
             if not j.sal.fs.exists(self.BASEDIR):
-                j.tools.cuisine.local.core.run(
+                j.tools.executorLocal.execute(
                     "git config --global http.sslVerify false")
                 self._clone()
             else:
@@ -110,7 +110,7 @@ class GitClient:
 
     def hasModifiedFiles(self):
         cmd = "cd %s;git status --porcelain" % self.BASEDIR
-        rc, out, err = j.tools.cuisine.local.core.run(cmd, die=False)
+        rc, out, err = j.tools.executorLocal.execute(cmd, die=False)
         for item in out.split("\n"):
             item = item.strip()
             if item == '':
@@ -132,7 +132,7 @@ class GitClient:
             return False
 
         cmd = "cd %s;git status --porcelain" % self.BASEDIR
-        rc, out, err = j.tools.cuisine.local.core.run(cmd)
+        rc, out, err = j.tools.executorLocal.execute(cmd)
         for item in out.split("\n"):
             item = item.strip()
             if item == '':
@@ -175,11 +175,11 @@ class GitClient:
 
     def checkout(self, path):
         cmd = 'cd %s;git checkout %s' % (self.BASEDIR, path)
-        j.tools.cuisine.local.core.run(cmd)
+        j.tools.executorLocal.execute(cmd)
 
     def addRemoveFiles(self):
         cmd = 'cd %s;git add -A :/' % self.BASEDIR
-        j.tools.cuisine.local.core.run(cmd)
+        j.tools.executorLocal.execute(cmd)
 
     def addFiles(self, files=[]):
         if files != []:
@@ -344,6 +344,6 @@ docs/_build/
         """
         try:
             cmd = 'cd {path}; git describe --tags'.format(path=self.baseDir)
-            return 'tag', j.tools.cuisine.local.core.run(cmd)[1]
+            return 'tag', j.tools.executorLocal.execute(cmd)[1]
         except BaseException:
             return 'branch', self.repo.head.ref.name

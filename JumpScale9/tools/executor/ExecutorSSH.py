@@ -224,7 +224,7 @@ class ExecutorSSH(ExecutorBase):
             # sshkey = self.sshclient.key_filename or ""
             return self._execute_script(content=cmds2, showout=showout, die=die, checkok=checkok)
 
-        # online command, we use cuisine
+        # online command, we use prefab
         if showout:
             self.logger.info("EXECUTE %s:%s: %s" % (self.addr, self.port, cmds))
         else:

@@ -48,7 +48,7 @@ class ExecutorFactory:
         In [1]: ex=j.tools.executor.getSSHViaProxy("192.168.21.163", "cloudscalers",
             "192.168.21.156","cloudscalers", 22, "/home/ahmed/.ssh/id_rsa")
 
-        In [2]: ex.cuisine.core.run("hostname")
+        In [2]: ex.prefab.core.run("hostname")
         [Tue06 14:22] - ...mpScale/tools/executor/ExecutorSSH.py:114  - DEBUG    - cmd: hostname
         [Tue06 14:22] - ...mpScale/tools/executor/ExecutorSSH.py:128  - INFO     - EXECUTE :22: hostname
         vm-6
@@ -163,5 +163,5 @@ class ExecutorFactory:
         with self._lock:
             if key in self._executors:
                 exe = self._executors[key]
-                j.tools.cuisine.reset(exe.cuisine)
+                j.tools.prefab.reset(exe.prefab)
                 del self._executors[key]
