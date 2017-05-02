@@ -91,11 +91,8 @@ def jscode(action, name, url, message, branch, accounts, update, force=False, de
     for provider, account, reponame, branchExisting, client, path in repos:
 
         if not client.remoteUrl.startswith("git"):
-
-            from IPython import embed
-            print("DEBUG NOW 87")
-            embed()
-            raise RuntimeError("stop debug here")
+            newUrl = j.clients.git.rewriteGitRepoUrl(client.remoteUrl)[-1]
+            client.setRemoteURL(newUrl)
 
         if action == "update" and deletechanges:
             print(("force update %s/%s/%s" % (provider, account, reponame)))

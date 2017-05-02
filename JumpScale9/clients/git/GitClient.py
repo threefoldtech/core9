@@ -54,6 +54,12 @@ class GitClient:
     def __str__(self):
         return self.__repr__()
 
+    def setRemoteURL(self, url):
+        from IPython import embed
+        print("DEBUG NOW i87")
+        embed()
+        raise RuntimeError("stop debug here")
+
     @property
     def remoteUrl(self):
         if len(self.repo.remotes) <= 0:
