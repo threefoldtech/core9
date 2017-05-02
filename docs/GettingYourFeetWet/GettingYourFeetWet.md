@@ -15,8 +15,8 @@ JumpScale has an extensive library of tools which help you tackle any problem cl
   - [System Abstraction Layers](SALs.md)  
     System Abstraction Layers or SALs as they are more commonly referred to, provide an Python abstraction layer to system tools. These SALs help streamline development, making it easier and much faster.  
 
-  - [Cuisine](Cuisine.md)  
-    Cuisine, based on the remote wrapper around **Paramiko**, a remote executor with useful commands. A JumpScale version was created adding much more abstraction, including service management, building and installation. Other useful commands were added to facilitate connecting at multiple level to remote machines.   
+  - [Prefab](Prefab.md)  
+    Prefab, based on the remote wrapper around **Paramiko**, a remote executor with useful commands. A JumpScale version was created adding much more abstraction, including service management, building and installation. Other useful commands were added to facilitate connecting at multiple level to remote machines.   
 
   - [AYS](AYS.md)  
     "At Your Service" or AYS, a service configuration and deployment tool built for cloud environments.

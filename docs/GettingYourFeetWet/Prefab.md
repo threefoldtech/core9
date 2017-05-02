@@ -1,6 +1,6 @@
-# Cuisine
+# Prefab
 
-Cuisine makes it easy to automate server installations and create configuration recipes by wrapping common administrative tasks, such as installing packages and creating users and groups, in Python functions.
+Prefab makes it easy to automate server installations and create configuration recipes by wrapping common administrative tasks, such as installing packages and creating users and groups, in Python functions.
 
 To use prefab you first need to get an executor that can be local or remote.
 
@@ -36,11 +36,11 @@ prefab = j.tools.prefab.get(executor)
   prefab.core.file_copy("/opt/code/file1", "/opt/code/file2")
   ```
 
-For more information on Cuisine check the [Cuisine documentation](../../Cuisine/Cuisine.md).
+For more information on Prefab check the [Prefab documentation](../../Prefab/Prefab.md).
 
 ```
 !!!
-title = "Cuisine"
+title = "Prefab"
 date = "2017-04-08"
 tags = []
 ```

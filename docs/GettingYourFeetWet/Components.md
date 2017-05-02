@@ -4,7 +4,7 @@ JumpScale consists of the following main components:
 
 - [Various Tools](Tools.md)
 - [System Abstraction Layers](SALs.md)
-- [Cuisine](Cuisine.md)
+- [Prefab](Prefab.md)
 - [AYS](AYS.md)
 
 ```

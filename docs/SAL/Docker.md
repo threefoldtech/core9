@@ -349,7 +349,7 @@ Out[5]:
   'Status': 'Up 5 minutes'}]
 ```
 
-Next you will want to check the walkthrough documentation on [Installing Caddy using Cuisine](../Cuisine/install_caddy_on_docker.md) which builds on this walkthrough.
+Next you will want to check the walkthrough documentation on [Installing Caddy using Prefab](../Prefab/install_caddy_on_docker.md) which builds on this walkthrough.
 
 ```
 !!!
