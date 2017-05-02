@@ -1,13 +1,6 @@
 from js9 import j
 
-import paramiko
-from paramiko.ssh_exception import SSHException, BadHostKeyException, AuthenticationException
-import time
-import socket
-
 import threading
-import queue
-
 from .SSHClient import SSHClient
 from .AsyncSSHClient import AsyncSSHClient
 

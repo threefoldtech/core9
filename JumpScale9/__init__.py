@@ -108,4 +108,7 @@ j.tools.path = PathFactory()
 from .tools.console.Console import Console
 j.tools.console = Console()
 
+from .data.capnp.Capnp import Capnp
+j.data.capnp = Capnp()
+
 j.logger.init()

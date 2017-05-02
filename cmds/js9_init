@@ -41,9 +41,9 @@ copyPyLibs()
 todo = []
 todo.append(("lib9", "JumpScale9Lib"))
 todo.append(("core9", "JumpScale9"))
-todo.append(("ays9", "JumpScale9AYS"))
+# todo.append(("ays9", "JumpScale9AYS"))
 todo.append(("prefab9", "JumpScale9Prefab"))
-todo.append(("portal9", "JumpScale9Portal"))
+# todo.append(("portal9", "JumpScale9Portal"))
 
 moduleList = {}
 
@@ -59,6 +59,7 @@ for item, libname in todo:
                       ignorefiles=['*.egg-info', "*.pyc", "*.so", ], rsync=True, recursive=True, rsyncdelete=True, createdir=True)
 
 j.application.config["system"]["autopip"] = True
+j.application.config["system"]["debug"] = True
 
 j.tools.jsloader.generate(path=path, moduleList=moduleList)
 j.tools.jsloader.generate(path=path, moduleList=moduleList, codecompleteOnly=True)

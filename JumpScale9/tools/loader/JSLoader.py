@@ -197,7 +197,7 @@ class JSLoader():
                 try:
                     exec("from %s import %s" % (importlocation, classname))
                     res2["location"].append(res3)
-                except Exception as e:
+                except ImportError as e:
                     print("\n\nCOULD NOT IMPORT:%s (%s)\n" % (importlocation, classname))
                     print("import error:\n%s\n" % e)
                     if importItems == []:
@@ -206,12 +206,10 @@ class JSLoader():
                         if not self.autopip:
                             continue
 
-                        for item in importItems:
-                            if j.application.config["system"]["debug"]:
-                                rc, out, err = j.sal.process.execute("pip3 show %s" % item, die=False)
-                                if out != "":
-                                    exec("from %s import %s" % (importlocation, classname))
-                                else:
+                        if j.application.config['system']['debug']:
+                            pip_installed = self._pip_installed()
+                            for item in importItems:
+                                if item not in pip_installed:
                                     rc = self._pip(item)
                                     if rc > 0:
                                         if res3 not in res2["locationerr"]:
@@ -236,20 +234,25 @@ class JSLoader():
         content += pystache.render(GEN_END, **jlocations)
         j.sal.fs.writeFile(out, content)
 
+    def _pip_installed(self):
+        "return the list of all installed pip packages"
+        import json
+        _, out, _ = j.sal.process.execute('pip3 list --format json', die=False, showout=False)
+        pip_list = json.loads(out)
+        return [p['name'] for p in pip_list]
+
     def findJumpscaleLocationsInFile(self, path):
         res = {}
         C = j.sal.fs.readFile(path)
         classname = None
         for line in C.split("\n"):
             if line.startswith("class "):
-                classname = line.replace("class ", "").split(
-                    ":")[0].split("(", 1)[0].strip()
+                classname = line.replace("class ", "").split(":")[0].split("(", 1)[0].strip()
             if line.find("self.__jslocation__") != -1:
                 if classname is None:
                     raise RuntimeError(
                         "Could not find class in %s while loading jumpscale lib." % path)
-                location = line.split("=", 1)[1].replace(
-                    "\"", "").replace("'", "").strip()
+                location = line.split("=", 1)[1].replace("\"", "").replace("'", "").strip()
                 if location.find("self.__jslocation__") == -1:
                     if classname not in res:
                         res[classname] = {}
@@ -263,6 +266,7 @@ class JSLoader():
                 if classname not in res:
                     res[classname] = {}
                 res[classname]["import"] = importItems
+
         return res
 
     # import json

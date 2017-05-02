@@ -1,12 +1,11 @@
-
-from js9 import j
+from JumpScale9 import j
 import sys
-import os
 import capnp
 from collections import OrderedDict
 import capnp
-from .ModelBase import *
-# from ModelBase1 import *
+from JumpScale9.data.capnp.ModelBase import ModelBase
+from JumpScale9.data.capnp.ModelBase import ModelBaseWithData
+from JumpScale9.data.capnp.ModelBase import ModelBaseCollection
 
 
 class Tools():
