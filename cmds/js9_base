@@ -20,7 +20,7 @@ function valid () {
 }
 
 function nothing () {
-    echo > /dev/null
+    echo  > /dev/null
 }
 
 touch /tmp/lastcommandoutput.txt

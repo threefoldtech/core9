@@ -3,7 +3,6 @@ from js9 import j
 
 print(j.do.mascot)
 
-
 j.clients.git.pullGitRepo("git@github.com:Jumpscale/lib9.git")
 j.clients.git.pullGitRepo("git@github.com:Jumpscale/ays9.git")
 j.clients.git.pullGitRepo("git@github.com:Jumpscale/prefab9.git")
