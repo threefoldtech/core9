@@ -1609,7 +1609,7 @@ class SystemFS:
         @return: unicode path
         @rtype: unicode
         """
-        from JumpScale.core.main import Dirs
+        from JumpScale9.core.Dirs import Dirs
         return Dirs.pathToUnicode(path)
 
     def targzCompress(

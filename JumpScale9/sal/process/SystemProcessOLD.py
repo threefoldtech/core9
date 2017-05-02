@@ -514,7 +514,7 @@ def _safe_subprocess(*args, **kwargs):
     @see: L{subprocess.Popen}
     '''
     # Close all threaded log targets before creating a subprocess, which forks
-    ##from JumpScale.core.log.LogTargets import ThreadedLogTarget
+    ##from JumpScale9AYS.core.log.LogTargets import ThreadedLogTarget
     # ThreadedLogTarget.disable_all_instances(close=True)
 
     try:
@@ -718,7 +718,7 @@ def run(commandline, showOutput=False, captureOutput=True, maxSeconds=0,
         cmd = list()
         cmd.append(sys.executable)
 
-        cmd.extend(('-c', '\'from JumpScale.sal.process.processhelper import main; main()\'', ))
+        cmd.extend(('-c', '\'from JumpScale9AYS.sal.process.processhelper import main; main()\'', ))
 
         if uid is not None:
             cmd.extend(('--uid', '%d' % uid, ))
@@ -1049,7 +1049,7 @@ def runDaemon(commandline, stdout=None, stderr=None, user=None, group=None,
     cmd = list()
     cmd.append(sys.executable)
 
-    cmd.extend(('-c', '\'from JumpScale.sal.process.processhelper import main; main()\'', ))
+    cmd.extend(('-c', '\'from JumpScale9AYS.sal.process.processhelper import main; main()\'', ))
 
     if stdout:
         j.sal.fs.createDir(os.path.dirname(stdout))

@@ -1,4 +1,4 @@
-# from JumpScale.tools.lock.Lock import FileLock
+# from JumpScale9AYS.tools.lock.Lock import FileLock
 from JumpScale9 import j
 
 import sys

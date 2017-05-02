@@ -1,5 +1,5 @@
 #!/usr/bin/env jspython
-from JumpScale.tools import cmdutils
+from JumpScale9.tools import cmdutils
 from js9 import j
 from html.parser import HTMLParser
 from xml.etree import cElementTree as etree
