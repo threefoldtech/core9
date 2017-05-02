@@ -153,7 +153,7 @@ def jscode(action, name, url, message, branch, accounts, update, force=False, de
                 print("ADD/REMOVE/COMMIT")
                 client.commit(message=message, addremove=True)
 
-        if update or action == 'update':
+        if update or action in ['commit', 'update', 'push']:
             print("PULL")
             j.do.pullGitRepo(url=client.remoteUrl)
 
