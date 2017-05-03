@@ -5,19 +5,19 @@ import os
 # import re
 
 
-def _useELFtrick(file):
-    fd = os.open(file, os.O_RDONLY)
-    out = os.read(fd, 5)
-    if out[0:4] != "\x7fELF":
-        result = 0  # ELF trick fails...
-    elif out[4] == '\x01':
-        result = 32
-    elif out[4] == '\x02':
-        result = 64
-    else:
-        result = 0
-    os.close(fd)
-    return result
+# def _useELFtrick(file):
+#     fd = os.open(file, os.O_RDONLY)
+#     out = os.read(fd, 5)
+#     if out[0:4] != "\x7fELF":
+#         result = 0  # ELF trick fails...
+#     elif out[4] == '\x01':
+#         result = 32
+#     elif out[4] == '\x02':
+#         result = 64
+#     else:
+#         result = 0
+#     os.close(fd)
+#     return result
 
 
 class PlatformTypes():
@@ -286,23 +286,23 @@ class PlatformType():
             'lsmod |grep vboxdrv |grep -v grep', stopOnError=False)
         return exitcode == 0
 
-    @property
-    def isHyperV(self):
-        '''Check whether the system supports HyperV'''
-        # TODO: should be moved to _getPlatform & proper parent definition
-        if self.isWindows:
-            import winreg as wr
-            try:
-                virt = wr.OpenKey(
-                    wr.HKEY_LOCAL_MACHINE,
-                    'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Virtualization',
-                    0,
-                    wr.KEY_READ | wr.KEY_WOW64_64KEY)
-                wr.QueryValueEx(virt, 'Version')
-            except WindowsError:
-                return False
-            return True
-        return False
+    # @property
+    # def isHyperV(self):
+    #     '''Check whether the system supports HyperV'''
+    #     # TODO: should be moved to _getPlatform & proper parent definition
+    #     if self.isWindows:
+    #         import winreg as wr
+    #         try:
+    #             virt = wr.OpenKey(
+    #                 wr.HKEY_LOCAL_MACHINE,
+    #                 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Virtualization',
+    #                 0,
+    #                 wr.KEY_READ | wr.KEY_WOW64_64KEY)
+    #             wr.QueryValueEx(virt, 'Version')
+    #         except WindowsError:
+    #             return False
+    #         return True
+    #     return False
 
     def __str__(self):
         return str(self.myplatform)

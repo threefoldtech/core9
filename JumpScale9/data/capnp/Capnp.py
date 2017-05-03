@@ -78,7 +78,7 @@ class Capnp:
             #there is model.capnp in $libdir/JumpScale/tools/issuemanager
             from JumpScale9.tools.issuemanager import model as ModelCapnp
 
-            mydb=j.servers.kvs.getMemoryStore(name="mymemdb")
+            mydb=j.data.kvs.getMemoryStore(name="mymemdb")
 
             collection=j.data.capnp.getModelCollection(schema=ModelCapnp,category="issue",modelBaseClass=MyModelBase,db=mydb,indexDb=mydb)
 
@@ -206,7 +206,7 @@ struct Schema {
         # now we just get the capnp schema for this object
         schema = self.getSchemaFromText(capnpschema, name="Issue")
 
-        # mydb = j.servers.kvs.getRedisStore(name="mymemdb")
+        # mydb = j.data.kvs.getRedisStore(name="mymemdb")
         mydb = None  # is memory
 
         collection = self.getModelCollection(schema, category="test", modelBaseClass=None, db=mydb, indexDb=mydb)
@@ -254,8 +254,8 @@ struct Schema {
           }
         }
         '''
-        # mydb = j.servers.kvs.getRedisStore("test")
-        mydb = j.servers.kvs.getRedisStore(name="test", unixsocket="%s/redis.sock" % j.dirs.TMPDIR)
+        # mydb = j.data.kvs.getRedisStore("test")
+        mydb = j.data.kvs.getRedisStore(name="test", unixsocket="%s/redis.sock" % j.dirs.TMPDIR)
         schema = self.getSchemaFromText(capnpschema, name="Issue")
         collection = self.getModelCollection(schema, category="test", modelBaseClass=None, db=mydb, indexDb=mydb)
         for i in range(100):

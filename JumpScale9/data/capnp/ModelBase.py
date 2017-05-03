@@ -304,7 +304,7 @@ class ModelBaseCollection:
 
                 self.__dict__["list_%s_constructor" % field.proto.name] = self._listConstructors[field.proto.name]
 
-        self._db = db if db else j.servers.kvs.getMemoryStore(name=self.namespace, namespace=self.namespace)
+        self._db = db if db else j.data.kvs.getMemoryStore(name=self.namespace, namespace=self.namespace)
         # for now we do index same as database
         self._index = indexDb if indexDb else self._db
 

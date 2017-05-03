@@ -164,6 +164,7 @@ class ExecutorBase:
     @property
     def prefab(self):
         if self._prefab is None:
+            from js9 import j
             self._prefab = j.tools.prefab.get(self)
             self._prefab.executor = self
             try:
@@ -173,8 +174,7 @@ class ExecutorBase:
         return self._prefab
 
     def exists(self, path):
-        prefab = self._prefab or self.prefab
-        return self._prefab.core.exists(path)
+        return self.prefab.core.exists(path)
 
     # interface to implement by child classes
     def execute(self, cmds, die=True, checkok=None, showout=True, timeout=0, env={}):
