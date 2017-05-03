@@ -53,8 +53,8 @@ class Lock:
 
         if j.core.platformtype.myplatform.isUnix:
             # linux implementation
-            lockfile = self._LOCKPATHLINUX + os.sep + self.cleanupString(lockname)
-            j.sal.fs.createDir(Util._LOCKPATHLINUX)
+            lockfile = self._LOCKPATHLINUX + os.sep + lockname.strip()
+            j.sal.fs.createDir(self._LOCKPATHLINUX)
             j.sal.fs.createEmptyFile(lockfile)
 
             # Do the locking

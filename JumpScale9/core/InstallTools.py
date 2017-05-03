@@ -903,7 +903,9 @@ class FSMethods():
                     dest = dest.split(':')[1] if ':' in dest else dest
             else:
                 if not sys.platform.startswith("darwin"):
-                    executor.prefab.package.ensure('rsync')
+                    # executor.prefab.package.ensure('rsync')
+                    # TODO: Fix FileLock
+                    pass
                 if executor.prefab.core.dir_exists(source):
                     if dest[-1] != "/":
                         dest += "/"
