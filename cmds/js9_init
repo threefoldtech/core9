@@ -5,9 +5,11 @@
 # needs to be the original one because am generating the above one
 from JumpScale9 import j
 
-from JumpScale9.data.capnp.Capnp import Capnp
-j.data.capnp = Capnp()
-
+try:
+    from JumpScale9.data.capnp.Capnp import Capnp
+    j.data.capnp = Capnp()
+except:
+    pass
 
 import sys
 

@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-
+import sys
 from js9 import j
 
 print(j.do.mascot)
@@ -18,4 +18,6 @@ pip_deps()
 path = "%s/github/jumpscale/portal9" % j.dirs.CODEDIR
 j.do.execute("cd %s;sh install.sh" % path)
 
-j.do.execute("js9_init")
+if 'noinit' not in sys.argv:
+    print("* init jumpscale 9")
+    j.do.execute("js9_init")

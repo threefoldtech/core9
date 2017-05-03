@@ -1,6 +1,8 @@
 #! /usr/bin/env python3
 from js9 import j
 
+import sys
+
 print(j.do.mascot)
 
 j.clients.git.pullGitRepo("git@github.com:Jumpscale/lib9.git")
@@ -12,6 +14,16 @@ class dependencies():
 
     def __init__(self, do):
         self.do = do
+
+
+path = "%s/github/jumpscale/lib9" % j.dirs.CODEDIR
+j.do.execute("cd %s;sh install.sh" % path)
+
+path = "%s/github/jumpscale/prefab9" % j.dirs.CODEDIR
+j.do.execute("cd %s;sh install.sh" % path)
+
+path = "%s/github/jumpscale/ays9" % j.dirs.CODEDIR
+j.do.execute("cd %s;sh install.sh" % path)
 
 
 def pip_deps():
@@ -41,21 +53,9 @@ def pip_deps():
     j.do.pip(C)
 
 
+print("* INSTALL PIP DEPS")
 pip_deps()
 
-path = "%s/github/jumpscale/lib9" % j.dirs.CODEDIR
-j.do.execute("cd %s;sh install.sh" % path)
-
-path = "%s/github/jumpscale/prefab9" % j.dirs.CODEDIR
-j.do.execute("cd %s;sh install.sh" % path)
-
-path = "%s/github/jumpscale/ays9" % j.dirs.CODEDIR
-j.do.execute("cd %s;sh install.sh" % path)
-
-from IPython import embed
-print("DEBUG NOW check prefab")
-embed()
-raise RuntimeError("stop debug here")
-
-# print( "* init jumpscale 9")
-# j.do.execute("js9_init")
+if 'noinit' not in sys.argv:
+    print("* init jumpscale 9")
+    j.do.execute("js9_init")
