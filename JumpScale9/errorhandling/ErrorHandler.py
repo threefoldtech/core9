@@ -25,16 +25,16 @@ colored_traceback.add_hook(always=True)
 
 #     def __str__(self):
 #         if self.eco!=None:
-#             return str(j.errorconditionhandler.getErrorConditionObject(self.eco))
+#             return str(j.errorhandler.getErrorConditionObject(self.eco))
 #         return "Unexpected Error Happened"
 
 #     __repr__ = __str__
 
 
-class ErrorConditionHandler:
+class ErrorHandler:
 
     def __init__(self, haltOnError=True, storeErrorConditionsLocal=True):
-        self.__jslocation__ = "j.errorconditionhandler"
+        self.__jslocation__ = "j.core.errorhandler"
         self._blacklist = None
         self.lastAction = ""
         self.haltOnError = haltOnError
@@ -103,7 +103,7 @@ class ErrorConditionHandler:
         try:
             ##do something
         except Exception,e:
-            j.errorconditionhandler.processPythonExceptionObject(e)
+            j.errorhandler.processPythonExceptionObject(e)
 
         @param exceptionObject is errorobject thrown by python when there is an exception
         @param ttype : is the description of the error, can be None
@@ -125,7 +125,7 @@ class ErrorConditionHandler:
         try:
             ##do something
         except Exception,e:
-            eco=j.errorconditionhandler.parsePythonExceptionObject(e)
+            eco=j.errorhandler.parsePythonExceptionObject(e)
 
         eco is jumpscale internal format for an error
         next step could be to process the error objecect (eco) e.g. by eco.process()
@@ -257,7 +257,7 @@ class ErrorConditionHandler:
         #     print("ERROR in trying to get backtrace")
 
         # except Exception,e:
-        #     print "CRITICAL ERROR in trying to get errorobject, is BUG, please check (ErrorConditionHandler.py on line 228)"
+        #     print "CRITICAL ERROR in trying to get errorobject, is BUG, please check (errorhandler.py on line 228)"
         #     print "error:%s"%e
         #     sys.exit()
 
@@ -488,7 +488,7 @@ class ErrorConditionHandler:
         @param message is the error message which describes the state
         @param msgpub is message we want to show to endcustomers (can include a solution)
         """
-        eco = j.errorconditionhandler.getErrorConditionObject(
+        eco = j.errorhandler.getErrorConditionObject(
             ddict={}, msg=message, msgpub=msgpub, category='', level=level, type='WARNING')
 
         eco.process()

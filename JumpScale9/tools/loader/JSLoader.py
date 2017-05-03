@@ -23,7 +23,7 @@ import sys
 # j.core.dirs
 # j.core.application
 # j.logger
-# j.errorconditionhandler
+# j.errorhandler
 # """
 
 GEN_START = """
@@ -88,6 +88,9 @@ j.logger=j.core.logger
 j.application=j.core.application
 j.do = j.core.installtools
 j.dirs = j.core.dirs
+j.errorhandler = j.core.errorhandler
+j.exceptions = j.core.errorhandler.exceptions
+j.events = j.core.events
 
 """
 

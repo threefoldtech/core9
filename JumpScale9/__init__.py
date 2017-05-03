@@ -74,6 +74,7 @@ if "dirs" not in j.core.state.config:
 
 from .core.Dirs import Dirs
 j.dirs = Dirs()
+j.core.dirs = j.dirs
 
 from .data.idgenerator.IDGenerator import IDGenerator
 j.data.idgenerator = IDGenerator()
@@ -81,12 +82,14 @@ j.data.idgenerator = IDGenerator()
 from .data.time.Time import Time_
 j.data.time = Time_()
 
-from .errorhandling.ErrorConditionHandler import ErrorConditionHandler
-j.errorhandler = ErrorConditionHandler()
+from .errorhandling.ErrorHandler import ErrorHandler
+j.errorhandler = ErrorHandler()
+j.core.errorhandler = j.errorhandler
 
 
 from .core.Application import Application
 j.application = Application()
+j.core.application = Application()
 
 j.logger.set_mode("DEV")
 
@@ -109,3 +112,7 @@ from .tools.console.Console import Console
 j.tools.console = Console()
 
 j.logger.init()
+j.core.logger = j.logger
+
+j.exceptions = j.core.errorhandler.exceptions
+# j.events = j.core.events

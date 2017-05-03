@@ -4,7 +4,7 @@ from js9 import j
 class EventHandler:
 
     def __init__(self):
-        self.__jslocation__ = "j.events"
+        self.__jslocation__ = "j.core.events"
 
     def bug_critical(self, msg, source=""):
         """
