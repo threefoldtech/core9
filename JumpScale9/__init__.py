@@ -111,8 +111,15 @@ j.tools.path = PathFactory()
 from .tools.console.Console import Console
 j.tools.console = Console()
 
-j.logger.init()
-j.core.logger = j.logger
-
 j.exceptions = j.core.errorhandler.exceptions
 # j.events = j.core.events
+
+logging_cfg = j.application.config.get('logging')
+if logging_cfg:
+    level = logging_cfg.get('level', 'DEBUG')
+    mode = logging_cfg.get('mode', 'DEV')
+    filter_module = logging_cfg.get('filter', [])
+    j.logger.init(mode, level, filter_module)
+else:
+    j.logger.init('DEV', 'DEBUG', ['j.sal.fs', 'j.application'])
+j.core.logger = j.logger
