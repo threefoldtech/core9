@@ -6,15 +6,6 @@ print(j.do.mascot)
 j.clients.git.pullGitRepo("git@github.com:Jumpscale/portal9.git")
 
 
-def pip_deps():
-    C = """
-    mongoengine
-    """
-    j.do.pip(C)
-
-
-pip_deps()
-
 path = "%s/github/jumpscale/portal9" % j.dirs.CODEDIR
 j.do.execute("cd %s;sh install.sh" % path)
 

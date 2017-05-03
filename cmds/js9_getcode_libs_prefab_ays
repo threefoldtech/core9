@@ -5,56 +5,15 @@ import sys
 
 print(j.do.mascot)
 
-j.clients.git.pullGitRepo("git@github.com:Jumpscale/lib9.git")
-j.clients.git.pullGitRepo("git@github.com:Jumpscale/ays9.git")
-j.clients.git.pullGitRepo("git@github.com:Jumpscale/prefab9.git")
+for item in ["lib9", "ays9", "prefab9"]:
 
+    j.clients.git.pullGitRepo("git@github.com:Jumpscale/%s.git" % item)
+    path = "%s/github/jumpscale/%s" % (j.dirs.CODEDIR, item)
+    # removes the egg dirs, this to make sure we re-pip, ...
+    for dpath in [item for item in j.sal.fs.listDirsInDir(path) if item.lower().find("egg") != -1]:
+        j.do.delete(dpath)
+    j.do.execute("cd %s;sh install.sh" % path)
 
-class dependencies():
-
-    def __init__(self, do):
-        self.do = do
-
-
-path = "%s/github/jumpscale/lib9" % j.dirs.CODEDIR
-j.do.execute("cd %s;sh install.sh" % path)
-
-path = "%s/github/jumpscale/prefab9" % j.dirs.CODEDIR
-j.do.execute("cd %s;sh install.sh" % path)
-
-path = "%s/github/jumpscale/ays9" % j.dirs.CODEDIR
-j.do.execute("cd %s;sh install.sh" % path)
-
-
-def pip_deps():
-    C = """
-    uvloop
-    redis
-    paramiko
-    watchdog
-    gitpython
-    click
-    pymux
-    uvloop
-    pyyaml
-    ipdb
-    requests
-    netaddr
-    ipython
-    cython
-    pycapnp
-    path.py
-    colored-traceback
-    pudb
-    colorlog
-    msgpack-python
-    pyblake2
-    """
-    j.do.pip(C)
-
-
-print("* INSTALL PIP DEPS")
-pip_deps()
 
 if 'noinit' not in sys.argv:
     print("* init jumpscale 9")
