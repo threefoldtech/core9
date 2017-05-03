@@ -7,6 +7,42 @@ j.clients.git.pullGitRepo("git@github.com:Jumpscale/lib9.git")
 j.clients.git.pullGitRepo("git@github.com:Jumpscale/ays9.git")
 j.clients.git.pullGitRepo("git@github.com:Jumpscale/prefab9.git")
 
+
+class dependencies():
+
+    def __init__(self, do):
+        self.do = do
+
+
+def pip_deps():
+    C = """
+    uvloop
+    redis
+    paramiko
+    watchdog
+    gitpython
+    click
+    pymux
+    uvloop
+    pyyaml
+    ipdb
+    requests
+    netaddr
+    ipython
+    cython
+    pycapnp
+    path.py
+    colored-traceback
+    pudb
+    colorlog
+    msgpack-python
+    pyblake2
+    """
+    j.do.pip(C)
+
+
+pip_deps()
+
 path = "%s/github/jumpscale/lib9" % j.dirs.CODEDIR
 j.do.execute("cd %s;sh install.sh" % path)
 
@@ -16,4 +52,10 @@ j.do.execute("cd %s;sh install.sh" % path)
 path = "%s/github/jumpscale/ays9" % j.dirs.CODEDIR
 j.do.execute("cd %s;sh install.sh" % path)
 
-j.do.execute("js9_init")
+from IPython import embed
+print("DEBUG NOW check prefab")
+embed()
+raise RuntimeError("stop debug here")
+
+# print( "* init jumpscale 9")
+# j.do.execute("js9_init")

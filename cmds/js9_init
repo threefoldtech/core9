@@ -12,9 +12,6 @@ j.data.capnp = Capnp()
 import sys
 
 print(j.do.mascot)
-# j.tools.jsloader.generate()
-
-# j.tools.jsloader.generate(out="%s/js_init.py" % (sitePath))
 
 j.do.debug = False
 
@@ -53,7 +50,6 @@ todo.append(("prefab9", "JumpScale9Prefab"))
 
 moduleList = {}
 
-
 for item, libname in todo:
     path = "%s/github/jumpscale/%s/%s/" % (j.dirs.CODEDIR, item, libname)
 
@@ -64,7 +60,8 @@ for item, libname in todo:
         j.do.copyTree(path, "/root/gig/python_libs/%s" % libname, overwriteFiles=True, ignoredir=['*.egg-info', '*.dist-info', "*JumpScale*", "*Tests*", "*tests*"],
                       ignorefiles=['*.egg-info', "*.pyc", "*.so", ], rsync=True, recursive=True, rsyncdelete=True, createdir=True)
 
-j.application.config["system"]["autopip"] = True
+# DO NOT AUTOPIP the deps are now installed while installing the libs
+# j.application.config["system"]["autopip"] = True
 j.application.config["system"]["debug"] = True
 
 j.tools.jsloader.generate(path=path, moduleList=moduleList)
