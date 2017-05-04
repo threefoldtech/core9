@@ -1,10 +1,6 @@
 from js9 import j
 from .ExecutorBase import ExecutorBase
-try:
-    import g8core
-except BaseException:
-    logger = j.logger.get("g8core")
-    logger.error("cannot find g8core")
+import g8core
 
 
 class ExecutorG8Core(ExecutorBase):
