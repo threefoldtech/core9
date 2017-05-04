@@ -1,5 +1,5 @@
 from JumpScale9 import j
-
+import ujson as json
 
 class ExecutorBase:
 
@@ -43,7 +43,7 @@ class ExecutorBase:
                 self._config = {}
             else:
                 data = self.prefab.core.file_read("$VARDIR/jsexecutor.json")
-                self._config = j.data.serializer.json.loads(data)
+                self._config = json.loads(data)
 
         return self._config
 
@@ -85,7 +85,7 @@ class ExecutorBase:
                                      self, level=1, source="", tags="", msgpub="")
         if not self._config_changed:
             return
-        data = j.data.serializer.json.dumps(self.config, sort_keys=True, indent=True)
+        data = json.dumps(self.config, sort_keys=True, indent=True)
         self.logger.info("config save")
         self.prefab.core.file_write("$VARDIR/jsexecutor.json", data, showout=False)
         self._config_changed = False
