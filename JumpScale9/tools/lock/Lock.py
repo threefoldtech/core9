@@ -5,6 +5,8 @@ import re
 
 from js9 import j
 
+logger = j.core.logger.get('JumpScale9.core.logger')
+_LOCKDICTIONARY = dict()
 
 
 class LockException(Exception):
@@ -160,6 +162,14 @@ def unlock_(lockname):
     #     j.tools.console.echo("Lock %r not found"%lockname)
 
 
+class LockFactory:
+    def __init__(self):
+        self.__jslocation__ = "j.tools.lock"
+
+    def fileLock(self, lock_name='lock', reentry=False, locktimeout=60):
+        return FileLock(lock_name=lock_name, reentry=reentry, locktimeout=locktimeout)
+
+
 class FileLock:
 
     '''Context manager for file-based locks
@@ -175,7 +185,6 @@ class FileLock:
     '''
 
     def __init__(self, lock_name, reentry=False, locktimeout=60):
-        self.__jslocation__ = "j.tools.lock"
         self.lock_name = lock_name
         self.reentry = reentry
         self.locktimeout = locktimeout
