@@ -311,3 +311,37 @@ class JSLoader():
                     result[loc].append((classfile, classname, item, importItems))
 
         return result
+
+
+    def copyPyLibs(self):
+
+        for item in sys.path:
+            if item.endswith(".zip"):
+                continue
+            if "jumpscale" in item.lower() or "dynload" in item.lower():
+                continue
+            if item.strip() in [".", ""]:
+                continue
+            if item[-1] != "/":
+                item += "/"
+
+            if j.sal.fs.exists(item, followlinks=True):
+                j.do.copyTree(item,
+                              "/root/gig/python_libs/",
+                              overwriteFiles=True,
+                              ignoredir=['*.egg-info',
+                                         '*.dist-info',
+                                         "*JumpScale*",
+                                         "*Tests*",
+                                         "*tests*"],
+
+                              ignorefiles=['*.egg-info',
+                                           "*.pyc",
+                                           "*.so",
+                                           ],
+                              rsync=True,
+                              recursive=True,
+                              rsyncdelete=False,
+                              createdir=True)
+
+        j.sal.fs.writeFile(filename="/root/gig/python_libs/__init__.py", contents="")
