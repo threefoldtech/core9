@@ -31,6 +31,7 @@ class Jumpscale9():
         self.data = Data()
         self.clients = Clients()
         self.core = Core()
+        self.exceptions = None
 
 
 j = Jumpscale9()
@@ -111,9 +112,11 @@ j.tools.path = PathFactory()
 from .tools.console.Console import Console
 j.tools.console = Console()
 
-j.exceptions = j.core.errorhandler.exceptions
+from JumpScale9.errorhandling import JSExceptions
+j.exceptions = JSExceptions
 # j.events = j.core.events
 
+j.core.logger = j.logger
 logging_cfg = j.application.config.get('logging')
 if logging_cfg:
     level = logging_cfg.get('level', 'DEBUG')
@@ -122,4 +125,3 @@ if logging_cfg:
     j.logger.init(mode, level, filter_module)
 else:
     j.logger.init('DEV', 'DEBUG', ['j.sal.fs', 'j.application'])
-j.core.logger = j.logger

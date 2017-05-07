@@ -1,5 +1,8 @@
 from JumpScale9 import j
-import ujson as json
+try:
+    import ujson as json
+except ImportError:
+    import json
 
 class ExecutorBase:
 
