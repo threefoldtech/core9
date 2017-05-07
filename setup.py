@@ -24,5 +24,6 @@ setup(
         'path.py',
         'click',
         'gitpython',
+        'ujson'
     ]
 )
