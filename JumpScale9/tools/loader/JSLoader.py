@@ -1,5 +1,5 @@
 from JumpScale9 import j
-# import os
+import os
 import sys
 
 # corepackages = """
@@ -150,9 +150,10 @@ class JSLoader():
 
     def generate(self, path="", out="", moduleList={}, codecompleteOnly=False):
         # basedir = j.sal.fs.getParent(j.sal.fs.getDirName(j.sal.fs.getPathOfRunningFunction(j.application.__init__)))
+        gigdir = os.environ('GIGDIR', '/root/gig')
         if out == "" or out is None:
             if codecompleteOnly:
-                out = "/root/gig/python_libs/js9.py"
+                out = os.path.join(gigdir, "python_libs/js9.py")
             else:
                 out = self.initPath
                 print("* js9 path:%s" % out)
@@ -311,3 +312,40 @@ class JSLoader():
                     result[loc].append((classfile, classname, item, importItems))
 
         return result
+
+
+    def copyPyLibs(self):
+
+        for item in sys.path:
+            if item.endswith(".zip"):
+                continue
+            if "jumpscale" in item.lower() or "dynload" in item.lower():
+                continue
+            if item.strip() in [".", ""]:
+                continue
+            if item[-1] != "/":
+                item += "/"
+
+            gigdir = os.environ('GIGDIR', '/root/gig')
+            mounted_lib = os.path.join(gigdir, 'python_libs')
+
+            if j.sal.fs.exists(item, followlinks=True):
+                j.do.copyTree(item,
+                              mounted_lib,
+                              overwriteFiles=True,
+                              ignoredir=['*.egg-info',
+                                         '*.dist-info',
+                                         "*JumpScale*",
+                                         "*Tests*",
+                                         "*tests*"],
+
+                              ignorefiles=['*.egg-info',
+                                           "*.pyc",
+                                           "*.so",
+                                           ],
+                              rsync=True,
+                              recursive=True,
+                              rsyncdelete=False,
+                              createdir=True)
+
+        j.sal.fs.writeFile(filename=os.path.join(mounted_lib, "__init__.py", contents="")
