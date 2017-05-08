@@ -150,7 +150,7 @@ class JSLoader():
 
     def generate(self, path="", out="", moduleList={}, codecompleteOnly=False):
         # basedir = j.sal.fs.getParent(j.sal.fs.getDirName(j.sal.fs.getPathOfRunningFunction(j.application.__init__)))
-        gigdir = os.environ('GIGDIR', '/root/gig')
+        gigdir = os.environ.get('GIGDIR', '/root/gig')
         if out == "" or out is None:
             if codecompleteOnly:
                 out = os.path.join(gigdir, "python_libs/js9.py")
@@ -326,7 +326,7 @@ class JSLoader():
             if item[-1] != "/":
                 item += "/"
 
-            gigdir = os.environ('GIGDIR', '/root/gig')
+            gigdir = os.environ.get('GIGDIR', '/root/gig')
             mounted_lib = os.path.join(gigdir, 'python_libs')
 
             if j.sal.fs.exists(item, followlinks=True):
@@ -348,4 +348,4 @@ class JSLoader():
                               rsyncdelete=False,
                               createdir=True)
 
-        j.sal.fs.writeFile(filename=os.path.join(mounted_lib, "__init__.py", contents=""))
+        j.sal.fs.writeFile(filename=os.path.join(mounted_lib, "__init__.py"), contents="")
