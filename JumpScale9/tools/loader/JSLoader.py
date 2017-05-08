@@ -348,4 +348,4 @@ class JSLoader():
                               rsyncdelete=False,
                               createdir=True)
 
-        j.sal.fs.writeFile(filename=os.path.join(mounted_lib, "__init__.py", contents="")
+        j.sal.fs.writeFile(filename=os.path.join(mounted_lib, "__init__.py", contents=""))
