@@ -4,6 +4,7 @@ try:
 except ImportError:
     import json
 
+
 class ExecutorBase:
 
     def __init__(self, debug=False, checkok=False):
