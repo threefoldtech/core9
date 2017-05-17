@@ -37,8 +37,8 @@ class Handlers():
     @property
     def fileRotateHandler(self, name='jumpscale'):
         if self._fileRotateHandler is None:
-            if not j.sal.fs.exists("%s/log/" % j.dirs.VARDIR):
-                j.sal.fs.createDir("%s/log/" % j.dirs.VARDIR)
+            if not j.do.exists("%s/log/" % j.dirs.VARDIR):
+                j.do.createDir("%s/log/" % j.dirs.VARDIR)
             filename = "%s/log/%s.log" % (j.dirs.VARDIR, name)
             formatter = logging.Formatter(FILE_FORMAT)
             fh = TimedRotatingFileHandler(
@@ -214,8 +214,8 @@ class LoggerFactory:
         self.root_logger.addHandler(self.handlers.fileRotateHandler)
 
     def __fileRotateHandler(self, name='jumpscale'):
-        if not j.sal.fs.exists("%s/log/" % j.dirs.VARDIR):
-            j.sal.fs.createDir("%s/log/" % j.dirs.VARDIR)
+        if not j.do.exists("%s/log/" % j.dirs.VARDIR):
+            j.do.createDir("%s/log/" % j.dirs.VARDIR)
         filename = "%s/log/%s.log" % (j.dirs.VARDIR, name)
         formatter = logging.Formatter(FILE_FORMAT)
         fh = logging.handlers.TimedRotatingFileHandler(

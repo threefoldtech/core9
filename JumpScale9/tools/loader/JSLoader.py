@@ -91,6 +91,7 @@ j.dirs = j.core.dirs
 j.errorhandler = j.core.errorhandler
 j.exceptions = j.core.errorhandler.exceptions
 j.events = j.core.events
+j.core.db = j.clients.redis.get4core()
 
 """
 
@@ -132,9 +133,9 @@ class JSLoader():
     def initPath(self):
         path = self._findSitePath() + "/js9.py"
         # print("initpath:%s" % path)
-        j.sal.fs.remove(path)
-        # if not j.sal.fs.exists(path, followlinks=True):
-        j.sal.fs.writeFile(filename=path, contents="from JumpScale9 import j\n", append=False)
+        j.do.remove(path)
+        # if not j.do.exists(path, followlinks=True):
+        j.do.writeFile(filename=path, contents="from JumpScale9 import j\n", append=False)
 
         return path
 
@@ -149,7 +150,7 @@ class JSLoader():
         return rc
 
     def generate(self, path="", out="", moduleList={}, codecompleteOnly=False):
-        # basedir = j.sal.fs.getParent(j.sal.fs.getDirName(j.sal.fs.getPathOfRunningFunction(j.application.__init__)))
+        # basedir = j.do.getParent(j.do.getDirName(j.do.getPathOfRunningFunction(j.application.__init__)))
         gigdir = os.environ.get('GIGDIR', '/root/gig')
         if out == "" or out is None:
             if codecompleteOnly:
@@ -236,7 +237,7 @@ class JSLoader():
             # print(res2)
 
         content += pystache.render(GEN_END, **jlocations)
-        j.sal.fs.writeFile(out, content)
+        j.do.writeFile(out, content)
 
     def _pip_installed(self):
         "return the list of all installed pip packages"
@@ -247,7 +248,7 @@ class JSLoader():
 
     def findJumpscaleLocationsInFile(self, path):
         res = {}
-        C = j.sal.fs.readFile(path)
+        C = j.do.readFile(path)
         classname = None
         for line in C.split("\n"):
             if line.startswith("class "):
@@ -282,13 +283,13 @@ class JSLoader():
         return as dict
         """
         if path == "":
-            path = j.sal.fs.getParent(j.sal.fs.getDirName(j.sal.fs.getPathOfRunningFunction(j.application.__init__)))
+            path = j.do.getParent(j.do.getDirName(j.do.getPathOfRunningFunction(j.application.__init__)))
 
         result = moduleList
 
         self.logger.info("findmodules in %s" % path)
 
-        for classfile in j.sal.fs.listFilesInDir(path, True, "*.py"):
+        for classfile in j.do.listFilesInDir(path, True, "*.py"):
             # print(classfile)
             basename = j.do.getBaseName(classfile)
             if basename.startswith("_"):
@@ -310,7 +311,6 @@ class JSLoader():
                     if loc not in result:
                         result[loc] = []
                     result[loc].append((classfile, classname, item, importItems))
-
         return result
 
 
@@ -329,7 +329,7 @@ class JSLoader():
             gigdir = os.environ.get('GIGDIR', '/root/gig')
             mounted_lib = os.path.join(gigdir, 'python_libs')
 
-            if j.sal.fs.exists(item, followlinks=True):
+            if j.do.exists(item, followlinks=True):
                 j.do.copyTree(item,
                               mounted_lib,
                               overwriteFiles=True,
@@ -348,4 +348,4 @@ class JSLoader():
                               rsyncdelete=False,
                               createdir=True)
 
-        j.sal.fs.writeFile(filename=os.path.join(mounted_lib, "__init__.py"), contents="")
+        j.do.writeFile(filename=os.path.join(mounted_lib, "__init__.py"), contents="")

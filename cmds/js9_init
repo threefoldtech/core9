@@ -29,16 +29,16 @@ def copyPyLibs():
         if item[-1] != "/":
             item += "/"
 
-        if j.sal.fs.exists(item, followlinks=True):
+        if j.do.exists(item, followlinks=True):
             j.do.copyTree(item, "/root/gig/python_libs/", overwriteFiles=True, ignoredir=['*.egg-info', '*.dist-info', "*JumpScale*", "*Tests*", "*tests*"],
                           ignorefiles=['*.egg-info', "*.pyc", "*.so", ], rsync=True, recursive=True, rsyncdelete=False, createdir=True)
 
-    j.sal.fs.writeFile(filename="/root/gig/python_libs/__init__.py", contents="")
+    j.do.writeFile(filename="/root/gig/python_libs/__init__.py", contents="")
 
-    for item in j.sal.fs.listFilesInDir("/root/gig/python_libs/", False, filter="js9*"):
-        j.sal.fs.remove(item)
-    for item in j.sal.fs.listFilesInDir("/root/gig/python_libs/", False, filter="JumpScale*"):
-        j.sal.fs.remove(item)
+    for item in j.do.listFilesInDir("/root/gig/python_libs/", False, filter="js9*"):
+        j.do.remove(item)
+    for item in j.do.listFilesInDir("/root/gig/python_libs/", False, filter="JumpScale*"):
+        j.do.remove(item)
 
 
 copyPyLibs()
@@ -55,10 +55,10 @@ moduleList = {}
 for item, libname in todo:
     path = "%s/github/jumpscale/%s/%s/" % (j.dirs.CODEDIR, item, libname)
 
-    if j.sal.fs.exists(path, followlinks=True):
+    if j.do.exists(path, followlinks=True):
         moduleList = j.tools.jsloader.findModules(path=path, moduleList=moduleList)
         # link libs to location for hostos
-        # j.sal.fs.symlink(path, "/root/gig/python_libs/%s" % libname, overwriteTarget=True)
+        # j.do.symlink(path, "/root/gig/python_libs/%s" % libname, overwriteTarget=True)
         j.do.copyTree(path, "/root/gig/python_libs/%s" % libname, overwriteFiles=True, ignoredir=['*.egg-info', '*.dist-info', "*JumpScale*", "*Tests*", "*tests*"],
                       ignorefiles=['*.egg-info', "*.pyc", "*.so", ], rsync=True, recursive=True, rsyncdelete=True, createdir=True)
 

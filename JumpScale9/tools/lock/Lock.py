@@ -56,7 +56,7 @@ def lock(lockname, locktimeout=60, reentry=False):
 def lock_(lockname, locktimeout=60, reentry=False):
     '''Take a system-wide interprocess exclusive lock.
 
-    Works similar to j.sal.fs.lock but uses return values to denote lock
+    Works similar to j.do.lock but uses return values to denote lock
     success instead of raising fatal errors.
 
     This refactoring was mainly done to make the lock implementation easier
@@ -69,10 +69,10 @@ def lock_(lockname, locktimeout=60, reentry=False):
         _LOCKDICTIONARY[lockname] = _LOCKDICTIONARY.setdefault(lockname, 0) + 1
 
     if not islocked(lockname, reentry=reentry):
-        if not j.sal.fs.exists(LOCKPATH):
-            j.sal.fs.createDir(LOCKPATH)
+        if not j.do.exists(LOCKPATH):
+            j.do.createDir(LOCKPATH)
 
-        j.sal.fs.writeFile(lockfile, str(os.getpid()))
+        j.do.writeFile(lockfile, str(os.getpid()))
         return True
     else:
         locked = False
@@ -97,7 +97,7 @@ def islocked(lockname, reentry=False):
 
     try:
         # read the pid from the lockfile
-        if j.sal.fs.exists(lockfile):
+        if j.do.exists(lockfile):
             pid = open(lockfile, 'rb').read()
         else:
             return False
@@ -113,9 +113,9 @@ def islocked(lockname, reentry=False):
             pid = int(pid)
             if reentry and pid == os.getpid():
                 return False
-        if j.sal.fs.exists(lockfile) and (not pid or not j.sal.process.isPidAlive(pid)):
+        if j.do.exists(lockfile) and (not pid or not j.sal.process.isPidAlive(pid)):
             # cleanup system, pid not active, remove the lockfile
-            j.sal.fs.remove(lockfile)
+            j.do.remove(lockfile)
             isLocked = False
     return isLocked
 
@@ -133,7 +133,7 @@ def unlock(lockname):
 def unlock_(lockname):
     '''Unlock system-wide interprocess lock
 
-    Works similar to j.sal.fs.unlock but uses return values to denote unlock
+    Works similar to j.do.unlock but uses return values to denote unlock
     success instead of raising fatal errors.
 
     This refactoring was mainly done to make the lock implementation easier
@@ -147,7 +147,7 @@ def unlock_(lockname):
             return
 
     # read the pid from the lockfile
-    if j.sal.fs.exists(lockfile):
+    if j.do.exists(lockfile):
         try:
             pid = open(lockfile, 'rb').read()
         except:
@@ -157,7 +157,7 @@ def unlock_(lockname):
                 "Lock %r not owned by this process" % lockname)
             return
 
-        j.sal.fs.remove(lockfile)
+        j.do.remove(lockfile)
     # else:
     #     j.tools.console.echo("Lock %r not found"%lockname)
 
@@ -165,6 +165,8 @@ def unlock_(lockname):
 class LockFactory:
     def __init__(self):
         self.__jslocation__ = "j.tools.lock"
+        self.lock = lock
+        self.unlock = unlock
 
     def fileLock(self, lock_name='lock', reentry=False, locktimeout=60):
         return FileLock(lock_name=lock_name, reentry=reentry, locktimeout=locktimeout)

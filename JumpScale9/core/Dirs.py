@@ -50,13 +50,13 @@ class Dirs:
         txt = txt.replace("$tmplsdir", self.TEMPLATEDIR)
         txt = txt.replace("$codedir", self.CODEDIR)
         txt = txt.replace("$VARDIR", self.VARDIR)
-        txt = txt.replace("$cfgdir", self.JSCFGDIR)
+        txt = txt.replace("$cfgdir", self.CFGDIR)
         txt = txt.replace("$bindir", self.BINDIR)
         txt = txt.replace("$logdir", self.LOGDIR)
         txt = txt.replace("$tmpdir", self.TMPDIR)
         txt = txt.replace("$libdir", self.JSLIBDIR)
-        txt = txt.replace("$jslibextdir", self.JSLIBEXTDIR)
-        txt = txt.replace("$jsbindir", self.BINDIR)
+        # txt = txt.replace("$jslibextdir", self.JSLIBEXTDIR)
+        # txt = txt.replace("$jsbindir", self.BINDIR)
         txt = txt.replace("$nodeid", str(j.application.whoAmI.nid))
         for key, value in list(additionalArgs.items()):
             txt = txt.replace("$%s" % key, str(value))
@@ -64,9 +64,9 @@ class Dirs:
 
     @property
     def JSLIBDIR(self):
-        return j.sal.fs.getParent(
-            j.sal.fs.getDirName(
-                j.sal.fs.getPathOfRunningFunction(
+        return j.do.getParent(
+            j.do.getDirName(
+                j.do.getPathOfRunningFunction(
                     j.logger.__init__)))
 
     def replaceFilesDirVars(
@@ -75,16 +75,16 @@ class Dirs:
             recursive=True,
             filter=None,
             additionalArgs={}):
-        if j.sal.fs.isFile(path):
+        if j.do.isFile(path):
             paths = [path]
         else:
-            paths = j.sal.fs.listFilesInDir(path, recursive, filter)
+            paths = j.do.listFilesInDir(path, recursive, filter)
 
         for path in paths:
-            content = j.sal.fs.fileGetContents(path)
+            content = j.do.fileGetContents(path)
             content2 = self.replaceTxtDirVars(content, additionalArgs)
             if content2 != content:
-                j.sal.fs.writeFile(filename=path, contents=content2)
+                j.do.writeFile(filename=path, contents=content2)
 
     # def _getParent(self, path):
     #     """
