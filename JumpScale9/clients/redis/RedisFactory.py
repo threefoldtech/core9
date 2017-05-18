@@ -154,5 +154,4 @@ class RedisFactory:
             tmpdir = "/tmp"
         cmd = "%s  --port 0 --unixsocket %s/redis.sock --maxmemory 100000000" % (redis_bin, tmpdir)
         print(cmd)
-        print("start redis in tmux (linux)")
-        j.tools.tmux.execute(cmd, session='main', window='main', pane='tmux')
+        j.sal.process.execute("redis-server --port 6379 --unixsocket %s/redis.sock --maxmemory 100000000 --daemonize yes" % tmpdir )
