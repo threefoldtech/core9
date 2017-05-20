@@ -5,8 +5,7 @@ import os
 
 
 def _post_install(libname, libpath):
-    from JumpScale9 import j
-    import os
+    from JumpScale9 import j  # here its still the boostrap JumpScale9
     j.tools.jsloader.copyPyLibs()
 
     # ensure plugins section in config
@@ -14,42 +13,11 @@ def _post_install(libname, libpath):
         j.application.config['plugins'] = {}
 
     # add this plugin to the config
-    j.application.config['plugins'][libname] = libpath
+    c = j.core.state.configGet('plugins', defval={})
+    c[libname] = libpath
+    j.core.state.configSet('plugins', c)
 
-    moduleList = {}
-    gigdir = os.environ.get('GIGDIR', '/root/gig')
-    mounted_lib_path = os.path.join(gigdir, 'python_libs')
-
-    for name, path in j.application.config['plugins'].items():
-        if j.do.exists(path, followlinks=True):
-            moduleList = j.tools.jsloader.findModules(path=path, moduleList=moduleList)
-            # link libs to location for hostos
-            j.do.copyTree(path,
-                          os.path.join(mounted_lib_path, libname),
-                          overwriteFiles=True,
-                          ignoredir=['*.egg-info',
-                                     '*.dist-info',
-                                     "*JumpScale*",
-                                     "*Tests*",
-                                     "*tests*"],
-
-                          ignorefiles=['*.egg-info',
-                                       "*.pyc",
-                                       "*.so",
-                                       ],
-                          rsync=True,
-                          recursive=True,
-                          rsyncdelete=True,
-                          createdir=True)
-
-    # DO NOT AUTOPIP the deps are now installed while installing the libs
-    j.application.config["system"]["autopip"] = False
-    j.application.config["system"]["debug"] = True
-
-    j.tools.jsloader.generate(path=path, moduleList=moduleList)
-    j.tools.jsloader.generate(path=path, moduleList=moduleList, codecompleteOnly=True)
-
-    j.do.initEnv()
+    j.tools.jsloader.generatePlugins()
 
 
 class install(_install):
@@ -80,21 +48,21 @@ setup(
     license='Apache',
     packages=['JumpScale9'],
     install_requires=[
-        'g8core==1.0.0',
-        'GitPython==2.1.3',
-        'click==6.7',
+        'g8core>=1.0.0',
+        'GitPython>=2.1.3',
+        'click>=6.7',
         'colored_traceback',
-        'colorlog==2.10.0',
-        'httplib2==0.10.3',
-        'ipython==6.0.0',
-        'libtmux==0.7.1',
-        'netaddr==0.7.19',
-        'path.py==10.3.1',
-        'pystache==0.5.4',
-        'python-dateutil==2.6.0',
-        'pytoml==0.1.12',
-        'redis==2.10.5',
-        'requests==2.13.0'
+        'colorlog>=2.10.0',
+        'httplib2>=0.10.3',
+        'ipython>=6.0.0',
+        'libtmux>=0.7.1',
+        'netaddr>=0.7.19',
+        'path.py>=10.3.1',
+        'pystache>=0.5.4',
+        'python-dateutil>=2.6.0',
+        'pytoml>=0.1.12',
+        'redis>=2.10.5',
+        'requests>=2.13.0'
     ],
     cmdclass={
         'install': install,

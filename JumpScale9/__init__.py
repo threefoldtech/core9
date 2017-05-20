@@ -121,4 +121,4 @@ if logging_cfg:
     j.logger.init(mode, level, filter_module)
 else:
     j.logger.init('DEV', 'DEBUG', ['j.sal.fs', 'j.application'])
-j.clients.redis.start4core()
+# j.clients.redis.start4core()

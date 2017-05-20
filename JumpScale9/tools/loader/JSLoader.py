@@ -92,6 +92,8 @@ j.errorhandler = j.core.errorhandler
 j.exceptions = j.core.errorhandler.exceptions
 j.events = j.core.events
 j.core.db = j.clients.redis.get4core()
+from JumpScale9.tools.loader.JSLoader import JSLoader
+j.tools.jsloader = JSLoader()
 
 """
 
@@ -313,7 +315,6 @@ class JSLoader():
                     result[loc].append((classfile, classname, item, importItems))
         return result
 
-
     def copyPyLibs(self):
 
         for item in sys.path:
@@ -349,3 +350,37 @@ class JSLoader():
                               createdir=True)
 
         j.do.writeFile(filename=os.path.join(mounted_lib, "__init__.py"), contents="")
+
+    def generatePlugins(self):
+        moduleList = {}
+        gigdir = os.environ.get('GIGDIR', '/root/gig')
+        mounted_lib_path = os.path.join(gigdir, 'python_libs')
+
+        for name, path in j.application.config['plugins'].items():
+            if j.do.exists(path, followlinks=True):
+                moduleList = self.findModules(path=path, moduleList=moduleList)
+                # link libs to location for hostos
+                j.do.copyTree(path,
+                              os.path.join(mounted_lib_path, name),
+                              overwriteFiles=True,
+                              ignoredir=['*.egg-info',
+                                         '*.dist-info',
+                                         "*JumpScale*",
+                                         "*Tests*",
+                                         "*tests*"],
+
+                              ignorefiles=['*.egg-info',
+                                           "*.pyc",
+                                           "*.so",
+                                           ],
+                              rsync=True,
+                              recursive=True,
+                              rsyncdelete=True,
+                              createdir=True)
+
+        # DO NOT AUTOPIP the deps are now installed while installing the libs
+        j.application.config["system"]["autopip"] = False
+        j.application.config["system"]["debug"] = True
+
+        self.generate(path=path, moduleList=moduleList)
+        self.generate(path=path, moduleList=moduleList, codecompleteOnly=True)

@@ -127,7 +127,7 @@ class RedisFactory:
             if j.core.platformtype.myplatform.isAlpine:
                 os.system("apk add redis")
             elif j.core.platformtype.myplatform.isUbuntu:
-                os.system("apt install redis-server")
+                os.system("apt install redis-server -y")
         else:
             raise RuntimeError("platform not supported for start redis")
 
@@ -154,4 +154,5 @@ class RedisFactory:
             tmpdir = "/tmp"
         cmd = "%s  --port 0 --unixsocket %s/redis.sock --maxmemory 100000000" % (redis_bin, tmpdir)
         print(cmd)
-        j.sal.process.execute("redis-server --port 6379 --unixsocket %s/redis.sock --maxmemory 100000000 --daemonize yes" % tmpdir )
+        j.sal.process.execute(
+            "redis-server --port 6379 --unixsocket %s/redis.sock --maxmemory 100000000 --daemonize yes" % tmpdir)
