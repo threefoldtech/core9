@@ -131,7 +131,6 @@ class RedisFactory:
         else:
             raise RuntimeError("platform not supported for start redis")
 
-        j.do.killall("redis")
         # cmd = "redis-server --port 6379 --unixsocket %s/redis.sock --maxmemory 100000000 --daemonize yes" % tmpdir  # 100MB
         # print("start redis in background (osx)")
         # os.system(cmd)
