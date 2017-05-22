@@ -49,7 +49,7 @@ class ErrorHandler:
     def _registerScrips(self):
         if self._scriptsInRedis is False:
             luapath = "%s/core/errorhandling/eco.lua" % j.dirs.JSLIBDIR
-            lua = j.do.fileGetContents(luapath)
+            lua = j.sal.fs.fileGetContents(luapath)
             self._escalateToRedisFunction = j.core.db.register_script(lua)
             self._scriptsInRedis = True
 
@@ -413,9 +413,9 @@ class ErrorHandler:
                 #j.tools.console.echo("THIS ONLY WORKS WHEN GEDIT IS INSTALLED")
                 editor = findEditorLinux()
             elif j.core.platformtype.myplatform.isWindows:
-                editorPath = j.do.joinPaths(
+                editorPath = j.sal.fs.joinPaths(
                     j.dirs.JSBASEDIR, "apps", "wscite", "scite.exe")
-                if j.do.exists(editorPath):
+                if j.sal.fs.exists(editorPath):
                     editor = editorPath
             tracefile = errorConditionObject.log2filesystem()
             # print "EDITOR FOUND:%s" % editor

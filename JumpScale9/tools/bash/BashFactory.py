@@ -19,7 +19,7 @@ class Profile:
         """
         self.bash = bash
         if profilePath == "":
-            self.pathProfile = j.do.joinPaths(self.home, ".profile_js")
+            self.pathProfile = j.sal.fs.joinPaths(self.home, ".profile_js")
         else:
             self.pathProfile = profilePath
 
@@ -271,7 +271,7 @@ class Bash:
         if self._profileDefault is None:
             path = ""
             for attempt in [".profile", ".bash_profile"]:
-                ppath = j.do.joinPaths(self.home, attempt)
+                ppath = j.sal.fs.joinPaths(self.home, attempt)
                 if self.prefab.core.file_exists(ppath):
                     path = ppath
             if path == "":

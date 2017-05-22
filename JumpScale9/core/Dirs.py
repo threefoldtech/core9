@@ -64,9 +64,9 @@ class Dirs:
 
     @property
     def JSLIBDIR(self):
-        return j.do.getParent(
-            j.do.getDirName(
-                j.do.getPathOfRunningFunction(
+        return j.sal.fs.getParent(
+            j.sal.fs.getDirName(
+                j.sal.fs.getPathOfRunningFunction(
                     j.logger.__init__)))
 
     def replaceFilesDirVars(
@@ -75,16 +75,16 @@ class Dirs:
             recursive=True,
             filter=None,
             additionalArgs={}):
-        if j.do.isFile(path):
+        if j.sal.fs.isFile(path):
             paths = [path]
         else:
-            paths = j.do.listFilesInDir(path, recursive, filter)
+            paths = j.sal.fs.listFilesInDir(path, recursive, filter)
 
         for path in paths:
-            content = j.do.fileGetContents(path)
+            content = j.sal.fs.fileGetContents(path)
             content2 = self.replaceTxtDirVars(content, additionalArgs)
             if content2 != content:
-                j.do.writeFile(filename=path, contents=content2)
+                j.sal.fs.writeFile(filename=path, contents=content2)
 
     # def _getParent(self, path):
     #     """

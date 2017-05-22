@@ -46,6 +46,8 @@ from .logging.LoggerFactory import LoggerFactory
 j.logger = LoggerFactory()
 j.logger.enableConsoleHandler()
 
+from .fs.SystemFS import SystemFS
+j.sal.fs = SystemFS()
 
 from .sal.process.SystemProcess import SystemProcess
 j.sal.process = SystemProcess()
@@ -92,6 +94,8 @@ j.core.application = Application()
 
 j.logger.set_mode("DEV")
 
+from .fs.SystemFSWalker import SystemFSWalker
+j.sal.fswalker = SystemFSWalker
 
 from .tools.loader.JSLoader import JSLoader
 j.tools.jsloader = JSLoader()
