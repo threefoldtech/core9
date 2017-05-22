@@ -18,6 +18,7 @@ def _post_install(libname, libpath):
     j.core.state.configSet('plugins', c)
 
     j.tools.jsloader.generatePlugins()
+    j.tools.executorLocal.executeRaw('apt-get install net-tools')
 
 
 class install(_install):
