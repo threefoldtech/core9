@@ -55,10 +55,10 @@ class TestLog(object):
     def foo(self):
         path = "/tmp/empty"
         self.logger.info("start foo method")
-        if j.do.exists(path):
+        if j.sal.fs.exists(path):
             self.logger.debug("%s exists, remove it" % path)
-            j.do.remove(path)
-        j.do.createEmptyFile(path)
+            j.sal.fs.remove(path)
+        j.sal.fs.createEmptyFile(path)
         self.logger.info("end foo method")
         self.logger.error("BIG ERROR !!!")
 ```
@@ -106,10 +106,10 @@ from js9 import j
 def foo():
     path = "/tmp/empty"
     logger.info("info start foo")
-    if j.do.exists(path):
+    if j.sal.fs.exists(path):
         logger.debug("%s exists, remove it" % path)
-        j.do.remove(path)
-    j.do.createEmptyFile(path)
+        j.sal.fs.remove(path)
+    j.sal.fs.createEmptyFile(path)
     logger.info("debug end foo")
 
 

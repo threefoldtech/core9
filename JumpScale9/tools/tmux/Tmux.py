@@ -251,9 +251,9 @@ class Tmux:
         self.__jslocation__ = "j.tools.tmux"
         self.__imports__ = "libtmux"
         self.sessions = {}
-        # tmuxpath=j.do.joinPaths(j.dirs.TMPDIR,"tmux")
+        # tmuxpath=j.sal.fs.joinPaths(j.dirs.TMPDIR,"tmux")
         # os.environ["TMUX_TMPDIR"]=tmuxpath
-        # j.do.createDir(tmuxpath)
+        # j.sal.fs.createDir(tmuxpath)
 
     def _getServer(self, name, firstWindow="ignore"):
         try:

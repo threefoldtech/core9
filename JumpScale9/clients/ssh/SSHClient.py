@@ -293,7 +293,7 @@ class SSHClient:
                 "dest path should be absolute, need / in beginning of dest path")
 
         dest = "%s@%s:%s" % (self.login, self.addr, dest)
-        j.do.copyDirTree(
+        j.sal.fs.copyDirTree(
             source,
             dest,
             keepsymlinks=True,
@@ -314,7 +314,7 @@ class SSHClient:
             raise j.exceptions.RuntimeError(
                 "source path should be absolute, need / in beginning of source path")
         source = "%s@%s:%s" % (self.login, self.addr, source)
-        j.do.copyDirTree(
+        j.sal.fs.copyDirTree(
             source,
             dest,
             keepsymlinks=True,

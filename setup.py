@@ -6,18 +6,21 @@ import os
 
 def _post_install(libname, libpath):
     from JumpScale9 import j  # here its still the boostrap JumpScale9
-    j.tools.jsloader.copyPyLibs()
 
     # ensure plugins section in config
     if 'plugins' not in j.application.config:
-        j.application.config['plugins'] = {}
+        j.application.config['plugins'] = []
 
     # add this plugin to the config
     c = j.core.state.configGet('plugins', defval={})
-    c[libname] = libpath
-    j.core.state.configSet('plugins', c)
+    exists = any([x for x in c if x == libname])
+    if not exists:
+        c.append({libname: libpath})
+        j.core.state.configSet('plugins', c)
 
     j.tools.jsloader.generatePlugins()
+    j.tools.jsloader.copyPyLibs()
+
     j.tools.executorLocal.executeRaw('apt-get install net-tools')
 
 
@@ -63,7 +66,8 @@ setup(
         'python-dateutil>=2.6.0',
         'pytoml>=0.1.12',
         'redis>=2.10.5',
-        'requests>=2.13.0'
+        'requests>=2.13.0',
+        'future>=0.16.0',
     ],
     cmdclass={
         'install': install,

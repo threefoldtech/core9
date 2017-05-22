@@ -20,7 +20,7 @@ class SerializerYAML(SerializerBase):
 
     def load(self, path):
         try:
-            s = j.do.readFile(path)
+            s = j.sal.fs.readFile(path)
             return yaml.load(s)
         except Exception as e:
             error = "error:%s\n" % e

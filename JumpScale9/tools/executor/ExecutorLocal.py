@@ -51,9 +51,9 @@ class ExecutorLocal(ExecutorBase):
 
     def upload(self, source, dest, dest_prefix="", recursive=True):
         if dest_prefix != "":
-            dest = j.do.joinPaths(dest_prefix, dest)
-        if j.do.isDir(source):
-            j.do.copyDirTree(
+            dest = j.sal.fs.joinPaths(dest_prefix, dest)
+        if j.sal.fs.isDir(source):
+            j.sal.fs.copyDirTree(
                 source,
                 dest,
                 keepsymlinks=True,
@@ -67,12 +67,12 @@ class ExecutorLocal(ExecutorBase):
                 ssh=False,
                 recursive=recursive)
         else:
-            j.do.copyFile(source, dest, overwriteFile=True)
+            j.sal.fs.copyFile(source, dest, overwriteFile=True)
 
     def download(self, source, dest, source_prefix=""):
         if source_prefix != "":
-            source = j.do.joinPaths(source_prefix, source)
-        j.do.copyDirTree(
+            source = j.sal.fs.joinPaths(source_prefix, source)
+        j.sal.fs.copyDirTree(
             source,
             dest,
             keepsymlinks=True,

@@ -5,10 +5,10 @@ class SerializerBase:
 
     def dump(self, filepath, obj):
         data = self.dumps(obj)
-        j.do.writeFile(filepath, data)
+        j.sal.fs.writeFile(filepath, data)
 
     def load(self, path):
-        b = j.do.readFile(path)
+        b = j.sal.fs.readFile(path)
         try:
             r = self.loads(b)
         except Exception as e:
