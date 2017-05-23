@@ -207,7 +207,7 @@ class ErrorHandler:
             message = str(exceptionObject)
 
         if message.find("((") != -1:
-            tags = j.tools.code.regex.findOne("\(\(.*\)\)", message)
+            tags = j.data.regex.findOne("\(\(.*\)\)", message)
             message.replace(tags, "")
         else:
             tags = ""

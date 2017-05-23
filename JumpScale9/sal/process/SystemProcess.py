@@ -413,7 +413,7 @@ class SystemProcess:
             out = "\n".join(map(unindent, codeLines))
             code = out
 
-        if len(j.tools.code.regex.findAll("^def", code)) != 1:
+        if len(j.data.regex.findAll("^def", code)) != 1:
             server.raiseError("Cannot find 1 def method in code to execute, code submitted was \n%s" % code)
 
         code2 = ""

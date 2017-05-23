@@ -55,6 +55,7 @@ class Dirs:
         txt = txt.replace("$LOGDIR", self.LOGDIR)
         txt = txt.replace("$TMPDIR", self.TMPDIR)
         txt = txt.replace("$LIBDIR", self.JSLIBDIR)
+        txt = txt.replace("$JSAPPSDIR", self.JSAPPSDIR)
         # txt = txt.replace("$jslibextdir", self.JSLIBEXTDIR)
         # txt = txt.replace("$jsbindir", self.BINDIR)
         txt = txt.replace("$nodeid", str(j.application.whoAmI.nid))

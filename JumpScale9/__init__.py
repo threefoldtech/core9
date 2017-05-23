@@ -42,6 +42,9 @@ j.data.text = Text()
 from .data.types.Types import Types
 j.data.types = Types()
 
+from .data.regex.RegexTools import RegexTools
+j.data.regex = RegexTools()
+
 from .logging.LoggerFactory import LoggerFactory
 j.logger = LoggerFactory()
 j.logger.enableConsoleHandler()

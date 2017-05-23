@@ -222,7 +222,7 @@ class NetTools:
         @raise RuntimeError: No nameserver could be found in /etc/resolv.conf
         """
         if j.core.platformtype.myplatform.isUnix:
-            nameserverlines = j.tools.code.regex.findAll(
+            nameserverlines = j.data.regex.findAll(
                 "^\s*nameserver\s+(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\s*$",
                 j.sal.fs.fileGetContents('/etc/resolv.conf'))
 

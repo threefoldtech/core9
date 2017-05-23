@@ -626,11 +626,11 @@ class SystemFS:
             path = self.getDirName(path)
             # find extension
             regexToFindExt = "\.\w*$"
-            if j.tools.code.regex.match(regexToFindExt, name):
-                extension = j.tools.code.regex.findOne(
+            if j.data.regex.match(regexToFindExt, name):
+                extension = j.data.regex.findOne(
                     regexToFindExt, name).replace(".", "")
                 # remove extension from name
-                name = j.tools.code.regex.replace(
+                name = j.data.regex.replace(
                     regexToFindExt, regexFindsubsetToReplace=regexToFindExt, replaceWith="", text=name)
 
         if baseDir != "":
@@ -642,12 +642,12 @@ class SystemFS:
             dirOrFilename = name
         # check for priority
         regexToFindPriority = "^\d*_"
-        if j.tools.code.regex.match(regexToFindPriority, dirOrFilename):
+        if j.data.regex.match(regexToFindPriority, dirOrFilename):
             # found priority in path
-            priority = j.tools.code.regex.findOne(
+            priority = j.data.regex.findOne(
                 regexToFindPriority, dirOrFilename).replace("_", "")
             # remove priority from path
-            name = j.tools.code.regex.replace(
+            name = j.data.regex.replace(
                 regexToFindPriority, regexFindsubsetToReplace=regexToFindPriority, replaceWith="", text=name)
         else:
             priority = 0
@@ -1670,7 +1670,7 @@ class SystemFS:
             params = {}
             params["t"] = t
             params["destintar"] = destInTar
-            j.sal.fs.walker.walk(
+            j.sal.fswalker.walk(
                 root=sourcepath,
                 callback=addToTar,
                 arg=params,

@@ -165,6 +165,8 @@ def unlock_(lockname):
 class LockFactory:
     def __init__(self):
         self.__jslocation__ = "j.tools.lock"
+        self.lock = lock
+        self.unlock = unlock
 
     def fileLock(self, lock_name='lock', reentry=False, locktimeout=60):
         return FileLock(lock_name=lock_name, reentry=reentry, locktimeout=locktimeout)
