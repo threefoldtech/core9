@@ -1,85 +1,118 @@
 # Jumpscale Config Files
 
-Are in HRD format In this section we list the known config files (there should be no others). All other configurations are done in AYS hrd files
 
-all hrd config files are stored in /optvar/hrd/system
+## types
 
-## atyourservice.hrd
+- configuration info
+    - mail config
+    - name/email
+    - sshkey
+    - ...
+- state info
+    - e.g. done installs
+- cache info
+    - in redis only
 
-```bash
-#here domain=jumpscale, change name for more domains
-metadata.jumpscale =
-    url:'https://github.com/Jumpscale/ays_jumpscale9',
-    branch:'python3_unstable',
+## principles
+
+- jumpscale can work without any configuration information
+- configuration is in redis or in 1 file on the filesystem
+
+### order of loading info
+
+- redis will be checked on ```$TMPDIR/redis.sock``` or on ```$REDISHOST/PORT```, if found that redis will be used
+- if no redis and cache/configration/state is required will be stored in ```$VARDIR/cache``` or ```$VARDIR/cfg``` or ```$VARDIR/state```
+    - formats are toml for state & cfg, cache is different
+
+## data formats
+
+### redis
+
+- js9:cfg:config = toml file
+- js9:state:$stateName:$key = binary
+- js9:cache:$cacheName:$key = binary, std expiration 1h
+
+### filesystem
+
+- ```$VARDIR/cfg/config.toml```
+- ```$VARDIR/state/$name.toml```
+- ```$VARDIR/cache/$cachename/$key``` #binary data as a file (first 4 bytes = expiration in epoch, 4 bytes metadata, rest is the binary )
+
+## default configuration
+
+if container:
+
+```toml
+[dirs]
+HOMEDIR = "~"
+TMPDIR = "/tmp"
+VARDIR = "/optvar/var"
+BASEDIR = "/opt/jumpscale9"
+CFGDIR = "{{VARDIR}}/cfg"
+DATADIR = "{{VARDIR}}/data"
+CODEDIR = "/opt/code"
+BUILDDIR = "{{VARDIR}}/build"
+LIBDIR = "{{BASEDIR}}/lib/"
+TEMPLATEDIR = "{{BASEDIR}}/templates"
 ```
 
-## system.hrd
+else:
 
-```bash
-paths.base=/opt/jumpscale9
-paths.bin=$(paths.base)/bin
-paths.code=/opt/code
-paths.lib=$(paths.base)/lib
-
-paths.python.lib.js=$(paths.lib)/JumpScale
-paths.python.lib.ext=$(paths.base)/libext
-paths.app=$(paths.base)/apps
-paths.var=$(paths.base)/var
-paths.log=$(paths.var)/log
-paths.pid=$(paths.var)/pid
-
-paths.cfg=$(paths.base)/cfg
-paths.hrd=$(paths.base)/hrd
-
-system.logging = 1
-system.sandbox = 0
-```
-
-if system.logging = 0 then there will no no logs send to redis or any other log target
-
-## whoami.hrd
+```toml
+[dirs]
+HOMEDIR = "~"
+TMPDIR = "/tmp"
+VARDIR = "{{GIGDIR}}/var"
+BASEDIR = "{{GIGDIR}}/gig"
+CFGDIR = "{{VARDIR}}/cfg"
+DATADIR = "{{VARDIR}}/data"
+CODEDIR = "{{GIGDIR}}/code"
+BUILDDIR = "{{VARDIR}}/build"
+LIBDIR = "{{BASEDIR}}/lib/"
+TEMPLATEDIR = "{{BASEDIR}}/templates"
 
 ```
-email                   =
-fullname                =
-git.login               =
-git.passwd              =
+
+following info comes after it
+
+```toml
+
+[email]
+from = "info@incubaid.com"
+smtp_port = 443
+smtp_server = ""
+
+[git.ays]
+branch = "master"
+url = "https://github.com/Jumpscale/ays9.git"
+
+[git.js]
+branch = "master"
+url = "https://github.com/Jumpscale/core9.git"
+
+
+[system]
+debug = true
+autopip = false
+readonly = false
+container = false
+
+[grid]
+gid = 0
+nid = 0
+
+[redis]
+port = 6379
+addr = "localhost"
+
+[me]
+fullname = "Kristof De Spiegeleer"
+
+[ssh]
+SSHKEYNAME = "id_rsa"
+
 ```
 
-## system redis
-
-```
-redis.addr = 
-redis.port = 
-redis.passwd =
-```
-
-can all be left empty, or file does not have to exist
-
-## realitydb
-
-```
-realitydb.addr = 
-realitydb.port = 
-realitydb.login =
-realitydb.passwd =
-```
-
-can all be left empty, or file does not have to exist
-
-## statsdb
-
-```
-statsdb.addr = 
-statsdb.port = 
-statsdb.login =
-statsdb.passwd =
-statsdb.interval = 60
-```
-
-interval is every how many sec aggregation is being done
-
-can all be left empty, or file does not have to exist
 
 ```
 !!!

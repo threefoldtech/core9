@@ -4,131 +4,53 @@
 
 - Ubuntu 14+
 - Mac OSX Yosemite
-- Windows 10 (Cygwin): EARLY DRAFT
+- Windows 10: to be completed
 
 ## Requirements
 
-- Minimum 2GB RAM
-- Python 3.5
-- curl
+- install docker !
+- on mac osx you need brew
 
-## Ubuntu
+## Installation
 
-Use the below installation script to make your life easy.
+### init of your host os
 
-> Note: If you can install it as root, do it, otherwise please use `sudo -s -H`
+First execute `jsinit.sh` in order to prepare the installation:
 
-```shell
-sudo -s -H
-apt-get update
-apt-get -y dist-upgrade
-apt-get install -y python3.5 curl
+```bash
+curl https://raw.githubusercontent.com/Jumpscale/developer/master/jsinit.sh?$RANDOM > $TMPDIR/jsinit.sh; sh $TMPDIR/jsinit.sh
 ```
 
-If you are using an image of Ubuntu prepared for [OpenvCloud](https://gig.gitbooks.io/ovcdoc_public/content/), please be sure the hostname is well set:
+### download/start jumpscale docker
 
-```
-grep $(hostname) /etc/hosts || sed -i "s/.1 localhost/.1 localhost $(hostname)/g" /etc/hosts
-```
-
-Then you can run the following command, in this case for installing the 8.1.1 branch:
-
-```shell
-cd /tmp
-rm -f install.sh
-export JSBRANCH="8.1.1"
-curl -k https://raw.githubusercontent.com/Jumpscale/jumpscale_core9/${JSBRANCH}/install/install.sh > install.sh
-bash install.sh
+```bash
+js9_start
 ```
 
-## Mac OSX
+this will take a while, because this is a development docker and is +1.5GB
 
-- Make sure Brew and curl are installed:
-
-```
-/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-brew install curl
-brew install python3
+To see interactive output do the following in a separate console:
+```bash
+tail -f /tmp/lastcommandoutput.txt
 ```
 
-- install pip3:
+## build jumpscale
 
-```
-sudo -s
-cd ~/tmp;curl -k https://bootstrap.pypa.io/get-pip.py > get-pip.py;python3 get-pip.py
-```
+If you rather build the system from scratch
 
-- Go to the shell in Mac OSX:
-
-```shell
-export TMPDIR=~/tmp
-mkdir -p $TMPDIR
-cd $TMPDIR
-rm -f install.sh
-curl -k https://raw.githubusercontent.com/Jumpscale/jumpscale_core9/master/install/install.sh > install.sh
-bash install.sh
+```bash
+#remove previous dockers, so you build from scratch
+js9_destroy
+#-l installs extra libs
+#-p installs portal
+js9_build -l
 ```
 
+To see all options do ```js9_build -h```
 
-## Reset your system
-
-If your installation failed or if you want to remove your current installation, you can execute the following commands:
-
-```shell
-export TMPDIR=~/tmp
-cd $TMPDIR
-rm -f reset.sh
-curl -k https://raw.githubusercontent.com/Jumpscale/jumpscale_core9/master/install/reset.sh > reset.sh
-bash reset.sh
-```
-
-
-##  Environment variables that influence the installation process
-
-None of the following environment variables are required, but can all optionally be set:
-
-```
-DEBUG = 0
-GITHUBUSER = ''
-SANDBOX = 0
-JSBASE = #'/opt/jumpscale9' on ubuntu if /JS8 does not exist, else $HOME/opt/jumpscale9
-JSBRANCH = 'master'
-AYSBRANCH = 'master'
-CODEDIR = #'/opt/code' on ubuntu if /JS8 does not exist, else $HOME/opt/code
-TMPDIR = #default is $HOME/tmp if not set
-HOME = #homedir of your system
-CFGDIR = #'/opt/jumpscale9/cfg' on ubuntu if /JS8 does not exist, else $HOME/optvar/cfg
-DATADIR = #'/optvar/data' on ubuntu if /JS8 does not exist, else $HOME/optvar/data
-
-```
-
-- **JSBASE**: root directory where JumpScale will be installed
-- **GITHUBUSER**: user used to connect to GitHub (only relevant when connecting to GitHub over HTTP)
-
-  > It is strongly recommended to use SSH to access GitHub instead of HTTP, using ```ssh-add``` to load your private ssh-key(s)
-
-Setting these environment variables on Linux and OSX is simple:
-
-```
-export JSBRANCH="fix_installer"
-```
-
-## Windows 10 (Cygwin)
-
- - Install [Cygwin](https://cygwin.com/install.html)
- - When installing Cygwin search for the following packages in the package menu and select them:
-     - [curl](https://curl.haxx.se/), under net
-     - [gcc-g++ :gnu compiler collection(c ++)](https://en.wikipedia.org/wiki/GNU_Compiler_Collection), under devel
-     - [Paramiko](http://www.paramiko.org/), under python
-     - [lynx](http://lynx.browser.org/lynx.html), under web
-
-Then to install JumpScale:
-
-```shell
-cd /tmp
-rm -f install.sh
-curl -k https://raw.githubusercontent.com/Jumpscale/jumpscale_core9/master/install/install.sh > install.sh
-bash install.sh
+To see interactive output do the following in a separate console:
+```bash
+tail -f /tmp/lastcommandoutput.txt
 ```
 
 ```
