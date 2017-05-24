@@ -12,7 +12,7 @@ def _post_install(libname, libpath):
         j.application.config['plugins'] = []
 
     # add this plugin to the config
-    c = j.core.state.configGet('plugins', defval={})
+    c = j.core.state.configGet('plugins', defval=[])
     exists = any([x for x in c if x == libname])
     if not exists:
         c.append({libname: libpath})
