@@ -30,9 +30,9 @@ class SystemFSWalker:
         if contentRegexIncludes == [] and contentRegexExcludes == []:
             return True
         content = j.sal.fs.fileGetContents(path)
-        if j.tools.code.regex.matchMultiple(
+        if j.data.regex.matchMultiple(
                 patterns=contentRegexIncludes,
-                text=content) and not j.tools.code.regex.matchMultiple(
+                text=content) and not j.data.regex.matchMultiple(
                 patterns=contentRegexExcludes,
                 text=content):
             return True
@@ -112,7 +112,7 @@ class SystemFSWalker:
 
         # print "ROOT OF WALKER:%s"%root
         # print "followlinks:%s"%followlinks
-        j.sal.fs.walker._walk(root, callback, arg, includeFolders, pathRegexIncludes, pathRegexExcludes,
+        j.sal.fswalker._walk(root, callback, arg, includeFolders, pathRegexIncludes, pathRegexExcludes,
                               contentRegexIncludes, contentRegexExcludes, depths, followlinks=followlinks)
 
         # #if recursive:
@@ -121,14 +121,14 @@ class SystemFSWalker:
         #     if includeFolders:
         #         for dirname in dirnames:
         #             path = os.path.join(dirpath, dirname)
-        #             if j.tools.code.regex.matchMultiple(patterns=pathRegexIncludes,text=path) and \
-        #                     not j.tools.code.regex.matchMultiple(patterns=pathRegexExcludes,text=path):
+        #             if j.data.regex.matchMultiple(patterns=pathRegexIncludes,text=path) and \
+        #                     not j.data.regex.matchMultiple(patterns=pathRegexExcludes,text=path):
         #                 if SystemFSWalker._checkDepth(path,depths,root) and \
         #                         SystemFSWalker._checkContent(path,contentRegexIncludes, contentRegexExcludes):
         #                     result=callback(arg, path)
         #     for filename in filenames:
         #         path = os.path.join(dirpath, filename)
-        #         if j.tools.code.regex.matchMultiple(patterns=pathRegexIncludes,text=path) and not j.tools.code.regex.matchMultiple(patterns=pathRegexExcludes,text=path):
+        #         if j.data.regex.matchMultiple(patterns=pathRegexIncludes,text=path) and not j.data.regex.matchMultiple(patterns=pathRegexExcludes,text=path):
         #             if SystemFSWalker._checkDepth(path,depths,root) and SystemFSWalker._checkContent(path,contentRegexIncludes, contentRegexExcludes):
         #                 callback(arg, path)
 
@@ -142,21 +142,21 @@ class SystemFSWalker:
             if j.sal.fs.isDir(path2, followlinks):
                 if includeFolders:
                     result = True
-                    if j.tools.code.regex.matchMultiple(patterns=pathRegexIncludes, text=path2) and \
-                            not j.tools.code.regex.matchMultiple(patterns=pathRegexExcludes, text=path2):
+                    if j.data.regex.matchMultiple(patterns=pathRegexIncludes, text=path2) and \
+                            not j.data.regex.matchMultiple(patterns=pathRegexExcludes, text=path2):
                         if SystemFSWalker._checkDepth(path2, depths, path) and \
                                 SystemFSWalker._checkContent(path2, contentRegexIncludes, contentRegexExcludes):
                             result = callback(arg, path2)
                     if result is False:
                         continue  # do not recurse go to next dir
                 # recurse
-                j.sal.fs.walker._walk(path2, callback, arg, includeFolders, pathRegexIncludes, pathRegexExcludes,
+                j.sal.fswalker._walk(path2, callback, arg, includeFolders, pathRegexIncludes, pathRegexExcludes,
                                       contentRegexIncludes, contentRegexExcludes, depths, followlinks)
 
             if j.sal.fs.isFile(path2, followlinks):
-                if j.tools.code.regex.matchMultiple(
+                if j.data.regex.matchMultiple(
                         patterns=pathRegexIncludes,
-                        text=path2) and not j.tools.code.regex.matchMultiple(
+                        text=path2) and not j.data.regex.matchMultiple(
                         patterns=pathRegexExcludes,
                         text=path):
                     if SystemFSWalker._checkDepth(path2, depths, path) and SystemFSWalker._checkContent(
@@ -228,7 +228,7 @@ class SystemFSWalker:
                 # recurse
                 # print "walker matchdir:%s"% path2
                 if callbackFunctionDir is None:
-                    j.sal.fs.walker._walkFunctional(
+                    j.sal.fswalker._walkFunctional(
                         path2,
                         callbackFunctionFile,
                         callbackFunctionDir,
@@ -239,7 +239,7 @@ class SystemFSWalker:
                     result = callbackFunctionDir(path2, arg)
                     if result:
                         # print "walker recurse:%s"% path2
-                        j.sal.fs.walker._walkFunctional(
+                        j.sal.fswalker._walkFunctional(
                             path2,
                             callbackFunctionFile,
                             callbackFunctionDir,
