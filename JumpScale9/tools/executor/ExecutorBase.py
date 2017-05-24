@@ -177,8 +177,8 @@ class ExecutorBase:
                 pass
         return self._prefab
 
-    def exists(self, path):
-        return self.prefab.core.exists(path)
+    def exists(self, path, replace=True):
+        return self.prefab.core.exists(path, replace=replace)
 
     # interface to implement by child classes
     def execute(self, cmds, die=True, checkok=None, showout=True, timeout=0, env={}):
