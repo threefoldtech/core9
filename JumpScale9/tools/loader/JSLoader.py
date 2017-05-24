@@ -92,6 +92,8 @@ j.errorhandler = j.core.errorhandler
 j.exceptions = j.core.errorhandler.exceptions
 j.events = j.core.events
 j.core.db = j.clients.redis.get4core()
+from JumpScale9.tools.loader.JSLoader import JSLoader
+j.tools.jsloader = JSLoader()
 
 """
 
@@ -198,7 +200,6 @@ class JSLoader():
                 res3["name"] = item
                 importlocation = removeDirPart(classfile)[:-3].replace("//", "/").replace("/", ".")
                 res3["importlocation"] = importlocation
-                print ("**** in path {} generating {} classname {} file {}".format(path, importlocation, classname, classfile))
 
                 try:
                     exec("from %s import %s" % (importlocation, classname))
@@ -358,33 +359,31 @@ class JSLoader():
         gigdir = os.environ.get('GIGDIR', '/root/gig')
         mounted_lib_path = os.path.join(gigdir, 'python_libs')
 
-        plugins = j.application.config['plugins'] or []
-        for plugin in plugins:
-            for name, path in plugin.items():
-                if j.sal.fs.exists(path, followlinks=True):
-                    moduleList = self.findModules(path=path, moduleList=moduleList)
-                    # link libs to location for hostos
-                    j.do.copyTree(path,
-                                  os.path.join(mounted_lib_path, name),
-                                  overwriteFiles=True,
-                                  ignoredir=['*.egg-info',
-                                             '*.dist-info',
-                                             "*JumpScale*",
-                                             "*Tests*",
-                                             "*tests*"],
+        for name, path in j.application.config['plugins'].items():
+            if j.do.exists(path, followlinks=True):
+                moduleList = self.findModules(path=path, moduleList=moduleList)
+                # link libs to location for hostos
+                j.do.copyTree(path,
+                              os.path.join(mounted_lib_path, name),
+                              overwriteFiles=True,
+                              ignoredir=['*.egg-info',
+                                         '*.dist-info',
+                                         "*JumpScale*",
+                                         "*Tests*",
+                                         "*tests*"],
 
-                                  ignorefiles=['*.egg-info',
-                                               "*.pyc",
-                                               "*.so",
-                                               ],
-                                  rsync=True,
-                                  recursive=True,
-                                  rsyncdelete=True,
-                                  createdir=True)
+                              ignorefiles=['*.egg-info',
+                                           "*.pyc",
+                                           "*.so",
+                                           ],
+                              rsync=True,
+                              recursive=True,
+                              rsyncdelete=True,
+                              createdir=True)
 
-            # DO NOT AUTOPIP the deps are now installed while installing the libs
-            j.application.config["system"]["autopip"] = False
-            j.application.config["system"]["debug"] = True
+        # DO NOT AUTOPIP the deps are now installed while installing the libs
+        j.application.config["system"]["autopip"] = False
+        j.application.config["system"]["debug"] = True
 
-            self.generate(path=path, moduleList=moduleList)
-            self.generate(path=path, moduleList=moduleList, codecompleteOnly=True)
+        self.generate(path=path, moduleList=moduleList)
+        self.generate(path=path, moduleList=moduleList, codecompleteOnly=True)
