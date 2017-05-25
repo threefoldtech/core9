@@ -80,7 +80,6 @@ class Application:
         from IPython import embed
         print("DEBUG NOW fix locale in application")
         embed()
-        o
 
     def init(self):
 
