@@ -10,9 +10,8 @@ class State():
     def __init__(self):
         self.readonly = False
         self._db = None
-        self._config = None
-        self._config_changed = False
         self.__jslocation__ = "j.core.state"
+        self.config = None
 
     @property
     def db(self):
@@ -28,16 +27,14 @@ class State():
         else:
             raise RuntimeError("Cannot find VARDIR in env")
 
-    @property
-    def config(self):
-        if self._config is None:
-            if not self._exists("cfg"):
-                self._config = {}
-                self._config_changed = True
-            else:
-                data = self._get("cfg")
-                self._config = pytoml.loads(data)
-        return self._config
+    def configLoad(self):
+        if not self._exists("cfg"):
+            self.config = {}
+            self._config_changed = True
+        else:
+            data = self._get("cfg")
+            self.config = pytoml.loads(data)
+            self._config_changed = False
 
     def configGet(self, key, defval=None, set=False):
         """
@@ -88,11 +85,11 @@ class State():
                         "first level in config needs to be a dict ")
                 for key1, val1 in val0.items():
                     if key1 not in self.config[key0]:
-                        self._config[key0][key1] = val1
+                        self.config[key0][key1] = val1
                         self._config_changed = True
                     else:
                         if overwrite:
-                            self._config[key0][key1] = val1
+                            self.config[key0][key1] = val1
                             self._config_changed = True
         self.configSave()
 
@@ -109,7 +106,7 @@ class State():
         self._config_changed = False
 
     def resetConfig(self):
-        self._config = {}
+        self.config = {}
         self.configSave()
 
     def resetState(self):

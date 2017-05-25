@@ -30,6 +30,7 @@ GEN_START = """
 from JumpScale9.core.JSBase import JSBase
 import os
 os.environ["LC_ALL"]='en_US.UTF-8'
+from JumpScale9 import j
 """
 
 GEN = """
@@ -41,20 +42,36 @@ class {{jname}}:
 
     def __init__(self):
         {{#location}}
-        self.__{{name}} = None
+        self._{{name}} = None
         {{/location}}
 
     {{#location}}
     @property
     def {{name}}(self):
-        if self.__{{name}} == None:
+        if self._{{name}} == None:
+            # print("PROP:{{name}}")
             from {{importlocation}} import {{classname}} as {{classname}}
-            self.__{{name}} = {{classname}}()
-        return self.__{{name}}
+            self._{{name}} = {{classname}}()
+        return self._{{name}}
 
     {{/location}}
 
+# {{jname}}Obj={{jname}}()
+# r={{jname}}Obj
+
+{{#location}}
+if not hasattr(j.{{jname}},"{{name}}"):
+    print("propname:{{name}}")
+    # j.{{jname}}._{{name}} = {{jname}}Obj._{{jname}}__{{name}}
+    # j.{{jname}}._{{name}} = {{jname}}Obj._{{name}}
+    # j.{{jname}}.__class__.{{name}} = {{jname}}Obj.__class__.{{name}}
+    j.{{jname}}._{{name}} = None
+    j.{{jname}}.__class__.{{name}} = {{jname}}.{{name}}
+{{/location}}
+
+
 """
+
 
 GEN2 = """
 {{#locationerr}}
@@ -74,7 +91,19 @@ class {{jname}}:
 
 """
 
+# GEN3 = """
+#
+#
+#
+# """
+
+# Nothing needed at end for when used interactively
 GEN_END = """
+
+"""
+
+# CODE GENERATION ONLY
+GEN_END2 = """
 
 class Jumpscale9():
 
@@ -84,9 +113,9 @@ class Jumpscale9():
         {{/locations}}
 
 j = Jumpscale9()
+
 j.logger=j.core.logger
 j.application=j.core.application
-j.do = j.core.installtools
 j.dirs = j.core.dirs
 j.errorhandler = j.core.errorhandler
 j.exceptions = j.core.errorhandler.exceptions
@@ -238,7 +267,11 @@ class JSLoader():
 
             # print(res2)
 
-        content += pystache.render(GEN_END, **jlocations)
+        if codecompleteOnly:
+            content += pystache.render(GEN_END2, **jlocations)
+        else:
+            content += pystache.render(GEN_END, **jlocations)
+
         j.sal.fs.writeFile(out, content)
 
     def _pip_installed(self):
@@ -315,6 +348,10 @@ class JSLoader():
                     result[loc].append((classfile, classname, item, importItems))
         return result
 
+    def removeEggs(self):
+        for key, path in j.clients.git.getGitReposListLocal(account="jumpscale").items():
+            for item in [item for item in j.sal.fs.listDirsInDir(path) if item.find("egg-info") != -1]:
+                j.sal.fs.removeDirTree(item)
 
     def copyPyLibs(self):
 
@@ -385,5 +422,5 @@ class JSLoader():
         j.application.config["system"]["autopip"] = False
         j.application.config["system"]["debug"] = True
 
-        self.generate(path=path, moduleList=moduleList)
-        self.generate(path=path, moduleList=moduleList, codecompleteOnly=True)
+        self.generate(path="", moduleList=moduleList)
+        self.generate(path="", moduleList=moduleList, codecompleteOnly=True)

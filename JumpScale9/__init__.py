@@ -1,3 +1,4 @@
+
 class Sal():
     def __init__(self):
         pass
@@ -23,6 +24,16 @@ class Core():
         pass
 
 
+class Servers():
+    def __init__(self):
+        pass
+
+
+class DataUnits():
+    def __init__(self):
+        pass
+
+
 class Jumpscale9():
 
     def __init__(self):
@@ -31,6 +42,9 @@ class Jumpscale9():
         self.data = Data()
         self.clients = Clients()
         self.core = Core()
+        self.servers = Servers()
+        self.data_units = DataUnits()
+
         self.exceptions = None
 
 
@@ -73,6 +87,7 @@ j.core.state = State()
 from .core.InstallTools import InstallTools
 j.do = InstallTools()
 
+j.core.state.configLoad()
 if "dirs" not in j.core.state.config:
     j.do.initEnv()
 
@@ -93,7 +108,7 @@ j.core.errorhandler = j.errorhandler
 
 from .core.Application import Application
 j.application = Application()
-j.core.application = Application()
+j.core.application = j.application
 
 j.logger.set_mode("DEV")
 
