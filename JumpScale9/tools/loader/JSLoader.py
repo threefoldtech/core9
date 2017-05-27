@@ -61,7 +61,7 @@ class {{jname}}:
 
 {{#location}}
 if not hasattr(j.{{jname}},"{{name}}"):
-    print("propname:{{name}}")
+    # print("propname:{{name}}")
     # j.{{jname}}._{{name}} = {{jname}}Obj._{{jname}}__{{name}}
     # j.{{jname}}._{{name}} = {{jname}}Obj._{{name}}
     # j.{{jname}}.__class__.{{name}} = {{jname}}Obj.__class__.{{name}}
