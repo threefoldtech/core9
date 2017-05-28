@@ -33,6 +33,10 @@ class DataUnits():
     def __init__(self):
         pass
 
+class Portal():
+    def __init__(self):
+        pass
+
 
 class Jumpscale9():
 
@@ -44,7 +48,7 @@ class Jumpscale9():
         self.core = Core()
         self.servers = Servers()
         self.data_units = DataUnits()
-
+        self.portal = Portal()
         self.exceptions = None
 
 
