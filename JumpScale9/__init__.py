@@ -37,6 +37,9 @@ class Portal():
     def __init__(self):
         pass
 
+class AtYourService():
+    def __init__(self):
+        pass
 
 class Jumpscale9():
 
@@ -49,6 +52,7 @@ class Jumpscale9():
         self.servers = Servers()
         self.data_units = DataUnits()
         self.portal = Portal()
+        self.atyourservice = AtYourService()
         self.exceptions = None
 
 
@@ -137,6 +141,7 @@ j.tools.console = Console()
 from JumpScale9.errorhandling import JSExceptions
 j.exceptions = JSExceptions
 # j.events = j.core.events
+j.core.db = j.clients.redis.get4core()
 
 j.core.logger = j.logger
 logging_cfg = j.application.config.get('logging')

@@ -249,7 +249,7 @@ class Application:
         """
         return False
         # TODO: fix
-        if j.atyourservice.type != "c":
+        if j.atyourservice.server.type != "c":
             path = '%s/%s__%s__%s.hrd' % (j.dirs.getHrdDir(),
                                           domain, name, instance)
         else:
@@ -269,7 +269,7 @@ class Application:
         """
         return j.application.config
         # TODO: fix
-        service = j.atyourservice.getService(
+        service = j.atyourservice.server.getService(
             domain=domain, name=name, instance=instance)
         return service.hrd
 
@@ -288,8 +288,8 @@ class Application:
         returns hrd instance names for specific appname (default domain=jumpscale)
         """
         repos = []
-        for path in j.atyourservice.findAYSRepos(j.dirs.CODEDIR):
-            repos.append(j.atyourservice.get(path=path))
+        for path in j.atyourservice.server.findAYSRepos(j.dirs.CODEDIR):
+            repos.append(j.atyourservice.server.get(path=path))
         names = sorted([service.instance for aysrepo in repos for service in list(
             aysrepo.services.values()) if service.templatename == name])
         return names
