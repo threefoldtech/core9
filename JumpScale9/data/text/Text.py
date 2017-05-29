@@ -1037,3 +1037,20 @@ class Text:
                 text = text.replace(match, args[key])
                 changes[key] = args[key]
         return changes, text
+
+    def sanitize_key(self, key):
+        """
+        make sure the key of an HRD schema has a valid format for Capnp Schema
+        e.g.:
+            ssh.port becomes sshPort
+        """
+        separator = ['_', '.']
+        for sep in separator:
+            if key.find(sep) != -1:
+                ss = key.split(sep)
+                key = ss[0]
+                for s in ss[1:]:
+                    key += s[0].upper()
+                    if len(s) > 1:
+                        key += s[1:]
+        return key

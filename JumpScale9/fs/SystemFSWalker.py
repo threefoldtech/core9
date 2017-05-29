@@ -3,7 +3,7 @@
 import os
 import os.path
 from JumpScale9 import j
-
+import fnmatch
 
 class SystemFSWalker:
 
@@ -247,3 +247,70 @@ class SystemFSWalker:
                             callbackForMatchDir,
                             callbackForMatchFile,
                             findDirectorySymlinks=findDirectorySymlinks)
+    @staticmethod
+    def walkExtended(root, recurse=0, dirPattern='*', filePattern='*',
+                     followSoftLinks=True, dirs=True, files=True):
+        """
+        Extended Walk version: seperate dir and file pattern
+        @param  root                : start directory to start the search.
+        @type   root                : string
+        @param  recurse             : search also in subdirectories.
+        @type   recurse             : number
+        @param  dirPattern          : search pattern to match directory names. Wildcards can be included.
+        @type   dirPattern          : string
+        @param  filePattern         : search pattern to match file names. Wildcards can be included.
+        @type   filePattern         : string
+        @param  followSoftLinks     : determine if links must be followed.
+        @type   followSoftLinks     : boolean
+        @param  dirs                : determine to return dir results.
+        @type   dirs                : boolean
+        @param  files               : determine to return file results.
+        @type   files               : boolean
+        @return                     : List of files and / or directories that match the search patterns.
+        @rtype                      : list of strings
+        General guidelines in the usage of the method be means of some examples come next. For the example in /tmp there is
+        * a file test.rtt
+        * and ./folder1/subfolder/subsubfolder/small_test/test.rtt
+        To find the first test you can use
+           j.sal.fs.walkExtended('/tmp/', dirPattern="*tmp*", filePattern="*.rtt")
+        To find only the second one you could use
+           j.sal.fs.walkExtended('tmp', recurse=0, dirPattern="*small_test*", filePattern="*.rtt", dirs=False)
+        """
+        result = []
+        try:
+            names = os.listdir(root)
+        except os.error:
+            return result  # TODO: P2 is this correct?
+
+        dirPattern = dirPattern or '*'
+        dirPatList = dirPattern.split(';')
+        filePattern = filePattern or '*'
+        filePatList = filePattern.split(';')
+
+        for name in names:
+            fullname = os.path.normpath(os.path.join(root, name))
+            if j.sal.fs.isFile(fullname, followSoftLinks):
+                fileOK = False
+                dirOK = False
+                for fPat in filePatList:
+                    if (fnmatch.fnmatch(name, fPat)):
+                        fileOK = True
+                for dPat in dirPatList:
+                    if (fnmatch.fnmatch(os.path.dirname(fullname), dPat)):
+                        dirOK = True
+                if fileOK and dirOK and files:
+                    result.append(fullname)
+            if j.sal.fs.isDir(fullname, followSoftLinks):
+                for dPat in dirPatList:
+                    if (fnmatch.fnmatch(name, dPat) and dirs):
+                        result.append(fullname)
+            if recurse:
+                result = result + j.sal.fs.walkExtended(root=fullname,
+                                                    recurse=recurse,
+                                                    dirPattern=dirPattern,
+                                                    filePattern=filePattern,
+                                                    followSoftLinks=followSoftLinks,
+                                                    dirs=dirs,
+                                                    files=files)
+
+        return result

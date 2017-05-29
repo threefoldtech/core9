@@ -93,7 +93,7 @@ class LoggerFactory:
         self.DEV = DEV
         self._quiet = False
 
-        self.root_logger = logging.getLogger(self.root_logger_name)
+        self.logging = self.root_logger = logging.getLogger(self.root_logger_name)
 
     def test(self):
 
