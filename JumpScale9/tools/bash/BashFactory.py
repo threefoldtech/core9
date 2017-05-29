@@ -270,10 +270,9 @@ class Bash:
     def profileDefault(self):
         if self._profileDefault is None:
             path = ""
-            for attempt in [".profile", ".bash_profile"]:
-                ppath = j.sal.fs.joinPaths(self.home, attempt)
-                if self.prefab.core.file_exists(ppath):
-                    path = ppath
+            ppath = j.sal.fs.joinPaths(self.home, ".jsenv.sh")
+            if self.prefab.core.file_exists(ppath):
+                path = ppath
             if path == "":
                 path = "~/.bash_profile"
             self._profileDefault = self.profileGet(path)
