@@ -23,7 +23,7 @@ class ExecutorLocal(ExecutorBase):
     def executeRaw(self, cmd, die=True, showout=False):
         return self.execute(cmd, die=die, showout=showout)
 
-    def execute(self, cmds, die=True, checkok=None, showout=False, outputStderr=False, timeout=600, env={}):
+    def execute(self, cmds, die=True, checkok=None, showout=False, outputStderr=False, timeout=6000000000, env={}):
         if env:
             self.env.update(env)
         # if self.debug:
