@@ -145,11 +145,11 @@ class ErrorHandler:
             # return self.getErrorConditionObject(exceptionObject.eco)
             return ErrorConditionObject
 
-        if not isinstance(exceptionObject, Exception):
+        if not isinstance(exceptionObject, BaseException):
             print(
                 "did not receive an Exceptio object for python exception, this is serious bug.")
-            print("exceptionObject was:\n%s" % exceptionObject)
-            sys.exit(1)
+            raise ValueError("exceptionObject was:\n%s not instance of BaseException" % exceptionObject)
+
 
         if tb is None:
             ttype, exc_value, tb = sys.exc_info()
