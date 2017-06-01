@@ -196,7 +196,7 @@ class PlatformType():
                 pkgman2dist = {
                     'pacman': 'arch', 'apt-get': 'ubuntu', 'yum': 'fedora', 'apk': 'alpine'}
                 for pkgman, dist in pkgman2dist.items():
-                    rc, _, err = self.executor.execute("which %s" % pkgman, showout=False, die=False)
+                    rc, _, err = self.executor.execute("which %s" % pkgman, showout=False, die=False, checkok=False)
                     if rc == 0:
                         self._osname = pkgman2dist[pkgman]
                         break
@@ -206,9 +206,9 @@ class PlatformType():
                 #         self._osname = "alpine"
                 #         else::
             #
-                    else:
-                        self.uname
-                        self._osname = self._osname0.lower()
+                else:
+                    self.uname
+                    self._osname = self._osname0.lower()
             #
         return self._osname
 
