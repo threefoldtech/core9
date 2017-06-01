@@ -60,6 +60,12 @@ setup(
         'redis>=2.10.5',
         'requests>=2.13.0',
         'future>=0.16.0',
+        'numpy==1.12.1',
+        'tarantool==0.5.5',
+        'paramiko==2.1.2',
+        'psutil==5.2.2',
+        'pyblake2==0.9.3',
+        'watchdog==0.8.3'
     ],
     cmdclass={
         'install': install,
