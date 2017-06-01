@@ -65,7 +65,9 @@ setup(
         'paramiko>=2.1.2',
         'psutil>=5.2.2',
         'pyblake2>=0.9.3',
-        'watchdog>=0.8.3'
+        'watchdog>=0.8.3',
+        'Cython>=0.25.2',
+        'asyncssh>=1.10.1'
     ],
     cmdclass={
         'install': install,
