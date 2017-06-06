@@ -2089,6 +2089,9 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
         BUILDDIR = "{{VARDIR}}/build"
         LIBDIR = "{{BASEDIR}}/lib/"
         TEMPLATEDIR = "{{BASEDIR}}/templates"
+        LOGDIR = "{{VARDIR}}/log"
+        JSAPPSDIR = "{{BASEDIR}}/apps"
+        BINDIR="{{BASEDIR}}/bin"
 
             '''
         else:
@@ -2104,6 +2107,10 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
         BUILDDIR = "{{VARDIR}}/build"
         LIBDIR = "{{BASEDIR}}/lib/"
         TEMPLATEDIR = "{{BASEDIR}}/templates"
+        LOGDIR = "{{VARDIR}}/log"
+        JSAPPSDIR = "{{BASEDIR}}/apps"
+        BINDIR="{{BASEDIR}}/bin"
+
 
             '''
 
