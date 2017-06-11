@@ -11,4 +11,4 @@ before_install:
 
 install: ./install/travis_ci/prepare.sh
 
-script: run_tests.sh
+script: ./run_tests.sh
