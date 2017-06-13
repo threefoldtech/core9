@@ -34,6 +34,7 @@ class Dirs:
 
         for key, val in j.core.state.config["dirs"].items():
             self.__dict__[key] = val
+            os.environ[key] = val
 
     def replaceTxtDirVars(self, txt, additionalArgs={}):
         """
