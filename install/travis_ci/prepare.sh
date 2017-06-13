@@ -16,4 +16,4 @@ source ~/.jsenv.sh
 js9_build
 
 # start/create container
-js9_start
+# js9_start
