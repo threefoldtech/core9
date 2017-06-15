@@ -76,7 +76,7 @@ setup(
         'redis>=2.10.5',
         'requests>=2.13.0',
         'future>=0.16.0',
-        'paramiko>=2.1.2',
+        # 'paramiko>=2.1.2',
         'psutil',
         'watchdog'
     ],
