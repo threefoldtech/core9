@@ -16,17 +16,18 @@ def _post_install(libname, libpath):
     # j.tools.jsloader.generateJumpscalePlugins()
     # j.tools.jsloader.copyPyLibs()
 
-    if j.tools.jsloader.gigDir is not None:
-        install_requires = [
-            'psutil>=5.2.2',
-            'numpy>=1.12.1',
-            'pyblake2>=0.9.3',
-            'watchdog>=0.8.3',
-            'Cython>=0.25.2',
-            # 'asyncssh>=1.10.1'
-        ]
-        print("* installing additional pip's, this will take some minutes.")
-        j.do.pip(install_requires)
+    # if j.tools.jsloader.gigDir is not None:
+    #     install_requires = [
+    #         'psutil',
+    #         # 'numpy',
+    #         # 'pyblake2',
+    #         'watchdog',
+    #         # 'cython',
+    #         # 'asyncssh>=1.10.1'
+    #     ]
+    #     print("* installing additional pip's, this will take some minutes.")
+    #     for item in install_requires:
+    #         j.do.execute("pip3 install %s 2>&1 > /tmp/install.log" % item)
 
     j.tools.jsloader.generate()
 
@@ -75,7 +76,9 @@ setup(
         'redis>=2.10.5',
         'requests>=2.13.0',
         'future>=0.16.0',
-        'paramiko>=2.1.2'
+        'paramiko>=2.1.2',
+        'psutil',
+        'watchdog'
     ],
     cmdclass={
         'install': install,
