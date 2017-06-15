@@ -12,23 +12,8 @@ def _post_install(libname, libpath):
     c[libname] = libpath
     j.core.state.configSet('plugins', c)
 
-    # SHOULD NOT DO THIS, std python install needs to work
-    # j.tools.jsloader.generateJumpscalePlugins()
-    # j.tools.jsloader.copyPyLibs()
-
-    if j.tools.jsloader.gigDir is not None:
-        install_requires = [
-            'psutil>=5.2.2',
-            'numpy>=1.12.1',
-            'pyblake2>=0.9.3',
-            'watchdog>=0.8.3',
-            'Cython>=0.25.2',
-            # 'asyncssh>=1.10.1'
-        ]
-        print("* installing additional pip's, this will take some minutes.")
-        j.do.pip(install_requires)
-
-    j.tools.jsloader.generate()
+    j.tools.jsloader.generatePlugins()
+    j.tools.jsloader.copyPyLibs()
 
 
 class install(_install):
@@ -75,7 +60,14 @@ setup(
         'redis>=2.10.5',
         'requests>=2.13.0',
         'future>=0.16.0',
-        'paramiko>=2.1.2'
+        'numpy>=1.12.1',
+        'tarantool>=0.5.5',
+        'paramiko>=2.1.2',
+        'psutil>=5.2.2',
+        'pyblake2>=0.9.3',
+        'watchdog>=0.8.3',
+        'Cython>=0.25.2',
+        'asyncssh>=1.10.1'
     ],
     cmdclass={
         'install': install,
