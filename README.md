@@ -16,19 +16,6 @@ JumpScale is a cloud automation product and a branch from what used to be Pylabs
 Should be executed under root.
 
 ```
-cd $TMPDIR
-rm -f install.sh
-curl -k https://raw.githubusercontent.com/Jumpscale/jumpscale_core9/master/install/install.sh?$RANDOM > install.sh
-bash install.sh
-```
-
-## how to install from a branch.
-Should be executed under root.
-
-```
-cd $TMPDIR
-rm -f install.sh
-export JSBRANCH="???"
-curl -k https://raw.githubusercontent.com/Jumpscale/jumpscale_core9/$JSBRANCH/install/install.sh?$RANDOM > install.sh
+cd {{code dir of jumpscale}}
 bash install.sh
 ```
