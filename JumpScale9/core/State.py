@@ -130,9 +130,9 @@ class State():
         raise RuntimeError("stop debug here")
 
     def resetAll(self):
-        self.resetState()
-        self.resetCache()
         self.resetConfig()
+        self.resetCache()
+        self.resetState()
 
     def _getpath(self, cat="cfg", key=None):
         if cat == "cfg":
