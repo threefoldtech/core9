@@ -96,7 +96,7 @@ class ErrorHandler:
             ddict=ddict, msg=msg, msgpub=msgpub, level=level, category=category, type=type, tb=tb, tags=tags)
         return errorconditionObject
 
-    def processPythonExceptionObject(self, exceptionObject, tb=None):
+    def processPythonExceptionObject(self, exceptionObject, tb=None, message=None):
         """
         how to use
 
@@ -114,11 +114,11 @@ class ErrorHandler:
         the errorcondition is then also processed e.g. send to local logserver and/or stored locally in errordb
         """
         eco = self.parsePythonExceptionObject(
-            exceptionObject=exceptionObject, tb=tb)
+            exceptionObject=exceptionObject, tb=tb, message=message)
         eco.process()
         return eco
 
-    def parsePythonExceptionObject(self, exceptionObject, tb=None):
+    def parsePythonExceptionObject(self, exceptionObject, tb=None, message=None):
         """
         how to use
 
@@ -149,7 +149,6 @@ class ErrorHandler:
             print(
                 "did not receive an Exceptio object for python exception, this is serious bug.")
             raise ValueError("exceptionObject was:\n%s not instance of BaseException" % exceptionObject)
-
 
         if tb is None:
             ttype, exc_value, tb = sys.exc_info()
@@ -199,12 +198,13 @@ class ErrorHandler:
         # else:
         #     actionkey = ""
 
-        if hasattr(exceptionObject, "message"):
-            message = exceptionObject.message
-            if j.data.types.list.check(message):
-                message = message[0]  # @hack to let all work again
-        else:
-            message = str(exceptionObject)
+        if message is None:
+            if hasattr(exceptionObject, "message"):
+                message = exceptionObject.message
+                if j.data.types.list.check(message):
+                    message = message[0]  # @hack to let all work again
+            else:
+                message = str(exceptionObject)
 
         if message.find("((") != -1:
             tags = j.data.regex.findOne("\(\(.*\)\)", message)
