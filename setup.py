@@ -78,7 +78,8 @@ setup(
         'future>=0.16.0',
         # 'paramiko>=2.1.2',
         'psutil',
-        'watchdog'
+        'watchdog',
+        'msgpack-python'
     ],
     cmdclass={
         'install': install,

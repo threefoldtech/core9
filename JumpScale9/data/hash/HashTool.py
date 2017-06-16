@@ -4,7 +4,10 @@ from js9 import j
 
 import hashlib
 import binascii
-from pyblake2 import blake2b
+try:
+    from pyblake2 import blake2b
+except:
+    pass
 
 
 class HashTool:
