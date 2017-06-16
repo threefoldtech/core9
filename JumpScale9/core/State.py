@@ -136,7 +136,10 @@ class State():
 
     def _getpath(self, cat="cfg", key=None):
         if cat == "cfg":
-            path = "%s/cfg/jumpscale9.toml" % self._vardir
+            path = j.sal.fs.joinPaths(self._vardir, "private", "jumpscale9.toml")
+            if not j.sal.fs.exists(path, followlinks=True):
+                path = "%s/cfg/jumpscale9.toml" % self._vardir
+            self.configpath = path
             if key is not None:
                 raise RuntimeError("key has to be None of cat==cfg")
         elif cat == "cache":
