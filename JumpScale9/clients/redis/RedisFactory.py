@@ -75,17 +75,10 @@ class RedisFactory:
         unix_socket_path = '%s/redis.sock' % tmpdir
 
         db = None
-        if os.path.exists(path=unix_socket_path):
+        if os.path.exists(path=unix_socket_path) and j.sal.process.checkProcessRunning('redis-server'):
             db = Redis(unix_socket_path=unix_socket_path)
         elif self._tcpPortConnectionTest("localhost", 6379, timeout=None):
             db = Redis()
-
-        # try:
-        #     j.core.db.set("internal.last", 0)
-        #     return True
-        # except:
-        #     db = None
-
         return db
 
     def _tcpPortConnectionTest(self, ipaddr, port, timeout=None):
@@ -155,3 +148,4 @@ class RedisFactory:
         print(cmd)
         j.sal.process.execute(
             "redis-server --port 6379 --unixsocket %s/redis.sock --maxmemory 100000000 --daemonize yes" % tmpdir)
+        j.core.db = self.get4core()
