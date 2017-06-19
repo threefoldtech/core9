@@ -76,7 +76,7 @@ setup(
         'redis>=2.10.5',
         'requests>=2.13.0',
         'future>=0.16.0',
-        'msgpack-python'
+        'msgpack-python',
         'numpy>=1.12.1',
         'tarantool>=0.5.5',
         'paramiko>=2.1.2',
