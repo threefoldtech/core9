@@ -1,2 +1,2 @@
 #!/bin/bash
-sudo docker exec js9_base js9 'print(j.data.time.getLocalTimeHR())'
+ssh -A -i ~/.ssh/main root@localhost -p 2222 'cd /root/gig/code/github/jumpscale/core9; /bin/bash test.sh'
