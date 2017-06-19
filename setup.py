@@ -80,7 +80,6 @@ setup(
         'numpy>=1.12.1',
         'tarantool>=0.5.5',
         'paramiko>=2.1.2',
-        'psutil>=5.2.2',
         'pyblake2>=0.9.3',
         'watchdog>=0.8.3',
         'Cython>=0.25.2',
