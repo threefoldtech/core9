@@ -60,7 +60,6 @@ setup(
     license='Apache',
     packages=['JumpScale9'],
     install_requires=[
-        'g8core>=1.0.0',
         'GitPython>=2.1.3',
         'click>=6.7',
         'colored_traceback',
