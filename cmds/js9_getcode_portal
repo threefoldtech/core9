@@ -3,6 +3,10 @@ import sys
 from js9 import j
 
 print(j.do.mascot)
+
+if j.do.exists('/optvar/private/pubsshkeys/id_rsa'):
+    j.do.SSHKeysLoad('/optvar/private/pubsshkeys/id_rsa')
+
 j.clients.git.pullGitRepo("git@github.com:Jumpscale/portal9.git")
 
 
