@@ -6,6 +6,9 @@ import requests
 
 print(j.do.mascot)
 
+if j.do.exists('/optvar/private/pubsshkeys/id_rsa'):
+    j.do.SSHKeysLoad('/optvar/private/pubsshkeys/id_rsa')
+
 j.clients.redis.start4core()
 
 j.tools.jsloader.removeEggs()
