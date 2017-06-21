@@ -3,7 +3,6 @@ from js9 import j
 from .ExecutorSSH import *
 from .ExecutorLocal import *
 from .ExecutorAsyncSSH import ExecutorAsyncSSH
-from .ExecutorG8Core import ExecutorG8Core
 import threading
 
 
@@ -14,7 +13,6 @@ class ExecutorFactory:
 
     def __init__(self):
         self.__jslocation__ = "j.tools.executor"
-        self.__imports__ = "g8core"
 
     def pushkey(self, addr, passwd, keyname="", pubkey="", port=22, login="root"):
         """
@@ -147,9 +145,6 @@ class ExecutorFactory:
 
     def getJSAgentBased(self, agentControllerClientKey, debug=False, checkok=False):
         return ExecutorAgent2(addr, debug=debug, checkok=debug)
-
-    def getG8CoreBased(self, host='localhost', port=6379, password=None, container_id=None):
-        return ExecutorG8Core(host=host, port=port, password=password, container_id=container_id)
 
     def reset(self, executor):
         """
