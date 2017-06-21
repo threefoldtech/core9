@@ -102,6 +102,30 @@ class SSHMethods():
             self.logger.info("ssh key:%s NOT loaded" % keyNamePath)
             return False
 
+    def askItemsFromList(self, items, msg=""):
+        if len(items) == 0:
+            return []
+        if msg != "":
+            print(msg)
+        nr = 0
+        for item in items:
+            nr += 1
+            print(" - %s: %s" % (nr, item))
+        print("select item(s) from list (nr or comma separated list of nr, * is all)")
+        item = input()
+        if item.strip() == "*":
+            return items
+        elif item.find(",") != -1:
+            res = []
+            itemsselected = [item.strip() for item in item.split(",") if item.strip() != ""]
+            for item in itemsselected:
+                item = int(item) - 1
+                res.append(items[item])
+            return res
+        else:
+            item = int(item) - 1
+            return [items[item]]
+
     def SSHKeysLoad(self, path=None, duration=3600 * 24, die=False):
         """
         will see if ssh-agent has been started
@@ -232,7 +256,7 @@ class SSHMethods():
         self.executeInteractive(cmd)
 
     def authorize_root(self, sftp_client, ip_address, keyname):
-        tmppath = "%s/authorized_keys" % self.TMPDIR
+        tmppath = '/tmp/authorized_keys'
         auth_key_path = "/root/.ssh/authorized_keys"
         self.delete(tmppath)
         try:
@@ -316,66 +340,65 @@ class SSHMethods():
         the primary key is 'id_rsa' and will be used as default e.g. if authorizing another node then this key will be used
 
         """
-        with FileLock('/tmp/ssh-agent'):
-            # check if more than 1 agent
-            socketpath = self._getSSHSocketpath()
-            res = [
-                item for item in self.execute(
-                    "ps aux|grep ssh-agent",
-                    False,
-                    False)[1].split("\n") if item.find("grep ssh-agent") == -
-                1]
-            res = [item for item in res if item.strip() != ""]
-            res = [item for item in res if item[-2:] != "-l"]
+        # check if more than 1 agent
+        socketpath = self._getSSHSocketpath()
+        res = [
+            item for item in self.execute(
+                "ps aux|grep ssh-agent",
+                False,
+                False)[1].split("\n") if item.find("grep ssh-agent") == -
+            1]
+        res = [item for item in res if item.strip() != ""]
+        res = [item for item in res if item[-2:] != "-l"]
 
-            if len(res) > 1:
-                self.logger.info("more than 1 ssh-agent, will kill all")
-                killfirst = True
-            if len(res) == 0 and self.exists(socketpath):
-                self.delete(socketpath)
+        if len(res) > 1:
+            self.logger.info("more than 1 ssh-agent, will kill all")
+            killfirst = True
+        if len(res) == 0 and self.exists(socketpath):
+            self.delete(socketpath)
 
-            if killfirst:
-                cmd = "killall ssh-agent"
-                # self.logger.info(cmd)
-                self.execute(cmd, showout=False, outputStderr=False, die=False)
-                # remove previous socketpath
-                self.delete(socketpath)
-                self.delete(self.joinPaths(self.TMPDIR, "ssh-agent-pid"))
+        if killfirst:
+            cmd = "killall ssh-agent"
+            # self.logger.info(cmd)
+            self.execute(cmd, showout=False, outputStderr=False, die=False)
+            # remove previous socketpath
+            self.delete(socketpath)
+            self.delete(self.joinPaths('/tmp', "ssh-agent-pid"))
 
-            if not self.exists(socketpath):
-                self.createDir(self.getParent(socketpath))
-                # ssh-agent not loaded
-                self.logger.info("load ssh agent")
-                rc, result, err = self.execute(
-                    "ssh-agent -a %s" %
-                    socketpath, die=False, showout=False, outputStderr=False)
+        if not self.exists(socketpath):
+            self.createDir(self.getParent(socketpath))
+            # ssh-agent not loaded
+            self.logger.info("load ssh agent")
+            rc, result, err = self.execute(
+                "ssh-agent -a %s" %
+                socketpath, die=False, showout=False, outputStderr=False)
 
-                if rc > 0:
-                    # could not start ssh-agent
+            if rc > 0:
+                # could not start ssh-agent
+                raise RuntimeError(
+                    "Could not start ssh-agent, something went wrong,\nstdout:%s\nstderr:%s\n" %
+                    (result, err))
+            else:
+                # get pid from result of ssh-agent being started
+                if not self.exists(socketpath):
                     raise RuntimeError(
-                        "Could not start ssh-agent, something went wrong,\nstdout:%s\nstderr:%s\n" %
-                        (result, err))
-                else:
-                    # get pid from result of ssh-agent being started
-                    if not self.exists(socketpath):
-                        raise RuntimeError(
-                            "Serious bug, ssh-agent not started while there was no error, should never get here")
-                    piditems = [item for item in result.split(
-                        "\n") if item.find("pid") != -1]
-                    # print(piditems)
-                    if len(piditems) < 1:
-                        print("results was:")
-                        print(result)
-                        print("END")
-                        raise RuntimeError("Cannot find items in ssh-add -l")
-                    self._initSSH_ENV(True)
-                    pid = int(piditems[-1].split(" ")[-1].strip("; "))
-                    self.writeFile(
-                        self.joinPaths(
-                            self.TMPDIR,
-                            "ssh-agent-pid"),
-                        str(pid))
-                    self._addSSHAgentToBashProfile()
+                        "Serious bug, ssh-agent not started while there was no error, should never get here")
+                piditems = [item for item in result.split(
+                    "\n") if item.find("pid") != -1]
+                # print(piditems)
+                if len(piditems) < 1:
+                    print("results was:")
+                    print(result)
+                    print("END")
+                    raise RuntimeError("Cannot find items in ssh-add -l")
+                self._initSSH_ENV(True)
+                pid = int(piditems[-1].split(" ")[-1].strip("; "))
+                self.writeFile(
+                    self.joinPaths(
+                        '/tmp',
+                        "ssh-agent-pid"),
+                    str(pid))
+                self._addSSHAgentToBashProfile()
 
             # ssh agent should be loaded because ssh-agent socket has been
             # found
@@ -1600,7 +1623,7 @@ class FSMethods():
 
         self.logger.info(('Downloading %s ' % (url)))
         if to == "":
-            to = self.TMPDIR + "/" + url.replace("\\", "/").split("/")[-1]
+            to = '/tmp' + "/" + url.replace("\\", "/").split("/")[-1]
 
         if overwrite:
             if self.exists(to):
@@ -1670,7 +1693,7 @@ class FSMethods():
         import gzip
 
         self.lastdir = os.getcwd()
-        os.chdir(self.TMPDIR)
+        os.chdir('/tmp')
         basename = os.path.basename(path)
         if basename.find(".tar.gz") == -1:
             raise RuntimeError("Can only expand a tar gz file now %s" % path)
@@ -1777,11 +1800,11 @@ class FSMethods():
         if ddir=="" then will go to tmpdir
         """
         if ddir == "":
-            ddir = self.TMPDIR
+            ddir = '/tmp'
         os.chdir(ddir)
 
     def getTmpPath(self, filename):
-        return "%s/jumpscaleinstall/%s" % (self.TMPDIR, filename)
+        return "%s/jumpscaleinstall/%s" % ('/tmp', filename)
 
     def getPythonSiteConfigPath(self):
         minl = 1000000
