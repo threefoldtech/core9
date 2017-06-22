@@ -52,7 +52,7 @@ class develop(_develop):
 
 setup(
     name='JumpScale9',
-    version='9.0.0',
+    version='9.0.3',
     description='Automation framework for cloud workloads',
     url='https://github.com/Jumpscale/core9',
     author='GreenItGlobe',
