@@ -12,23 +12,6 @@ def _post_install(libname, libpath):
     c[libname] = libpath
     j.core.state.configSet('plugins', c)
 
-    # SHOULD NOT DO THIS, std python install needs to work
-    # j.tools.jsloader.generateJumpscalePlugins()
-    # j.tools.jsloader.copyPyLibs()
-
-    # if j.tools.jsloader.gigDir is not None:
-    #     install_requires = [
-    #         'psutil',
-    #         # 'numpy',
-    #         # 'pyblake2',
-    #         'watchdog',
-    #         # 'cython',
-    #         # 'asyncssh>=1.10.1'
-    #     ]
-    #     print("* installing additional pip's, this will take some minutes.")
-    #     for item in install_requires:
-    #         j.do.execute("pip3 install %s 2>&1 > /tmp/install.log" % item)
-
     j.tools.jsloader.generateJumpscalePlugins()
 
 
