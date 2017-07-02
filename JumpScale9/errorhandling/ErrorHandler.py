@@ -48,7 +48,7 @@ class ErrorHandler:
 
     def _registerScrips(self):
         if self._scriptsInRedis is False:
-            luapath = "%s/core/errorhandling/eco.lua" % j.dirs.JSLIBDIR
+            luapath = "%s/errorhandling/eco.lua" % j.dirs.JSLIBDIR
             lua = j.sal.fs.fileGetContents(luapath)
             self._escalateToRedisFunction = j.core.db.register_script(lua)
             self._scriptsInRedis = True
