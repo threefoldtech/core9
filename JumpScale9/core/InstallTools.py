@@ -789,9 +789,6 @@ class GitMethods():
 
 class FSMethods():
 
-    def getBinDirSystem(self):
-        return "/usr/local/bin/"
-
     def getPythonLibSystem(self, jumpscale=False):
         PYTHONVERSION = platform.python_version()
         if j.core.platformtype.myplatform.isMac:
@@ -1093,24 +1090,6 @@ class FSMethods():
         if not os.path.exists(path) and not os.path.islink(path):
             os.makedirs(path)
 
-    def changeDir(self, path, create=False):
-        """Changes Current Directory
-        @param path: string (Directory path to be changed to)
-        """
-        self.logger.info('Changing directory to: %s' % path, 6)
-        if create:
-            self.createDir(path)
-        if self.exists(path):
-            if self.isDir(path):
-                os.chdir(path)
-            else:
-                raise ValueError(
-                    "Path: %s in system.fs.changeDir is not a Directory" %
-                    path)
-        else:
-            raise RuntimeError(
-                "Path: %s in system.fs.changeDir does not exist" %
-                path)
 
     def isDir(self, path, followSoftlink=False):
         """Check if the specified Directory path exists
@@ -1126,9 +1105,6 @@ class FSMethods():
                 return self.isDir(link)
         else:
             return os.path.isdir(path)
-
-    def isExecutable(self, path):
-        stat.S_IXUSR & statobj.st_mode
 
     def isFile(self, path, followSoftlink=False):
         """Check if the specified file exists for the given path
@@ -1353,20 +1329,6 @@ class FSMethods():
                 'Failed to read link with path: %s \nERROR: %s' %
                 (path, str(e)))
 
-    def removeLinks(self, path):
-        """
-        find all links & remove
-        """
-        if not self.exists(path):
-            return
-        items = self._listAllInDir(
-            path=path,
-            recursive=True,
-            followSymlinks=False,
-            listSymlinks=True)
-        items = [item for item in items[0] if self.isLink(item)]
-        for item in items:
-            self.unlink(item)
 
     def _listInDir(self, path, followSymlinks=True):
         """returns array with dirs & files in directory
@@ -1682,17 +1644,6 @@ class FSMethods():
 
         return to
 
-    def downloadExpandTarGz(
-            self,
-            url,
-            destdir,
-            deleteDestFirst=True,
-            deleteSourceAfter=True):
-        self.logger.info((self.getBaseName(url)))
-        tmppath = self.getTmpPath(self.getBaseName(url))
-        self.download(url, tmppath)
-        self.expandTarGz(tmppath, destdir)
-
     def expandTarGz(
             self,
             path,
@@ -1804,25 +1755,9 @@ class FSMethods():
                     if str(e).find("No such file or directory") == -1:
                         raise RuntimeError("%s" % e)
 
-    def chdir(self, ddir=""):
-        """
-        if ddir=="" then will go to tmpdir
-        """
-        if ddir == "":
-            ddir = '/tmp'
-        os.chdir(ddir)
-
     def getTmpPath(self, filename):
         return "%s/jumpscaleinstall/%s" % ('/tmp', filename)
 
-    def getPythonSiteConfigPath(self):
-        minl = 1000000
-        result = ""
-        for item in sys.path:
-            if len(item) < minl and item.find("python") != -1:
-                result = item
-                minl = len(item)
-        return result
 
     def getWalker(self):
         self._initExtra()
@@ -1924,41 +1859,6 @@ class ExecutorMethods():
         else:
             return False
 
-    def loadScript(self, path, executor=None):
-        self.logger.info("ectr:%s: load jumpscript: %s" % (executor, path))
-        source = self.readFile(path)
-        out, tags = self._preprocess(source)
-
-        def md5_string(s):
-            import hashlib
-            s = s.encode('utf-8')
-            impl = hashlib.new('md5', s)
-            return impl.hexdigest()
-        md5sum = md5_string(out)
-        modulename = 'JumpScale.jumpscript_%s' % md5sum
-
-        codepath = self.joinPaths(
-            self.getTmpPath(),
-            "jumpscripts",
-            "%s.py" %
-            md5sum)
-        self.writeFile(filename=codepath, contents=out)
-
-        linecache.checkcache(codepath)
-        self.module = imp.load_source(modulename, codepath)
-
-        self.author = getattr(self.module, 'author', "unknown")
-        self.organization = getattr(self.module, 'organization', "unknown")
-        self.version = getattr(self.module, 'version', 0)
-        self.modtime = getattr(self.module, 'modtime', 0)
-        self.descr = getattr(self.module, 'descr', "")
-
-        # identifies the actions & tags linked to it
-        self.tags = tags
-
-        for name, val in list(tags.items()):
-            self.actions[name] = eval("self.module.%s" % name)
-
     def execute(
             self,
             command,
@@ -2034,10 +1934,6 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
         self._config = None
 
         self.platformtype = j.core.platformtype
-
-        self.embed = False
-
-        self.myplatform = self.platformtype.myplatform
 
         if self.exists("/root/.iscontainer"):
             os.environ["GIGDIR"] = "/root/gig"
@@ -2241,84 +2137,6 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
         src = "%s/github/jumpscale/core9/cmds/" % j.core.state.config["dirs"]["CODEDIR"]
         self.symlinkFilesInDir(src, "/usr/local/bin", delete=True, includeDirs=False, makeExecutable=True)
 
-    # def fixCodeChangeDirVars(self, branch="8.2.0"):
-    #     """
-    #     walk over code dir & find all known old dir arguments & change them to new naming convention
-    #     """
-    #
-    #     repos = [
-    #         "github/jumpscale/dockers",
-    #         "github/jumpscale/ays_jumpscale9",
-    #         "github/jumpscale/jscockpit",
-    #         "github/jumpscale/jumpscale_portal8"]
-    #     # repos = ["github/jumpscale/jumpscale_core9"] #BE VERY CAREFUL IF YOU DO
-    #     # THIS ONE, THIS FUNCTION WILL BE CHANGED TOO, NEED TO COPY FIRST
-    #     tochange = [
-    #         "logDir",
-    #         "pidDir",
-    #         "hrdDir",
-    #         "goDir",
-    #         "nimDir",
-    #         "codeDir",
-    #         "binDir",
-    #         "jsLibDir",
-    #         "libDir",
-    #         "tmplsDir",
-    #         "homeDir",
-    #         "baseDir",
-    #         "tmpDir",
-    #         "varDir"]
-    #     changeName = {
-    #         "tmplsDir": "TEMPLATEDIR",
-    #         "cfgDir": "JSCFGDIR",
-    #         "appDir": "JSAPPSDIR",
-    #         "jsBase": "JSBASEDIR"}
-    #
-    #     def do(ffilter):
-    #         for repo in repos:
-    #             rpath = "%s/%s" % (j.dirs.CODEDIR, repo)
-    #             for fpath in self.listFilesInDir(
-    #                     rpath,
-    #                     recursive=True,
-    #                     filter=ffilter,
-    #                     followSymlinks=False,
-    #                     listSymlinks=False):
-    #                 content = self.readFile(fpath)
-    #                 content1 = content + ""  # make sure we have copy
-    #                 for key, val in changeName.items():
-    #                     content1 = content1.replace("$%s" % key, "$%s" % val)
-    #                     content1 = content1.replace(".%s" % key, ".%s" % val)
-    #                     content1 = content1.replace("\"%s" % key, "\"%s" % val)
-    #                     content1 = content1.replace("'%s" % key, "'%s" % val)
-    #                 for key in tochange:
-    #                     content1 = content1.replace(
-    #                         "$%s" %
-    #                         key,
-    #                         "$%s" %
-    #                         key.upper())
-    #                     content1 = content1.replace(
-    #                         ".%s" %
-    #                         key,
-    #                         ".%s" %
-    #                         key.upper())
-    #                     content1 = content1.replace(
-    #                         "\"%s" %
-    #                         key,
-    #                         "\"%s" %
-    #                         key.upper())
-    #                     content1 = content1.replace(
-    #                         "'%s" %
-    #                         key,
-    #                         "'%s" %
-    #                         key.upper())
-    #                 content1 = content1.replace("$JSBASEDIR", "$BASEDIR")
-    #                 content1 = content1.replace("$jsBase", "$JSBASEDIR")
-    #                 content1 = content1.replace("$jsBASE", "$JSBASEDIR")
-    #                 if content1 != content:
-    #                     self.writeFile(fpath, content1, strip=False)
-    #     do("*.py")
-    #     do("*.md")
-    #     do("*.txt")
 
     @property
     def epoch(self):
