@@ -39,7 +39,7 @@ class MyFSEventHandler(FileSystemEventHandler):
                             return
                         elif changedfile.find("/__pycache__/") != -1:
                             return
-                        elif j.sal.fs.getBaseName(changedfile) in ["InstallTools.py", "ExtraTools.py"]:
+                        elif j.sal.fs.getBaseName(changedfile) in ["InstallTools.py"]:
                             base = j.sal.fs.getBaseName(changedfile)
                             dest = j.sal.fs.joinPaths(node.prefab.core.dir_paths['LIBDIR'], 'JumpScale', base)
                         else:
@@ -333,21 +333,6 @@ class DevelopToolsFactory:
                         source2 = source + "/install/InstallTools.py"
                         dest = "root@%s:%s/JumpScale/InstallTools.py" % (node.addr,
                                                                          node.prefab.core.dir_paths['LIBDIR'])
-                        j.sal.fs.copyDirTree(
-                            source2,
-                            dest,
-                            ignoredir=[
-                                '.egg-info',
-                                '.dist-info',
-                                '__pycache__',
-                                ".git"],
-                            rsync=True,
-                            ssh=True,
-                            sshport=node.port,
-                            recursive=False)
-
-                        source2 = source + "/install/ExtraTools.py"
-                        dest = "root@%s:%s/JumpScale/ExtraTools.py" % (node.addr, node.prefab.core.dir_paths['LIBDIR'])
                         j.sal.fs.copyDirTree(
                             source2,
                             dest,
