@@ -2020,7 +2020,6 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
 
         self.__jslocation__ = "j.core.installtools"
 
-        self._extratools = False
         self._asyncLoaded = False
         self._deps = None
         self._config = None
