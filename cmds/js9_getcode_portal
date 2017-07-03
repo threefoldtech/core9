@@ -33,10 +33,11 @@ if 'noinit' in sys.argv:
 base_repo_url = 'https://github.com/Jumpscale/%s%s'
 branch_query_url = 'https://github.com/Jumpscale/tree/%s%s/%s'
 
+branch = ''
 if len(sys.argv) > 1:
     branch = sys.argv[-1]
 
-if not branch_exist(repo='portal9', branch=branch):
+if not (branch and branch_exist(repo='portal9', branch=branch)):
     branch = 'master'
 
 j.clients.git.pullGitRepo("git@github.com:Jumpscale/portal9.git", branch=branch)

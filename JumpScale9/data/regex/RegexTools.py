@@ -112,6 +112,19 @@ class RegexTools:
         else:
             return False
 
+    def matchContent(self, path, contentRegexIncludes=[], contentRegexExcludes=[]):
+        content = j.sal.fs.fileGetContents(path)
+        if self.matchMultiple(patterns=contentRegexIncludes, text=content) and not self.matchMultiple(
+                patterns=contentRegexExcludes, text=content):
+            return True
+        return False
+
+    def matchPath(path, regexIncludes=[], regexExcludes=[]):
+        if self.matchMultiple(patterns=regexIncludes, text=path) and not self.matchMultiple(
+                patterns=regexExcludes, text=path):
+            return True
+        return False
+
     def matchMultiple(self, patterns, text):
         """
         see if any patterns matched

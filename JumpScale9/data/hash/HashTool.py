@@ -1,6 +1,5 @@
 
 from js9 import j
-# import ExtraTools
 
 import hashlib
 import binascii
