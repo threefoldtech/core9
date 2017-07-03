@@ -719,10 +719,19 @@ class GitMethods():
                 if url.find("http") != -1:
                     cmd = "mkdir -p %s;cd %s;git -c http.sslVerify=false pull origin %s" % (
                         dest, dest, branch)
+                    self.logger.info(cmd)
+                    self.execute(cmd, timeout=timeout, executor=executor)
                 else:
-                    cmd = "cd %s;git pull origin %s" % (dest, branch)
-                self.logger.info(cmd)
-                self.execute(cmd, timeout=timeout, executor=executor)
+                    try:
+                        cmd = "cd %s;git pull origin %s" % (dest, branch)
+                        self.logger.info(cmd)
+                        self.execute(cmd, timeout=timeout, executor=executor)
+                    except Exception as e:
+                        protocol, host, account, repo_name, repo_url = self.rewriteGitRepoUrl(url=url, ssh=False)
+                        cmd = "cd %s;git -c http.sslVerify=false pull %s %s" % (dest, repo_url, branch)
+                        self.logger.info(cmd)
+                        self.execute(cmd, timeout=timeout, executor=executor)
+
         else:
             self.logger.info(("git clone %s -> %s" % (url, dest)))
             # self.createDir(dest)
