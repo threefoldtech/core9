@@ -61,6 +61,10 @@ setup(
         'msgpack-python',
         'psutil',
         'watchdog',
+        'Cython>=0.25.2',
+        'asyncssh>=1.9.0',
+        'numpy>=1.12.1',
+        'tarantool>=0.5.4',
     ],
     cmdclass={
         'install': install,
