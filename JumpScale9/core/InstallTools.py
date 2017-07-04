@@ -1155,7 +1155,7 @@ class FSMethods():
         if (path is None):
             raise TypeError('Link path is None in system.fs.isLink')
 
-        if checkJunction and self.isWindows:
+        if checkJunction and j.core.platformtype.myplatform.isWindows:
             cmd = "junction %s" % path
             try:
                 rc, result, err = self.execute(cmd)
@@ -1344,7 +1344,7 @@ class FSMethods():
         # self.logger.info('Read link with path: %s'%path,8)
         if path is None:
             raise TypeError('Path is not passed in system.fs.readLink')
-        if self.isWindows:
+        if j.core.platformtype.myplatform.isWindows:
             raise RuntimeError('Cannot readLink on windows')
         try:
             return os.readlink(path)
