@@ -43,9 +43,11 @@ def branch_exist(repo, branch):
 
 for item in ["core9", "lib9", "ays9", "prefab9"]:
     if not (branch and branch_exist(item, branch)):
-        branch = 'master'
+        branch_to_use = 'master'
+    else:
+        branch_to_use = branch
     try:
-        j.clients.git.pullGitRepo("git@github.com:Jumpscale/%s.git" % item, branch=branch)
+        j.clients.git.pullGitRepo("git@github.com:Jumpscale/%s.git" % item, branch=branch_to_use)
     except Exception:
         # try with https
         j.clients.git.pullGitRepo(base_repo_url % (item, '.git'), branch=branch)
