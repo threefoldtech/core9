@@ -695,7 +695,7 @@ class GitMethods():
                     "Cannot pull repo '%s', branch on filesystem is not same as branch asked for.\n"
                     "Branch asked for: %s\n"
                     "Branch found: %s\n"
-                    "To choose other branch do e.g:\n"
+                    "To choose other branch do e.g:"
                     "export JSBRANCH='%s'\n" %
                     (repo, branch, branchFound, branchFound))
 
