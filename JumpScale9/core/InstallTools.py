@@ -692,8 +692,12 @@ class GitMethods():
                 # raise RuntimeError("Cannot retrieve branch:\n%s\n" % cmd)
             if branch is not None and branch != branchFound and ignorelocalchanges is False:
                 raise RuntimeError(
-                    "Cannot pull repo, branch on filesystem is not same as branch asked for.\nBranch asked for:%s\nBranch found:%s\nTo choose other branch do e.g:\nexport JSBRANCH='%s'\n" %
-                    (branch, branchFound, branchFound))
+                    "Cannot pull repo '%s', branch on filesystem is not same as branch asked for.\n"
+                    "Branch asked for: %s\n"
+                    "Branch found: %s\n"
+                    "To choose other branch do e.g:"
+                    "export JSBRANCH='%s'\n" %
+                    (repo, branch, branchFound, branchFound))
 
             if ignorelocalchanges:
                 self.logger.info(
