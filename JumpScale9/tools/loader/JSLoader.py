@@ -1,6 +1,7 @@
 from JumpScale9 import j
 import os
 import sys
+import importlib
 
 # corepackages = """
 # j.core.platformtype
@@ -219,12 +220,21 @@ class JSLoader():
                     state = 1
                 if state == 1:
                     res.append(item)
+
+            if res[0] == res[1] and res[0].casefold().find("jumpscale9") !=-1:
+                res.pop(0)
             return "/".join(res)
 
         if moduleList == {}:
             for name, path in j.application.config['plugins'].items():
                 if j.sal.fs.exists(path, followlinks=True):
                     moduleList = self.findModules(path=path, moduleList=moduleList)
+                else:
+                    try:
+                        mod_path = importlib.import_module(name).__path__[0]
+                        moduleList = self.findModules(path=mod_path, moduleList=moduleList)
+                    except Exception as e:
+                        pass
 
         for jlocation, items in moduleList.items():
             if jlocation.strip() in ["", "j"]:

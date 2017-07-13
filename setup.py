@@ -1,4 +1,5 @@
-from setuptools import setup
+from setuptools import setup, find_packages
+from distutils.sysconfig import get_python_lib
 from setuptools.command.install import install as _install
 from setuptools.command.develop import develop as _develop
 import os
@@ -32,16 +33,24 @@ class develop(_develop):
         libpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), libname)
         self.execute(_post_install, (libname, libpath), msg="Running post install task")
 
+long_description = ""
+try:
+    from pypandoc import convert
+    long_description = convert('README.md', 'rst')
+except ImportError:
+    long_description = ""
+
 
 setup(
     name='JumpScale9',
     version='9.0.3',
     description='Automation framework for cloud workloads',
+    long_description=long_description,
     url='https://github.com/Jumpscale/core9',
     author='GreenItGlobe',
     author_email='info@gig.tech',
     license='Apache',
-    packages=['JumpScale9'],
+    packages=find_packages(),
     install_requires=[
         'GitPython>=2.1.3',
         'click>=6.7',
@@ -58,13 +67,10 @@ setup(
         'redis>=2.10.5',
         'requests>=2.13.0',
         'future>=0.16.0',
-        'msgpack-python',
         'psutil',
         'watchdog',
-        # 'Cython>=0.25.2',
-        # 'asyncssh>=1.9.0',
-        # 'numpy>=1.12.1',
-        # 'tarantool>=0.5.4',
+        'msgpack-python',
+        'colorlog',
     ],
     cmdclass={
         'install': install,
