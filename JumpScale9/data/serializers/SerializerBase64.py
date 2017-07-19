@@ -1,4 +1,4 @@
-from js9 import j
+from JumpScale9 import j
 import base64
 from .SerializerBase import SerializerBase
 
