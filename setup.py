@@ -33,6 +33,7 @@ class develop(_develop):
         libpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), libname)
         self.execute(_post_install, (libname, libpath), msg="Running post install task")
 
+
 long_description = ""
 try:
     from pypandoc import convert
@@ -51,6 +52,8 @@ setup(
     author_email='info@gig.tech',
     license='Apache',
     packages=find_packages(),
+
+    # IF YOU CHANGE ANYTHING HERE, LET DESPIEGK NOW
     install_requires=[
         'GitPython>=2.1.3',
         'click>=6.7',
@@ -64,6 +67,7 @@ setup(
         'pystache>=0.5.4',
         'python-dateutil>=2.6.0',
         'pytoml>=0.1.12',
+        'toml',
         'redis>=2.10.5',
         'requests>=2.13.0',
         'future>=0.16.0',
