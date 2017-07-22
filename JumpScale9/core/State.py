@@ -80,6 +80,39 @@ class State():
                 self.configSave()
             return False
 
+    def configSetInDict(self, key, dkey, dval):
+        """
+        will check that the val is a dict, if not set it and put key & val in
+        """
+        if key in self.config:
+            val2 = self.config[key]
+        else:
+            self.configSet(key, {}, save=True)
+            val2 = {}
+        if dkey in val2:
+            if val2[dkey] != dval:
+                self._config_changed = True
+        else:
+            self._config_changed = True
+
+        val2[dkey] = dval
+
+        self.config[key] = val2
+        print("config set dict %s:%s:%s" % (key, dkey, dval))
+        self.configSave()
+
+    def configGetFromDict(self, key, dkey):
+        """
+        get val from subdict
+        """
+        if key not in self.config:
+            raise RuntimeError("Cannot find key:%s in state config" % key)
+
+        if dkey not in self.config[key]:
+            raise RuntimeError("Cannot find dkey:%s in state config for dict '%s'" % (dkey, key))
+
+        return self.config[key][dkey]
+
     def configUpdate(self, ddict, overwrite=True):
         """
         will walk over  2 levels deep of dict & update

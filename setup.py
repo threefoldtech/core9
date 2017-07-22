@@ -9,7 +9,7 @@ def _post_install(libname, libpath):
     from JumpScale9 import j  # here its still the boostrap JumpScale9
 
     # add this plugin to the config
-    c = j.core.state.configGet('plugins', defval={})
+    c = {}  # first time need to make sure is empty
     c[libname] = libpath
     j.core.state.configSet('plugins', c)
 
