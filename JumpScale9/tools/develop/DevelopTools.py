@@ -2,10 +2,9 @@ from js9 import j
 
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
+from .CodeDirs import CodeDirs
 
 import time
-# import os
-# import sys
 
 
 class MyFSEventHandler(FileSystemEventHandler):
@@ -168,7 +167,19 @@ class DevelopToolsFactory:
         self.__jslocation__ = "j.tools.develop"
         self.__imports__ = "watchdog"
         self._nodes = []
-        # self.installer=Installer()
+        self._codedirs = None
+
+    def config(self):
+        from .DevelopConfig import ConfigUI
+        app = ConfigUI()
+        app.codedirs = CodeDirs()
+        app.run()
+
+    @property
+    def codedirs(self):
+        if self._codedirs is None:
+            self._codedirs = CodeDirs()
+        return self._codedirs
 
     def help(self):
         H = """
@@ -268,7 +279,7 @@ class DevelopToolsFactory:
         j.actions.reset()
         self.init()
 
-    def syncCode(self, ask=False, monitor=False, rsyncdelete=True, reset=False, repos=[]):
+    def syncCode(self, ask=True, rsyncdelete=True, reset=False, repos=[]):
         """
         sync all code to the remote destinations
 
@@ -348,7 +359,7 @@ class DevelopToolsFactory:
 
                     else:
                         node.prefab.core.run("mkdir -p %s/%s" %
-                                              (node.prefab.core.dir_paths['CODEDIR'], source.split("code/", 1)[1]))
+                                             (node.prefab.core.dir_paths['CODEDIR'], source.split("code/", 1)[1]))
                         if node.prefab.core.isJS8Sandbox:
                             rsyncdelete2 = True
                         else:

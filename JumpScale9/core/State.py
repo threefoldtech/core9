@@ -101,14 +101,16 @@ class State():
         print("config set dict %s:%s:%s" % (key, dkey, dval))
         self.configSave()
 
-    def configGetFromDict(self, key, dkey):
+    def configGetFromDict(self, key, dkey, default=None):
         """
         get val from subdict
         """
         if key not in self.config:
-            raise RuntimeError("Cannot find key:%s in state config" % key)
+            self.configSet(key, val={}, save=True)
 
         if dkey not in self.config[key]:
+            if default is not None:
+                return default
             raise RuntimeError("Cannot find dkey:%s in state config for dict '%s'" % (dkey, key))
 
         return self.config[key][dkey]
