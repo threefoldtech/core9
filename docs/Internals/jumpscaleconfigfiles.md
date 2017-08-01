@@ -42,18 +42,23 @@
 
 if container:
 
+when container starts /host is mapped to ~/container (on host)
+
 ```toml
 [dirs]
 HOMEDIR = "~"
 TMPDIR = "/tmp"
-VARDIR = "/optvar/var"
+VARDIR = "/optvar"
 BASEDIR = "/opt/jumpscale9"
 CFGDIR = "{{VARDIR}}/cfg"
-DATADIR = "{{VARDIR}}/data"
+DATADIR = "/host/data"
 CODEDIR = "/opt/code"
-BUILDDIR = "{{VARDIR}}/build"
+BUILDDIR = "/host/build"
 LIBDIR = "{{BASEDIR}}/lib/"
 TEMPLATEDIR = "{{BASEDIR}}/templates"
+LOGDIR = "/host/log"
+JSAPPSDIR = "{{BASEDIR}}/apps"
+BINDIR="{{BASEDIR}}/bin"
 ```
 
 else:
@@ -62,14 +67,17 @@ else:
 [dirs]
 HOMEDIR = "~"
 TMPDIR = "/tmp"
-VARDIR = "{{GIGDIR}}/var"
-BASEDIR = "{{GIGDIR}}/gig"
+VARDIR = "{{HOMEDIR}}/opt/var"
+BASEDIR = "{{HOMEDIR}}/opt/jumpscale9"
 CFGDIR = "{{VARDIR}}/cfg"
 DATADIR = "{{VARDIR}}/data"
-CODEDIR = "{{GIGDIR}}/code"
+CODEDIR = "{{HOMEDIR}}/code"
 BUILDDIR = "{{VARDIR}}/build"
 LIBDIR = "{{BASEDIR}}/lib/"
 TEMPLATEDIR = "{{BASEDIR}}/templates"
+LOGDIR = "{{VARDIR}}/log"
+JSAPPSDIR = "{{BASEDIR}}/apps"
+BINDIR="{{BASEDIR}}/bin"
 
 ```
 

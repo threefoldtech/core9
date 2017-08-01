@@ -587,7 +587,7 @@ class GitMethods():
         if not dest:
             if codeDir is None:
                 if not executor:
-                    codeDir = j.dirs.CODEDIR
+                    codeDir = j.CODEDIR
                 else:
                     codeDir = executor.prefab.core.dir_paths['CODEDIR']
             dest = '%(codedir)s/%(type)s/%(account)s/%(repo_name)s' % {
@@ -850,7 +850,7 @@ class FSMethods():
                                         "/opt/code"]:
             raise RuntimeError('cannot delete protected dirs')
 
-        # if not force and path.find(j.dirs.CODEDIR)!=-1:
+        # if not force and path.find(j.CODEDIR)!=-1:
         #     raise RuntimeError('cannot delete protected dirs')
 
         if self.debug:
@@ -1939,15 +1939,6 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
 
         self.platformtype = j.core.platformtype
 
-        if self.exists("/root/.iscontainer"):
-            os.environ["GIGDIR"] = "/root/gig"
-            os.environ["VARDIR"] = "/optvar"
-        else:
-            if "GIGDIR" not in os.environ:
-                os.environ["GIGDIR"] = "%s/gig" % os.environ["HOME"]
-            if "VARDIR" not in os.environ:
-                os.environ["VARDIR"] = "%s/var/" % os.environ["GIGDIR"]
-
         self.logger = j.logger.get("installtools")
 
     @property
@@ -1997,53 +1988,71 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
         else:
             raise RuntimeError("cannot set container, system is in readonly.")
 
-    def initEnv(self):
-        """
-        @type executor: ExecutorBase
-        """
 
-        if self.exists("/root/.iscontainer"):
-            container = True
-        else:
-            container = False
-
+    def getDirPathConfig(self,container=True):
         if container:
             T = '''
-        [dirs]
         HOMEDIR = "~"
         TMPDIR = "/tmp"
         VARDIR = "/optvar"
         BASEDIR = "/opt/jumpscale9"
         CFGDIR = "{{VARDIR}}/cfg"
-        DATADIR = "{{VARDIR}}/data"
+        DATADIR = "/host/data"
         CODEDIR = "/opt/code"
-        BUILDDIR = "{{VARDIR}}/build"
+        BUILDDIR = "/host/build"
         LIBDIR = "{{BASEDIR}}/lib/"
         TEMPLATEDIR = "{{BASEDIR}}/templates"
-        LOGDIR = "{{VARDIR}}/log"
+        LOGDIR = "/host/log"
         JSAPPSDIR = "{{BASEDIR}}/apps"
         BINDIR="{{BASEDIR}}/bin"
 
             '''
         else:
             T = '''
-        [dirs]
         HOMEDIR = "~"
         TMPDIR = "/tmp"
-        VARDIR = "{{GIGDIR}}/var"
-        BASEDIR = "{{GIGDIR}}/gig"
+        VARDIR = "{{HOMEDIR}}/opt/var"
+        BASEDIR = "{{HOMEDIR}}/opt/jumpscale9"
         CFGDIR = "{{VARDIR}}/cfg"
         DATADIR = "{{VARDIR}}/data"
-        CODEDIR = "{{GIGDIR}}/code"
+        CODEDIR = "{{HOMEDIR}}/code"
         BUILDDIR = "{{VARDIR}}/build"
         LIBDIR = "{{BASEDIR}}/lib/"
         TEMPLATEDIR = "{{BASEDIR}}/templates"
         LOGDIR = "{{VARDIR}}/log"
         JSAPPSDIR = "{{BASEDIR}}/apps"
         BINDIR="{{BASEDIR}}/bin"
+        '''
+
+        return T
+        
+    def _replaceInToml(self,T):
+        # will replace  variables in itself
+        counter = 0
+        while "{{" in T and counter < 10:
+            TT = pytoml.loads(T)
+            T = pystache.render(T, **TT)
+            counter += 1
+        TT = pytoml.loads(T)
+
+        if counter > 9:
+            raise RuntimeError(
+                "cannot convert default configfile, template arguments still in")
+        
+        return T
+
+    def initEnv(self):
+        """
+        @type executor: ExecutorBase
+        """
+
+        if self.exists("/root/.iscontainer") or str(sys.platform).startswith("linux"):
+            container = True
+        else:
+            container = False
 
 
-            '''
+        T="[dirs]\n"+self.getDirPathConfig(container=container)
 
         T += '''
         [email]
@@ -2082,33 +2091,26 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
         SSHKEYNAME = "id_rsa"
         '''
         T = j.data.text.strip(T)
-        T = T.replace("{{GIGDIR}}", os.environ["GIGDIR"])
 
-        # will replace  ~ and the variables
-        counter = 0
-        while "{{" in T and counter < 10:
-            TT = pytoml.loads(T)
-            T = pystache.render(T, **TT["dirs"])
-            counter += 1
+        print(T)
+        sys.exit()
+
         TT = pytoml.loads(T)
 
-        for key, val in TT["dirs"].items():
+        # get env dir arguments & overrule them in jumpscale config
+        for key, val in os.environ.items():
+            if "DIR" in key and key in TT["dirs"]:
+                TT["dirs"][key] = val
+
+
+        for key, val in TT.items():
             val = val.replace(
                 "~", os.environ["HOME"]).replace(
                 "//", "/").rstrip("/")
             if not j.sal.fs.exists(val):
                 j.sal.fs.createDir(val)
-            TT["dirs"][key] = val
+            TT["dirs"][key] = val                
 
-        if counter > 9:
-            raise RuntimeError(
-                "cannot convert default configfile, template arguments still in")
-
-        if not container:
-            # get env dir arguments & overrule them in jumpscale config
-            for key, val in os.environ.items():
-                if "DIR" in key and key in TT["dirs"]:
-                    TT["dirs"][key] = val
 
         if container:
             TT["system"]["container"] = True

@@ -1,6 +1,7 @@
 import pytoml
 from JumpScale9 import j
 import os
+import sys
 
 # ONLY DEVELOPED NOW FOR CONFIG, REST NEEDS TO BE DONE
 
@@ -30,10 +31,11 @@ class State():
 
     @property
     def _vardir(self):
-        if "VARDIR" in os.environ:
-            return os.path.normpath(os.path.join(os.environ["VARDIR"]))
+        if str(sys.platform).startswith("linux"):
+            return "/optvar"
         else:
-            raise RuntimeError("Cannot find VARDIR in env")
+            return "%s/opt/var"%os.environ["HOME"]
+        
 
     def configLoad(self):
         if not self._exists("cfg"):
