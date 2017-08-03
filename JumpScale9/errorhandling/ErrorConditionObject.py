@@ -197,6 +197,7 @@ class ErrorConditionObject(BaseException):
             self.__dict__ = res
 
     def toJson(self):
+        self.key # make sure uniquekey is filled
         data = self.__dict__.copy()
         data.pop('tb', None)
         return j.data.serializer.json.dumps(data)
