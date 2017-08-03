@@ -281,6 +281,9 @@ class SystemFS:
         """Recursively delete a directory tree.
             @param path: the path to be removed
         """
+        def errorHandler(shutilFunc, shutilPath, shutilExc_info):
+            self.logger.debug(
+                'WARNING: could not remove %s while recursively deleting %s' % (shutilPath, path))
         if path is None:
             raise ValueError('Path is None in system.fs.removeDir')
         self.logger.debug('Removing directory tree with path: %s' % path)
@@ -292,16 +295,14 @@ class SystemFS:
         if(j.sal.fs.exists(path)):
             if(self.isDir(path)):
                 if onlyLogWarningOnRemoveError:
-                    def errorHandler(shutilFunc, shutilPath, shutilExc_info):
-                        self.logger.debug(
-                            'WARNING: could not remove %s while recursively deleting %s' % (shutilPath, path))
+
                     self.logger.debug(
                         'Trying to remove Directory tree with path: %s (warn on errors)' % path)
                     shutil.rmtree(path, onerror=errorHandler)
                 else:
                     self.logger.debug(
                         'Trying to remove Directory tree with path: %s' % path)
-                    shutil.rmtree(path)
+                    shutil.rmtree(path, onerror=errorHandler)
 
                 self.logger.debug(
                     'Directory tree with path: %s is successfully removed' % path)
