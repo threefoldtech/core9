@@ -4,26 +4,22 @@ try:
 except ImportError:
     import json
 
+import pytoml
 
 class ExecutorBase:
 
-    def __init__(self, debug=False, checkok=False):
+    def __init__(self, debug=False, checkok=True):
+
+        self.debug=debug
+        self.checkok = checkok
 
         self.type = None
         self._id = None
-
+        self.readonly = False
         self.CURDIR = ""
-
-        self.debug = debug
-        self.checkok = checkok
-
-        self._prefab = None
-        self._config = None
-        self._config_changed = False
-        self._env = None
+        self.reset()
         self._logger = None
 
-        self.readonly = False
 
     @property
     def logger(self):
@@ -42,6 +38,32 @@ class ExecutorBase:
         """
         is dict which is stored on node itself in json format in /tmp/jsexecutor.json
         """
+            
+        if "CFGDIR" not in self.env:
+            T=j.do.getDirPathConfig(self)
+            T=T.replace("//", "/")
+            DIRPATHS = pytoml.loads(T)
+
+            config=""
+            for key,val in DIRPATHS.items():
+                config+="export %s=%s\n"%(key,val)
+
+        print (22222222)
+        from IPython import embed;embed(colors='Linux')
+
+        if "DEBUG" in env and str(env["DEBUG"]).lower() in ["true", "1", "yes"]:
+            env["DEBUG"] = "1"
+        else:
+            env["DEBUG"] = "0"
+
+        if "READONLY" in env and str(env["READONLY"]).lower() in ["true", "1", "yes"]:
+            env["READONLY"] = "1"
+            self.readonly = True
+        else:
+            env["READONLY"] = "0"
+            self.readonly = False
+            
+
         if self._config is None:
             if self.exists("$VARDIR/jsexecutor.json") == False:
                 self._config = {}
@@ -98,20 +120,21 @@ class ExecutorBase:
         self._config = {}
         self.configSave()
 
-    def cacheReset(self):
-        self._config = None
-        self._env = None
-
     def reset(self):
-        self.configReset()
-        self.cacheReset()
+        self._prefab = None
+        self._config = None
+        self._config_changed = False
+        self._env = None
+        # self.cacheReset()
+        # self.configReset()
+
 
     @property
     def env(self):
         if self._env is None:
             res = {}
+            print("DEBUG: EXECUTOR GET ENV")
             _, out, _ = self.execute("printenv", showout=False)
-
             for line in out.splitlines():
                 if '=' in line:
                     name, val = line.split("=", 1)
@@ -150,12 +173,6 @@ class ExecutorBase:
         if self.CURDIR != "":
             pre += "cd %s\n" % (self.CURDIR)
 
-        # need to do this cause by default sshd doesn't allow client to set
-        # environment variable from the ssh session.
-        if env != {}:
-            for key, val in env.items():
-                pre += "export %s='%s'\n" % (key, val)
-
         cmds = "%s\n%s" % (pre, cmds)
 
         if checkok:
@@ -177,8 +194,12 @@ class ExecutorBase:
                 pass
         return self._prefab
 
-    def exists(self, path, replace=True):
-        return self.prefab.core.exists(path, replace=replace)
+    def exists(self, path):
+        rc,out,err=self.execute('test -e %s'%path,die=False,showout=False)
+        if rc>0:
+            return False
+        else:
+            return True
 
     # interface to implement by child classes
     def execute(self, cmds, die=True, checkok=None, showout=True, timeout=0, env={}):

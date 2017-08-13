@@ -11,8 +11,18 @@ class State():
     def __init__(self):
         self.readonly = False
         self._db = None
-        self.__jslocation__ = "j.core.state"
         self.config = None
+        self._configPath=None
+        self.configLoad()
+
+    @property
+    def configPath(self):
+        if self._configPath==None:
+            if j.sal.fs.exists("/etc/", followlinks=True):
+                self._configPath= "/etc/jumpscale9.toml"
+            else:
+                self._configPath= "%s/jumpscale9.toml"%os.environ["HOME"]
+        return self._configPath
 
     @property
     def versions(self):
@@ -38,13 +48,11 @@ class State():
         
 
     def configLoad(self):
-        if not self._exists("cfg"):
-            self.config = {}
-            self._config_changed = True
+        if j.sal.fs.exists(self.configPath):
+            table_open_object = open(self.configPath, 'r')
+            self.config = pytoml.load(table_open_object)
         else:
-            data = self._get("cfg")
-            self.config = pytoml.loads(data)
-            self._config_changed = False
+            self.config={}
 
     def configGet(self, key, defval=None, set=False):
         """
@@ -143,12 +151,21 @@ class State():
             raise j.exceptions.Input(
                 message="cannot write config to '%s', because is readonly" %
                 self, level=1, source="", tags="", msgpub="")
-        # if not self._config_changed:
-        #     return
-        data = pytoml.dumps(self.config, sort_keys=True)
-        # self.logger.info("config save")
-        self._set("cfg", data)
-        self._config_changed = False
+        path=self.configPath
+        try:
+            table_open_object = open(path, 'w')
+        except FileNotFoundError:
+            try:
+                os.makedirs(os.path.dirname(path))
+            except OSError:
+                pass
+            table_open_object = open(path, 'x')
+        try:
+            data = pytoml.dump(self.config,table_open_object, sort_keys=True)
+        except:
+            print("[-] ERROR COULD NOT SAVE CONFIG FOR JUMPSCALE")
+            print(self.config)
+            raise RuntimeError("ERROR COULD NOT SAVE CONFIG FOR JUMPSCALE")
 
     def resetConfig(self):
         self.config = {}
@@ -172,19 +189,12 @@ class State():
         self.resetConfig()
 
     def _getpath(self, cat="cfg", key=None):
-        if cat == "cfg":
-            path = j.sal.fs.joinPaths(self._vardir, "private", "jumpscale9.toml")
-            if not j.sal.fs.exists(path, followlinks=True):
-                path = "%s/cfg/jumpscale9.toml" % self._vardir
-            self.configpath = path
-            if key is not None:
-                raise RuntimeError("key has to be None of cat==cfg")
-        elif cat == "cache":
+        if cat == "cache":
             path = "%s/cache/%s" % (self._vardir, key)
         elif cat == "state":
             path = "%s/state/%s" % (self._vardir, key)
         else:
-            raise RuntimeError("only supported categories: cfg,cache,state")
+            raise RuntimeError("only supported categories: cache,state")
         return path
 
     def _set(self, cat="cfg", data="", key=None):

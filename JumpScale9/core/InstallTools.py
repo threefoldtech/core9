@@ -1945,7 +1945,7 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
     def mascot(self):
         mascotpath = "%s/.mascot.txt" % os.environ["HOME"]
         if not j.sal.fs.exists(mascotpath):
-            print("env has not been installed properly, please follow init instructions on https://github.com/Jumpscale/developer")
+            print("env has not been installed properly, please follow init instructions on https://github.com/Jumpscale/core9")
             sys.exit(1)
         return self.readFile(mascotpath)
 
@@ -1989,44 +1989,63 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
             raise RuntimeError("cannot set container, system is in readonly.")
 
 
-    def getDirPathConfig(self,container=True):
+    def getDirPathConfig(self,executor=None):
+        if executor==None:
+            container= self.exists("/root/.iscontainer")
+            islinux=str(sys.platform).startswith("linux")
+            hostdirexists= self.exists("/host")
+        else:
+            container= executor.exists("/root/.iscontainer")
+            islinux=executor.prefab.platformtype.isUnix
+            hostdirexists= executor.exists("/host")
+
+        if container and not hostdirexists:
+            raise RuntimeError("if container the hostdir needs to exists (/host)")
+
+
         if container:
             T = '''
-        HOMEDIR = "~"
-        TMPDIR = "/tmp"
-        VARDIR = "/optvar"
-        BASEDIR = "/opt/jumpscale9"
-        CFGDIR = "{{VARDIR}}/cfg"
-        DATADIR = "/host/data"
-        CODEDIR = "/opt/code"
-        BUILDDIR = "/host/build"
-        LIBDIR = "{{BASEDIR}}/lib/"
-        TEMPLATEDIR = "{{BASEDIR}}/templates"
-        LOGDIR = "/host/log"
-        JSAPPSDIR = "{{BASEDIR}}/apps"
-        BINDIR="{{BASEDIR}}/bin"
-
+            BASEDIR = "/opt"        
+            CODEDIR = "/opt/code"
+            HOSTDIR = "/host"
+            HOSTCFGDIR = "/hostcfg"
+            VARDIR = "{{HOSTDIR}}/var"
+            '''
+        elif islinux:
+            T = '''
+            BASEDIR = "/opt"        
+            CODEDIR = "/opt/code"
+            HOSTDIR = ""
+            HOSTCFGDIR = ""
+            VARDIR = "{{BASEDIR}}/var"     
             '''
         else:
             T = '''
+            BASEDIR = "{{HOMEDIR}}/opt"        
+            CODEDIR = "{{HOMEDIR}}/code"
+            HOSTDIR = ""
+            HOSTCFGDIR = ""
+            VARDIR = "{{BASEDIR}}/var"     
+            '''
+
+        BASE='''           
         HOMEDIR = "~"
         TMPDIR = "/tmp"
-        VARDIR = "{{HOMEDIR}}/opt/var"
-        BASEDIR = "{{HOMEDIR}}/opt/jumpscale9"
-        CFGDIR = "{{VARDIR}}/cfg"
+        BASEDIRJS = "{{BASEDIR}}/jumpscale9"
         DATADIR = "{{VARDIR}}/data"
-        CODEDIR = "{{HOMEDIR}}/code"
         BUILDDIR = "{{VARDIR}}/build"
         LIBDIR = "{{BASEDIR}}/lib/"
-        TEMPLATEDIR = "{{BASEDIR}}/templates"
         LOGDIR = "{{VARDIR}}/log"
-        JSAPPSDIR = "{{BASEDIR}}/apps"
         BINDIR="{{BASEDIR}}/bin"
+        CFGDIR = "{{BASEDIR}}/cfg"
         '''
+        
+        TXT=j.data.text.strip(BASE)+"\n"+j.data.text.strip(T)
 
-        return T
+        return self._replaceInToml(TXT)
         
     def _replaceInToml(self,T):
+        T=T.replace("~", os.environ["HOME"])        
         # will replace  variables in itself
         counter = 0
         while "{{" in T and counter < 10:
@@ -2045,29 +2064,45 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
         """
         @type executor: ExecutorBase
         """
+        T=self.getDirPathConfig()
+        T=T.replace("//", "/")
+        DIRPATHS = pytoml.loads(T)
 
-        if self.exists("/root/.iscontainer") or str(sys.platform).startswith("linux"):
-            container = True
-        else:
-            container = False
+        # get env dir arguments & overrule them in jumpscale config
+        for key, val in os.environ.items():
+            if "DIR" in key and key in DIRPATHS:
+                DIRPATHS[key] = val
 
+        for key, val in DIRPATHS.items():
+            if not j.sal.fs.exists(val):
+                j.sal.fs.createDir(val)
 
-        T="[dirs]\n"+self.getDirPathConfig(container=container)
-
-        T += '''
+        TME = '''
         [email]
         from = "info@incubaid.com"
         smtp_port = 443
         smtp_server = ""
 
-        [git.ays]
-        branch = "master"
-        url = "https://github.com/Jumpscale/ays9.git"
+        [me]
+        fullname = "This is my full name, needs to be replace"
+        loginname = "someid"
 
-        [git.js]
-        branch = "master"
-        url = "https://github.com/Jumpscale/core9.git"
+        [ssh]
+        SSHKEYNAME = "somename"
 
+        '''
+
+        TME=j.data.text.strip(TME)
+
+        if DIRPATHS["HOSTCFGDIR"]!="":
+            path=self.joinPaths(DIRPATHS["HOSTCFGDIR"],"me.toml")
+            if not self.exists(path):
+                self.writeFile(path,j.data.text.strip(TME))
+            else:
+                #config file exists lets load it
+                TME=self.readFile(path)
+
+        TSYSTEM= '''
 
         [system]
         debug = true
@@ -2080,64 +2115,36 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
         nid = 0
 
         [redis]
+        enabled = false
         port = 6379
         addr = "localhost"
 
-        [me]
-        fullname = "Kristof De Spiegeleer"
-        loginname = "despiegk"
-
-        [ssh]
-        SSHKEYNAME = "id_rsa"
         '''
-        T = j.data.text.strip(T)
 
-        print(T)
-        sys.exit()
+        TSYSTEM=j.data.text.strip(TSYSTEM)
+
+        T = TSYSTEM + "\n" + TME + "\n"
 
         TT = pytoml.loads(T)
+        TT["dirs"]=DIRPATHS
+             
+        TT["system"]["container"] = self.exists("/root/.iscontainer")
 
-        # get env dir arguments & overrule them in jumpscale config
-        for key, val in os.environ.items():
-            if "DIR" in key and key in TT["dirs"]:
-                TT["dirs"][key] = val
+        if "plugins" not in TT.keys():
+            TT["plugins"]={"core9":"%s/github/jumpscale/core9/" % DIRPATHS["CODEDIR"]}
 
-
-        for key, val in TT.items():
-            val = val.replace(
-                "~", os.environ["HOME"]).replace(
-                "//", "/").rstrip("/")
-            if not j.sal.fs.exists(val):
-                j.sal.fs.createDir(val)
-            TT["dirs"][key] = val                
-
-
-        if container:
-            TT["system"]["container"] = True
-
-        if container:
+        if TT["system"]["container"] :
             j.core.state.configUpdate(TT, True)  # will overwrite
         else:
             j.core.state.configUpdate(TT, False)  # will not overwrite
 
-        # print(j.core.state.config)
-
-        # COPY the jumpscale commands
-        js9_codedir = j.sal.fs.getParent(
-            j.sal.fs.getParent(
-                j.sal.fs.getDirName(
-                    j.sal.fs.getPathOfRunningFunction(
-                        j.logger.__init__))))
-        cmdsDir = j.sal.fs.joinPaths(js9_codedir, "cmds")
-
-        for item in j.sal.fs.listFilesInDir(cmdsDir):
-            j.sal.fs.symlink(
-                item,
-                "/usr/local/bin/%s" %
-                j.sal.fs.getBaseName(item),
-                overwriteTarget=True)
+        
+        if not self.exists(j.core.state.config["dirs"]["CODEDIR"]):
+            raise RuntimeError("cannot find codedir: %s"%j.core.state.config["dirs"]["CODEDIR"])
 
         self.linkJSCommandsToSystem()
+
+        self.writeEnvArgsBash()
 
     def linkJSCommandsToSystem(self):
         src = "%s/github/jumpscale/core9/cmds/" % j.core.state.config["dirs"]["CODEDIR"]
