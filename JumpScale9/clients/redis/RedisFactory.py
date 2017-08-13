@@ -1,14 +1,18 @@
 from JumpScale9 import j
 
-
-from .Redis import Redis
-from .RedisQueue import RedisQueue
+redisFound=False
+try:
+    from .Redis import Redis
+    from .RedisQueue import RedisQueue
+    from redis._compat import nativestr
+    # import itertools
+    import socket
+    redisFound=True
+except:
+    pass
 import os
 import time
 # import sys
-from redis._compat import nativestr
-# import itertools
-import socket
 
 
 class RedisFactory:
@@ -18,6 +22,7 @@ class RedisFactory:
 
     def __init__(self):
         self.clearCache()
+        self.redisFound=redisFound
         self.__jslocation__ = "j.clients.redis"
 
     def clearCache(self):
@@ -34,6 +39,8 @@ class RedisFactory:
             unixsocket=None,
             ardb_patch=False,
             **args):
+        if redisFound==False:
+            raise RuntimeError("redis libraries are not installed, please pip3 install them.")
         if unixsocket is None:
             key = "%s_%s" % (ipaddr, port)
         else:

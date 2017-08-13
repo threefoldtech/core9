@@ -14,6 +14,8 @@ class ExecutorLocal(ExecutorBase):
         self._logger = None
         self.__jslocation__ = "j.tools.executorLocal"
 
+        self.init()
+
     @property
     def logger(self):
         if self._logger is None:

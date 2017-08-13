@@ -83,21 +83,24 @@ j.tools.executorLocal = ExecutorLocal()  # needed in platformtypes
 from .core.PlatformTypes import PlatformTypes
 j.core.platformtype = PlatformTypes()
 
-# from .data.cache.Cache import Cache
-# j.data.cache = Cache()
+from .data.cache.Cache import Cache
+j.data.cache = Cache()
 
 from .clients.redis.RedisFactory import RedisFactory
 j.clients.redis = RedisFactory()
 
 from .core.State import State
-j.core.state = State()
+j.core.state = State(executor=j.tools.executorLocal)
+j.tools.executorLocal.state=j.core.state
+j.tools.executorLocal.config=j.core.state.config
 
 from .core.InstallTools import InstallTools
 j.do = InstallTools()
 
 j.core.state.configLoad()
+
 if "dirs" not in j.core.state.config:
-    j.do.initEnv()
+    j.tools.executorLocal.initEnv()
 
 from .core.Dirs import Dirs
 j.dirs = Dirs()

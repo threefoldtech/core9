@@ -3,14 +3,14 @@ from JumpScale9 import j
 import os
 import sys
 
-# ONLY DEVELOPED NOW FOR CONFIG, REST NEEDS TO BE DONE
-
-
 class State():
+    """
 
-    def __init__(self):
+    """
+
+    def __init__(self,executor):
         self.readonly = False
-        self._db = None
+        self.executor=executor
         self.config = None
         self._configPath=None
         self.configLoad()
@@ -18,10 +18,14 @@ class State():
     @property
     def configPath(self):
         if self._configPath==None:
-            if j.sal.fs.exists("/etc/", followlinks=True):
-                self._configPath= "/etc/jumpscale9.toml"
+            if self.executor==None or self.executor==j.tools.executorLocal:
+                if j.sal.fs.exists("/etc/", followlinks=True) and j.core.platformtype.myplatform.isMac==False:
+                    self._configPath= "/etc/jumpscale9.toml"
+                else:
+                    self._configPath= "%s/.jumpscale9.toml"%os.environ["HOME"]
             else:
-                self._configPath= "%s/jumpscale9.toml"%os.environ["HOME"]
+                print("configpath in state when env")
+                from IPython import embed;embed(colors='Linux')
         return self._configPath
 
     @property
@@ -39,20 +43,24 @@ class State():
             self._db = j.clients.redis.get4core()
         return self._db
 
-    @property
-    def _vardir(self):
-        if str(sys.platform).startswith("linux"):
-            return "/optvar"
-        else:
-            return "%s/opt/var"%os.environ["HOME"]
+    # @property
+    # def _vardir(self):
+    #     if str(sys.platform).startswith("linux"):
+    #         return "/optvar"
+    #     else:
+    #         return "%s/opt/var"%os.environ["HOME"]
         
 
     def configLoad(self):
-        if j.sal.fs.exists(self.configPath):
-            table_open_object = open(self.configPath, 'r')
-            self.config = pytoml.load(table_open_object)
+        if self.executor==None or self.executor==j.tools.executorLocal:            
+            if j.sal.fs.exists(self.configPath):
+                table_open_object = open(self.configPath, 'r')
+                self.config = pytoml.load(table_open_object)
+            else:
+                self.config={}
         else:
-            self.config={}
+            print("config load state")
+            from IPython import embed;embed(colors='Linux')
 
     def configGet(self, key, defval=None, set=False):
         """
@@ -151,80 +159,27 @@ class State():
             raise j.exceptions.Input(
                 message="cannot write config to '%s', because is readonly" %
                 self, level=1, source="", tags="", msgpub="")
-        path=self.configPath
-        try:
-            table_open_object = open(path, 'w')
-        except FileNotFoundError:
+        if self.executor==None or self.executor==j.tools.executorLocal:                    
+            path=self.configPath
             try:
-                os.makedirs(os.path.dirname(path))
-            except OSError:
-                pass
-            table_open_object = open(path, 'x')
-        try:
-            data = pytoml.dump(self.config,table_open_object, sort_keys=True)
-        except:
-            print("[-] ERROR COULD NOT SAVE CONFIG FOR JUMPSCALE")
-            print(self.config)
-            raise RuntimeError("ERROR COULD NOT SAVE CONFIG FOR JUMPSCALE")
+                table_open_object = open(path, 'w')
+            except FileNotFoundError:
+                try:
+                    os.makedirs(os.path.dirname(path))
+                except OSError:
+                    pass
+                table_open_object = open(path, 'x')
+            try:
+                data = pytoml.dump(self.config,table_open_object, sort_keys=True)
+            except:
+                print("[-] ERROR COULD NOT SAVE CONFIG FOR JUMPSCALE")
+                print(self.config)
+                raise RuntimeError("ERROR COULD NOT SAVE CONFIG FOR JUMPSCALE")
+        else:
+            print("configsave state")
+            from IPython import embed;embed(colors='Linux')
 
-    def resetConfig(self):
+
+    def reset(self):
         self.config = {}
         self.configSave()
-
-    def resetState(self):
-        from IPython import embed
-        print("DEBUG NOW resetState")
-        embed()
-        raise RuntimeError("stop debug here")
-
-    def resetCache(self):
-        from IPython import embed
-        print("DEBUG NOW reset cache")
-        embed()
-        raise RuntimeError("stop debug here")
-
-    def resetAll(self):
-        self.resetState()
-        self.resetCache()
-        self.resetConfig()
-
-    def _getpath(self, cat="cfg", key=None):
-        if cat == "cache":
-            path = "%s/cache/%s" % (self._vardir, key)
-        elif cat == "state":
-            path = "%s/state/%s" % (self._vardir, key)
-        else:
-            raise RuntimeError("only supported categories: cache,state")
-        return path
-
-    def _set(self, cat="cfg", data="", key=None):
-        if self.db is not None:
-            from IPython import embed
-            print("DEBUG NOW sdat")
-            embed()
-            raise RuntimeError("stop debug here")
-        else:
-            path = self._getpath(cat=cat, key=key)
-            j.sal.fs.createDir(j.sal.fs.getDirName(path))
-            j.sal.fs.writeFile(filename=path, contents=data, append=False)
-
-    def _exists(self, cat="cfg", data="", key=None):
-        if self.db is not None:
-            from IPython import embed
-            print("DEBUG NOW wewe")
-            embed()
-            raise RuntimeError("stop debug here")
-        else:
-            path = self._getpath(cat=cat, key=key)
-            return os.path.exists(path)
-
-    def _get(self, cat="cfg", data="", key=None):
-        if self.db is not None:
-            from IPython import embed
-            print("DEBUG NOW 2323")
-            embed()
-            raise RuntimeError("stop debug here")
-        else:
-            path = self._getpath(cat=cat, key=key)
-            with open(path, 'r') as f:
-                return f.read()

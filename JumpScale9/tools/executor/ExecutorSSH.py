@@ -32,9 +32,10 @@ class ExecutorSSH(ExecutorBase):
         self.passphrase = passphrase
         self._id = None
 
-
-
         self._logger = j.logger.get("executorssh%s" % self.addr)
+
+        self.init()
+
         self.logger.info("initted.")
 
     @property

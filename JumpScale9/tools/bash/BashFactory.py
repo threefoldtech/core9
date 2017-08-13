@@ -18,6 +18,8 @@ class Profile:
         export Y
         """
         self.bash = bash
+        self.executor = bash.executor
+
         if profilePath == "":
             self.pathProfile = j.sal.fs.joinPaths(self.home, ".profile_js")
         else:
@@ -27,12 +29,11 @@ class Profile:
 
     def load(self):
         self.home = self.bash.home
-        self.prefab = self.bash.prefab
         self._env = {}
         self._path = []
         self._includes = []
 
-        content = self.prefab.core.file_read(self.pathProfile)
+        content = self.executor.file_read(self.pathProfile)
 
         for match in Profile.env_pattern.finditer(content):
             self._env[match.group(1)] = match.group(2)
@@ -50,7 +51,7 @@ class Profile:
             self._env['SSHKEYNAME'] = os.environ.get('SSHKEYNAME', 'id_rsa')
         if "HOMEDIR" not in self._env:
             self._env['HOMEDIR'] = os.environ.get('HOMEDIR', os.environ.get('HOME', '/root'))
-        _path.add(self.prefab.core.dir_paths['BINDIR'])
+        _path.add(self.executor.dir_paths['BINDIR'])
 
         for item in _path:
             if item.strip() == "":
@@ -117,16 +118,16 @@ class Profile:
             if path.find(filter) != -1:
                 self._path.pop(self._path.index(path))
 
-    def deletePathFromEnv(self, key):
-        """
-        dangerous function will look for env argument which has been set in the profile
-        if found will delete
-        and will do this multiple times to make sure all instances are found
-        """
-        while self.envExists(key):
-            path = self.envGet(key)
-            self.prefab.core.dir_remove(path)
-            self.envDelete(key)
+    # def deletePathFromEnv(self, key):
+    #     """
+    #     dangerous function will look for env argument which has been set in the profile
+    #     if found will delete
+    #     and will do this multiple times to make sure all instances are found
+    #     """
+    #     while self.envExists(key):
+    #         path = self.envGet(key)
+    #         self.executor("rm -rf %s"%path)
+    #         self.envDelete(key)
 
     def __str__(self):
         self._env['PATH'] = ':'.join(set(self.paths)) + ":${PATH}"
@@ -165,14 +166,14 @@ class Profile:
         @param includeInDefaultProfile, if True then will include in the default profile
         """
 
-        self.prefab.core.file_write(self.pathProfile, str(self), showout=True)
+        self.executor.file_write(self.pathProfile, str(self))
 
         # make sure we include our custom profile in the default
         if includeInDefaultProfile is True:
             if self.pathProfile != self.bash.profileDefault.pathProfile:
                 print("INCLUDE IN DEFAULT PROFILE:%s" % self.pathProfile)
                 out = ""
-                inProfile = self.prefab.core.file_read(self.bash.profileDefault.pathProfile)
+                inProfile = self.executor.file_read(self.bash.profileDefault.pathProfile)
                 for line in inProfile.split("\n"):
                     if line.find(self.pathProfile) != -1:
                         continue
@@ -180,13 +181,13 @@ class Profile:
 
                 out += "\nsource %s\n" % self.pathProfile
                 if out.replace("\n", "") != inProfile.replace("\n", ""):
-                    self.prefab.core.file_write(self.bash.profileDefault.pathProfile, out)
+                    self.executor.file_write(self.bash.profileDefault.pathProfile, out)
                     self.bash.profileDefault.load()
 
         self.bash.reset()  # do not remove !
 
     def getLocaleItems(self, force=False, showout=False):
-        out = self.prefab.core.run("locale -a")[1]
+        out = self.executor.execute("locale -a")[1]
         return out.split("\n")
 
     def fixlocale(self):
@@ -224,12 +225,12 @@ class Bash:
         else:
             self.executor = j.tools.executorLocal
 
-        self.prefab = self.executor.prefab
         self.reset()
 
     def reset(self):
         self._profile = None
         self._profileDefault = None
+        self.executor.reset()
 
     @property
     def env(self):
@@ -237,13 +238,13 @@ class Bash:
 
     @property
     def home(self):
-        return self.executor.prefab.core.dir_paths["HOMEDIR"]
+        return self.executor.dir_paths["HOMEDIR"]
 
     def cmdGetPath(self, cmd, die=True):
         """
         checks cmd Exists and returns the path
         """
-        rc, out, err = self.prefab.core.run("which %s" % cmd, die=False, showout=False, profile=True)
+        rc, out, err = self.executor.execute("which %s" % cmd, die=False, showout=False, profile=True)
         if rc > 0:
             if die:
                 raise j.exceptions.RuntimeError("Did not find command: %s" % cmd)
@@ -253,8 +254,8 @@ class Bash:
 
     def profileGet(self, path="~/.profile_js"):
         path = path.replace("~", self.home)
-        if not self.prefab.core.file_exists(path):
-            self.prefab.core.file_write(path, "")
+        if not self.executor.exists(path):
+            self.executor.file_write(path, "")
         return Profile(self, path)
 
     @property
@@ -271,7 +272,7 @@ class Bash:
         if self._profileDefault is None:
             path = ""
             ppath = j.sal.fs.joinPaths(self.home, ".jsenv.sh")
-            if self.prefab.core.file_exists(ppath):
+            if self.executor.exists(ppath):
                 path = ppath
             if path == "":
                 path = "~/.bash_profile"
@@ -283,15 +284,15 @@ class Bash:
         return self.profileDefault.pathProfile
 
     def fixlocale(self):
-        self.prefab.bash.profileJS.fixlocale()
-        self.prefab.bash.profileJS.save(True)  # will make sure it gets in default profile
+        self.self.profileJS.fixlocale()
+        self.self.profileJS.save(True)  # will make sure it gets in default profile
 
     def envSet(self, key, val):
-        self.prefab.bash.profileJS.envSet(key, val)
-        self.prefab.bash.profileJS.save(True)
+        self.self.profileJS.envSet(key, val)
+        self.self.profileJS.save(True)
 
     def envGet(self, key):
-        return self.prefab.bash.profileJS.envGet(key)
+        return self.self.profileJS.envGet(key)
 
     def envDelete(self, key):
-        return self.prefab.bash.profileJS.envDelete(key)
+        return self.self.profileJS.envDelete(key)

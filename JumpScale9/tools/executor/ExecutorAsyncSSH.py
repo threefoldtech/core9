@@ -14,6 +14,8 @@ class ExecutorAsyncSSH(ExecutorSSH):
                          look_for_keys=look_for_keys, checkok=checkok,
                          timeout=timeout, key_filename=(), passphrase=passphrase)
 
+        self.init()
+
     def _getSSHClient(self, key_filename=None, passphrase=None):
         self._sshclient = j.clients.ssh.getAsync(self.addr,
                                                  self.port,
