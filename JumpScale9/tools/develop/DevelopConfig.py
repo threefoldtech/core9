@@ -30,6 +30,9 @@ class MyMenu():
                         shortcut=None, arguments=["FormSelectCodeDirs"], keywords=None)
         self.m1.addItem(text='Specify Active Nodes', onSelect=self.go2form,
                         shortcut=None, arguments=["FormNodes"], keywords=None)
+        self.m1.addItem(text='Quit', onSelect=self.exit_application,
+                        shortcut=None, keywords=None)
+
 
     def go2form(self, name):
         self.parentApp.change_form(name)
@@ -44,6 +47,7 @@ class MyMenu():
         curses.beep()
 
     def exit_application(self):
+        from IPython import embed;embed(colors='Linux')
         curses.beep()
         self.parentApp.setNextForm(None)
         self.editing = False
@@ -53,6 +57,12 @@ class MyMenu():
 class MainForm(npyscreen.FormWithMenus, MyMenu):
     def create(self):
         self.addMenu()
+
+    def main(self):
+
+        self.name = MyForm.add_widget(TitleText, name="Your name:")
+        # wgtree = self.add(npyscreen.)
+
 
 
 class FormSelectCodeDirs(npyscreen.FormWithMenus, MyMenu):
@@ -118,13 +128,15 @@ class FormNodes(npyscreen.FormWithMenus, MyMenu):
         self.editor.values = res
         self.editor.display()
 
+        from IPython import embed;embed()
+
     def main(self):
-        self.codedirs = j.tools.develop.codedirs
+        # self.codedirs = j.tools.develop.codedirs
         # self.add(npyscreen.TitleText, name="autocomplete to make list smaller: ",
         #          value="", value_changed_callback=self.changedAutocomplete)
         # self.add(npyscreen.Autocomplete, name="autocomplete", value_changed_callback=self.changedAutocomplete)
         self.editor = self.add(npyscreen.MultiLineEditableBoxed,
-                               max_height=50, rely=5,
+                               max_height=40, rely=5,
                                footer="list of nodes known to the system      (multiline of $name $ipaddr:$port)     $port is optional, ^s will format.",
                                slow_scroll=False, exit_left=True, exit_right=True)
 
