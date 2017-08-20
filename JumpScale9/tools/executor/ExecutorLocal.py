@@ -86,3 +86,10 @@ class ExecutorLocal(ExecutorBase):
             ignorefiles=[".egg-info"],
             rsync=True,
             ssh=False)
+
+
+    def file_read(self,path):
+        return j.sal.fs.readFile(path)
+
+    def file_write(self,path,content):
+        return j.sal.fs.writeFile(path,content)

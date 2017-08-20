@@ -325,3 +325,5 @@ class ExecutorSSH(ExecutorBase):
         return ("Executor ssh: %s (%s)" % (self.addr, self.port))
 
     __str__ = __repr__
+
+

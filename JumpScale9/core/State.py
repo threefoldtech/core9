@@ -24,8 +24,7 @@ class State():
                 else:
                     self._configPath= "%s/.jumpscale9.toml"%os.environ["HOME"]
             else:
-                print("configpath in state when env")
-                from IPython import embed;embed(colors='Linux')
+                self._configPath= "/etc/jumpscale9.toml"
         return self._configPath
 
     @property
@@ -43,14 +42,6 @@ class State():
             self._db = j.clients.redis.get4core()
         return self._db
 
-    # @property
-    # def _vardir(self):
-    #     if str(sys.platform).startswith("linux"):
-    #         return "/optvar"
-    #     else:
-    #         return "%s/opt/var"%os.environ["HOME"]
-        
-
     def configLoad(self):
         if self.executor==None or self.executor==j.tools.executorLocal:            
             if j.sal.fs.exists(self.configPath):
@@ -59,8 +50,13 @@ class State():
             else:
                 self.config={}
         else:
-            print("config load state")
-            from IPython import embed;embed(colors='Linux')
+            path="/etc/jumpscale9.toml"
+            if self.executor.exists(self.configPath):
+                cc=self.executor.file_read(self.configPath)
+                self.config = pytoml.loads(cc)
+                print("config load state")
+            else:
+                self.config={}
 
     def configGet(self, key, defval=None, set=False):
         """
@@ -177,9 +173,15 @@ class State():
                 raise RuntimeError("ERROR COULD NOT SAVE CONFIG FOR JUMPSCALE")
         else:
             print("configsave state")
-            from IPython import embed;embed(colors='Linux')
-
+            data=pytoml.dumps(self.config)
+            self.executor.file_write(self.configPath,data)
 
     def reset(self):
         self.config = {}
         self.configSave()
+
+    def __repr__(self):
+        return str(self.config)
+
+    def __str__(self):
+        return str(self.config)

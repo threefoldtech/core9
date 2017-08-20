@@ -353,14 +353,22 @@ class ExecutorBase:
     def dir_paths(self):
         return self.config["dirs"]
 
-    def file_read(self,path):
-        print("fileread")
-        from IPython import embed;embed()
-
-    def file_write(self,path,content):
-        print("fileread")
-        from IPython import embed;embed()        
 
     @property
     def platformtype(self):  
         return j.core.platformtype.get(self)
+
+    def file_read(self,path):
+        rc, out, err=self.execute("cat %s"%path,showout=False)
+        return out
+        # source=j.sal.fs.getTmpFilePath()
+        # self.download(path,source)
+        # content=j.sal.fs.readFile(source)
+        # j.sal.fs.remove(source)    
+        # return content
+
+    def file_write(self,path,content):
+        source=j.sal.fs.getTmpFilePath()
+        j.sal.fs.writeFile(source,content)
+        self.upload(source, path)
+        j.sal.fs.remove(source)    
