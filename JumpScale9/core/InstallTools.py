@@ -1168,7 +1168,7 @@ class ExecutorMethods():
                 name)
 
 
-class InstallTools(ExecutorMethods, SSHMethods):
+class InstallTools(ExecutorMethods, FSMethods):
     def __init__(self, debug=False):
 
         self.__jslocation__ = "j.core.installtools"

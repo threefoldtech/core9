@@ -75,6 +75,7 @@ setup(
         'watchdog',
         'msgpack-python',
         'colorlog',
+        'npyscreen'
     ],
     cmdclass={
         'install': install,
