@@ -13,7 +13,8 @@
 # source ~/.jsenv.sh
 # js9_build
 
-ssh -o StrictHostKeyChecking=no git@github.com
+sudo apt-get update
+sudo ssh-keyscan -t rsa github.com > ~/.ssh/known_hosts
 
 export ZUTILSBRANCH=${ZUTILSBRANCH:-fixes}
 
