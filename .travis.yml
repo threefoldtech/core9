@@ -8,6 +8,9 @@ branches:
   only:
     - master
 
+python:
+  - "3.5"
+
 install: ./install/travis_ci/prepare.sh
 
 script: ./run_tests.sh
