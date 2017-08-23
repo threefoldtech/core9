@@ -14,7 +14,7 @@
 # js9_build
 
 sudo apt-get update
-sudo ssh-keyscan -t rsa github.com > ~/.ssh/known_hosts
+sudo ssh-keyscan -t rsa github.com > /root/.ssh/known_hosts
 cat ~/.ssh/known_hosts
 
 export ZUTILSBRANCH=${ZUTILSBRANCH:-fixes}
