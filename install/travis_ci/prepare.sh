@@ -13,6 +13,8 @@
 # source ~/.jsenv.sh
 # js9_build
 
+ssh -o StrictHostKeyChecking=no git@github.com
+
 export ZUTILSBRANCH=${ZUTILSBRANCH:-fixes}
 
 curl https://raw.githubusercontent.com/Jumpscale/bash/$ZUTILSBRANCH/install.sh?$RANDOM > /tmp/install.sh;sudo bash /tmp/install.sh
