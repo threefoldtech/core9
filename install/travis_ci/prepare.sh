@@ -15,4 +15,4 @@
 
 export ZUTILSBRANCH=${ZUTILSBRANCH:-fixes}
 
-curl https://raw.githubusercontent.com/Jumpscale/bash/$ZUTILSBRANCH/install.sh?$RANDOM > /tmp/install.sh;bash /tmp/install.sh
+curl https://raw.githubusercontent.com/Jumpscale/bash/$ZUTILSBRANCH/install.sh?$RANDOM > /tmp/install.sh;sudo bash /tmp/install.sh
