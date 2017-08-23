@@ -13,10 +13,9 @@
 # source ~/.jsenv.sh
 # js9_build
 
-sudo apt-get update
-sudo ssh-keyscan -t rsa github.com > /root/.ssh/known_hosts
-cat ~/.ssh/known_hosts
+# sudo ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+# cat ~/.ssh/known_hosts
 
 export ZUTILSBRANCH=${ZUTILSBRANCH:-fixes}
 
-curl https://raw.githubusercontent.com/Jumpscale/bash/$ZUTILSBRANCH/install.sh?$RANDOM > /tmp/install.sh;sudo bash /tmp/install.sh
+curl https://raw.githubusercontent.com/Jumpscale/bash/$ZUTILSBRANCH/install.sh?$RANDOM > /tmp/install.sh;sudo -E bash /tmp/install.sh
