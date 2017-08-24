@@ -13,8 +13,14 @@
 # source ~/.jsenv.sh
 # js9_build
 
-# sudo ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
-# cat ~/.ssh/known_hosts
+
+# install python3.5
+sudo add-apt-repository -y ppa:fkrull/deadsnakes
+sudo apt-get update
+sudo apt-get install python3.5
+sudo rm -f /usr/bin/python3
+sudo ln -s /usr/bin/python3.5 /usr/bin/python3
+sudo apt-get install -y python3.5-dev
 
 export ZUTILSBRANCH=${ZUTILSBRANCH:-fixes}
 
