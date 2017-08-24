@@ -30,7 +30,6 @@ def _init_action():
         j.application.config["me"]["email"] = input('Your Email: ')
         j.core.state.configSave()
 
-    # j.do._.loadSSHAgent(createkeys=False, keyname=username)
     os.system('git config --global user.name "%s"' % j.application.config["me"]["loginname"])
     os.system('git config --global user.email "%s"' % j.application.config["me"]["email"])
     # print('Please logout and relogin for your ssh keys to be loaded')

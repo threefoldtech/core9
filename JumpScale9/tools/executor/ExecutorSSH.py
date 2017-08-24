@@ -46,7 +46,7 @@ class ExecutorSSH(ExecutorBase):
 
     def pushkey(self, user='root'):
         self.logger.debug("pushkey from agent with name:%s" % self.key_filename)
-        key = self.pubkey or j.do.SSHKeyGetFromAgentPub(self.key_filename)
+        key = self.pubkey or j.clients.ssh.SSHKeyGetFromAgentPub(self.key_filename)
         self.sshclient.ssh_authorize(user=self.login, key=key)
         # pass
 
@@ -325,5 +325,3 @@ class ExecutorSSH(ExecutorBase):
         return ("Executor ssh: %s (%s)" % (self.addr, self.port))
 
     __str__ = __repr__
-
-
