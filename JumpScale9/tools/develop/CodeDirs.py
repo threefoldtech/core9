@@ -43,9 +43,9 @@ class CodeDirs():
         if len(res) == 0:
             if die is False:
                 return None
-            j.exceptions.Input("did not find codedir: %s:%s" % (account, reponame))
+            raise j.exceptions.Input("did not find codedir: %s:%s" % (account, reponame))
         if len(res) > 1:
-            j.exceptions.Input("found more than 1 codedir: %s:%s" % (account, reponame))
+            raise j.exceptions.Input("found more than 1 codedir: %s:%s" % (account, reponame))
 
         return res[0]
 

@@ -161,6 +161,13 @@ class DebugSSHNode:
     __repr__ = __str__
 
 
+
+
+
+
+class configData:
+    pass 
+
 class DevelopToolsFactory:
 
     def __init__(self):
@@ -168,6 +175,7 @@ class DevelopToolsFactory:
         self.__imports__ = "watchdog"
         self._nodes = []
         self._codedirs = None
+        self.configdata=configData()
 
     def config(self):
         from .DevelopConfig import ConfigUI

@@ -11,6 +11,7 @@ class TreeItem():
         self.changed = False
         self.tree = None
         self.cat = None
+        self.selected = False
 
     @property
     def parent(self):
@@ -60,7 +61,7 @@ class Tree():
         path = self._pathNormalize(path)
         return path in self.items
 
-    def set(self, path, id=None, cat=None, description=None, item=None):
+    def set(self, path, id=None, cat=None, selected=False, description=None, item=None):
 
         path = self._pathNormalize(path)
         if path not in self.items:
@@ -83,6 +84,9 @@ class Tree():
         if cat is not None and ti.cat != cat:
             ti.cat = cat
             ti.changed = True
+        if selected is not ti.selected:
+            ti.selected = selected
+            ti.change = True
 
         ti.path = path
         ti.tree = self
@@ -96,7 +100,11 @@ class Tree():
             cat = val.cat or ""
             id = val.id or ""
             description = val.description or ""
-            line = "%s : %s : %s : %s" % (val.path, cat, id, description)
+            if  val.selection:
+                selected = "1"
+            else:
+                selected = "0"
+            line = "%s : %s : %s : %s : %s" % (val.path, cat, id, selected, description)
             r.append(line)
         r.sort()
 
@@ -111,7 +119,8 @@ class Tree():
         lines.sort()
         self.items = {}
         for line in lines:
-            path, cat, id, descr = line.split(":")
+            path, cat, id, selected, descr = line.split(":")
+            selected= selected.strip().lower()=="true" or selected.strip().lower()=="1"
             path = path.strip()
 
             id = id.strip()
@@ -127,9 +136,9 @@ class Tree():
                 descr = None
             if cat == "":
                 cat = None
-            self.set(path=path, id=id, cat=cat, description=descr, item=None)
+            self.set(path=path, id=id, cat=cat, description=descr, item=None, selected=selected)
 
-    def find(self, partOfPath, maxAmount=200, getItems=False):
+    def find(self, partOfPath, maxAmount=200, getItems=False, selected=None):
         """
         @param if getItems True then will return the items in the treeobj
         """
@@ -146,6 +155,10 @@ class Tree():
 
         if getItems:
             r = [item.item for item in r if item.item is not None]
+
+        if  selected is not None:
+            r = [item.item for item in r if item.selected == selected]
+
 
         return r
 

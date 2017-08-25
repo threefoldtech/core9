@@ -3,6 +3,8 @@ from js9 import j
 import npyscreen
 import curses
 
+##TO TEST IN DOCKER
+#ZSSH "js9 'j.tools.develop.config()'"
 
 class ConfigUI(npyscreen.NPSAppManaged):
     def onStart(self):
@@ -20,7 +22,9 @@ class ConfigUI(npyscreen.NPSAppManaged):
         # There's no harm in this, but we don't need it so:
         self.resetHistory()
 
-        
+    def exit_application(self):
+        print ("CLEANECOIT")
+        from IPython import embed;embed(colors='Linux')
 
 
 class MyMenu():
@@ -47,12 +51,11 @@ class MyMenu():
         curses.beep()
 
     def exit_application(self):
-        from IPython import embed;embed(colors='Linux')
-        curses.beep()
         self.parentApp.setNextForm(None)
         self.editing = False
         self.parentApp.switchFormNow()
-
+        self.parentApp.exit_application()
+        
 
 class MainForm(npyscreen.FormWithMenus, MyMenu):
     def create(self):
@@ -85,11 +88,17 @@ class FormSelectCodeDirs(npyscreen.FormWithMenus, MyMenu):
 
         wgtree.values = treedata
 
-        # self.edit()
-
-        # RETURN = wgtree.values
-        # return wgtree.get_selected_objects()
-
+        self.edit()
+        self.parentApp.codedirs.selection=[]
+        for repo in wgtree.get_selected_objects():
+            if repo.hasChildren():
+                continue
+            account=repo.getParent()
+            account_name=account.content
+            repo_name=repo.content
+            r=self.parentApp.codedirs.codeDirGet(repo_name,account_name)
+            self.parentApp.codedirs.selection.append(r)
+            
 
 class FormNodes(npyscreen.FormWithMenus, MyMenu):
     def create(self):
@@ -127,8 +136,6 @@ class FormNodes(npyscreen.FormWithMenus, MyMenu):
 
         self.editor.values = res
         self.editor.display()
-
-        from IPython import embed;embed()
 
     def main(self):
         # self.codedirs = j.tools.develop.codedirs
