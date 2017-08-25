@@ -284,15 +284,15 @@ class Bash:
         return self.profileDefault.pathProfile
 
     def fixlocale(self):
-        self.self.profileJS.fixlocale()
-        self.self.profileJS.save(True)  # will make sure it gets in default profile
+        self.profileJS.fixlocale()
+        self.profileJS.save(True)  # will make sure it gets in default profile
 
     def envSet(self, key, val):
-        self.self.profileJS.envSet(key, val)
-        self.self.profileJS.save(True)
+        self.profileJS.envSet(key, val)
+        self.profileJS.save(True)
 
     def envGet(self, key):
-        return self.self.profileJS.envGet(key)
+        return self.profileJS.envGet(key)
 
     def envDelete(self, key):
-        return self.self.profileJS.envDelete(key)
+        return self.profileJS.envDelete(key)

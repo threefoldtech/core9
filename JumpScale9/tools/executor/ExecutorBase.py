@@ -48,7 +48,7 @@ class ExecutorBase:
     #     """
     #     is dict which is stored on node itself in json format in /tmp/jsself.json
     #     """
-            
+
     #     if "CFGDIR" not in self.env:
     #         T=j.do.getDirPathConfig(self)
     #         T=T.replace("//", "/")
@@ -72,7 +72,7 @@ class ExecutorBase:
     #     else:
     #         env["READONLY"] = "0"
     #         self.readonly = False
-            
+
 
     #     if self._config is None:
     #         if self.exists("$VARDIR/jsself.json") == False:
@@ -152,11 +152,17 @@ class ExecutorBase:
     #     return self._prefab
 
     def exists(self, path):
-        rc,out,err=self.execute('test -e %s'%path,die=False,showout=False)
+        rc,_,_=self.execute('test -e %s'%path,die=False,showout=False)
         if rc>0:
             return False
         else:
             return True
+
+    def configSave(self):
+        """
+        Config Save
+        """
+        self.state.configSave()
 
     # interface to implement by child classes
     def execute(self, cmds, die=True, checkok=None, showout=True, timeout=0, env={}):
@@ -195,7 +201,7 @@ class ExecutorBase:
 
         if self.isContainer:
             T = '''
-            BASEDIR = "/opt"        
+            BASEDIR = "/opt"
             CODEDIR = "/opt/code"
             HOSTDIR = "/host"
             HOSTCFGDIR = "/hostcfg"
@@ -203,22 +209,22 @@ class ExecutorBase:
             '''
         elif islinux:
             T = '''
-            BASEDIR = "/opt"        
+            BASEDIR = "/opt"
             CODEDIR = "/opt/code"
             HOSTDIR = ""
             HOSTCFGDIR = ""
-            VARDIR = "{{BASEDIR}}/var"     
+            VARDIR = "{{BASEDIR}}/var"
             '''
         else:
             T = '''
-            BASEDIR = "{{HOMEDIR}}/opt"        
+            BASEDIR = "{{HOMEDIR}}/opt"
             CODEDIR = "{{HOMEDIR}}/code"
             HOSTDIR = ""
             HOSTCFGDIR = ""
-            VARDIR = "{{BASEDIR}}/var"     
+            VARDIR = "{{BASEDIR}}/var"
             '''
 
-        BASE='''           
+        BASE='''
         HOMEDIR = "~"
         TMPDIR = "/tmp"
         BASEDIRJS = "{{BASEDIR}}/jumpscale9"
@@ -229,13 +235,13 @@ class ExecutorBase:
         BINDIR="{{BASEDIR}}/bin"
         CFGDIR = "{{BASEDIR}}/cfg"
         '''
-        
+
         TXT=j.data.text.strip(BASE)+"\n"+j.data.text.strip(T)
 
         return self._replaceInToml(TXT)
-        
+
     def _replaceInToml(self,T):
-        T=T.replace("~", os.environ["HOME"])        
+        T=T.replace("~", os.environ["HOME"])
         # will replace  variables in itself
         counter = 0
         while "{{" in T and counter < 10:
@@ -247,7 +253,7 @@ class ExecutorBase:
         if counter > 9:
             raise RuntimeError(
                 "cannot convert default configfile, template arguments still in")
-        
+
         return T
 
     def initEnv(self):
@@ -314,7 +320,7 @@ class ExecutorBase:
 
         TT = pytoml.loads(T)
         TT["dirs"]=DIRPATHS
-             
+
         TT["system"]["container"] = self.exists("/root/.iscontainer")
 
         if "plugins" not in TT.keys():
@@ -328,7 +334,7 @@ class ExecutorBase:
         else:
             self.state.configUpdate(TT, False)  # will not overwrite
 
-        
+
         if not self.exists(j.core.state.config["dirs"]["CODEDIR"]):
             raise RuntimeError("cannot find codedir: %s"%j.core.state.config["dirs"]["CODEDIR"])
 
@@ -348,14 +354,14 @@ class ExecutorBase:
         # self.writeEnvArgsBash()
 
         self.state.configSave()
-    
+
     @property
     def dir_paths(self):
         return self.config["dirs"]
 
 
     @property
-    def platformtype(self):  
+    def platformtype(self):
         return j.core.platformtype.get(self)
 
     def file_read(self,path):
@@ -364,11 +370,11 @@ class ExecutorBase:
         # source=j.sal.fs.getTmpFilePath()
         # self.download(path,source)
         # content=j.sal.fs.readFile(source)
-        # j.sal.fs.remove(source)    
+        # j.sal.fs.remove(source)
         # return content
 
     def file_write(self,path,content):
         source=j.sal.fs.getTmpFilePath()
         j.sal.fs.writeFile(source,content)
         self.upload(source, path)
-        j.sal.fs.remove(source)    
+        j.sal.fs.remove(source)

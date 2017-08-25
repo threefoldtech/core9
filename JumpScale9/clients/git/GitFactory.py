@@ -1,6 +1,7 @@
 from .GitClient import GitClient
 from JumpScale9 import j
 import os
+import re
 
 
 class GitFactory:
@@ -8,6 +9,10 @@ class GitFactory:
     def __init__(self):
         self.logger = j.logger.get('j.clients.git')
         self.__jslocation__ = "j.clients.git"
+
+
+    def execute(self, *args, **kwargs):
+        j.do.execute(*args, **kwargs)
 
     def rewriteGitRepoUrl(self, url="", login=None, passwd=None, ssh="auto"):
         """
@@ -25,7 +30,7 @@ class GitFactory:
         """
 
         if ssh == "auto" or ssh == "first":
-            ssh = self.SSHAgentAvailable()
+            ssh = j.clients.ssh.SSHAgentAvailable()
         elif ssh or ssh is False:
             pass
         else:
@@ -318,17 +323,17 @@ class GitFactory:
             if url.find("http") != -1:
                 if branch is not None:
                     cmd = "mkdir -p %s;cd %s;git -c http.sslVerify=false clone %s -b %s %s %s" % (
-                        self.getParent(dest), self.getParent(dest), extra, branch, url, dest)
+                        j.sal.fs.getParent(dest), j.sal.fs.getParent(dest), extra, branch, url, dest)
                 else:
                     cmd = "mkdir -p %s;cd %s;git -c http.sslVerify=false clone %s  %s %s" % (
-                        self.getParent(dest), self.getParent(dest), extra, url, dest)
+                        j.sal.fs.getParent(dest), j.sal.fs.getParent(dest), extra, url, dest)
             else:
                 if branch is not None:
                     cmd = "mkdir -p %s;cd %s;git clone %s -b %s %s %s" % (
-                        self.getParent(dest), self.getParent(dest), extra, branch, url, dest)
+                        j.sal.fs.getParent(dest), j.sal.fs.getParent(dest), extra, branch, url, dest)
                 else:
                     cmd = "mkdir -p %s;cd %s;git clone %s  %s %s" % (
-                        self.getParent(dest), self.getParent(dest), extra, url, dest)
+                        j.sal.fs.getParent(dest), j.sal.fs.getParent(dest), extra, url, dest)
 
             self.logger.info(cmd)
 

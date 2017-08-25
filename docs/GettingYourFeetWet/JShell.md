@@ -7,7 +7,7 @@ In order to start the JumpScale interactive shell type `js` at the command line.
 Everything after `js` will be evaluated in the JumpScale interactive shell session:
 
 ```python
-js 'j.do._loadSSHAgent()'
+js 'j.clients.ssh.loadSSHAgent()'
 ```
 
 ```

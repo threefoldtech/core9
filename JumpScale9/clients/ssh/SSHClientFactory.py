@@ -1,5 +1,6 @@
 from js9 import j
 
+import os
 import threading
 from .SSHClient import SSHClient
 from .AsyncSSHClient import AsyncSSHClient
@@ -16,6 +17,7 @@ class SSHClientFactory:
     def __init__(self):
         self.__jslocation__ = "j.clients.ssh"
         self.__imports__ = "paramiko,asyncssh"
+        self.loadSSHAgent = self._loadSSHAgent
 
     def reset(self):
         with self._lock:
@@ -142,10 +144,10 @@ class SSHClientFactory:
     def _addSSHAgentToBashProfile(self, path=None):
 
         bashprofile_path = os.path.expanduser("~/.bash_profile")
-        if not self.exists(bashprofile_path):
+        if not j.sal.fs.exists(bashprofile_path):
             self.execute('touch %s' % bashprofile_path)
 
-        content = self.readFile(bashprofile_path)
+        content = j.sal.fs.readFile(bashprofile_path)
         out = ""
         for line in content.split("\n"):
             if line.find("#JSSSHAGENT") != -1:
@@ -157,14 +159,13 @@ class SSHClientFactory:
 
         if "SSH_AUTH_SOCK" in os.environ:
             self.logger.info("NO NEED TO ADD SSH_AUTH_SOCK to env")
-            self.writeFile(bashprofile_path, out)
+            j.sal.fs.writeFile(bashprofile_path, out)
             return
 
-        # out += "\njs 'j.do._.loadSSHAgent()' #JSSSHAGENT\n"
         out += "export SSH_AUTH_SOCK=%s" % self._getSSHSocketpath()
         out = out.replace("\n\n\n", "\n\n")
         out = out.replace("\n\n\n", "\n\n")
-        self.writeFile(bashprofile_path, out)
+        j.sal.fs.writeFile(bashprofile_path, out)
 
     def _initSSH_ENV(self, force=False):
         if force or "SSH_AUTH_SOCK" not in os.environ:
@@ -200,9 +201,9 @@ class SSHClientFactory:
         self.executeInteractive(cmd)
 
     def SSHAgentCheckKeyIsLoaded(self, keyNamePath):
-        keysloaded = [self.getBaseName(item)
+        keysloaded = [j.sal.fs.getBaseName(item)
                       for item in self.SSHKeysListFromAgent()]
-        if self.getBaseName(keyNamePath) in keysloaded:
+        if j.sal.fs.getBaseName(keyNamePath) in keysloaded:
             self.logger.info("ssh key:%s loaded" % keyNamePath)
             return True
         else:
@@ -251,19 +252,19 @@ class SSHClientFactory:
 
         self._loadSSHAgent()
 
-        keysloaded = [self.getBaseName(item)
+        keysloaded = [j.sal.fs.getBaseName(item)
                       for item in self.SSHKeysListFromAgent()]
 
         if self.isDir(path):
-            keysinfs = [self.getBaseName(item).replace(".pub", "") for item in self.listFilesInDir(
-                path, filter="*.pub") if self.exists(item.replace(".pub", ""))]
+            keysinfs = [j.sal.fs.getBaseName(item).replace(".pub", "") for item in self.listFilesInDir(
+                path, filter="*.pub") if j.sal.fs.exists(item.replace(".pub", ""))]
             keysinfs = [item for item in keysinfs if item not in keysloaded]
 
             res = self.askItemsFromList(
                 keysinfs,
                 "select ssh keys to load, use comma separated list e.g. 1,4,3 and press enter.")
         else:
-            res = [self.getBaseName(path).replace(".pub", "")]
+            res = [j.sal.fs.getBaseName(path).replace(".pub", "")]
             path = self.getParent(path)
 
         for item in res:
@@ -287,8 +288,8 @@ class SSHClientFactory:
                 line = line.strip()
                 keypath = line.split(" ".encode())[-1]
                 content = line.split(" ".encode())[-2]
-                if not self.exists(path=keypath):
-                    if self.exists("keys/%s" % keyname):
+                if not j.sal.fs.exists(path=keypath):
+                    if j.sal.fs.exists("keys/%s" % keyname):
                         keypath = "keys/%s" % keyname
                     else:
                         raise RuntimeError(
@@ -340,15 +341,15 @@ class SSHClientFactory:
             return list(map(lambda key: key[2], keys))
 
     def SSHEnsureKeyname(self, keyname="", username="root"):
-        if not self.exists(keyname):
+        if not j.sal.fs.exists(keyname):
             rootpath = "/root/.ssh/" if username == "root" else "/home/%s/.ssh/"
             fullpath = self.joinPaths(rootpath, keyname)
-            if self.exists(fullpath):
+            if j.sal.fs.exists(fullpath):
                 return fullpath
         return keyname
 
     def authorize_user(self, sftp_client, ip_address, keyname, username):
-        basename = self.getBaseName(keyname)
+        basename = j.sal.fs.getBaseName(keyname)
         tmpfile = "/home/%s/.ssh/%s" % (username, basename)
         self.logger.info("push key to /home/%s/.ssh/%s" % (username, basename))
         sftp_client.put(keyname, tmpfile)
@@ -375,18 +376,18 @@ class SSHClientFactory:
                     sftp_client.get(auth_key_path, tmppath)
                 except Exception as e:
                     if str(e).find("No such file") != -1:
-                        self.writeFile(tmppath, "")
+                        j.sal.fs.writeFile(tmppath, "")
                     else:
                         raise RuntimeError(
                             "Could not get authorized key,%s" % e)
 
-            C = self.readFile(tmppath)
-            Cnew = self.readFile(keyname)
+            C = j.sal.fs.readFile(tmppath)
+            Cnew = j.sal.fs.readFile(keyname)
             key = Cnew.split(" ")[1]
             if C.find(key) == -1:
                 C2 = "%s\n%s\n" % (C.strip(), Cnew)
                 C2 = C2.strip() + "\n"
-                self.writeFile(tmppath, C2)
+                j.sal.fs.writeFile(tmppath, C2)
                 self.logger.info("sshauthorized adjusted")
                 sftp_client.put(tmppath, auth_key_path)
             else:
@@ -414,7 +415,7 @@ class SSHClientFactory:
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.logger.info("ssh connect:%s %s" % (remoteipaddr, login))
 
-        if not self.SSHKeysListFromAgent(self.getBaseName(keyname)):
+        if not self.SSHKeysListFromAgent(j.sal.fs.getBaseName(keyname)):
             self.SSHKeysLoad(self.getParent(keyname))
         ssh.connect(
             remoteipaddr,
@@ -437,6 +438,8 @@ class SSHClientFactory:
                 sftp_client=ftp,
                 ip_address=remoteipaddr,
                 keyname=keyname)
+
+
 
     def _loadSSHAgent(self, path=None, createkeys=False, killfirst=False):
         """
@@ -461,7 +464,7 @@ class SSHClientFactory:
         if len(res) > 1:
             self.logger.info("more than 1 ssh-agent, will kill all")
             killfirst = True
-        if len(res) == 0 and self.exists(socketpath):
+        if len(res) == 0 and j.sal.fs.exists(socketpath):
             self.delete(socketpath)
 
         if killfirst:
@@ -472,7 +475,7 @@ class SSHClientFactory:
             self.delete(socketpath)
             self.delete(self.joinPaths('/tmp', "ssh-agent-pid"))
 
-        if not self.exists(socketpath):
+        if not j.sal.fs.exists(socketpath):
             self.createDir(self.getParent(socketpath))
             # ssh-agent not loaded
             self.logger.info("load ssh agent")
@@ -487,7 +490,7 @@ class SSHClientFactory:
                     (result, err))
             else:
                 # get pid from result of ssh-agent being started
-                if not self.exists(socketpath):
+                if not j.sal.fs.exists(socketpath):
                     raise RuntimeError(
                         "Serious bug, ssh-agent not started while there was no error, should never get here")
                 piditems = [item for item in result.split(
@@ -500,7 +503,7 @@ class SSHClientFactory:
                     raise RuntimeError("Cannot find items in ssh-add -l")
                 self._initSSH_ENV(True)
                 pid = int(piditems[-1].split(" ")[-1].strip("; "))
-                self.writeFile(
+                j.sal.fs.writeFile(
                     self.joinPaths(
                         '/tmp',
                         "ssh-agent-pid"),
@@ -527,7 +530,7 @@ class SSHClientFactory:
                     (result, err))
 
     def SSHAgentAvailable(self):
-        if not self.exists(self._getSSHSocketpath()):
+        if not j.sal.fs.exists(self._getSSHSocketpath()):
             return False
         if "SSH_AUTH_SOCK" not in os.environ:
             self._initSSH_ENV(True)
@@ -539,5 +542,3 @@ class SSHClientFactory:
             return False
         else:
             return True
-
-
