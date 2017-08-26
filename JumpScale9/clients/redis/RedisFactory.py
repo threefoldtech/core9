@@ -112,7 +112,7 @@ class RedisFactory:
 
     def kill(self):
         j.sal.process.execute("redis-cli -s %s/redis.sock shutdown" %
-                              j.do.TMPDIR, die=False, showout=False, outputStderr=False)
+                              j.dirs.TMPDIR, die=False, showout=False, outputStderr=False)
         j.sal.process.execute("redis-cli shutdown", die=False, showout=False, outputStderr=False)
         j.do.killall("redis")
 
@@ -128,7 +128,7 @@ class RedisFactory:
             if not j.do.checkInstalled("redis-server"):
                 raise RuntimeError("Cannot find redis-server even after install")
             j.sal.process.execute("redis-cli -s %s/redis.sock shutdown" %
-                                  j.do.TMPDIR, die=False, showout=False, outputStderr=False)
+                                  j.dirs.TMPDIR, die=False, showout=False, outputStderr=False)
             j.sal.process.execute("redis-cli shutdown", die=False, showout=False, outputStderr=False)
         elif j.core.platformtype.myplatform.isLinux:
             if j.core.platformtype.myplatform.isAlpine:

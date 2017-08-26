@@ -1,6 +1,5 @@
 import pytoml
 from JumpScale9 import j
-import os
 import sys
 
 class State():
@@ -18,13 +17,13 @@ class State():
     @property
     def configPath(self):
         if self._configPath==None:
-            if self.executor==None or self.executor==j.tools.executorLocal:
-                if j.sal.fs.exists("/etc/", followlinks=True) and j.core.platformtype.myplatform.isMac==False:
-                    self._configPath= "/etc/jumpscale9.toml"
-                else:
-                    self._configPath= "%s/.jumpscale9.toml"%os.environ["HOME"]
-            else:
+            # if self.executor==j.tools.executorLocal:
+            if self.executor.exists("/etc/") and self.executor.platformtype.isMac==False:
                 self._configPath= "/etc/jumpscale9.toml"
+            else:
+                self._configPath= "%s/.jumpscale9.toml"%self.executor.env["HOME"]
+            # else:
+            #     self._configPath= "/etc/jumpscale9.toml"
         return self._configPath
 
     @property
@@ -43,7 +42,7 @@ class State():
         return self._db
 
     def configLoad(self):
-        if self.executor==None or self.executor==j.tools.executorLocal:            
+        if self.executor==j.tools.executorLocal:            
             if j.sal.fs.exists(self.configPath):
                 table_open_object = open(self.configPath, 'r')
                 self.config = pytoml.load(table_open_object)
@@ -54,7 +53,7 @@ class State():
             if self.executor.exists(self.configPath):
                 cc=self.executor.file_read(self.configPath)
                 self.config = pytoml.loads(cc)
-                print("config load state")
+                # print("config load state")
             else:
                 self.config={}
 
@@ -83,7 +82,7 @@ class State():
             val2 = None
         if val != val2:
             self.config[key] = val
-            print("config set %s:%s" % (key, val))
+            # print("config set %s:%s" % (key, val))
             # print("config changed")
             self._config_changed = True
             if save:
@@ -112,7 +111,7 @@ class State():
         val2[dkey] = dval
 
         self.config[key] = val2
-        print("config set dict %s:%s:%s" % (key, dkey, dval))
+        # print("config set dict %s:%s:%s" % (key, dkey, dval))
         self.configSave()
 
     def configGetFromDict(self, key, dkey, default=None):
@@ -128,6 +127,31 @@ class State():
             raise RuntimeError("Cannot find dkey:%s in state config for dict '%s'" % (dkey, key))
 
         return self.config[key][dkey]
+
+    def configGetFromDictBool(self,key, dkey, default=None):
+        if key not in self.config:
+            self.configSet(key, val={}, save=True)
+
+        if dkey not in self.config[key]:
+            if default is not None:
+                return default
+            raise RuntimeError("Cannot find dkey:%s in state config for dict '%s'" % (dkey, key))
+
+        val=self.config[key][dkey]
+        if val in [1,True] or val.strip().lower() in ["true","1","yes","y"]:
+            return True
+        else:
+            return False
+
+    def configSetInDictBool(self, key, dkey, dval):
+        """
+        will check that the val is a dict, if not set it and put key & val in
+        """
+        if dval in [1,True] or dval.strip().lower() in ["true","1","yes","y"]:
+            dval="1"
+        else:
+            dval="0"
+        return configSetInDict(key, dkey, dval)
 
     def configUpdate(self, ddict, overwrite=True):
         """
@@ -155,7 +179,7 @@ class State():
             raise j.exceptions.Input(
                 message="cannot write config to '%s', because is readonly" %
                 self, level=1, source="", tags="", msgpub="")
-        if self.executor==None or self.executor==j.tools.executorLocal:                    
+        if self.executor==j.tools.executorLocal:                    
             path=self.configPath
             try:
                 table_open_object = open(path, 'w')

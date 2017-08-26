@@ -68,8 +68,10 @@ class Cache:
             time.sleep(2)
             assert c.get("somethingElse", return3, expire=1) == 3  # now needs to be 3
 
+        print("REDIS CACHE TEST")
         c = self.get("test", j.data.kvs.getRedisStore(name='cache', namespace="mycachetest"), expiration=1)
         testAll(c)
+        print("MEM CACHE TEST")
         c = self.get("test", j.data.kvs.getMemoryStore(name='cache', namespace="mycachetest"), expiration=1)
         testAll(c)
         print("TESTOK")

@@ -111,6 +111,8 @@ class PlatformType():
         else:
             self.executor = executor
 
+        print("PLATFORMTYPE:%s"%self.executor)
+
         if name == "":
             self._getPlatform()
 
@@ -133,8 +135,9 @@ class PlatformType():
                 os.environ["LC_ALL"] = 'C.UTF-8'
                 os.environ["TERMINFO"] = 'xterm-256colors'
             self._uname = self._uname.split("\n")[0]
-            self._osname0, self._hostname0, self._osversion, self._cpu, self._platform = self._uname.split(
+            self._osname, self._hostname, self._osversion, self._cpu, self._platform = self._uname.split(
                 " ")
+            self._osname=self._osname.lower()
         return self._uname
 
     @property
@@ -156,6 +159,7 @@ class PlatformType():
 
     @property
     def osversion(self):
+        self.uname
         if self._osversion is None:
             rc, lsbcontent, err = self.executor.execute(
                 "cat /etc/*-release", replaceArgs=False, showout=False, die=False)
@@ -174,27 +178,17 @@ class PlatformType():
 
     @property
     def osname(self):
+        self.uname
         if self._osname is None:
-            if sys.platform.lower().find("darwin") != -1:
-                self._osname = "darwin"
-            else:
-                pkgman2dist = {
-                    'pacman': 'arch', 'apt-get': 'ubuntu', 'yum': 'fedora', 'apk': 'alpine'}
-                for pkgman, dist in pkgman2dist.items():
-                    rc, _, err = self.executor.execute("which %s" % pkgman, showout=False, die=False, checkok=False)
-                    if rc == 0:
-                        self._osname = pkgman2dist[pkgman]
-                        break
-                # if self._osname not in ["darwin"] and not self._osname.startswith("cygwin"):
-                #     # is linux
-                #     if self.exists("/etc/alpine-release"):
-                #         self._osname = "alpine"
-                #         else::
-            #
-                else:
-                    self.uname
-                    self._osname = self._osname0.lower()
-            #
+            print ("WARNING: FALLBACK METHOD FOR OSNAME")
+            pkgman2dist = {
+                'pacman': 'arch', 'apt-get': 'ubuntu', 'yum': 'fedora', 'brew': 'darwin', 'apk': 'alpine'}
+            for pkgman, dist in pkgman2dist.items():
+                rc, _, err = self.executor.execute("which %s" % pkgman, showout=False, die=False, checkok=False)
+                if rc == 0:
+                    self._osname = pkgman2dist[pkgman]
+                    return self._osname
+            raise RuntimeError("could not define osname")                
         return self._osname
 
     def checkMatch(self, match):

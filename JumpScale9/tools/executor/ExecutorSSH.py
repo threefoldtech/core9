@@ -10,11 +10,15 @@ class ExecutorSSH(ExecutorBase):
                  look_for_keys=True, checkok=True, timeout=5,
                  key_filename=None, pubkey=None, passphrase=None):
 
-        ExecutorBase.__init__(self, debug=debug, checkok=checkok)
+        ExecutorBase.__init__(self, debug=debug, checkok=checkok)   
+
 
         self.addr = addr
         self.port = port
         self.type = "ssh"
+
+        self.cache=j.data.cache.get(id="executor:%s"%self.id) 
+        self.cache.reset()            
 
         self._port = int(port)
         self._login = login
@@ -35,6 +39,9 @@ class ExecutorSSH(ExecutorBase):
         self._logger = j.logger.get("executorssh%s" % self.addr)
 
         self.init()
+
+        
+        
 
         self.logger.info("initted.")
 
@@ -107,7 +114,8 @@ class ExecutorSSH(ExecutorBase):
     @property
     def id(self):
         if self._id is None:
-            self._id = '%s_%s' % (self.addr, self.getMacAddr())
+             self._id = '%s:%s' % (self.addr,self.port)
+            # self._id = '%s_%s' % (self.addr, self.getMacAddr())
         return self._id
 
         # TODO: *1 could be this does not work in docker, lets check
@@ -169,57 +177,55 @@ class ExecutorSSH(ExecutorBase):
         self.id = 'jump:%s:%s:%i' % (jumphost, host, port)
         return self
 
-    def jumpto(self, addr='', port=22, dest_prefixes={}, login="root",
-               passwd=None, debug=False, allow_agent=True,
-               look_for_keys=True, checkok=True, timeout=5,
-               identityfile=None):
-        if identityfile is None:
-            raise NotImplementedError("you have to use an identityfile for now")
+    # def jumpto(self, addr='', port=22, dest_prefixes={}, login="root",
+    #            passwd=None, debug=False, allow_agent=True,
+    #            look_for_keys=True, checkok=True, timeout=5,
+    #            identityfile=None):
+    #     if identityfile is None:
+    #         raise NotImplementedError("you have to use an identityfile for now")
 
-        def escape(s):
-            return s.replace("'", "'\"'\"'")
+    #     def escape(s):
+    #         return s.replace("'", "'\"'\"'")
 
-        jumpedto = j.clients.ssh.get(addr=addr, port=port, login=login,
-                                     usecache=False)
-        jmpuser = self._login
-        jumphost = self.addr
-        if self.proxycommand is not None:
-            proxy_part = " -o ProxyCommand='{proxy_command}'".format(
-                proxy_command=escape(self.proxycommand))
-        else:
-            proxy_part = ""
-        proxy_command = "ssh -A -i {identityfile} {old_login}@{old_ip} \
-            -p {old_port} {proxy_part} nc -q0 {ip} {port}".format(
-            ip=addr, port=port, old_port=self.port, old_ip=self.addr,
-            old_login=self.login, identityfile=identityfile,
-            proxy_part=proxy_part)
-        ex = ExecutorSSH(addr=addr, port=port, dest_prefixes=dest_prefixes,
-                         login=login, passwd=passwd, debug=debug, allow_agent=allow_agent,
-                         look_for_keys=look_for_keys, checkok=checkok, timeout=timeout)
-        ex.proxycommand = proxy_command
+    #     jumpedto = j.clients.ssh.get(addr=addr, port=port, login=login,
+    #                                  usecache=False)
+    #     jmpuser = self._login
+    #     jumphost = self.addr
+    #     if self.proxycommand is not None:
+    #         proxy_part = " -o ProxyCommand='{proxy_command}'".format(
+    #             proxy_command=escape(self.proxycommand))
+    #     else:
+    #         proxy_part = ""
+    #     proxy_command = "ssh -A -i {identityfile} {old_login}@{old_ip} \
+    #         -p {old_port} {proxy_part} nc -q0 {ip} {port}".format(
+    #         ip=addr, port=port, old_port=self.port, old_ip=self.addr,
+    #         old_login=self.login, identityfile=identityfile,
+    #         proxy_part=proxy_part)
+    #     ex = ExecutorSSH(addr=addr, port=port, dest_prefixes=dest_prefixes,
+    #                      login=login, passwd=passwd, debug=debug, allow_agent=allow_agent,
+    #                      look_for_keys=look_for_keys, checkok=checkok, timeout=timeout)
+    #     ex.proxycommand = proxy_command
 
-        jumpedto.connectViaProxy(addr, login, port, identityfile, proxy_command)
-        ex._sshclient = jumpedto
-        return ex
+    #     jumpedto.connectViaProxy(addr, login, port, identityfile, proxy_command)
+    #     ex._sshclient = jumpedto
+    #     return ex
 
     def executeRaw(self, cmd, die=True, showout=False):
         return self.sshclient.execute(cmd, die=die, showout=showout)
 
-    def execute(self, cmds, die=True, checkok=False, showout=True, timeout=0, env={}):
+    def execute(self, cmds, die=True, checkok=False, showout=True, timeout=0, env={},asScript=False):
         """
         return (rc,out,err)
         """
+
         env2 = {}
         if env:
             env2 = self.env.copy()
             env2.update(env)
 
-        if checkok is None:
-            checkok = self.checkok
-
         cmds2 = self._transformCmds(cmds, die, checkok=checkok, env=env2)
 
-        if cmds.find("\n") != -1:
+        if cmds.find("\n") != -1 and asScript:
             if showout:
                 self.logger.info("EXECUTESCRIPT} %s:%s:\n%s" % (self.addr, self.port, cmds))
             # sshkey = self.sshclient.key_filename or ""
@@ -277,7 +283,8 @@ class ExecutorSSH(ExecutorBase):
 
         return rc, out, err
 
-    def upload(self, source, dest, dest_prefix="", recursive=True, createdir=True):
+    def upload(self, source, dest, dest_prefix="", recursive=True, createdir=True,\
+            rsyncdelete=True,ignoredir=['.egg-info','.dist-info','__pycache__',".git"],keepsymlinks=False):
 
         if dest_prefix != "":
             dest = j.sal.fs.joinPaths(dest_prefix, dest)
@@ -287,18 +294,18 @@ class ExecutorSSH(ExecutorBase):
         j.sal.fs.copyDirTree(
             source,
             dest,
-            keepsymlinks=True,
+            keepsymlinks=keepsymlinks,
             deletefirst=False,
             overwriteFiles=True,
-            ignoredir=[
-                ".egg-info",
-                ".dist-info"],
+            ignoredir=ignoredir,
             ignorefiles=[".egg-info"],
             rsync=True,
             ssh=True,
             sshport=self.port,
             recursive=recursive,
-            createdir=createdir)
+            createdir=createdir,
+            rsyncdelete=rsyncdelete)
+        self.cache.reset()            
 
     def download(self, source, dest, source_prefix="", recursive=True):
         if source_prefix != "":
@@ -319,7 +326,7 @@ class ExecutorSSH(ExecutorBase):
             rsync=True,
             ssh=True,
             sshport=self.port,
-            recursive=recursive)
+            recursive=recursive)      
 
     def __repr__(self):
         return ("Executor ssh: %s (%s)" % (self.addr, self.port))

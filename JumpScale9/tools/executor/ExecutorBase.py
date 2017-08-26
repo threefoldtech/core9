@@ -5,12 +5,15 @@ except ImportError:
     import json
 
 import pytoml
-import os
 import pystache
+import hashlib
+import base64
 
 class ExecutorBase:
 
     def __init__(self, debug=False, checkok=True):
+
+        # print ("*****************")
 
         self.debug=debug
         self.checkok = checkok
@@ -40,49 +43,8 @@ class ExecutorBase:
     @property
     def id(self):
         if self._id is None:
-            raise j.exceptions.Input(message="self._id cannot be None", level=1, source="", tags="", msgpub="")
+            raise RuntimeError("self._id cannot be None")
         return self._id
-
-    # @property
-    # def config(self):
-    #     """
-    #     is dict which is stored on node itself in json format in /tmp/jsself.json
-    #     """
-
-    #     if "CFGDIR" not in self.env:
-    #         T=j.do.getDirPathConfig(self)
-    #         T=T.replace("//", "/")
-    #         DIRPATHS = pytoml.loads(T)
-
-    #         config=""
-    #         for key,val in DIRPATHS.items():
-    #             config+="export %s=%s\n"%(key,val)
-
-    #     print (22222222)
-    #     from IPython import embed;embed(colors='Linux')
-
-    #     if "DEBUG" in env and str(env["DEBUG"]).lower() in ["true", "1", "yes"]:
-    #         env["DEBUG"] = "1"
-    #     else:
-    #         env["DEBUG"] = "0"
-
-    #     if "READONLY" in env and str(env["READONLY"]).lower() in ["true", "1", "yes"]:
-    #         env["READONLY"] = "1"
-    #         self.readonly = True
-    #     else:
-    #         env["READONLY"] = "0"
-    #         self.readonly = False
-
-
-    #     if self._config is None:
-    #         if self.exists("$VARDIR/jsself.json") == False:
-    #             self._config = {}
-    #         else:
-    #             data = self.prefab.core.file_read("$VARDIR/jsself.json")
-    #             self._config = json.loads(data)
-
-    #     return self._config
-
 
 
     @property
@@ -104,7 +66,7 @@ class ExecutorBase:
         out = out.rstrip("\n")
         lastline = out.split("\n")[-1]
         if lastline.find("**OK**") == -1:
-            raise j.exceptions.RuntimeError("Error in:\n%s\n***\n%s" % (cmd, out))
+            raise RuntimeError("Error in:\n%s\n***\n%s" % (cmd, out))
         out = "\n".join(out.split("\n")[:-1]).rstrip() + "\n"
         return out
 
@@ -129,6 +91,10 @@ class ExecutorBase:
         if self.CURDIR != "":
             pre += "cd %s\n" % (self.CURDIR)
 
+        if env!={}:
+            for key,val in env.items():
+                pre+="%s=%s%s"%(key,val,separator)
+
         cmds = "%s\n%s" % (pre, cmds)
 
         if checkok:
@@ -152,11 +118,15 @@ class ExecutorBase:
     #     return self._prefab
 
     def exists(self, path):
-        rc,_,_=self.execute('test -e %s'%path,die=False,showout=False)
-        if rc>0:
-            return False
-        else:
-            return True
+        if path=="/env.sh":
+            raise RuntimeError("SS")
+        def check():
+            rc,_,_=self.execute('test -e %s'%path,die=False,showout=False)
+            if rc>0:
+                return False
+            else:
+                return True
+        return self.cache.get("exists:%s"%path, check)
 
     def configSave(self):
         """
@@ -190,6 +160,7 @@ class ExecutorBase:
     def enableDebug(self):
         self.config["system"]["debug"] = value
         self.state.configSave()
+        self.cache.reset()
 
     def _getDirPathConfig(self):
 
@@ -241,7 +212,7 @@ class ExecutorBase:
         return self._replaceInToml(TXT)
 
     def _replaceInToml(self,T):
-        T=T.replace("~", os.environ["HOME"])
+        T=T.replace("~", self.env["HOME"])
         # will replace  variables in itself
         counter = 0
         while "{{" in T and counter < 10:
@@ -260,6 +231,11 @@ class ExecutorBase:
         """
         init the environment of an executor
         """
+
+        from IPython import embed;embed(colors='Linux')
+        l
+
+        self.reset()
 
         T=self._getDirPathConfig()
         T=T.replace("//", "/")
@@ -322,21 +298,15 @@ class ExecutorBase:
         TT["dirs"]=DIRPATHS
 
         TT["system"]["container"] = self.exists("/root/.iscontainer")
-
-        if "plugins" not in TT.keys():
-            TT["plugins"]={"core9":"%s/github/jumpscale/core9/" % DIRPATHS["CODEDIR"]}
-
-        if not self.exists(TT["plugins"]["core9"]):
-            raise RuntimeError("cannot find codedir for jumpscale9: %s"%(TT["plugins"]["core9"]))
+        
+        if self.exists("%s/github/jumpscale/core9/" % DIRPATHS["CODEDIR"]):
+            if "plugins" not in TT.keys():
+                TT["plugins"]={"core9":"%s/github/jumpscale/core9/" % DIRPATHS["CODEDIR"]}
 
         if TT["system"]["container"] == True:
             self.state.configUpdate(TT, True)  # will overwrite
         else:
             self.state.configUpdate(TT, False)  # will not overwrite
-
-
-        if not self.exists(j.core.state.config["dirs"]["CODEDIR"]):
-            raise RuntimeError("cannot find codedir: %s"%j.core.state.config["dirs"]["CODEDIR"])
 
         for key, val in DIRPATHS.items():
             if not self.exists(val):
@@ -355,8 +325,15 @@ class ExecutorBase:
 
         self.state.configSave()
 
+        self.reset()        
+        self.cache.reset()
+
+        print ("initenv done on executor base")
+
     @property
     def dir_paths(self):
+        if "dirs" not in self.config:
+            self.initEnv()
         return self.config["dirs"]
 
 
@@ -367,14 +344,90 @@ class ExecutorBase:
     def file_read(self,path):
         rc, out, err=self.execute("cat %s"%path,showout=False)
         return out
-        # source=j.sal.fs.getTmpFilePath()
-        # self.download(path,source)
-        # content=j.sal.fs.readFile(source)
-        # j.sal.fs.remove(source)
-        # return content
 
-    def file_write(self,path,content):
-        source=j.sal.fs.getTmpFilePath()
-        j.sal.fs.writeFile(source,content)
-        self.upload(source, path)
-        j.sal.fs.remove(source)
+    def file_write(self, path, content, mode=None, owner=None, group=None, append=False):
+        """
+        @param append if append then will add to file
+
+        if file bigger than 100k it will not set the attributes!
+
+        """
+
+        # if sig != self.file_md5(location):
+        # cmd = 'set -ex && echo "%s" | openssl base64 -A -d > %s' % (content_base64, location)
+
+        if len(content) > 100000:
+            # when contents are too big, bash will crash
+            temp = j.sal.fs.getTempFileName()
+            j.sal.fs.writeFile(filename=temp, contents=content, append=False)
+            self.upload(temp, path)
+            j.sal.fs.remove(temp)
+        else:
+            content2=content.encode('utf-8')
+            # sig = hashlib.md5(content2).hexdigest()
+            cmd="set -e\n"
+            parent=j.sal.fs.getParent(path)
+            cmd+="mkdir -p %s\n"%parent
+            
+            content_base64 = base64.b64encode(content2).decode()
+            if self.platformtype.isMac:
+                cmd += 'echo "%s" | openssl base64 -D '%content_base64
+            else:
+                cmd += 'echo "%s" | openssl base64 -A -d '%content_base64
+            if append:
+                cmd+=">> %s\n"%path
+            else:
+                cmd+="> %s\n"%path
+
+            if mode:
+                cmd+='chmod %s %s\n' % ( mode, path)
+            if owner:
+                cmd+='chown %s %s\n' % ( owner, path)
+            if group:
+                cmd+='chgrp %s %s\n' % ( group, path)
+
+            # if sig != self.file_md5(location):
+
+            # print(cmd)
+            res = self.execute(cmd)
+
+        self.cache.reset()
+
+
+    def test(self):
+
+        #test that it does not do repeating thing & cache works
+        for i in range(1000):
+            ptype=self.platformtype
+
+        for i in range(1000):
+            env=self.env
+
+        prev=None
+        for i in range(10000):
+            tmp=self.exists("/tmp")
+            if prev!=None:
+                assert prev==tmp
+            prev=tmp
+
+        content=""
+        for i in range (10):
+            content+="abcdefg hijklmn %s\n"%i
+
+        contentbig=""
+        for i in range (20000):
+            contentbig+="abcdefg hijklmn %s\n"%i
+
+        tmpfile=self.dir_paths["TMPDIR"]+"/testfile"
+
+        self.file_write(tmpfile, content, append=False)
+        content2=self.file_read(tmpfile)
+
+        assert content==content2
+
+        self.file_write(tmpfile, contentbig, append=False)
+        content2=self.file_read(tmpfile)
+
+        assert contentbig==content2
+        
+        print ("TEST for executor done")
