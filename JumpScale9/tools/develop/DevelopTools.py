@@ -62,7 +62,7 @@ class DevelopToolsFactory:
         """
         look for changes in directories which are being pushed & if found push to remote nodes
         """
-        # self.sync()
+        self.sync()
         event_handler = MyFileSystemEventHandler()
         observer = Observer()
         codepaths=j.tools.develop.codedirs.getActiveCodeDirs()

@@ -60,7 +60,7 @@ class MyFileSystemEventHandler(FileSystemEventHandler):
                     error=False
 
     def on_moved(self, event):
-        j.tools.develop.syncCode()
+        j.tools.develop.sync()
         self.handler(event, action="delete")
 
     def on_created(self, event):
