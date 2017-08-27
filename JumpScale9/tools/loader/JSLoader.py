@@ -35,7 +35,7 @@ from JumpScale9 import j
 """
 
 #DONT KNOW WHY THIS WAS DONE THIS WAY, because of this the properties where no longer working !
-#WHICH WAS VERY BAD FOR MEM USAGE & LOAD TIME 
+#WHICH WAS VERY BAD FOR MEM USAGE & LOAD TIME
 #THIS WAS A VERY BAD FIX
 
 # GEN = """
@@ -189,10 +189,8 @@ class JSLoader():
         """
         check that there is a hostDir, if so we will generate libs & code for codecompletion
         """
-        if os.path.exists(j.dirs.HOSTDIR) is False:
-            return None
-        else:
-            return j.dirs.HOSTDIR
+        hostdir = os.environ.get('HOSTDIR', j.dirs.HOSTDIR or '/opt')
+        return hostdir
 
     @property
     def initPath(self):
@@ -217,7 +215,7 @@ class JSLoader():
 
     def generate(self):
         """
-        generate's the jumpscale init file: js9 
+        generate's the jumpscale init file: js9
         as well as the one required for code generation
         """
 
@@ -231,7 +229,7 @@ class JSLoader():
             outCC = os.path.join(self.hostDir, "python_libs/js9.py")
         else:
              outCC = os.path.join(j.dirs.BASEDIRJS, "js9_codecompletion.py")
-            
+
 
         out = self.initPath
         print("* js9 path:%s" % out)
@@ -256,7 +254,7 @@ class JSLoader():
                 res.pop(0)
             return "/".join(res)
 
-        
+
         for name, path in j.application.config['plugins'].items():
             if j.sal.fs.exists(path, followlinks=True):
                 moduleList = self.findModules(path=path)
