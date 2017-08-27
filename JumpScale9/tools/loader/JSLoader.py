@@ -34,43 +34,66 @@ os.environ["LC_ALL"]='en_US.UTF-8'
 from JumpScale9 import j
 """
 
+#DONT KNOW WHY THIS WAS DONE THIS WAY, because of this the properties where no longer working !
+#WHICH WAS VERY BAD FOR MEM USAGE & LOAD TIME 
+#THIS WAS A VERY BAD FIX
+
+# GEN = """
+# {{#locationerr}}
+# {{classname}}=JSBase
+# {{/locationerr}}
+
+# class {{jname}}:
+
+#     def __init__(self):
+#         {{#location}}
+#         self._{{name}} = None
+#         {{/location}}
+
+#     {{#location}}
+#     @property
+#     def {{name}}(self):
+#         if self._{{name}} == None:
+#             # print("PROP:{{name}}")
+#             from {{importlocation}} import {{classname}} as {{classname}}
+#             self._{{name}} = {{classname}}()
+#         return self._{{name}}
+
+#     {{/location}}
+
+# # {{jname}}Obj={{jname}}()
+# # r={{jname}}Obj
+
+# {{#location}}
+# if not hasattr(j.{{jname}},"{{name}}"):
+#     # print("propname:{{name}}")
+#     # j.{{jname}}._{{name}} = {{jname}}Obj._{{jname}}__{{name}}
+#     # j.{{jname}}._{{name}} = {{jname}}Obj._{{name}}
+#     # j.{{jname}}.__class__.{{name}} = {{jname}}Obj.__class__.{{name}}
+#     j.{{jname}}._{{name}} = None
+#     j.{{jname}}.__class__.{{name}} = {{jname}}.{{name}}
+# {{/location}}
+
+
+# """
+
 GEN = """
 {{#locationerr}}
 {{classname}}=JSBase
 {{/locationerr}}
-
 class {{jname}}:
-
     def __init__(self):
         {{#location}}
-        self._{{name}} = None
+        self.__{{name}} = None
         {{/location}}
-
     {{#location}}
     @property
     def {{name}}(self):
-        if self._{{name}} == None:
-            # print("PROP:{{name}}")
+        if self.__{{name}} == None:
             from {{importlocation}} import {{classname}} as {{classname}}
-            self._{{name}} = {{classname}}()
-        return self._{{name}}
-
+            self.__{{name}} = {{classname}}()
+        return self.__{{name}}
     {{/location}}
-
-# {{jname}}Obj={{jname}}()
-# r={{jname}}Obj
-
-{{#location}}
-if not hasattr(j.{{jname}},"{{name}}"):
-    # print("propname:{{name}}")
-    # j.{{jname}}._{{name}} = {{jname}}Obj._{{jname}}__{{name}}
-    # j.{{jname}}._{{name}} = {{jname}}Obj._{{name}}
-    # j.{{jname}}.__class__.{{name}} = {{jname}}Obj.__class__.{{name}}
-    j.{{jname}}._{{name}} = None
-    j.{{jname}}.__class__.{{name}} = {{jname}}.{{name}}
-{{/location}}
-
-
 """
 
 
