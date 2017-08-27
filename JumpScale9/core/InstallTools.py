@@ -1193,7 +1193,7 @@ class InstallTools(ExecutorMethods, FSMethods):
     def mascot(self):
         mascotpath = "%s/.mascot.txt" % os.environ["HOME"]
         if not j.sal.fs.exists(mascotpath):
-            print("env has not been installed properly, please follow init instructions on https://github.com/Jumpscale/core9")
+            print("env has not been installed properly (missing mascot), please follow init instructions on https://github.com/Jumpscale/core9")
             sys.exit(1)
         return self.readFile(mascotpath)
 
