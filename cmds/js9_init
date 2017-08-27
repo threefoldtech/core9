@@ -17,6 +17,6 @@ print(j.do.mascot)
 
 j.do.debug = False
 
-j.do.initEnv()
+j.application.reload()
 
-j.tools.jsloader.generateJumpscalePlugins()
+#j.tools.jsloader.generateJumpscalePlugins()

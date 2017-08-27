@@ -162,15 +162,14 @@ class JSLoader():
         return res
 
     @property
-    def gigDir(self):
+    def hostDir(self):
         """
-        check that there is a gig dir, if so we will generate libs & code for codecompletion
+        check that there is a hostDir, if so we will generate libs & code for codecompletion
         """
-        gigdir = os.environ.get('GIGDIR', '/root/gig')
-        if os.path.exists(gigdir) is False:
+        if os.path.exists(j.dirs.HOSTDIR) is False:
             return None
         else:
-            return gigdir
+            return j.dirs.HOSTDIR
 
     @property
     def initPath(self):
@@ -192,15 +191,25 @@ class JSLoader():
             print("WARNING: COULD NOT PIP INSTALL:%s\n\n" % item)
         return rc
 
-    def generate(self, moduleList={}):
+
+    def generate(self):
+        """
+        generate's the jumpscale init file: js9 
+        as well as the one required for code generation
+        """
 
         # outCC = outpath for code completion
         # out = path for core of jumpscale
 
-        if self.gigDir is not None:
-            outCC = os.path.join(self.gigDir, "python_libs/js9.py")
+        j.tools.executorLocal.initEnv() #make sure the jumpscale toml file is set / will also link cmd files to system
+        j.tools.develop.dockerconfig() #make sure required config/sshkeys are made available to docker or installed in docker
+
+        outCC = None
+        if self.hostDir is not None:
+            outCC = os.path.join(self.hostDir, "python_libs/js9.py")
         else:
-            outCC = None
+             outCC = os.path.join(j.dirs.BASEDIRJS, "js9_codecompletion.py")
+            
 
         out = self.initPath
         print("* js9 path:%s" % out)
@@ -225,16 +234,16 @@ class JSLoader():
                 res.pop(0)
             return "/".join(res)
 
-        if moduleList == {}:
-            for name, path in j.application.config['plugins'].items():
-                if j.sal.fs.exists(path, followlinks=True):
-                    moduleList = self.findModules(path=path, moduleList=moduleList)
-                else:
-                    try:
-                        mod_path = importlib.import_module(name).__path__[0]
-                        moduleList = self.findModules(path=mod_path, moduleList=moduleList)
-                    except Exception as e:
-                        pass
+        
+        for name, path in j.application.config['plugins'].items():
+            if j.sal.fs.exists(path, followlinks=True):
+                moduleList = self.findModules(path=path)
+            else:
+                try:
+                    mod_path = importlib.import_module(name).__path__[0]
+                    moduleList = self.findModules(path=mod_path)
+                except Exception as e:
+                    pass
 
         for jlocation, items in moduleList.items():
             if jlocation.strip() in ["", "j"]:
@@ -398,8 +407,8 @@ class JSLoader():
             if item[-1] != "/":
                 item += "/"
 
-            gigdir = os.environ.get('GIGDIR', '/root/gig')
-            mounted_lib = os.path.join(gigdir, 'python_libs')
+            hostDir = os.environ.get('hostDir', '/root/gig')
+            mounted_lib = os.path.join(hostDir, 'python_libs')
 
             if j.sal.fs.exists(item, followlinks=True):
                 j.do.copyTree(item,
@@ -428,8 +437,8 @@ class JSLoader():
             if j.sal.fs.exists(path, followlinks=True):
                 moduleList = self.findModules(path=path, moduleList=moduleList)
                 # link libs to location for hostos
-                if self.gigDir is not None:
-                    mounted_lib_path = os.path.join(self.gigDir, 'python_libs')
+                if self.hostDir is not None:
+                    mounted_lib_path = os.path.join(self.hostDir, 'python_libs')
                     j.do.copyTree(path,
                                   os.path.join(mounted_lib_path, name),
                                   overwriteFiles=True,
@@ -450,6 +459,6 @@ class JSLoader():
 
         # DO NOT AUTOPIP the deps are now installed while installing the libs
         j.application.config["system"]["autopip"] = False
-        j.application.config["system"]["debug"] = True
+        # j.application.config["system"]["debug"] = True
 
-        self.generate(moduleList=moduleList)
+        self.generate()

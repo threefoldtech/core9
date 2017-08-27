@@ -1183,6 +1183,12 @@ class InstallTools(ExecutorMethods, FSMethods):
 
         self.logger = j.logger.get("installtools")
 
+
+    # def linkJSCommandsToSystem(self):
+    #     src = "%s/github/jumpscale/core9/cmds/" % j.core.state.config["dirs"]["CODEDIR"]
+    #     self.symlinkFilesInDir(src, "/usr/local/bin", delete=True, includeDirs=False, makeExecutable=True)
+        
+
     @property
     def mascot(self):
         mascotpath = "%s/.mascot.txt" % os.environ["HOME"]

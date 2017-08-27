@@ -6,6 +6,7 @@ from .MyFileSystemEventHandler import MyFileSystemEventHandler
 from watchdog.observers import Observer
 
 import time
+import pytoml
 
 class DevelopToolsFactory:
 
@@ -17,8 +18,34 @@ class DevelopToolsFactory:
 
     def run(self):
         from .DevelopConfig import ConfigUI
+        self.dockerconfig()
         app = ConfigUI()
         app.run()
+
+    @property
+    def iscontainer(self):
+        return j.sal.fs.exists("%s/.iscontainer"%j.dirs.HOMEDIR)
+
+
+    def dockerconfig(self):
+        if self.iscontainer:
+            cfg=pytoml.loads(j.sal.fs.readFile("/hostcfg/me.toml"))
+            j.core.state.configSet("me",cfg["me"])
+            j.core.state.configSet("email",cfg["email"])            
+        else:
+            cpath=j.dirs.HOMEDIR+"/.cfg/me.toml"
+            if  j.sal.fs.exists(j.dirs.HOMEDIR+"/.cfg"):
+                if not j.sal.fs.exists(cpath):  
+                    cfgnew={}
+                    cfgnew["email"]=j.core.state.config["email"]
+                    cfgnew["me"]=j.core.state.config["me"]
+                    txt=pytoml.dumps(cfgnew,True)                    
+                    j.sal.fs.writeFile(cpath,txt)
+                keyname=j.core.state.config["ssh"]["SSHKEYNAME"]
+                spath=j.dirs.HOMEDIR+"/.ssh/%s.pub"%keyname
+                dpath=j.dirs.HOMEDIR+"/.cfg/ssh_%s.pub"%keyname.lower()
+                if j.sal.fs.exists(spath):
+                    j.sal.fs.copyFile(spath,dpath)
 
     @property
     def codedirs(self):
@@ -92,4 +119,6 @@ class DevelopToolsFactory:
     def test_js9_quick(self):
         j.data.kvs.test()
         j.data.cache.test()
+
+    
         

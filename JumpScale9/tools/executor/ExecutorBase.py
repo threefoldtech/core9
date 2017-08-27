@@ -17,7 +17,7 @@ class ExecutorBase:
 
         self.debug=debug
         self.checkok = checkok
-
+        self._prefab = None
         self.type = None
         self._id = None
         self.readonly = False
@@ -51,7 +51,7 @@ class ExecutorBase:
     def env(self):
         if self._env is None:
             res = {}
-            print("DEBUG: EXECUTOR GET ENV")
+            # print("DEBUG: EXECUTOR GET ENV")
             _, out, _ = self.execute("printenv", showout=False)
             for line in out.splitlines():
                 if '=' in line:
@@ -104,18 +104,17 @@ class ExecutorBase:
 
         return cmds
 
-    #LETS TRY THAT WE SHOULD NOT HAVE TO DO THIS, ITS SAFER, PEOPLE NEED TO GET THEIR PREFAB INSTANCE WHICH WILL THEN SET THE EXECUTOR
-    # @property
-    # def prefab(self):
-    #     if self._prefab is None:
-    #         from js9 import j
-    #         self._prefab = j.tools.prefab.get(self)
-    #         self._prefab.executor = self
-    #         try:
-    #             self._prefab.sshclient = self.sshclient
-    #         except BaseException:
-    #             pass
-    #     return self._prefab
+    @property
+    def prefab(self):
+        if self._prefab is None:
+            # from js9 import j
+            self._prefab = j.tools.prefab.get(self)
+            # self._prefab.executor = self
+            # try:
+            #     self._prefab.sshclient = self.sshclient
+            # except BaseException:
+            #     pass
+        return self._prefab
 
     def exists(self, path):
         if path=="/env.sh":
@@ -199,6 +198,8 @@ class ExecutorBase:
         HOMEDIR = "~"
         TMPDIR = "/tmp"
         BASEDIRJS = "{{BASEDIR}}/jumpscale9"
+        JSAPPSDIR= "{{BASEDIRJS}}/app"
+        TEMPLATEDIR ="{{VARDIR}}/templates""
         DATADIR = "{{VARDIR}}/data"
         BUILDDIR = "{{VARDIR}}/build"
         LIBDIR = "{{BASEDIR}}/lib/"
@@ -231,9 +232,6 @@ class ExecutorBase:
         """
         init the environment of an executor
         """
-
-        from IPython import embed;embed(colors='Linux')
-        l
 
         self.reset()
 

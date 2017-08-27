@@ -96,6 +96,3 @@ class ExecutorLocal(ExecutorBase):
     def file_read(self,path):
         return j.sal.fs.readFile(path)
 
-    def file_write(self,path,content):
-        self.cache.reset()
-        return j.sal.fs.writeFile(path,content)

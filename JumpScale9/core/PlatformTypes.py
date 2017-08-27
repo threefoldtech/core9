@@ -111,7 +111,7 @@ class PlatformType():
         else:
             self.executor = executor
 
-        print("PLATFORMTYPE:%s"%self.executor)
+        # print("PLATFORMTYPE:%s"%self.executor)
 
         if name == "":
             self._getPlatform()
@@ -178,17 +178,14 @@ class PlatformType():
 
     @property
     def osname(self):
-        self.uname
-        if self._osname is None:
-            print ("WARNING: FALLBACK METHOD FOR OSNAME")
-            pkgman2dist = {
-                'pacman': 'arch', 'apt-get': 'ubuntu', 'yum': 'fedora', 'brew': 'darwin', 'apk': 'alpine'}
-            for pkgman, dist in pkgman2dist.items():
-                rc, _, err = self.executor.execute("which %s" % pkgman, showout=False, die=False, checkok=False)
-                if rc == 0:
-                    self._osname = pkgman2dist[pkgman]
-                    return self._osname
-            raise RuntimeError("could not define osname")                
+        pkgman2dist = {
+             'apt-get': 'ubuntu', 'brew': 'darwin','yum': 'fedora', 'apk': 'alpine','pacman': 'arch',}
+        for pkgman, dist in pkgman2dist.items():
+            rc, _, err = self.executor.execute("which %s" % pkgman, showout=False, die=False, checkok=False)
+            if rc == 0:
+                self._osname = pkgman2dist[pkgman]
+                return self._osname
+        raise RuntimeError("could not define osname")                
         return self._osname
 
     def checkMatch(self, match):
