@@ -36,65 +36,65 @@ from JumpScale9 import j
 
 #DONT KNOW WHY THIS WAS DONE THIS WAY, because of this the properties where no longer working !
 #WHICH WAS VERY BAD FOR MEM USAGE & LOAD TIME 
-#THIS WAS A VERY BAD FIX
-
-# GEN = """
-# {{#locationerr}}
-# {{classname}}=JSBase
-# {{/locationerr}}
-
-# class {{jname}}:
-
-#     def __init__(self):
-#         {{#location}}
-#         self._{{name}} = None
-#         {{/location}}
-
-#     {{#location}}
-#     @property
-#     def {{name}}(self):
-#         if self._{{name}} == None:
-#             # print("PROP:{{name}}")
-#             from {{importlocation}} import {{classname}} as {{classname}}
-#             self._{{name}} = {{classname}}()
-#         return self._{{name}}
-
-#     {{/location}}
-
-# # {{jname}}Obj={{jname}}()
-# # r={{jname}}Obj
-
-# {{#location}}
-# if not hasattr(j.{{jname}},"{{name}}"):
-#     # print("propname:{{name}}")
-#     # j.{{jname}}._{{name}} = {{jname}}Obj._{{jname}}__{{name}}
-#     # j.{{jname}}._{{name}} = {{jname}}Obj._{{name}}
-#     # j.{{jname}}.__class__.{{name}} = {{jname}}Obj.__class__.{{name}}
-#     j.{{jname}}._{{name}} = None
-#     j.{{jname}}.__class__.{{name}} = {{jname}}.{{name}}
-# {{/location}}
-
-
-# """
+#THIS WAS A BAD FIX
 
 GEN = """
 {{#locationerr}}
 {{classname}}=JSBase
 {{/locationerr}}
+
 class {{jname}}:
+
     def __init__(self):
         {{#location}}
-        self.__{{name}} = None
+        self._{{name}} = None
         {{/location}}
+
     {{#location}}
     @property
     def {{name}}(self):
-        if self.__{{name}} == None:
+        if self._{{name}} == None:
+            print("PROP:{{name}}")
             from {{importlocation}} import {{classname}} as {{classname}}
-            self.__{{name}} = {{classname}}()
-        return self.__{{name}}
+            self._{{name}} = {{classname}}()
+        return self._{{name}}
+
     {{/location}}
-"""
+
+{{jname}}Obj={{jname}}()
+r={{jname}}Obj
+
+{{#location}}
+if not hasattr(j.{{jname}},"{{name}}"):
+    # print("propname:{{name}}")
+    # j.{{jname}}._{{name}} = {{jname}}Obj._{{jname}}__{{name}}
+    j.{{jname}}._{{name}} = {{jname}}Obj._{{name}}
+    j.{{jname}}.__class__.{{name}} = {{jname}}Obj.__class__.{{name}}
+    # j.{{jname}}._{{name}} = None
+    # j.{{jname}}.__class__.{{name}} = {{jname}}.__class__.{{name}}
+{{/location}}
+
+
+ """
+
+# GEN = """
+# {{#locationerr}}
+# {{classname}}=JSBase
+# {{/locationerr}}
+# class {{jname}}:
+#     def __init__(self):
+#         {{#location}}
+#         self.__{{name}} = None
+#         {{/location}}
+#     {{#location}}
+#     @property
+#     def {{name}}(self):
+#         if self.__{{name}} == None:
+#             from {{importlocation}} import {{classname}} as {{classname}}
+#             self.__{{name}} = {{classname}}()
+#         return self.__{{name}}
+#     {{/location}}
+# """
 
 
 GEN2 = """
@@ -161,7 +161,7 @@ class JSLoader():
 
     @property
     def autopip(self):
-        return j.application.config["system"].get("autopip") is True
+        return j.core.state.config["system"]["autopip"] is in [True,"true","1",1]
 
     def _installDevelopmentEnv(self):
         cmd = "apt-get install python3-dev libssl-dev -y"
@@ -220,7 +220,6 @@ class JSLoader():
         generate's the jumpscale init file: js9 
         as well as the one required for code generation
         """
-
         # outCC = outpath for code completion
         # out = path for core of jumpscale
 
@@ -256,73 +255,84 @@ class JSLoader():
                 res.pop(0)
             return "/".join(res)
 
-        
+        moduleList={}
         for name, path in j.application.config['plugins'].items():
             if j.sal.fs.exists(path, followlinks=True):
-                moduleList = self.findModules(path=path)
+                moduleList = self.findModules(path=path,moduleList=moduleList)
             else:
-                try:
-                    mod_path = importlib.import_module(name).__path__[0]
-                    moduleList = self.findModules(path=mod_path)
-                except Exception as e:
-                    pass
+                raise RuntimeError("Could not find plugin dir:%s"%path)
+                # try:
+                #     mod_path = importlib.import_module(name).__path__[0]
+                #     moduleList = self.findModules(path=mod_path)
+                # except Exception as e:
+                #     pass
 
-        for jlocation, items in moduleList.items():
-            if jlocation.strip() in ["", "j"]:
-                continue
-            res2 = {}
-            res2["location"] = []
-            res2["locationerr"] = []
-            jname = jlocation.split(".")[1]
-            res2["jname"] = jname
-            toadd = {"name": jname}
-            if toadd not in jlocations["locations"]:
-                jlocations["locations"].append(toadd)
-            res2["jlocation"] = jlocation
 
-            for classfile, classname, item, importItems in items:
-                res3 = {}
-                res3["classname"] = classname
-                res3["name"] = item
-                importlocation = removeDirPart(classfile)[:-3].replace("//", "/").replace("/", ".")
-                res3["importlocation"] = importlocation
 
-                try:
-                    exec("from %s import %s" % (importlocation, classname))
-                    res2["location"].append(res3)
-                except ImportError as e:
-                    print("\n\nCOULD NOT IMPORT:%s (%s)\n" % (importlocation, classname))
-                    print("import error:\n%s\n" % e)
-                    if importItems == []:
+        for jlocationRoot, jlocationRootDict in moduleList.items():
+            for jlocationSub, jlocationSubList in jlocationRootDict.items():
+
+                if not jlocationRoot.startswith("j."):
+                    raise RuntimeError()
+                jname = jlocationRoot.split(".")[1]
+
+                import pudb; pudb.set_trace()
+
+                res2 = {}
+                res2["location"] = []
+                res2["locationerr"] = []   
+                res2["jname"] = jname                                   #only name under j e.g. tools
+                res2["jlocation"] = "%s.%s"%(jlocationRoot,jlocationSub) #full location e.g. j.tools.develop
+
+                toadd = {"name": jname}
+                if toadd not in jlocations["locations"]:
+                    jlocations["locations"].append(toadd)
+                
+
+                for classfile, classname, importItems in jlocationSubList:
+
+                    res3 = {}
+                    res3["classname"] = classname
+                    res3["name"] = jlocationSub
+                    importlocation = removeDirPart(classfile)[:-3].replace("//", "/").replace("/", ".")
+                    res3["importlocation"] = importlocation
+
+                    try:
                         exec("from %s import %s" % (importlocation, classname))
-                    else:
-                        if not self.autopip:
-                            continue
+                        res2["location"].append(res3)
+                    except ImportError as e:
+                        print("\n\nCOULD NOT IMPORT:%s (%s)\n" % (importlocation, classname))
+                        print("import error:\n%s\n" % e)
+                        if importItems == []:
+                            exec("from %s import %s" % (importlocation, classname))
+                        else:
+                            if not self.autopip:
+                                continue
 
-                        if j.application.config['system']['debug']:
-                            pip_installed = self._pip_installed()
-                            for item in importItems:
-                                if item not in pip_installed:
-                                    rc = self._pip(item)
-                                    if rc > 0:
-                                        if res3 not in res2["locationerr"]:
-                                            res2["locationerr"].append(res3)
-                                    else:
-                                        print("pip install ok")
-                                        if res3 not in res2["location"]:
-                                            res2["location"].append(res3)
-                            else:
-                                if res3 not in res2["locationerr"]:
-                                    res2["locationerr"].append(res3)
+                            if j.application.config['system']['debug']:
+                                pip_installed = self._pip_installed()
+                                for item in importItems:
+                                    if item not in pip_installed:
+                                        rc = self._pip(item)
+                                        if rc > 0:
+                                            if res3 not in res2["locationerr"]:
+                                                res2["locationerr"].append(res3)
+                                        else:
+                                            print("pip install ok")
+                                            if res3 not in res2["location"]:
+                                                res2["location"].append(res3)
+                                else:
+                                    if res3 not in res2["locationerr"]:
+                                        res2["locationerr"].append(res3)
 
-            content0CC = pystache.render(GEN2, **res2)
-            content0 = pystache.render(GEN, **res2)
-            if len([item for item in content0CC.split("\n") if item.strip() != ""]) > 4:
-                contentCC += content0CC
-            if len([item for item in content0.split("\n") if item.strip() != ""]) > 4:
-                content += content0
+                content0CC = pystache.render(GEN2, **res2)
+                content0 = pystache.render(GEN, **res2)
+                if len([item for item in content0CC.split("\n") if item.strip() != ""]) > 4:
+                    contentCC += content0CC
+                if len([item for item in content0.split("\n") if item.strip() != ""]) > 4:
+                    content += content0
 
-            # print(res2)
+                # print(res2)
 
         contentCC += pystache.render(GEN_END2, **jlocations)
         content += pystache.render(GEN_END, **jlocations)
@@ -342,6 +352,11 @@ class JSLoader():
         return [p['name'] for p in pip_list]
 
     def findJumpscaleLocationsInFile(self, path):
+        """
+        returns:
+            [$classname]["location"] =$location
+            [$classname]["import"] = $importitems
+        """
         res = {}
         C = j.sal.fs.readFile(path)
         classname = None
@@ -371,16 +386,18 @@ class JSLoader():
 
     # import json
 
-    def findModules(self, path="", moduleList={}):
+    def findModules(self, path, moduleList={}):
         """
         walk over code files & find locations for jumpscale modules
 
         return as dict
-        """
-        if path == "":
-            path = j.sal.fs.getParent(j.sal.fs.getDirName(j.sal.fs.getPathOfRunningFunction(j.application.__init__)))
 
-        result = moduleList
+        format
+
+        [$rootlocationname][$locsubname]=(classfile,classname,importItems)
+
+        """
+
 
         self.logger.info("findmodules in %s" % path)
 
@@ -389,11 +406,14 @@ class JSLoader():
             basename = j.do.getBaseName(classfile)
             if basename.startswith("_"):
                 continue
+            if "jsloader" in basename.lower() or "actioncontroller" in basename.lower():
+                continue
             # look for files starting with Capital
             if str(basename[0]) != str(basename[0].upper()):
                 continue
 
             for classname, item in self.findJumpscaleLocationsInFile(classfile).items():
+                #item has "import" & "location" as key in the dict
                 if "location" in item:
                     location = item["location"]
                     if "import" in item:
@@ -401,12 +421,12 @@ class JSLoader():
                     else:
                         importItems = []
 
-                    loc = ".".join(location.split(".")[:-1])
-                    item = location.split(".")[-1]
-                    if loc not in result:
-                        result[loc] = []
-                    result[loc].append((classfile, classname, item, importItems))
-        return result
+                    locRoot = ".".join(location.split(".")[:-1])
+                    locSubName = location.split(".")[-1]
+                    if locRoot not in moduleList:
+                        moduleList[locRoot] = {}
+                    moduleList[locRoot][locSubName]=(classfile,classname,importItems)
+        return moduleList
 
     def removeEggs(self):
         for key, path in j.clients.git.getGitReposListLocal(account="jumpscale").items():
@@ -456,10 +476,8 @@ class JSLoader():
         j.sal.fs.writeFile(filename=os.path.join(mounted_lib, "__init__.py"), contents="")
 
     def generateJumpscalePlugins(self):
-        moduleList = {}
         for name, path in j.application.config['plugins'].items():
             if j.sal.fs.exists(path, followlinks=True):
-                moduleList = self.findModules(path=path, moduleList=moduleList)
                 # link libs to location for hostos
                 if self.hostDir is not None:
                     mounted_lib_path = os.path.join(self.hostDir, 'python_libs')
