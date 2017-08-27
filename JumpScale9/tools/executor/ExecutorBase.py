@@ -296,7 +296,7 @@ class ExecutorBase:
         TT["dirs"]=DIRPATHS
 
         TT["system"]["container"] = self.exists("/root/.iscontainer")
-        
+
         if self.exists("%s/github/jumpscale/core9/" % DIRPATHS["CODEDIR"]):
             if "plugins" not in TT.keys():
                 TT["plugins"]={"JumpScale9":"%s/github/jumpscale/core9/JumpScale9/" % DIRPATHS["CODEDIR"]}
@@ -323,7 +323,7 @@ class ExecutorBase:
 
         self.state.configSave()
 
-        self.reset()        
+        self.reset()
         self.cache.reset()
 
         print ("initenv done on executor base")
@@ -366,7 +366,7 @@ class ExecutorBase:
             cmd="set -e\n"
             parent=j.sal.fs.getParent(path)
             cmd+="mkdir -p %s\n"%parent
-            
+
             content_base64 = base64.b64encode(content2).decode()
             if self.platformtype.isMac:
                 cmd += 'echo "%s" | openssl base64 -D '%content_base64
@@ -427,5 +427,5 @@ class ExecutorBase:
         content2=self.file_read(tmpfile)
 
         assert contentbig==content2
-        
+
         print ("TEST for executor done")

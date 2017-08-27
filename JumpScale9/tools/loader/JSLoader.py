@@ -189,8 +189,10 @@ class JSLoader():
         """
         check that there is a hostDir, if so we will generate libs & code for codecompletion
         """
-        hostdir = os.environ.get('HOSTDIR', j.dirs.HOSTDIR or '/opt')
-        return hostdir
+        if os.path.exists(j.dirs.HOSTDIR) is False:
+            return None
+        else:
+            return j.dirs.HOSTDIR
 
     @property
     def initPath(self):
@@ -326,8 +328,7 @@ class JSLoader():
         content += pystache.render(GEN_END, **jlocations)
 
         if outCC is not None:
-            mounted_lib_path = os.path.join(self.hostDir, 'python_libs')
-            j.sal.fs.createDir(mounted_lib_path)
+            j.sal.fs.createDir(j.sal.fs.getParent(outCC))
             j.sal.fs.writeFile(outCC, contentCC)
 
         j.sal.fs.writeFile(out, content)
@@ -429,29 +430,29 @@ class JSLoader():
             if item[-1] != "/":
                 item += "/"
 
-            hostDir = os.environ.get('hostDir', '/root/gig')
-            mounted_lib = os.path.join(hostDir, 'python_libs')
+            if self.hostDir is not None:
+                mounted_lib = os.path.join(hostDir, 'python_libs')
 
-            if j.sal.fs.exists(item, followlinks=True):
-                j.do.copyTree(item,
-                              mounted_lib,
-                              overwriteFiles=True,
-                              ignoredir=['*.egg-info',
-                                         '*.dist-info',
-                                         "*JumpScale*",
-                                         "*Tests*",
-                                         "*tests*"],
+                if j.sal.fs.exists(item, followlinks=True):
+                    j.do.copyTree(item,
+                                  mounted_lib,
+                                  overwriteFiles=True,
+                                  ignoredir=['*.egg-info',
+                                             '*.dist-info',
+                                             "*JumpScale*",
+                                             "*Tests*",
+                                             "*tests*"],
 
-                              ignorefiles=['*.egg-info',
-                                           "*.pyc",
-                                           "*.so",
-                                           ],
-                              rsync=True,
-                              recursive=True,
-                              rsyncdelete=False,
-                              createdir=True)
+                                  ignorefiles=['*.egg-info',
+                                               "*.pyc",
+                                               "*.so",
+                                               ],
+                                  rsync=True,
+                                  recursive=True,
+                                  rsyncdelete=False,
+                                  createdir=True)
 
-        j.sal.fs.writeFile(filename=os.path.join(mounted_lib, "__init__.py"), contents="")
+                j.sal.fs.writeFile(filename=os.path.join(mounted_lib, "__init__.py"), contents="")
 
     def generateJumpscalePlugins(self):
         moduleList = {}
