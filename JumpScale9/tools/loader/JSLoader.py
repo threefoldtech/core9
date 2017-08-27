@@ -202,7 +202,6 @@ class JSLoader():
         # out = path for core of jumpscale
 
         j.tools.executorLocal.initEnv() #make sure the jumpscale toml file is set / will also link cmd files to system
-        j.tools.develop.dockerconfig() #make sure required config/sshkeys are made available to docker or installed in docker
 
         outCC = None
         if self.hostDir is not None:
@@ -456,6 +455,8 @@ class JSLoader():
                                   recursive=True,
                                   rsyncdelete=True,
                                   createdir=True)
+
+                    j.sal.fs.touch( os.path.join(self.hostDir, 'python_libs',"__init__.py"))
 
         # DO NOT AUTOPIP the deps are now installed while installing the libs
         j.application.config["system"]["autopip"] = False

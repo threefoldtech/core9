@@ -19,4 +19,11 @@ j.do.debug = False
 
 j.application.reload()
 
-#j.tools.jsloader.generateJumpscalePlugins()
+j.tools.jsloader.generateJumpscalePlugins()
+
+try:
+    print ("WARNING: dockerconfig was not done")
+    from js9 import j
+    j.tools.develop.dockerconfig() #make sure required config/sshkeys are made available to docker or installed in docker
+except:
+    pass

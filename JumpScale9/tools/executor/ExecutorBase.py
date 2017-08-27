@@ -199,7 +199,7 @@ class ExecutorBase:
         TMPDIR = "/tmp"
         BASEDIRJS = "{{BASEDIR}}/jumpscale9"
         JSAPPSDIR= "{{BASEDIRJS}}/app"
-        TEMPLATEDIR ="{{VARDIR}}/templates""
+        TEMPLATEDIR ="{{VARDIR}}/templates"
         DATADIR = "{{VARDIR}}/data"
         BUILDDIR = "{{VARDIR}}/build"
         LIBDIR = "{{BASEDIR}}/lib/"
@@ -299,7 +299,7 @@ class ExecutorBase:
         
         if self.exists("%s/github/jumpscale/core9/" % DIRPATHS["CODEDIR"]):
             if "plugins" not in TT.keys():
-                TT["plugins"]={"core9":"%s/github/jumpscale/core9/" % DIRPATHS["CODEDIR"]}
+                TT["plugins"]={"JumpScale9":"%s/github/jumpscale/core9/JumpScale9/" % DIRPATHS["CODEDIR"]}
 
         if TT["system"]["container"] == True:
             self.state.configUpdate(TT, True)  # will overwrite
