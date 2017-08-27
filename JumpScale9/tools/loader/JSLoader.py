@@ -305,6 +305,8 @@ class JSLoader():
         content += pystache.render(GEN_END, **jlocations)
 
         if outCC is not None:
+            mounted_lib_path = os.path.join(self.hostDir, 'python_libs')
+            j.sal.fs.createDir(mounted_lib_path)
             j.sal.fs.writeFile(outCC, contentCC)
 
         j.sal.fs.writeFile(out, content)
