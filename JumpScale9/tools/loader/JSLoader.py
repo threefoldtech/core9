@@ -161,7 +161,7 @@ class JSLoader():
 
     @property
     def autopip(self):
-        return j.core.state.config["system"]["autopip"] is in [True,"true","1",1]
+        return j.core.state.config["system"]["autopip"] in [True,"true","1",1]
 
     def _installDevelopmentEnv(self):
         cmd = "apt-get install python3-dev libssl-dev -y"
@@ -213,6 +213,37 @@ class JSLoader():
         if rc > 0:
             print("WARNING: COULD NOT PIP INSTALL:%s\n\n" % item)
         return rc
+
+
+    def autopip():
+        if self.autopip:
+            try:
+                exec("from %s import %s" % (importlocation, classname))
+                res2["location"].append(res3)
+            except ImportError as e:
+                print("\n\nCOULD NOT IMPORT:%s (%s)\n" % (importlocation, classname))
+                print("import error:\n%s\n" % e)
+                if importItems == []:
+                    exec("from %s import %s" % (importlocation, classname))
+                else:
+                    if not self.autopip:
+                        continue
+
+                    if j.application.config['system']['debug']:
+                        pip_installed = self._pip_installed()
+                        for item in importItems:
+                            if item not in pip_installed:
+                                rc = self._pip(item)
+                                if rc > 0:
+                                    if res3 not in res2["locationerr"]:
+                                        res2["locationerr"].append(res3)
+                                else:
+                                    print("pip install ok")
+                                    if res3 not in res2["location"]:
+                                        res2["location"].append(res3)
+                        else:
+                            if res3 not in res2["locationerr"]:
+                                res2["locationerr"].append(res3)        
 
 
     def generate(self):
@@ -297,33 +328,8 @@ class JSLoader():
                     importlocation = removeDirPart(classfile)[:-3].replace("//", "/").replace("/", ".")
                     res3["importlocation"] = importlocation
 
-                    try:
-                        exec("from %s import %s" % (importlocation, classname))
-                        res2["location"].append(res3)
-                    except ImportError as e:
-                        print("\n\nCOULD NOT IMPORT:%s (%s)\n" % (importlocation, classname))
-                        print("import error:\n%s\n" % e)
-                        if importItems == []:
-                            exec("from %s import %s" % (importlocation, classname))
-                        else:
-                            if not self.autopip:
-                                continue
+                    if self.autopip:
 
-                            if j.application.config['system']['debug']:
-                                pip_installed = self._pip_installed()
-                                for item in importItems:
-                                    if item not in pip_installed:
-                                        rc = self._pip(item)
-                                        if rc > 0:
-                                            if res3 not in res2["locationerr"]:
-                                                res2["locationerr"].append(res3)
-                                        else:
-                                            print("pip install ok")
-                                            if res3 not in res2["location"]:
-                                                res2["location"].append(res3)
-                                else:
-                                    if res3 not in res2["locationerr"]:
-                                        res2["locationerr"].append(res3)
 
                 content0CC = pystache.render(GEN2, **res2)
                 content0 = pystache.render(GEN, **res2)
