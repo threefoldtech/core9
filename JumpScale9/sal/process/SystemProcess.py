@@ -658,7 +658,7 @@ class SystemProcess:
         @param min: (int) minimal threads that should run.
         @return True if ok
         """
-        self.logger.info('Checking whether at least %d processes %s are running' % (min, process))
+        self.logger.debug('Checking whether at least %d processes %s are running' % (min, process))
         if j.core.platformtype.myplatform.isUnix:
             pids = self.getProcessPid(process)
             if len(pids) >= min:
