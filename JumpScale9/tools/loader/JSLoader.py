@@ -256,14 +256,14 @@ class JSLoader():
                 res.pop(0)
             return "/".join(res)
 
-
+        moduleList = list()
         for name, path in j.application.config['plugins'].items():
             if j.sal.fs.exists(path, followlinks=True):
-                moduleList = self.findModules(path=path)
+                moduleList.extend(self.findModules(path=path))
             else:
                 try:
                     mod_path = importlib.import_module(name).__path__[0]
-                    moduleList = self.findModules(path=mod_path)
+                    moduleList.extend(self.findModules(path=mod_path))
                 except Exception as e:
                     pass
 
