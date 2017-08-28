@@ -414,7 +414,7 @@ class JSLoader():
 
     def copyPyLibs(self):
         """
-        this looks for python libs (non jumpscale) and copies them to our gig lib dir
+        this looks for python libs (non jumpscale) and copies them to our host lib dir
         which can be use outside of docker for e.g. code completiong
         """
 
