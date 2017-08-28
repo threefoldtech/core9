@@ -256,14 +256,14 @@ class JSLoader():
                 res.pop(0)
             return "/".join(res)
 
-        moduleList = list()
+        moduleList = {}
         for name, path in j.application.config['plugins'].items():
             if j.sal.fs.exists(path, followlinks=True):
-                moduleList.extend(self.findModules(path=path))
+                moduleList.update(self.findModules(path=path))
             else:
                 try:
                     mod_path = importlib.import_module(name).__path__[0]
-                    moduleList.extend(self.findModules(path=mod_path))
+                    moduleList.update(self.findModules(path=mod_path))
                 except Exception as e:
                     pass
 
@@ -370,7 +370,7 @@ class JSLoader():
 
     # import json
 
-    def findModules(self, path="", moduleList={}):
+    def findModules(self, path="", moduleList=None):
         """
         walk over code files & find locations for jumpscale modules
 
@@ -378,6 +378,9 @@ class JSLoader():
         """
         if path == "":
             path = j.sal.fs.getParent(j.sal.fs.getDirName(j.sal.fs.getPathOfRunningFunction(j.application.__init__)))
+
+        if moduleList is None:
+            moduleList = {}
 
         result = moduleList
 
