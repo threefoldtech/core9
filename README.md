@@ -42,3 +42,12 @@ bash install.sh
 
 the default mem usage < 23 MB and lazy loading of the modules.
 
+## autocomplete
+
+in  (ofcourse change yourusername)
+```
+/Users/yourusername/js9host/autocomplete
+```
+
+add this path to your editor
+

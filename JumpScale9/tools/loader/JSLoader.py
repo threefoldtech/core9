@@ -386,6 +386,9 @@ class JSLoader():
         this looks for python libs (non jumpscale) and copies them to our gig lib dir
         which can be use outside of docker for e.g. code completiong
         """
+        if autocompletepath==None:
+            autocompletepath=os.path.join(j.dirs.HOSTDIR,"autocomplete")
+            j.sal.fs.createDir(autocompletepath)
 
         for item in sys.path:
             if item.endswith(".zip"):
@@ -399,12 +402,9 @@ class JSLoader():
             if item[-1] != "/":
                 item += "/"
 
-            hostDir = os.environ.get('hostDir', '/root/gig')
-            mounted_lib = os.path.join(hostDir, 'python_libs')
-
             if j.sal.fs.exists(item, followlinks=True):
                 j.do.copyTree(item,
-                              mounted_lib,
+                              autocompletepath,
                               overwriteFiles=True,
                               ignoredir=['*.egg-info',
                                          '*.dist-info',
@@ -455,7 +455,8 @@ class JSLoader():
                                 rsyncdelete=True,
                                 createdir=True)
 
-                j.sal.fs.touch( os.path.join(j.dirs.HOSTDIR, 'python_libs',"__init__.py"))
+        
+        j.sal.fs.touch( os.path.join(j.dirs.HOSTDIR, 'autocomplete',"__init__.py"))
 
         # DO NOT AUTOPIP the deps are now installed while installing the libs
         j.application.config["system"]["autopip"] = False
