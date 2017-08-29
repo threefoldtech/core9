@@ -12,7 +12,7 @@ class GitFactory:
 
 
     def execute(self, *args, **kwargs):
-        j.do.execute(*args, **kwargs)
+        return j.do.execute(*args, **kwargs)
 
     def rewriteGitRepoUrl(self, url="", login=None, passwd=None, ssh="auto"):
         """
