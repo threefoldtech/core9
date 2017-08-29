@@ -17,10 +17,9 @@
 # install python3.5
 sudo add-apt-repository -y ppa:fkrull/deadsnakes
 sudo apt-get update
-sudo apt-get install python3.5
+sudo apt-get install -y python3.5 python3.5-dev
 sudo rm -f /usr/bin/python3
 sudo ln -s /usr/bin/python3.5 /usr/bin/python3
-sudo apt-get install -y python3.5-dev
 
 export ZUTILSBRANCH=${ZUTILSBRANCH:-fixes}
 
