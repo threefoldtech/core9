@@ -20,7 +20,7 @@ j.do.debug = False
 #make sure we don't do autopip
 j.core.state.configSetInDict('system','autopip',False)
 
-j.tools.jsloader.generateJumpscalePlugins()
+j.tools.jsloader.generate()
 
 #try:
 #print ("WARNING: dockerconfig was not done")

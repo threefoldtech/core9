@@ -167,7 +167,7 @@ class JSLoader():
             return "/".join(res)
 
         classfile, classname, importItems = jlocationSubList
-        
+
         generationParamsSub = {}
         generationParamsSub["classname"] = classname
         generationParamsSub["name"] = jlocationSubName
@@ -203,14 +203,14 @@ class JSLoader():
         #                             generationParams["location"].append(res3)
         #             else:
         #                 if res3 not in generationParams["locationerr"]:
-        #                     generationParams["locationerr"].append(res3) 
-        
+        #                     generationParams["locationerr"].append(res3)
+
         return rc,generationParamsSub
 
 
     def _generate(self):
         """
-        generate's the jumpscale init file: js9 
+        generate's the jumpscale init file: js9
         as well as the one required for code generation
 
         to call:
@@ -223,8 +223,8 @@ class JSLoader():
         j.tools.executorLocal.initEnv() #make sure the jumpscale toml file is set / will also link cmd files to system
 
         outCC = os.path.join(j.dirs.HOSTDIR,"autocomplete","js9.py")
-        outJSON = os.path.join(j.dirs.HOSTDIR,"autocomplete","js9.json")    
-        j.sal.fs.createDir(os.path.join(j.dirs.HOSTDIR,"autocomplete"))        
+        outJSON = os.path.join(j.dirs.HOSTDIR,"autocomplete","js9.json")
+        j.sal.fs.createDir(os.path.join(j.dirs.HOSTDIR,"autocomplete"))
 
         out = self.initPath
         print("* js9 path:%s" % out)
@@ -261,7 +261,7 @@ class JSLoader():
                 raise RuntimeError()
 
             generationParams = {}
-            generationParams["locationsubserror"] = []   
+            generationParams["locationsubserror"] = []
             generationParams["jname"] = jlocationRoot.split(".")[1].strip()                           #only name under j e.g. tools
             generationParams["locationsubs"]=[]
 
@@ -334,7 +334,7 @@ class JSLoader():
 
     # import json
 
-    def findModules(self, path, moduleList={}):
+    def findModules(self, path, moduleList=None):
         """
         walk over code files & find locations for jumpscale modules
 
@@ -345,7 +345,8 @@ class JSLoader():
         [$rootlocationname][$locsubname]=(classfile,classname,importItems)
 
         """
-
+        if moduleList is None:
+            moduleList = {}
 
         self.logger.info("findmodules in %s" % path)
 
@@ -455,7 +456,7 @@ class JSLoader():
                                 rsyncdelete=True,
                                 createdir=True)
 
-        
+
         j.sal.fs.touch( os.path.join(j.dirs.HOSTDIR, 'autocomplete',"__init__.py"))
 
         # DO NOT AUTOPIP the deps are now installed while installing the libs
