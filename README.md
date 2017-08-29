@@ -33,3 +33,12 @@ Should be executed under root.
 cd {{code dir of jumpscale}}
 bash install.sh
 ```
+
+## how to use after install from python
+
+```bash
+ python3 -c 'from js9 import j;print(j.application.getMemoryUsage())'
+```
+
+the default mem usage < 23 MB and lazy loading of the modules.
+
