@@ -180,16 +180,16 @@ class ExecutorBase:
             T = '''
             BASEDIR = "{{HOMEDIR}}/opt"
             CODEDIR = "{{HOMEDIR}}/code"
-            HOSTDIR = ""
-            HOSTCFGDIR = ""
+            HOSTDIR = "{{HOMEDIR}}/js9host/"
+            HOSTCFGDIR = "{{HOMEDIR}}/js9host/cfg/"
             VARDIR = "{{BASEDIR}}/var"
             '''            
         else:
             T = '''
             BASEDIR = "/opt"
             CODEDIR = "/opt/code"
-            HOSTDIR = ""
-            HOSTCFGDIR = ""
+            HOSTDIR = "{{HOMEDIR}}/js9host/"
+            HOSTCFGDIR = "{{HOMEDIR}}/js9host/cfg/"
             VARDIR = "{{BASEDIR}}/var"
             '''
 

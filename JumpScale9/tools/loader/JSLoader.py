@@ -126,15 +126,7 @@ class JSLoader():
             raise RuntimeError("Could not find sitepath")
         return res
 
-    @property
-    def hostDir(self):
-        """
-        check that there is a hostDir, if so we will generate libs & code for codecompletion
-        """
-        if os.path.exists(j.dirs.HOSTDIR) is False:
-            return None
-        else:
-            return j.dirs.HOSTDIR
+
 
     @property
     def initPath(self):
@@ -216,7 +208,7 @@ class JSLoader():
         return rc,generationParamsSub
 
 
-    def generate(self):
+    def _generate(self):
         """
         generate's the jumpscale init file: js9 
         as well as the one required for code generation
@@ -230,15 +222,9 @@ class JSLoader():
 
         j.tools.executorLocal.initEnv() #make sure the jumpscale toml file is set / will also link cmd files to system
 
-        if self.hostDir is not None:
-            outCC = os.path.join(self.hostDir, "python_libs/js9.py")
-            outJSON = os.path.join(self.hostDir, "python_libs/js9.json")
-            mounted_lib_path = os.path.join(self.hostDir, 'python_libs')
-            j.sal.fs.createDir(mounted_lib_path)            
-        else:
-            outCC = os.path.join(j.dirs.BASEDIRJS, "js9_codecompletion.py")
-            outJSON = os.path.join(j.dirs.BASEDIRJS, "js9.json")
-            
+        outCC = os.path.join(j.dirs.HOSTDIR,"autocomplete","js9.py")
+        outJSON = os.path.join(j.dirs.HOSTDIR,"autocomplete","js9.json")    
+        j.sal.fs.createDir(os.path.join(j.dirs.HOSTDIR,"autocomplete"))        
 
         out = self.initPath
         print("* js9 path:%s" % out)
@@ -437,34 +423,42 @@ class JSLoader():
 
         j.sal.fs.writeFile(filename=os.path.join(mounted_lib, "__init__.py"), contents="")
 
-    def generateJumpscalePlugins(self):
+    def generate(self,autocompletepath=None):
+        """
+        """
+
+        if j.dirs.HOSTDIR=="":
+            raise RuntimeError("dirs in your jumpscale9.toml not ok, hostdir cannot be empty")
+
+        if autocompletepath==None:
+            autocompletepath=os.path.join(j.dirs.HOSTDIR,"autocomplete")
+            j.sal.fs.createDir(autocompletepath)
+
         for name, path in j.application.config['plugins'].items():
             if j.sal.fs.exists(path, followlinks=True):
                 # link libs to location for hostos
-                if self.hostDir is not None:
-                    mounted_lib_path = os.path.join(self.hostDir, 'python_libs')
-                    j.do.copyTree(path,
-                                  os.path.join(mounted_lib_path, name),
-                                  overwriteFiles=True,
-                                  ignoredir=['*.egg-info',
-                                             '*.dist-info',
-                                             "*JumpScale*",
-                                             "*Tests*",
-                                             "*tests*"],
+                j.do.copyTree(path,
+                                os.path.join(autocompletepath, name),
+                                overwriteFiles=True,
+                                ignoredir=['*.egg-info',
+                                            '*.dist-info',
+                                            "*JumpScale*",
+                                            "*Tests*",
+                                            "*tests*"],
 
-                                  ignorefiles=['*.egg-info',
-                                               "*.pyc",
-                                               "*.so",
-                                               ],
-                                  rsync=True,
-                                  recursive=True,
-                                  rsyncdelete=True,
-                                  createdir=True)
+                                ignorefiles=['*.egg-info',
+                                            "*.pyc",
+                                            "*.so",
+                                            ],
+                                rsync=True,
+                                recursive=True,
+                                rsyncdelete=True,
+                                createdir=True)
 
-                    j.sal.fs.touch( os.path.join(self.hostDir, 'python_libs',"__init__.py"))
+                j.sal.fs.touch( os.path.join(j.dirs.HOSTDIR, 'python_libs',"__init__.py"))
 
         # DO NOT AUTOPIP the deps are now installed while installing the libs
         j.application.config["system"]["autopip"] = False
         # j.application.config["system"]["debug"] = True
 
-        self.generate()
+        self._generate()
