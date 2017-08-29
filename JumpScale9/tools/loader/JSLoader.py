@@ -382,12 +382,12 @@ class JSLoader():
             for item in [item for item in j.sal.fs.listDirsInDir(path) if item.find("egg-info") != -1]:
                 j.sal.fs.removeDirTree(item)
 
-    def copyPyLibs(self):
+    def copyPyLibs(self, autocompletepath=None):
         """
         this looks for python libs (non jumpscale) and copies them to our gig lib dir
         which can be use outside of docker for e.g. code completiong
         """
-        if autocompletepath==None:
+        if autocompletepath is None:
             autocompletepath=os.path.join(j.dirs.HOSTDIR,"autocomplete")
             j.sal.fs.createDir(autocompletepath)
 
@@ -422,7 +422,7 @@ class JSLoader():
                               rsyncdelete=False,
                               createdir=True)
 
-        j.sal.fs.writeFile(filename=os.path.join(mounted_lib, "__init__.py"), contents="")
+        j.sal.fs.writeFile(filename=os.path.join(autocompletepath, "__init__.py"), contents="")
 
     def generate(self,autocompletepath=None):
         """
