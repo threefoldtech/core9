@@ -21,9 +21,7 @@ class State():
             if self.executor.exists("/etc/") and self.executor.platformtype.isMac==False:
                 self._configPath= "/etc/jumpscale9.toml"
             else:
-                self._configPath= "%s/.jumpscale9.toml"%self.executor.env["HOME"]
-            # else:
-            #     self._configPath= "/etc/jumpscale9.toml"
+                self._configPath= "%s/js9host/jumpscale9.toml"%self.executor.env["HOME"]
         return self._configPath
 
     @property

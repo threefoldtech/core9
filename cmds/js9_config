@@ -1,5 +1,7 @@
 #! /usr/bin/env python3
 
+raise RuntimeError("not implemented")
+
 from js9 import j
 
 import os

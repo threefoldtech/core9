@@ -14,7 +14,10 @@ def _post_install(libname, libpath):
     # c[libname] = libpath
     # j.core.state.configSet('plugins', c)
 
-    j.tools.jsloader.generateJumpscalePlugins()
+    j.sal.fs.remove(j.sal.fs.joinPaths(j.dirs.HOMEDIR,".jumpscale9.toml"))
+    j.tools.executorLocal.initEnv()
+    j.tools.jsloader.generate()
+    
 
 
 class install(_install):
