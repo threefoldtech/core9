@@ -163,7 +163,6 @@ class ExecutorBase:
 
     def _getDirPathConfig(self):
 
-        islinux=self.platformtype.isUnix
         hostdirexists= self.exists("/host")
 
         if self.isContainer and not hostdirexists:
@@ -177,7 +176,15 @@ class ExecutorBase:
             HOSTCFGDIR = "/hostcfg"
             VARDIR = "{{HOSTDIR}}/var"
             '''
-        elif islinux:
+        elif j.core.platformtype.myplatform.isMac:
+            T = '''
+            BASEDIR = "{{HOMEDIR}}/opt"
+            CODEDIR = "{{HOMEDIR}}/code"
+            HOSTDIR = ""
+            HOSTCFGDIR = ""
+            VARDIR = "{{BASEDIR}}/var"
+            '''            
+        else:
             T = '''
             BASEDIR = "/opt"
             CODEDIR = "/opt/code"
@@ -185,14 +192,7 @@ class ExecutorBase:
             HOSTCFGDIR = ""
             VARDIR = "{{BASEDIR}}/var"
             '''
-        else:
-            T = '''
-            BASEDIR = "{{HOMEDIR}}/opt"
-            CODEDIR = "{{HOMEDIR}}/code"
-            HOSTDIR = ""
-            HOSTCFGDIR = ""
-            VARDIR = "{{BASEDIR}}/var"
-            '''
+
 
         BASE='''
         HOMEDIR = "~"

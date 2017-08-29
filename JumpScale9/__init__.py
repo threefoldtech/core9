@@ -92,7 +92,6 @@ j.tools.executorLocal = ExecutorLocal()  # needed in platformtypes
 from .core.PlatformTypes import PlatformTypes
 j.core.platformtype = PlatformTypes()
 
-
 from .clients.redis.RedisFactory import RedisFactory
 j.clients.redis = RedisFactory()
 
