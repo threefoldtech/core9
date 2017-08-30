@@ -143,7 +143,7 @@ class GitFactory:
         if url == "":
             if dest is None:
                 raise RuntimeError("dest cannot be None (url is also '')")
-            if not self.exists(dest):
+            if not j.do.exists(dest):
                 raise RuntimeError(
                     "Could not find git repo path:%s, url was not specified so git destination needs to be specified." %
                     (dest))
@@ -165,7 +165,7 @@ class GitFactory:
         if not dest:
             if codeDir is None:
                 if not executor:
-                    codeDir = j.CODEDIR
+                    codeDir = j.dirs.CODEDIR
                 else:
                     codeDir = executor.prefab.core.dir_paths['CODEDIR']
             dest = '%(codedir)s/%(type)s/%(account)s/%(repo_name)s' % {
@@ -248,11 +248,11 @@ class GitFactory:
 
         self.logger.info("%s:pull:%s ->%s" % (executor, url, dest))
 
-        existsDir = self.exists(
+        existsDir = j.do.exists(
             dest) if not executor else executor.exists(dest)
 
         checkdir = "%s/.git" % (dest)
-        existsGit = self.exists(
+        existsGit = j.do.exists(
             checkdir) if not executor else executor.exists(checkdir)
 
         if existsDir:
