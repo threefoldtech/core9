@@ -7,7 +7,7 @@ import time
 class Cache:
 
     def __init__(self):
-        # self.__jslocation__ = "j.data.cache"
+        self.__jslocation__ = "j.data.cache"
         self._cache = {}
 
     def get(self, id="main", db=None, reset=False, expiration=3):
@@ -18,9 +18,11 @@ class Cache:
         if db == None:
             db = j.data.kvs.getMemoryStore(name=id, namespace="cache")
         if id not in self._cache:
-            self._cache[id] = CacheCategory(id=id, db=db, expiration=expiration)
+            self._cache[id] = CacheCategory(
+                id=id, db=db, expiration=expiration)
         if self._cache[id].db.name != db.name or self._cache[id].db.namespace != db.namespace:
-            self._cache[id] = CacheCategory(id=id, db=db, expiration=expiration)
+            self._cache[id] = CacheCategory(
+                id=id, db=db, expiration=expiration)
         if reset:
             self.reset(id)
         return self._cache[id]
@@ -64,15 +66,19 @@ class Cache:
             time.sleep(2)
 
             assert c.get("somethingElse", return2, expire=1) == 2
-            assert c.get("somethingElse", return3, expire=1) == 2  # still needs to be 2
+            # still needs to be 2
+            assert c.get("somethingElse", return3, expire=1) == 2
             time.sleep(2)
-            assert c.get("somethingElse", return3, expire=1) == 3  # now needs to be 3
+            assert c.get("somethingElse", return3,
+                         expire=1) == 3  # now needs to be 3
 
         print("REDIS CACHE TEST")
-        c = self.get("test", j.data.kvs.getRedisStore(name='cache', namespace="mycachetest"), expiration=1)
+        c = self.get("test", j.data.kvs.getRedisStore(
+            name='cache', namespace="mycachetest"), expiration=1)
         testAll(c)
         print("MEM CACHE TEST")
-        c = self.get("test", j.data.kvs.getMemoryStore(name='cache', namespace="mycachetest"), expiration=1)
+        c = self.get("test", j.data.kvs.getMemoryStore(
+            name='cache', namespace="mycachetest"), expiration=1)
         testAll(c)
         print("TESTOK")
 
@@ -103,17 +109,20 @@ class CacheCategory():
         # print("res:%s"%res)
         if refresh or res == None:
             if method == None:
-                raise j.exceptions.RuntimeError("Cannot get '%s' from cache,not found & method None" % key)
+                raise j.exceptions.RuntimeError(
+                    "Cannot get '%s' from cache,not found & method None" % key)
             # print("cache miss")
             val = method(**kwargs)
             # print(val)
             if val is None or val == "":
-                raise j.exceptions.RuntimeError("cache method cannot return None or empty string.")
+                raise j.exceptions.RuntimeError(
+                    "cache method cannot return None or empty string.")
             self.set(key, val, expire=expire)
             return val
         else:
             if res == None:
-                raise j.exceptions.RuntimeError("Cannot get '%s' from cache" % key)
+                raise j.exceptions.RuntimeError(
+                    "Cannot get '%s' from cache" % key)
             return res
 
     def reset(self):

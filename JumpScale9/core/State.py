@@ -3,26 +3,27 @@ from JumpScale9 import j
 import sys
 import os
 
+
 class State():
     """
 
     """
 
-    def __init__(self,executor):
+    def __init__(self, executor):
         self.readonly = False
-        self.executor=executor
+        self.executor = executor
         self.config = None
-        self._configPath=None
+        self._configPath = None
         self.configLoad()
 
     @property
     def configPath(self):
-        if self._configPath==None:
+        if self._configPath == None:
             # if self.executor==j.tools.executorLocal:
-            if self.executor.exists("/etc/") and self.executor.platformtype.isMac==False:
-                self._configPath= "/etc/jumpscale9.toml"
+            if self.executor.exists("/etc/") and self.executor.platformtype.isMac == False:
+                self._configPath = "/etc/jumpscale9.toml"
             else:
-                self._configPath= "%s/js9host/jumpscale9.toml"%self.executor.env["HOME"]
+                self._configPath = "%s/js9host/jumpscale9.toml" % self.executor.env["HOME"]
         return self._configPath
 
     @property
@@ -41,20 +42,20 @@ class State():
         return self._db
 
     def configLoad(self):
-        if self.executor==j.tools.executorLocal:            
+        if self.executor == j.tools.executorLocal:
             if j.sal.fs.exists(self.configPath):
                 table_open_object = open(self.configPath, 'r')
                 self.config = pytoml.load(table_open_object)
             else:
-                self.config={}
+                self.config = {}
         else:
-            path="/etc/jumpscale9.toml"
+            path = "/etc/jumpscale9.toml"
             if self.executor.exists(self.configPath):
-                cc=self.executor.file_read(self.configPath)
+                cc = self.executor.file_read(self.configPath)
                 self.config = pytoml.loads(cc)
                 # print("config load state")
             else:
-                self.config={}
+                self.config = {}
 
     def configGet(self, key, defval=None, set=False):
         """
@@ -118,26 +119,31 @@ class State():
         get val from subdict
         """
         if key not in self.config:
+            print(8887)
+            from IPython import embed
+            embed(colors='Linux')
             self.configSet(key, val={}, save=True)
 
         if dkey not in self.config[key]:
             if default is not None:
                 return default
-            raise RuntimeError("Cannot find dkey:%s in state config for dict '%s'" % (dkey, key))
+            raise RuntimeError(
+                "Cannot find dkey:%s in state config for dict '%s'" % (dkey, key))
 
         return self.config[key][dkey]
 
-    def configGetFromDictBool(self,key, dkey, default=None):
+    def configGetFromDictBool(self, key, dkey, default=None):
         if key not in self.config:
             self.configSet(key, val={}, save=True)
 
         if dkey not in self.config[key]:
             if default is not None:
                 return default
-            raise RuntimeError("Cannot find dkey:%s in state config for dict '%s'" % (dkey, key))
+            raise RuntimeError(
+                "Cannot find dkey:%s in state config for dict '%s'" % (dkey, key))
 
-        val=self.config[key][dkey]
-        if val in [1,True] or val.strip().lower() in ["true","1","yes","y"]:
+        val = self.config[key][dkey]
+        if val in [1, True] or val.strip().lower() in ["true", "1", "yes", "y"]:
             return True
         else:
             return False
@@ -146,10 +152,10 @@ class State():
         """
         will check that the val is a dict, if not set it and put key & val in
         """
-        if dval in [1,True] or dval.strip().lower() in ["true","1","yes","y"]:
-            dval="1"
+        if dval in [1, True] or dval.strip().lower() in ["true", "1", "yes", "y"]:
+            dval = "1"
         else:
-            dval="0"
+            dval = "0"
         return configSetInDict(key, dkey, dval)
 
     def configUpdate(self, ddict, overwrite=True):
@@ -178,8 +184,9 @@ class State():
             raise j.exceptions.Input(
                 message="cannot write config to '%s', because is readonly" %
                 self, level=1, source="", tags="", msgpub="")
-        if self.executor==j.tools.executorLocal:                    
-            path=self.configPath
+        if self.executor == j.tools.executorLocal:
+            print("configsave state on %s" % self._configPath)
+            path = self.configPath
             try:
                 table_open_object = open(path, 'w')
             except FileNotFoundError:
@@ -189,15 +196,16 @@ class State():
                     pass
                 table_open_object = open(path, 'x')
             try:
-                data = pytoml.dump(self.config,table_open_object, sort_keys=True)
+                data = pytoml.dump(
+                    self.config, table_open_object, sort_keys=True)
             except:
                 print("[-] ERROR COULD NOT SAVE CONFIG FOR JUMPSCALE")
                 print(self.config)
                 raise RuntimeError("ERROR COULD NOT SAVE CONFIG FOR JUMPSCALE")
         else:
             print("configsave state")
-            data=pytoml.dumps(self.config)
-            self.executor.file_write(self.configPath,data)
+            data = pytoml.dumps(self.config)
+            self.executor.file_write(self.configPath, data)
 
     def reset(self):
         self.config = {}
