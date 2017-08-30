@@ -13,7 +13,6 @@ class SSHClientFactory:
 
     logger = j.logger.get("j.clients.ssh")
 
-
     def __init__(self):
         self.__jslocation__ = "j.clients.ssh"
         self.__imports__ = "paramiko,asyncssh"
@@ -145,7 +144,7 @@ class SSHClientFactory:
 
         bashprofile_path = os.path.expanduser("~/.bash_profile")
         if not j.sal.fs.exists(bashprofile_path):
-            self.execute('touch %s' % bashprofile_path)
+            j.do.execute('touch %s' % bashprofile_path)
 
         content = j.sal.fs.readFile(bashprofile_path)
         out = ""
@@ -196,9 +195,9 @@ class SSHClientFactory:
         if self.SSHAgentCheckKeyIsLoaded(path):
             return
         self.logger.info("load ssh key:%s" % path)
-        self.chmod(path, 0o600)
+        j.do.chmod(path, 0o600)
         cmd = "ssh-add -t %s %s " % (duration, path)
-        self.executeInteractive(cmd)
+        j.do.executeInteractive(cmd)
 
     def SSHAgentCheckKeyIsLoaded(self, keyNamePath):
         keysloaded = [j.sal.fs.getBaseName(item)
@@ -272,11 +271,11 @@ class SSHClientFactory:
             # timeout after 24 h
             self.logger.info("load sshkey: %s" % pathkey)
             cmd = "ssh-add -t %s %s " % (duration, pathkey)
-            self.executeInteractive(cmd)
+            j.do.executeInteractive(cmd)
 
     def SSHKeyGetPathFromAgent(self, keyname, die=True):
         try:
-            # TODO: why do we use subprocess here and not self.execute?
+            # TODO: why do we use subprocess here and not j.do.execute?
             out = subprocess.check_output(["ssh-add", "-L"])
         except BaseException:
             return None
@@ -303,7 +302,7 @@ class SSHClientFactory:
 
     def SSHKeyGetFromAgentPub(self, keyname, die=True):
         try:
-            # TODO: why do we use subprocess here and not self.execute?
+            # TODO: why do we use subprocess here and not j.do.execute?
             out = subprocess.check_output(["ssh-add", "-L"])
         except BaseException:
             return None
@@ -328,7 +327,7 @@ class SSHClientFactory:
             self._initSSH_ENV(True)
         self._loadSSHAgent()
         cmd = "ssh-add -L"
-        rc, out, err = self.execute(cmd, False, False, die=False)
+        rc, out, err = j.do.execute(cmd, False, False, die=False)
         if rc:
             if rc == 1 and out.find("The agent has no identities") != -1:
                 return []
@@ -361,7 +360,7 @@ class SSHClientFactory:
             "do the following on the console\nsudo -s\ncat %s >> %s" %
             (tmpfile, auth_key_path))
         self.logger.info(cmd)
-        self.executeInteractive(cmd)
+        j.do.executeInteractive(cmd)
 
     def authorize_root(self, sftp_client, ip_address, keyname):
         tmppath = '/tmp/authorized_keys'
@@ -439,8 +438,6 @@ class SSHClientFactory:
                 ip_address=remoteipaddr,
                 keyname=keyname)
 
-
-
     def _loadSSHAgent(self, path=None, createkeys=False, killfirst=False):
         """
         check if ssh-agent is available & there is key loaded
@@ -453,7 +450,7 @@ class SSHClientFactory:
         # check if more than 1 agent
         socketpath = self._getSSHSocketpath()
         res = [
-            item for item in self.execute(
+            item for item in j.do.execute(
                 "ps aux|grep ssh-agent",
                 False,
                 False)[1].split("\n") if item.find("grep ssh-agent") == -
@@ -465,21 +462,21 @@ class SSHClientFactory:
             self.logger.info("more than 1 ssh-agent, will kill all")
             killfirst = True
         if len(res) == 0 and j.sal.fs.exists(socketpath):
-            self.delete(socketpath)
+            j.do.delete(socketpath)
 
         if killfirst:
             cmd = "killall ssh-agent"
             # self.logger.info(cmd)
-            self.execute(cmd, showout=False, outputStderr=False, die=False)
+            j.do.execute(cmd, showout=False, outputStderr=False, die=False)
             # remove previous socketpath
             self.delete(socketpath)
             self.delete(self.joinPaths('/tmp', "ssh-agent-pid"))
 
         if not j.sal.fs.exists(socketpath):
-            self.createDir(self.getParent(socketpath))
+            j.do.createDir(j.do.getParent(socketpath))
             # ssh-agent not loaded
             self.logger.info("load ssh agent")
-            rc, result, err = self.execute(
+            rc, result, err = j.do.execute(
                 "ssh-agent -a %s" %
                 socketpath, die=False, showout=False, outputStderr=False)
 
@@ -504,7 +501,7 @@ class SSHClientFactory:
                 self._initSSH_ENV(True)
                 pid = int(piditems[-1].split(" ")[-1].strip("; "))
                 j.sal.fs.writeFile(
-                    self.joinPaths(
+                    j.do.joinPaths(
                         '/tmp',
                         "ssh-agent-pid"),
                     str(pid))
@@ -514,7 +511,7 @@ class SSHClientFactory:
             # found
             if os.environ.get("SSH_AUTH_SOCK") != socketpath:
                 self._initSSH_ENV(True)
-            rc, result, err = self.execute(
+            rc, result, err = j.do.execute(
                 "ssh-add -l", die=False, showout=False, outputStderr=False)
             if rc == 2:
                 # no ssh-agent found
@@ -534,7 +531,7 @@ class SSHClientFactory:
             return False
         if "SSH_AUTH_SOCK" not in os.environ:
             self._initSSH_ENV(True)
-        rc, out, err = self.execute(
+        rc, out, err = j.do.execute(
             "ssh-add -l", showout=False, outputStderr=False, die=False)
         if 'The agent has no identities.' in out:
             return True

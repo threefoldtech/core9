@@ -73,9 +73,9 @@ GEN_END2 = """
 class Jumpscale9():
 
     def __init__(self):
-        {{#locationsubs}}
+        {{#locations}}
         self.{{name}}={{name}}()
-        {{/locationsubs}}
+        {{/locations}}
 
 j = Jumpscale9()
 
@@ -259,6 +259,8 @@ class JSLoader():
 
             if not jlocationRoot.startswith("j."):
                 raise RuntimeError()
+
+            jlocations["locations"].append({"name":jlocationRoot[2:]})
 
             generationParams = {}
             generationParams["locationsubserror"] = []
