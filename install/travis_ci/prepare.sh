@@ -1,26 +1,14 @@
 #!/bin/bash
 
-# generate ssh keys
-# ssh-keygen -t rsa -N "" -f ~/.ssh/main
-# export SSHKEYNAME=main
+# Install ays9 in a docker contianer using bash installers
+ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
 
-# export GIGSAFE=1
-# export GIGDEVELOPERBRANCH=master
-
-# curl https://raw.githubusercontent.com/Jumpscale/developer/$GIGDEVELOPERBRANCH/jsinit.sh?$RANDOM > /tmp/jsinit.sh; bash /tmp/jsinit.sh
-
-# build image
-# source ~/.jsenv.sh
-# js9_build
-
-
-# install python3.5
-sudo add-apt-repository -y ppa:fkrull/deadsnakes
-sudo apt-get update
-sudo apt-get install -y python3.5 python3.5-dev
-sudo rm -f /usr/bin/python3
-sudo ln -s /usr/bin/python3.5 /usr/bin/python3
-
-export ZUTILSBRANCH=${ZUTILSBRANCH:-fixes}
+export ZUTILSBRANCH=${ZUTILSBRANCH:-master}
 
 curl https://raw.githubusercontent.com/Jumpscale/bash/$ZUTILSBRANCH/install.sh?$RANDOM > /tmp/install.sh;sudo -E bash /tmp/install.sh
+sudo -HE bash -c "source /opt/code/github/jumpscale/bash/zlibs.sh; ZCodeGetJS"
+sudo -HE bash -c "source /opt/code/github/jumpscale/bash/zlibs.sh; ZDockerInstallLocal"
+eval $(ssh-agent)
+ssh-add
+sudo -HE bash -c "source /opt/code/github/jumpscale/bash/zlibs.sh; ZInstall_js9_full"
+sudo -HE docker stop build

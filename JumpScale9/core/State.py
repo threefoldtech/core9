@@ -12,19 +12,26 @@ class State():
     def __init__(self, executor):
         self.readonly = False
         self.executor = executor
-        self.config = None
-        self._configPath = None
-        self.configLoad()
+        # if self.executor==j.tools.executorLocal:
+        if self.executor.exists("/etc/") and self.executor.platformtype.isMac == False:
+            self.configPath = "/etc/jumpscale9.toml"
+        else:
+            self.configPath = "%s/js9host/jumpscale9.toml" % self.executor.env["HOME"]
 
-    @property
-    def configPath(self):
-        if self._configPath == None:
-            # if self.executor==j.tools.executorLocal:
-            if self.executor.exists("/etc/") and self.executor.platformtype.isMac == False:
-                self._configPath = "/etc/jumpscale9.toml"
+        if self.executor == j.tools.executorLocal:
+            if j.sal.fs.exists(self.configPath):
+                # print("config load state local:%s"%self.configPath)
+                table_open_object = open(self.configPath, 'r')
+                self.config = pytoml.load(table_open_object)
             else:
-                self._configPath = "%s/js9host/jumpscale9.toml" % self.executor.env["HOME"]
-        return self._configPath
+                self.config = {}
+        else:
+            if self.executor.exists(self.configPath):
+                # print("config load state ssh: %s"%self.configPath)
+                cc = self.executor.file_read(self.configPath)
+                self.config = pytoml.loads(cc)                
+            else:
+                self.config = {}            
 
     @property
     def versions(self):
@@ -41,21 +48,6 @@ class State():
             self._db = j.clients.redis.get4core()
         return self._db
 
-    def configLoad(self):
-        if self.executor == j.tools.executorLocal:
-            if j.sal.fs.exists(self.configPath):
-                table_open_object = open(self.configPath, 'r')
-                self.config = pytoml.load(table_open_object)
-            else:
-                self.config = {}
-        else:
-            path = "/etc/jumpscale9.toml"
-            if self.executor.exists(self.configPath):
-                cc = self.executor.file_read(self.configPath)
-                self.config = pytoml.loads(cc)
-                # print("config load state")
-            else:
-                self.config = {}
 
     def configGet(self, key, defval=None, set=False):
         """
@@ -185,23 +177,10 @@ class State():
                 message="cannot write config to '%s', because is readonly" %
                 self, level=1, source="", tags="", msgpub="")
         if self.executor == j.tools.executorLocal:
-            print("configsave state on %s" % self._configPath)
+            print("configsave state on %s" % self.configPath)
             path = self.configPath
-            try:
-                table_open_object = open(path, 'w')
-            except FileNotFoundError:
-                try:
-                    os.makedirs(os.path.dirname(path))
-                except OSError:
-                    pass
-                table_open_object = open(path, 'x')
-            try:
-                data = pytoml.dump(
-                    self.config, table_open_object, sort_keys=True)
-            except:
-                print("[-] ERROR COULD NOT SAVE CONFIG FOR JUMPSCALE")
-                print(self.config)
-                raise RuntimeError("ERROR COULD NOT SAVE CONFIG FOR JUMPSCALE")
+            table_open_object = open(path, 'w')
+            data = pytoml.dump(self.config, table_open_object, sort_keys=True)
         else:
             print("configsave state")
             data = pytoml.dumps(self.config)
@@ -209,7 +188,7 @@ class State():
 
     def reset(self):
         self.config = {}
-        self.configSave()
+        self.configSave()        
 
     def __repr__(self):
         return str(self.config)

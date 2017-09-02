@@ -38,10 +38,7 @@ class ExecutorSSH(ExecutorBase):
 
         self._logger = j.logger.get("executorssh%s" % self.addr)
 
-        self.init()
-
-        
-        
+        # self.init()
 
         self.logger.info("initted.")
 

@@ -25,14 +25,15 @@ class ExecutorBase:
         self.reset()
         self._logger = None
         self._iscontainer=None
-        self.state=None
-        self.config=None
+        self._state=None
 
-    def init(self):
-        if not self.type == "local":
+    @property
+    def state(self):
+        if self._state==None:        
             from JumpScale9.core.State import State
-            self.state = State(self)
+            self._state = State(self)
             self.config=self.state.config
+        return self._state
 
     @property
     def logger(self):

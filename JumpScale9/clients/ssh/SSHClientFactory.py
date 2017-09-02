@@ -244,7 +244,7 @@ class SSHClientFactory:
 
         if path is None:
             path = os.path.expanduser("~/.ssh")
-        self.createDir(path)
+        j.do.createDir(path)
 
         if "SSH_AUTH_SOCK" not in os.environ:
             self._initSSH_ENV(True)
@@ -254,7 +254,7 @@ class SSHClientFactory:
         keysloaded = [j.sal.fs.getBaseName(item)
                       for item in self.SSHKeysListFromAgent()]
 
-        if self.isDir(path):
+        if j.do.isDir(path):
             keysinfs = [j.sal.fs.getBaseName(item).replace(".pub", "") for item in self.listFilesInDir(
                 path, filter="*.pub") if j.sal.fs.exists(item.replace(".pub", ""))]
             keysinfs = [item for item in keysinfs if item not in keysloaded]
@@ -264,7 +264,7 @@ class SSHClientFactory:
                 "select ssh keys to load, use comma separated list e.g. 1,4,3 and press enter.")
         else:
             res = [j.sal.fs.getBaseName(path).replace(".pub", "")]
-            path = self.getParent(path)
+            path = j.do.getParent(path)
 
         for item in res:
             pathkey = "%s/%s" % (path, item)
