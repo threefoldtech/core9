@@ -95,15 +95,10 @@ j.core.platformtype = PlatformTypes()
 from .clients.redis.RedisFactory import RedisFactory
 j.clients.redis = RedisFactory()
 
-from .core.State import State
-j.core.state = State(executor=j.tools.executorLocal)
-j.tools.executorLocal.state=j.core.state
-j.tools.executorLocal.config=j.core.state.config
+j.core.state = j.tools.executorLocal.state
 
 from .core.InstallTools import InstallTools
 j.do = InstallTools()
-
-j.core.state.configLoad()
 
 if "dirs" not in j.core.state.config:
     print ("####INITENV")

@@ -16,7 +16,7 @@ class ExecutorLocal(ExecutorBase):
 
         self.cache=j.data.cache.get(id="executor:%s"%self.id)
 
-        self.init()
+        # self.init()
 
         
 
