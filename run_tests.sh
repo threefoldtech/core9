@@ -1,7 +1,6 @@
 #!/bin/bash
+eval $(ssh-agent)
+ssh-add
 
-# export SSHKEYNAME=main
-# source ~/.jsenv.sh
-# js9_start
-# ssh -A -i ~/.ssh/main root@localhost -p 2222 'cd /root/gig/code/github/jumpscale/core9; /bin/bash test.sh'
-cd /opt/code/github/jumpscale/core9; sudo /bin/bash test.sh
+# Run tests
+sudo -HE bash -c "ssh -tA  root@localhost -p 2222 \"cd /opt/code/github/jumpscale/core9; /bin/bash test.sh\""
