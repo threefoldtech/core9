@@ -2,10 +2,6 @@ import os
 from JumpScale9 import j
 
 
-# def embed():
-#     return "embed" in sys.__dict__
-#
-#
 # def pathToUnicode(path):
 #     """
 #     Convert path to unicode. Use the local filesystem encoding. Will return
@@ -36,18 +32,20 @@ class Dirs:
             self.__dict__[key] = val
             os.environ[key] = val
 
+        self.TEMPLATEDIR =self.VARDIR+"/templates/"
+        self.JSAPPSDIR =self.BASEDIRJS+"/app/"
+
     def replaceTxtDirVars(self, txt, additionalArgs={}):
         """
         replace $BASEDIR,$VARDIR,$JSCFGDIR,$bindir,$codedir,$tmpdir,$logdir,$appdir with props of this class
         also the Dir... get replaces e.g. varDir
         """
 
-        for key, val in os.environ.items():
+        for key, val in self.__dict__.items():
             if "DIR" in key:
                 txt = txt.replace("$%s" % key, val)
 
         # for backwardscompatibility
-        txt = txt.replace("$APPDIR", self.JSAPPSDIR)
         txt = txt.replace("$TMPLSDIR", self.TEMPLATEDIR)
         txt = txt.replace("$CODEDIR", self.CODEDIR)
         txt = txt.replace("$VARDIR", self.VARDIR)
@@ -55,11 +53,11 @@ class Dirs:
         txt = txt.replace("$BINDIR", self.BINDIR)
         txt = txt.replace("$LOGDIR", self.LOGDIR)
         txt = txt.replace("$TMPDIR", self.TMPDIR)
-        txt = txt.replace("$LIBDIR", self.JSLIBDIR)
+        txt = txt.replace("$JSLIBDIR", self.JSLIBDIR)
         txt = txt.replace("$JSAPPSDIR", self.JSAPPSDIR)
         # txt = txt.replace("$jslibextdir", self.JSLIBEXTDIR)
         # txt = txt.replace("$jsbindir", self.BINDIR)
-        txt = txt.replace("$nodeid", str(j.application.whoAmI.nid))
+        # txt = txt.replace("$nodeid", str(j.application.whoAmI.nid))
         for key, value in list(additionalArgs.items()):
             txt = txt.replace("$%s" % key, str(value))
         return txt
@@ -107,7 +105,7 @@ class Dirs:
     #     parent = self._getParent
     #     libDir = parent(parent(__file__))
     #     libDir = os.path.abspath(libDir).rstrip("/")
-    #     return libDir
+    #     return libDir 
 
     def __str__(self):
         out = ""

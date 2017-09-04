@@ -77,27 +77,32 @@ j.sal.fs = SystemFS()
 from .sal.process.SystemProcess import SystemProcess
 j.sal.process = SystemProcess()
 
+from .data.key_value_store.StoreFactory import StoreFactory
+j.data.kvs = StoreFactory()
+
+from .data.time.Time import Time_
+j.data.time = Time_()
+
+from .data.cache.Cache import Cache
+j.data.cache = Cache()
+
 from .tools.executor.ExecutorLocal import ExecutorLocal
 j.tools.executorLocal = ExecutorLocal()  # needed in platformtypes
 
 from .core.PlatformTypes import PlatformTypes
 j.core.platformtype = PlatformTypes()
 
-# from .data.cache.Cache import Cache
-# j.data.cache = Cache()
-
 from .clients.redis.RedisFactory import RedisFactory
 j.clients.redis = RedisFactory()
 
-from .core.State import State
-j.core.state = State()
+j.core.state = j.tools.executorLocal.state
 
 from .core.InstallTools import InstallTools
 j.do = InstallTools()
 
-j.core.state.configLoad()
 if "dirs" not in j.core.state.config:
-    j.do.initEnv()
+    print ("####INITENV")
+    j.tools.executorLocal.initEnv()
 
 from .core.Dirs import Dirs
 j.dirs = Dirs()
@@ -106,8 +111,6 @@ j.core.dirs = j.dirs
 from .data.idgenerator.IDGenerator import IDGenerator
 j.data.idgenerator = IDGenerator()
 
-from .data.time.Time import Time_
-j.data.time = Time_()
 
 from .errorhandling.ErrorHandler import ErrorHandler
 j.errorhandler = ErrorHandler()

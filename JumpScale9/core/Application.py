@@ -42,10 +42,7 @@ class Application:
         self.reload()
 
     def reload(self):
-        from IPython import embed
-        print("DEBUG NOW application implement reload")
-        embed()
-        raise RuntimeError("stop debug here")
+        j.tools.jsloader.generate()
 
     @property
     def debug(self):

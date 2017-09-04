@@ -14,6 +14,12 @@ class ExecutorLocal(ExecutorBase):
         self._logger = None
         self.__jslocation__ = "j.tools.executorLocal"
 
+        self.cache=j.data.cache.get(id="executor:%s"%self.id)
+
+        # self.init()
+
+        
+
     @property
     def logger(self):
         if self._logger is None:
@@ -68,6 +74,7 @@ class ExecutorLocal(ExecutorBase):
                 recursive=recursive)
         else:
             j.sal.fs.copyFile(source, dest, overwriteFile=True)
+        self.cache.reset()            
 
     def download(self, source, dest, source_prefix=""):
         if source_prefix != "":
@@ -84,3 +91,8 @@ class ExecutorLocal(ExecutorBase):
             ignorefiles=[".egg-info"],
             rsync=True,
             ssh=False)
+
+
+    def file_read(self,path):
+        return j.sal.fs.readFile(path)
+

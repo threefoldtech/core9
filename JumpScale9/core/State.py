@@ -1,17 +1,37 @@
 import pytoml
 from JumpScale9 import j
+import sys
 import os
-
-# ONLY DEVELOPED NOW FOR CONFIG, REST NEEDS TO BE DONE
 
 
 class State():
+    """
 
-    def __init__(self):
+    """
+
+    def __init__(self, executor):
         self.readonly = False
-        self._db = None
-        self.__jslocation__ = "j.core.state"
-        self.config = None
+        self.executor = executor
+        # if self.executor==j.tools.executorLocal:
+        if self.executor.exists("/etc/") and self.executor.platformtype.isMac == False:
+            self.configPath = "/etc/jumpscale9.toml"
+        else:
+            self.configPath = "%s/js9host/jumpscale9.toml" % self.executor.env["HOME"]
+
+        if self.executor == j.tools.executorLocal:
+            if j.sal.fs.exists(self.configPath):
+                # print("config load state local:%s"%self.configPath)
+                table_open_object = open(self.configPath, 'r')
+                self.config = pytoml.load(table_open_object)
+            else:
+                self.config = {}
+        else:
+            if self.executor.exists(self.configPath):
+                # print("config load state ssh: %s"%self.configPath)
+                cc = self.executor.file_read(self.configPath)
+                self.config = pytoml.loads(cc)                
+            else:
+                self.config = {}            
 
     @property
     def versions(self):
@@ -28,21 +48,6 @@ class State():
             self._db = j.clients.redis.get4core()
         return self._db
 
-    @property
-    def _vardir(self):
-        if "VARDIR" in os.environ:
-            return os.path.normpath(os.path.join(os.environ["VARDIR"]))
-        else:
-            raise RuntimeError("Cannot find VARDIR in env")
-
-    def configLoad(self):
-        if not self._exists("cfg"):
-            self.config = {}
-            self._config_changed = True
-        else:
-            data = self._get("cfg")
-            self.config = pytoml.loads(data)
-            self._config_changed = False
 
     def configGet(self, key, defval=None, set=False):
         """
@@ -69,7 +74,7 @@ class State():
             val2 = None
         if val != val2:
             self.config[key] = val
-            print("config set %s:%s" % (key, val))
+            # print("config set %s:%s" % (key, val))
             # print("config changed")
             self._config_changed = True
             if save:
@@ -98,7 +103,7 @@ class State():
         val2[dkey] = dval
 
         self.config[key] = val2
-        print("config set dict %s:%s:%s" % (key, dkey, dval))
+        # print("config set dict %s:%s:%s" % (key, dkey, dval))
         self.configSave()
 
     def configGetFromDict(self, key, dkey, default=None):
@@ -106,14 +111,44 @@ class State():
         get val from subdict
         """
         if key not in self.config:
+            print(8887)
+            from IPython import embed
+            embed(colors='Linux')
             self.configSet(key, val={}, save=True)
 
         if dkey not in self.config[key]:
             if default is not None:
                 return default
-            raise RuntimeError("Cannot find dkey:%s in state config for dict '%s'" % (dkey, key))
+            raise RuntimeError(
+                "Cannot find dkey:%s in state config for dict '%s'" % (dkey, key))
 
         return self.config[key][dkey]
+
+    def configGetFromDictBool(self, key, dkey, default=None):
+        if key not in self.config:
+            self.configSet(key, val={}, save=True)
+
+        if dkey not in self.config[key]:
+            if default is not None:
+                return default
+            raise RuntimeError(
+                "Cannot find dkey:%s in state config for dict '%s'" % (dkey, key))
+
+        val = self.config[key][dkey]
+        if val in [1, True] or val.strip().lower() in ["true", "1", "yes", "y"]:
+            return True
+        else:
+            return False
+
+    def configSetInDictBool(self, key, dkey, dval):
+        """
+        will check that the val is a dict, if not set it and put key & val in
+        """
+        if dval in [1, True] or dval.strip().lower() in ["true", "1", "yes", "y"]:
+            dval = "1"
+        else:
+            dval = "0"
+        return configSetInDict(key, dkey, dval)
 
     def configUpdate(self, ddict, overwrite=True):
         """
@@ -141,78 +176,22 @@ class State():
             raise j.exceptions.Input(
                 message="cannot write config to '%s', because is readonly" %
                 self, level=1, source="", tags="", msgpub="")
-        # if not self._config_changed:
-        #     return
-        data = pytoml.dumps(self.config, sort_keys=True)
-        # self.logger.info("config save")
-        self._set("cfg", data)
-        self._config_changed = False
+        if self.executor == j.tools.executorLocal:
+            print("configsave state on %s" % self.configPath)
+            path = self.configPath
+            table_open_object = open(path, 'w')
+            data = pytoml.dump(self.config, table_open_object, sort_keys=True)
+        else:
+            print("configsave state")
+            data = pytoml.dumps(self.config)
+            self.executor.file_write(self.configPath, data)
 
-    def resetConfig(self):
+    def reset(self):
         self.config = {}
-        self.configSave()
+        self.configSave()        
 
-    def resetState(self):
-        from IPython import embed
-        print("DEBUG NOW resetState")
-        embed()
-        raise RuntimeError("stop debug here")
+    def __repr__(self):
+        return str(self.config)
 
-    def resetCache(self):
-        from IPython import embed
-        print("DEBUG NOW reset cache")
-        embed()
-        raise RuntimeError("stop debug here")
-
-    def resetAll(self):
-        self.resetState()
-        self.resetCache()
-        self.resetConfig()
-
-    def _getpath(self, cat="cfg", key=None):
-        if cat == "cfg":
-            path = j.sal.fs.joinPaths(self._vardir, "private", "jumpscale9.toml")
-            if not j.sal.fs.exists(path, followlinks=True):
-                path = "%s/cfg/jumpscale9.toml" % self._vardir
-            self.configpath = path
-            if key is not None:
-                raise RuntimeError("key has to be None of cat==cfg")
-        elif cat == "cache":
-            path = "%s/cache/%s" % (self._vardir, key)
-        elif cat == "state":
-            path = "%s/state/%s" % (self._vardir, key)
-        else:
-            raise RuntimeError("only supported categories: cfg,cache,state")
-        return path
-
-    def _set(self, cat="cfg", data="", key=None):
-        if self.db is not None:
-            from IPython import embed
-            print("DEBUG NOW sdat")
-            embed()
-            raise RuntimeError("stop debug here")
-        else:
-            path = self._getpath(cat=cat, key=key)
-            j.sal.fs.createDir(j.sal.fs.getDirName(path))
-            j.sal.fs.writeFile(filename=path, contents=data, append=False)
-
-    def _exists(self, cat="cfg", data="", key=None):
-        if self.db is not None:
-            from IPython import embed
-            print("DEBUG NOW wewe")
-            embed()
-            raise RuntimeError("stop debug here")
-        else:
-            path = self._getpath(cat=cat, key=key)
-            return os.path.exists(path)
-
-    def _get(self, cat="cfg", data="", key=None):
-        if self.db is not None:
-            from IPython import embed
-            print("DEBUG NOW 2323")
-            embed()
-            raise RuntimeError("stop debug here")
-        else:
-            path = self._getpath(cat=cat, key=key)
-            with open(path, 'r') as f:
-                return f.read()
+    def __str__(self):
+        return str(self.config)

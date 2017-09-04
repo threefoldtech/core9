@@ -16,4 +16,15 @@ import sys
 print(j.do.mascot)
 
 j.do.debug = False
-j.tools.jsloader.generateJumpscalePlugins()
+
+#make sure we don't do autopip
+j.core.state.configSetInDict('system','autopip',False)
+
+j.tools.jsloader.generate()
+
+#try:
+#print ("WARNING: dockerconfig was not done")
+#from js9 import j as h
+#h.tools.develop.dockerconfig() #make sure required config/sshkeys are made available to docker or installed in docker
+#except:
+#    pass

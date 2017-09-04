@@ -7,7 +7,9 @@ import os
 class Session:
 
     def __init__(self, session):
-
+        if j.core.db == None:
+            j.clients.redis.start4core()
+            j.core.db = j.clients.redis.get()
         self.id = session.get("session_id")
         self.name = session.get("session_name")
         self.mgmt = session
@@ -50,7 +52,8 @@ class Session:
 
         print("create window:%s" % name)
         j.core.db.delete("tmux:pane:%s" % name)
-        res = self.mgmt.new_window(name, start_directory=start_directory, attach=attach)
+        res = self.mgmt.new_window(
+            name, start_directory=start_directory, attach=attach)
 
         window = Window(self, res)
         self.windows.append(window)
@@ -123,7 +126,8 @@ class Window:
                 if clear:
                     pane.mgmt.send_keys("clear")
                 return pane
-        raise j.exceptions.RuntimeError("Could not find pane:%s.%s" % (self.name, name))
+        raise j.exceptions.RuntimeError(
+            "Could not find pane:%s.%s" % (self.name, name))
 
     def select(self):
         self.mgmt.select_window()
@@ -171,7 +175,8 @@ class Pane:
         for pane2 in self.window.mgmt.panes:
             if not self.window.existsPane(id=pane2.get("pane_id")):
                 if panefound is not None:
-                    raise j.exceptions.RuntimeError("can only find 1 pane, bug")
+                    raise j.exceptions.RuntimeError(
+                        "can only find 1 pane, bug")
                 panefound = pane2
         pane = Pane(self.window, panefound)
         pane.name = name
@@ -195,7 +200,8 @@ class Pane:
         return res
 
     def execute(self, cmd, wait=False):
-        j.core.db.hset("tmux:%s:exec" % self.window.name, self.name, "%s" % j.data.time.getTimeEpoch())
+        j.core.db.hset("tmux:%s:exec" % self.window.name,
+                       self.name, "%s" % j.data.time.getTimeEpoch())
         # set exit code and date in front
         cmd2 = "echo HSET tmux:%s:exec %s %s:$? | redis-cli -s /tmp/redis.sock -x > /dev/null 2>&1" %\
             (self.window.name, self.name, j.data.time.getTimeEpoch())
@@ -275,7 +281,8 @@ class Tmux:
         s = self._getServer(name, firstWindow=firstWindow)
 
         if reset:
-            res = s.new_session(session_name=name, kill_session=kill_session, attach=attach)
+            res = s.new_session(session_name=name,
+                                kill_session=kill_session, attach=attach)
         else:
             res = None
             for se in s.list_sessions():
@@ -283,7 +290,8 @@ class Tmux:
                 if name == sname:
                     res = se
             if res is None:
-                res = s.new_session(session_name=name, kill_session=False, attach=attach)
+                res = s.new_session(session_name=name,
+                                    kill_session=False, attach=attach)
 
         self.sessions[name] = Session(res)
         return self.sessions[name]

@@ -42,9 +42,9 @@ apm install raml
 - go to plugins install/look for autocomplete-python
 - adjust setting: Extra Paths For packages
 
-add
+add (ofcourse change yourusername)
 ```
-/Users/kristofdespiegeleer/gig/python_libs
+/Users/yourusername/js9host/autocomplete
 ```
 
 - ofcourse change to your own home path (check it exists).

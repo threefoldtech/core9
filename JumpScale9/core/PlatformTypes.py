@@ -62,6 +62,7 @@ class PlatformTypes():
         self._platformParents["debian"] = ["ubuntu"]
         self._platformParents["debian32"] = ["debian", "linux32"]
         self._platformParents["debian64"] = ["debian", "linux64"]
+        self._cache={}
 
         self.__jslocation__ = "j.core.platformtype"
 
@@ -88,26 +89,10 @@ class PlatformTypes():
         """
         @param executor is an executor object, None or $hostname:$port or $ipaddr:$port or $hostname or $ipaddr
         """
-        return PlatformType(executor=executor)
-
-
-# class Executor:
-#
-#     def __init__(self):
-#         self.id = "localexec"
-#
-#     def execute(self, cmd, die=True, showout=True, **args):
-#
-#         childprocess = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-#                                         stderr=subprocess.PIPE, close_fds=True, shell=True, env=os.environ)
-#         (output, error) = childprocess.communicate()
-#         exitcode = childprocess.returncode
-#
-#         if showout:
-#             print(output)
-#             print(error)
-#
-#         return exitcode, output.decode(), error.decode()
+        key=executor.id
+        if not key in self._cache:
+            self._cache[key]= PlatformType(executor=executor)
+        return self._cache[key]
 
 
 class PlatformType():
@@ -125,6 +110,8 @@ class PlatformType():
             self.executor = j.tools.executorLocal
         else:
             self.executor = executor
+
+        # print("PLATFORMTYPE:%s"%self.executor)
 
         if name == "":
             self._getPlatform()
@@ -148,8 +135,9 @@ class PlatformType():
                 os.environ["LC_ALL"] = 'C.UTF-8'
                 os.environ["TERMINFO"] = 'xterm-256colors'
             self._uname = self._uname.split("\n")[0]
-            self._osname0, self._hostname0, self._osversion, self._cpu, self._platform = self._uname.split(
+            self._osname, self._hostname, self._osversion, self._cpu, self._platform = self._uname.split(
                 " ")
+            self._osname=self._osname.lower()
         return self._uname
 
     @property
@@ -171,8 +159,9 @@ class PlatformType():
 
     @property
     def osversion(self):
+        self.uname
         if self._osversion is None:
-            rc, lsbcontent, err = self.executor.prefab.core.run(
+            rc, lsbcontent, err = self.executor.execute(
                 "cat /etc/*-release", replaceArgs=False, showout=False, die=False)
             if rc == 0:
                 import re
@@ -189,27 +178,14 @@ class PlatformType():
 
     @property
     def osname(self):
-        if self._osname is None:
-            if sys.platform.lower().find("darwin") != -1:
-                self._osname = "darwin"
-            else:
-                pkgman2dist = {
-                    'pacman': 'arch', 'apt-get': 'ubuntu', 'yum': 'fedora', 'apk': 'alpine'}
-                for pkgman, dist in pkgman2dist.items():
-                    rc, _, err = self.executor.execute("which %s" % pkgman, showout=False, die=False, checkok=False)
-                    if rc == 0:
-                        self._osname = pkgman2dist[pkgman]
-                        break
-                # if self._osname not in ["darwin"] and not self._osname.startswith("cygwin"):
-                #     # is linux
-                #     if self.exists("/etc/alpine-release"):
-                #         self._osname = "alpine"
-                #         else::
-            #
-                else:
-                    self.uname
-                    self._osname = self._osname0.lower()
-            #
+        pkgman2dist = {
+             'apt-get': 'ubuntu', 'brew': 'darwin','yum': 'fedora', 'apk': 'alpine','pacman': 'arch',}
+        for pkgman, dist in pkgman2dist.items():
+            rc, _, err = self.executor.execute("which %s" % pkgman, showout=False, die=False, checkok=False)
+            if rc == 0:
+                self._osname = pkgman2dist[pkgman]
+                return self._osname
+        raise RuntimeError("could not define osname")                
         return self._osname
 
     def checkMatch(self, match):
