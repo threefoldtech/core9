@@ -342,7 +342,7 @@ class SSHClientFactory:
     def SSHEnsureKeyname(self, keyname="", username="root"):
         if not j.sal.fs.exists(keyname):
             rootpath = "/root/.ssh/" if username == "root" else "/home/%s/.ssh/"
-            fullpath = self.joinPaths(rootpath, keyname)
+            fullpath = j.do.joinPaths(rootpath, keyname)
             if j.sal.fs.exists(fullpath):
                 return fullpath
         return keyname
@@ -365,7 +365,7 @@ class SSHClientFactory:
     def authorize_root(self, sftp_client, ip_address, keyname):
         tmppath = '/tmp/authorized_keys'
         auth_key_path = "/root/.ssh/authorized_keys"
-        self.delete(tmppath)
+        j.do.delete(tmppath)
         try:
             sftp_client.get(auth_key_path, tmppath)
         except Exception as e:
@@ -469,8 +469,8 @@ class SSHClientFactory:
             # self.logger.info(cmd)
             j.do.execute(cmd, showout=False, outputStderr=False, die=False)
             # remove previous socketpath
-            self.delete(socketpath)
-            self.delete(self.joinPaths('/tmp', "ssh-agent-pid"))
+            j.do.delete(socketpath)
+            j.do.delete(j.do.joinPaths('/tmp', "ssh-agent-pid"))
 
         if not j.sal.fs.exists(socketpath):
             j.do.createDir(j.do.getParent(socketpath))
