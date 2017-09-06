@@ -244,13 +244,18 @@ class Bash:
         """
         checks cmd Exists and returns the path
         """
-        rc, out, err = self.executor.execute("which %s" % cmd, die=False, showout=False, profile=True)
+        rc, out, err = self.executor.execute("source ~/.bash_profile;which %s" % cmd, die=False, showout=False)
         if rc > 0:
             if die:
                 raise j.exceptions.RuntimeError("Did not find command: %s" % cmd)
             else:
                 return False
-        return out.split("\n")[-1]
+
+        out=out.strip()
+        if out=="":
+            raise RuntimeError("did not find cmd:%s"%cmd)
+
+        return out
 
     def profileGet(self, path="~/.profile_js"):
         path = path.replace("~", self.home)
