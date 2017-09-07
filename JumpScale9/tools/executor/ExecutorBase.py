@@ -19,6 +19,7 @@ class ExecutorBase:
         self.checkok = checkok
         self._prefab = None
         self.type = None
+        self.config = {}
         self._id = None
         self.readonly = False
         self.CURDIR = ""
@@ -29,7 +30,7 @@ class ExecutorBase:
 
     @property
     def state(self):
-        if self._state==None:        
+        if self._state==None:
             from JumpScale9.core.State import State
             self._state = State(self)
             self.config=self.state.config
@@ -184,7 +185,7 @@ class ExecutorBase:
             HOSTDIR = "{{HOMEDIR}}/js9host/"
             HOSTCFGDIR = "{{HOMEDIR}}/js9host/cfg/"
             VARDIR = "{{BASEDIR}}/var"
-            '''            
+            '''
         else:
             T = '''
             BASEDIR = "/opt"
