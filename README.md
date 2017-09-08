@@ -10,7 +10,7 @@ JumpScale is a cloud automation product and a branch from what used to be Pylabs
 ## install in development env (RECOMMENDED)
 
 - this means will be installed in a local docker
-- see https://github.com/Jumpscale/developer
+- see https://github.com/Jumpscale/bash
 
 ## shortcut to install using pip3
 
