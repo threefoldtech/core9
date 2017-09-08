@@ -38,6 +38,8 @@ class GitFactory:
                 "ssh needs to be auto, first or True or False: here:'%s'" %
                 ssh)
 
+        url=url.replace("ssh://","")
+
         url_pattern_ssh = re.compile('^(git@)(.*?):(.*?)/(.*?)/?$')
         sshmatch = url_pattern_ssh.match(url)
         url_pattern_http = re.compile('^(https?://)(.*?)/(.*?)/(.*?)/?$')
@@ -49,7 +51,7 @@ class GitFactory:
 
         if not match:
             raise RuntimeError(
-                "Url is invalid. Must be in the form of 'http(s)://hostname/account/repo' or 'git@hostname:account/repo'")
+                "Url is invalid. Must be in the form of 'http(s)://hostname/account/repo' or 'git@hostname:account/repo'\nnow:%s"%url)
 
         protocol, repository_host, repository_account, repository_name = match.groups()
         if protocol.startswith("git") and ssh is False:
@@ -59,7 +61,7 @@ class GitFactory:
             repository_name += '.git'
 
         if login == 'ssh' or ssh:
-            repository_url = 'git@%(host)s:%(account)s/%(name)s' % {
+            repository_url = 'ssh://git@%(host)s:%(account)s/%(name)s' % {
                 'host': repository_host,
                 'account': repository_account,
                 'name': repository_name,
