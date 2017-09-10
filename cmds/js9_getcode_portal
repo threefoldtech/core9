@@ -24,8 +24,8 @@ def branch_exist(repo, branch):
 
 print(j.do.mascot)
 
-if j.do.exists('/optvar/private/pubsshkeys/id_rsa'):
-    j.clients.ssh.SSHKeysLoad('/optvar/private/pubsshkeys/id_rsa')
+# if j.do.exists('/optvar/private/pubsshkeys/id_rsa'):
+#     j.clients.ssh.SSHKeysLoad('/optvar/private/pubsshkeys/id_rsa')
 
 no_init = True
 if 'noinit' in sys.argv:

@@ -26,7 +26,7 @@ class GitFactory:
                 if yes will use ssh
 
         Returns:
-            (repository_host, repository_type, repository_account, repository_name, repository_url)
+            (repository_host, repository_type, repository_account, repository_name, repository_url, port)
         """
 
         if ssh == "auto" or ssh == "first":
@@ -39,6 +39,16 @@ class GitFactory:
                 ssh)
 
         url=url.replace("ssh://","")
+
+
+        port=None
+        if ssh:
+            try:
+                port=int(url.split(":")[1].split("/")[0])
+                url=url.replace(":%s/"%(port),":")
+            except:
+                pass
+            
 
         url_pattern_ssh = re.compile('^(git@)(.*?):(.*?)/(.*?)/?$')
         sshmatch = url_pattern_ssh.match(url)
@@ -61,11 +71,19 @@ class GitFactory:
             repository_name += '.git'
 
         if login == 'ssh' or ssh:
-            repository_url = 'ssh://git@%(host)s:%(account)s/%(name)s' % {
-                'host': repository_host,
-                'account': repository_account,
-                'name': repository_name,
-            }
+            if port ==None:
+                repository_url = 'ssh://git@%(host)s:%(account)s/%(name)s' % {
+                    'host': repository_host,
+                    'account': repository_account,
+                    'name': repository_name,
+                }
+            else:
+                repository_url = 'ssh://git@%(host)s:%(port)s/%(account)s/%(name)s' % {
+                    'host': repository_host,
+                    'port': port,
+                    'account': repository_account,
+                    'name': repository_name,
+                }
             protocol = "ssh"
 
         elif login and login != 'guest':
@@ -88,7 +106,7 @@ class GitFactory:
         if repository_name.endswith(".git"):
             repository_name = repository_name[:-4]
 
-        return protocol, repository_host, repository_account, repository_name, repository_url
+        return protocol, repository_host, repository_account, repository_name, repository_url,port
 
     def getGitRepoArgs(
             self,
@@ -158,7 +176,7 @@ class GitFactory:
             if "GITHUBPASSWD" in os.environ:
                 passwd = os.environ["GITHUBPASSWD"]
 
-        protocol, repository_host, repository_account, repository_name, repository_url = self.rewriteGitRepoUrl(
+        protocol, repository_host, repository_account, repository_name, repository_url, port = self.rewriteGitRepoUrl(
             url=url, login=login, passwd=passwd, ssh=ssh)
 
         repository_type = repository_host.split(
@@ -182,7 +200,7 @@ class GitFactory:
 
         # self.createDir(dest)
 
-        return repository_host, repository_type, repository_account, repository_name, dest, repository_url
+        return repository_host, repository_type, repository_account, repository_name, dest, repository_url, port
 
     def pullGitRepo(
             self,
@@ -229,7 +247,7 @@ class GitFactory:
                     ssh=True,
                     executor=executor)
             except Exception as e:
-                base, provider, account, repo, dest, url = self.getGitRepoArgs(
+                base, provider, account, repo, dest, url,port = self.getGitRepoArgs(
                     url, dest, login, passwd, reset=reset, ssh=False, codeDir=codeDir, executor=executor)
                 return self.pullGitRepo(
                     url,
@@ -245,7 +263,7 @@ class GitFactory:
                     ssh=False,
                     executor=executor)
 
-        base, provider, account, repo, dest, url = self.getGitRepoArgs(
+        base, provider, account, repo, dest, url,port = self.getGitRepoArgs(
             url, dest, login, passwd, reset=reset, ssh=ssh, codeDir=codeDir, executor=executor)
 
         self.logger.info("%s:pull:%s ->%s" % (executor, url, dest))
@@ -376,7 +394,7 @@ class GitFactory:
 
     def parseUrl(self, url):
         """
-        @return (repository_host, repository_type, repository_account, repository_name, repository_url,branch,gitpath, relpath)
+        @return (repository_host, repository_type, repository_account, repository_name, repository_url,branch,gitpath, relpath,repository_port)
 
         example Input
         - https://github.com/Jumpscale/NOS/blob/master/specs/NOS_1.0.0.md
@@ -411,7 +429,7 @@ class GitFactory:
             path = ""
             branch = ""
 
-        a, b, c, d, dest, e = self.getGitRepoArgs(url)
+        a, b, c, d, dest, e,port = self.getGitRepoArgs(url)
 
         if "tree" in dest:
             # means is a directory
@@ -430,7 +448,8 @@ class GitFactory:
             repository_url,
             branch,
             gitpath,
-            path)
+            path,
+            port)
 
     def getContentInfoFromURL(self, url):
         """
@@ -443,7 +462,7 @@ class GitFactory:
         - https://github.com/Jumpscale/jumpscale_core9/tree/master/lib/JumpScale/tools/docgenerator/macros
 
         """
-        repository_host, repository_type, repository_account, repository_name, repository_url, branch, gitpath, relpath = j.clients.git.parseUrl(
+        repository_host, repository_type, repository_account, repository_name, repository_url, branch, gitpath, relpath, port = j.clients.git.parseUrl(
             url)
         rpath = j.sal.fs.joinPaths(gitpath, relpath)
         if not j.sal.fs.exists(rpath, followlinks=True):

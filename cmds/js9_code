@@ -14,9 +14,9 @@ import click
 
 # from js9 import j
 
-j.application.start("jscode2")
+j.application.start("jscode")
 
-ACTIONS = ('commit', 'push', 'update', 'status', 'list', 'init')
+ACTIONS = ('get','commit', 'push', 'update', 'status', 'list', 'init')
 
 
 def _repo_info(name, accounts):
@@ -91,21 +91,36 @@ def jscode(action, name, url, message, branch, accounts, update, force=False, de
     if branch is not None and action in ['status']:
         raise j.exceptions.RuntimeError("Cannot specify branch when asking status")
 
-    if name is None and accounts is None:
-        _name, _accounts = _repo_info(name, accounts)
+    if name is None:
+
+        if action == 'init':
+            _init_action()
 
 
-    if action == 'init':
-        _init_action()
+        if url is not None:
+            repository_host, repository_type, repository_account, repository_name, dest, repository_url, port = j.clients.git.getGitRepoArgs(url)
+            if not j.sal.fs.exists(dest):
+                j.clients.git.pullGitRepo(url=repository_url,branch=branch)
+                return
+            else:
+                name, _accounts = (repository_name,repository_account)   
+        else:
+            name, _accounts = _repo_info(name, accounts)
+
 
     if action == 'status':
-        _status_action()
+        return _status_action()
+
+
     repos = _search_repos(accounts, name, interactive=not force)
+    if name!=None and len(repos)!=1:
+        raise RuntimeError("found 2 repo's for same name")
+        
 
     for provider, account, reponame, branchExisting, client, path in repos:
 
         if not client.remoteUrl.startswith("git"):
-            newUrl = j.clients.git.rewriteGitRepoUrl(client.remoteUrl)[-1]
+            newUrl = j.clients.git.rewriteGitRepoUrl(client.remoteUrl)[-2]
             client.setRemoteURL(newUrl)
 
         if action == "update" and deletechanges:
@@ -117,7 +132,7 @@ def jscode(action, name, url, message, branch, accounts, update, force=False, de
             continue
 
         nrmods = 0
-        if action in ['status', 'commit', 'update', 'push']:
+        if action in ['status', 'commit', 'update', 'push','get']:
 
             mods = client.getModifiedFiles()
 
@@ -145,7 +160,7 @@ def jscode(action, name, url, message, branch, accounts, update, force=False, de
                   (account, reponame, client.branchName, len(mods["N"]), len(mods["M"]), len(mods["D"]),
                    len(mods["R"])))
 
-        if action in ['commit', 'update', 'push']:
+        if action in ['commit', 'update', 'push','get']:
             if nrmods == 0:
                 print("no need to commit/push is in sync")
                 continue
@@ -157,7 +172,7 @@ def jscode(action, name, url, message, branch, accounts, update, force=False, de
                         for subitem in item:
                             print(("    - %s" % (subitem)))
 
-        if action in ['commit', 'update', 'push']:
+        if action in ['commit', 'update', 'push','get']:
             if nrmods > 0:
                 if message is None:
                     message = j.tools.console.askString("commit message")
@@ -167,7 +182,7 @@ def jscode(action, name, url, message, branch, accounts, update, force=False, de
                 print("ADD/REMOVE/COMMIT")
                 client.commit(message=message, addremove=True)
 
-        if update or action in ['commit', 'update', 'push']:
+        if update or action in ['commit', 'update', 'push','get']:
             print("PULL")
             j.clients.git.pullGitRepo(url=client.remoteUrl)
 
