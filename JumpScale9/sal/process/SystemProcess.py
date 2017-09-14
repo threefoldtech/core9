@@ -64,6 +64,7 @@ class SystemProcess:
             command = "bash %s" % path
         else:
             # self.logger.info("exec:%s" % command)
+            command = "bash -c '%s'" % command
             path = None
 
         os.environ["PYTHONUNBUFFERED"] = "1"
