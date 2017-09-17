@@ -64,7 +64,6 @@ class SystemProcess:
             command = "bash %s" % path
         else:
             # self.logger.info("exec:%s" % command)
-            command = "bash -c '%s'" % command
             path = None
 
         os.environ["PYTHONUNBUFFERED"] = "1"
@@ -92,7 +91,8 @@ class SystemProcess:
         #     popenargs["preexec_fn"]=reset_signals
 
         p = Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=ON_POSIX,
-                  shell=useShell, env=os.environ, universal_newlines=False, cwd=cwd, bufsize=0, **popenargs)
+                  shell=useShell, env=os.environ, universal_newlines=False, cwd=cwd, bufsize=0, executable="/bin/bash",
+                  **popenargs)
 
         if async:
             return p
