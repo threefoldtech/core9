@@ -116,7 +116,7 @@ class RedisFactory:
         j.sal.process.execute("redis-cli shutdown", die=False, showout=False, outputStderr=False)
         j.do.killall("redis")
 
-    def start4core(self):
+    def start4core(self, timeout=20):
         """
         starts a redis instance in separate ProcessLookupError
         standard on $tmpdir/redis.sock
@@ -162,4 +162,11 @@ class RedisFactory:
         print(cmd)
         j.sal.process.execute(
             "redis-server --port 6379 --unixsocket %s/redis.sock --maxmemory 100000000 --daemonize yes" % tmpdir)
-        j.core.db = self.get4core()
+        limit_timeout = time.time() + timeout
+        while time.time() < limit_timeout:
+            j.core.db = self.get4core()
+            if j.core.db:
+                break
+            time.sleep(2)
+        else:
+            raise j.exceptions.Timeout("Couldn't start redis server")
