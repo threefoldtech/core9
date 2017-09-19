@@ -169,3 +169,5 @@ class RedisFactory:
             if j.core.db:
                 break
             time.sleep(2)
+        else:
+            raise j.exceptions.Timeout("Couldn't start redis server")
