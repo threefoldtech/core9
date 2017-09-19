@@ -24,6 +24,7 @@ class RedisFactory:
         self.clearCache()
         self.redisFound=redisFound
         self.__jslocation__ = "j.clients.redis"
+        self.timeout = 20
 
     def clearCache(self):
         self._redis = {}
@@ -162,4 +163,9 @@ class RedisFactory:
         print(cmd)
         j.sal.process.execute(
             "redis-server --port 6379 --unixsocket %s/redis.sock --maxmemory 100000000 --daemonize yes" % tmpdir)
-        j.core.db = self.get4core()
+        limit_timeout = time.time() + self.timeout
+        while time.time() < limit_timeout:
+            j.core.db = self.get4core()
+            if j.core.db:
+                break
+            time.sleep(2)
