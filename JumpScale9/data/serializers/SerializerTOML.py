@@ -1,5 +1,6 @@
 
 import pytoml
+# import toml
 
 from .SerializerBase import SerializerBase
 
@@ -7,7 +8,7 @@ from .SerializerBase import SerializerBase
 class SerializerTOML(SerializerBase):
 
     def dumps(self, obj):
-        return pytoml.dumps(obj)
+        return pytoml.dumps(obj, sort_keys=True)
 
     def loads(self, s):
         if isinstance(s, bytes):

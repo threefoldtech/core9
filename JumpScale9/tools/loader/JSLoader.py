@@ -228,6 +228,7 @@ class JSLoader():
 
         out = self.initPath
         print("* js9 path:%s" % out)
+        print("* js9 codecompletion path:%s" % outCC)
         self.initPath  # to make sure empty one is created
 
         content = GEN_START
@@ -240,6 +241,7 @@ class JSLoader():
 
         moduleList={}
         for name, path in j.application.config['plugins'].items():
+            print("find modules in jumpscale for : '%s'"%path)
             if j.sal.fs.exists(path, followlinks=True):
                 moduleList = self.findModules(path=path,moduleList=moduleList)
             else:
