@@ -13,7 +13,5 @@ class StateFactory:
     def get(self, path="/host/jumpscale9.toml"):
         """
         """
-        st = State(j.tools.executorLocal)
-        st._configPath = path
-        st.configLoad()
+        st = State(j.tools.executorLocal,path=path)
         return st

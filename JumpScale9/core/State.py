@@ -9,14 +9,17 @@ class State():
 
     """
 
-    def __init__(self, executor):
+    def __init__(self, executor,configPath=""):
         self.readonly = False
         self.executor = executor
         # if self.executor==j.tools.executorLocal:
-        if self.executor.exists("/etc/") and self.executor.platformtype.isMac == False:
-            self.configPath = "/etc/jumpscale9.toml"
+        if configPath=="":
+            if self.executor.exists("/etc/") and self.executor.platformtype.isMac == False:
+                self.configPath = "/etc/jumpscale9.toml"
+            else:
+                self.configPath = "%s/js9host/jumpscale9.toml" % self.executor.env["HOME"]
         else:
-            self.configPath = "%s/js9host/jumpscale9.toml" % self.executor.env["HOME"]
+            self.configPath=configPath
 
         if self.executor == j.tools.executorLocal:
             if j.sal.fs.exists(self.configPath):
