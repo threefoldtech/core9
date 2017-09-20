@@ -333,7 +333,11 @@ class ExecutorBase:
     @property
     def dir_paths(self):
         if "dirs" not in self.config:
-            self.initEnv()
+            if self.exists(self.state.configPath):
+                self.config = self.state.config
+            else:
+                dirConfig = self._getDirPathConfig()
+                self.config['dirs'] = pytoml.loads(dirConfig)
         return self.config["dirs"]
 
 
