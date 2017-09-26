@@ -166,6 +166,44 @@ class SerializersFactory:
 
         return self.types[type]
 
+    def fixType(self,val,default):
+        """
+        will convert val to type of default
+
+        , separated string goes to [] if default = []
+        """
+        if val == None or val == "" or val==[]:
+            return default
+
+        if j.data.types.list.check(default):
+            res=[]
+            if j.data.types.list.check(val):
+                for val0 in val:
+                    if val0 not in res:
+                        res.append(val0)
+            else:
+                val=str(val).replace("'","")
+                if "," in val:
+                    val=[item.strip() for item in val.split(",")]
+                    for val0 in val:
+                        if val0 not in res:
+                            res.append(val0)
+                else:
+                    if val not in res:
+                        res.append(val)
+        elif j.data.types.bool.check(default):
+            if str(val).lower() in ['true',"1","y","yes"]:
+                res=True
+            else:
+                res=False
+        elif j.data.types.int.check(default):
+            res=int(val)
+        elif j.data.types.float.check(default):
+            res=int(val)
+        else:
+            res=str(val)
+        return res    
+
 
 class Serializer:
 

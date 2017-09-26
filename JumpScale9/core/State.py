@@ -114,9 +114,6 @@ class State():
         get val from subdict
         """
         if key not in self.config:
-            print(8887)
-            from IPython import embed
-            embed(colors='Linux')
             self.configSet(key, val={}, save=True)
 
         if dkey not in self.config[key]:

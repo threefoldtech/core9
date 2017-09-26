@@ -249,15 +249,13 @@ class ExecutorBase:
         TME = '''
         [email]
         from = "info@incubaid.com"
-        smtp_port = 443
-        smtp_server = ""
 
         [me]
-        fullname = "This is my full name, needs to be replace"
+        fullname = "replace me"
         loginname = "someid"
 
         [ssh]
-        SSHKEYNAME = "somename"
+        sshkeyname = "somename"
 
         '''
 
@@ -328,7 +326,17 @@ class ExecutorBase:
         self.reset()
         self.cache.reset()
 
+        self.write_me_config()
+
         print ("initenv done on executor base")
+
+    def write_me_config(self):
+        """
+        if in container write: /hostcfg/me.toml
+        if in host write: ~/js9host/cfg/me.toml
+        """
+
+        from IPython import embed;embed(colors='Linux')
 
     @property
     def dir_paths(self):

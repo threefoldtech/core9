@@ -29,9 +29,11 @@ class DevelopToolsFactory:
 
     def dockerconfig(self):
         if self.iscontainer:
+            if not j.sal.fs.exists("/hostcfg/me.toml"):
+                j.tools.executorLocal.initEnv()
             cfg=pytoml.loads(j.sal.fs.readFile("/hostcfg/me.toml"))
             j.core.state.configSet("me",cfg["me"])
-            j.core.state.configSet("email",cfg["email"])            
+            j.core.state.configSet("email",cfg["email"])    
         else:
             cpath=j.dirs.HOMEDIR+"/.cfg/me.toml"
             if  j.sal.fs.exists(j.dirs.HOMEDIR+"/.cfg"):
@@ -41,7 +43,7 @@ class DevelopToolsFactory:
                     cfgnew["me"]=j.core.state.config["me"]
                     txt=pytoml.dumps(cfgnew,True)                    
                     j.sal.fs.writeFile(cpath,txt)
-                keyname=j.core.state.config["ssh"]["SSHKEYNAME"]
+                keyname=j.core.state.config["ssh"]["sshkeyname"]
                 spath=j.dirs.HOMEDIR+"/.ssh/%s.pub"%keyname
                 dpath=j.dirs.HOMEDIR+"/.cfg/ssh_%s.pub"%keyname.lower()
                 if j.sal.fs.exists(spath):

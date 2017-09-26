@@ -301,3 +301,6 @@ class Bash:
 
     def envDelete(self, key):
         return self.profileJS.envDelete(key)
+
+    def installTools(self):
+        self.executor.execute("curl https://raw.githubusercontent.com/Jumpscale/bash/master/install.sh?$RANDOM > /tmp/install.sh;bash /tmp/install.sh")

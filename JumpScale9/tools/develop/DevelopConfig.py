@@ -227,7 +227,7 @@ class SyncCodeForm(npyscreen.FormWithMenus, MyMenu):
 
         
     def sync(self):
-        j.tools.develop.syncCode(form=self)
+        j.tools.develop.monitor()
 
     def afterEditing(self):
         assert str(self.sync_deletefiles.value)=="1" or str(self.sync_deletefiles.value)=="0"
