@@ -115,7 +115,11 @@ def jscode(action, name, url, message, branch, accounts, update, force=False, de
     repos = _search_repos(accounts, name, interactive=not force)
     if name!=None and len(repos)!=1:
         raise RuntimeError("found 2 repo's for same name")
-        
+
+    if action == "list":
+        for provider, account, reponame, branchExisting, client, path in repos:
+            print("%-10s %-15s %-30s %s"%(provider, account, reponame,path))
+        return
 
     for provider, account, reponame, branchExisting, client, path in repos:
 

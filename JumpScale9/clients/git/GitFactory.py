@@ -52,14 +52,17 @@ class GitFactory:
 
         url_pattern_ssh = re.compile('^(git@)(.*?):(.*?)/(.*?)/?$')
         sshmatch = url_pattern_ssh.match(url)
+        url_pattern_ssh = re.compile('^(git@)(.*?)/(.*?)/(.*?)/?$')
+        sshmatch2 = url_pattern_ssh.match(url)
         url_pattern_http = re.compile('^(https?://)(.*?)/(.*?)/(.*?)/?$')
         httpmatch = url_pattern_http.match(url)
-        if not sshmatch:
+        if sshmatch:
+            match = sshmatch
+        elif sshmatch2:
+            match = sshmatch2
+        elif httpmatch:
             match = httpmatch
         else:
-            match = sshmatch
-
-        if not match:
             raise RuntimeError(
                 "Url is invalid. Must be in the form of 'http(s)://hostname/account/repo' or 'git@hostname:account/repo'\nnow:%s"%url)
 
@@ -604,8 +607,6 @@ class GitFactory:
 
         j.sal.fs.createDir(j.sal.fs.joinPaths(os.getenv("HOME"), "code"))
         repos = _getRepos(j.dirs.CODEDIR, account, name)
-        repos += _getRepos(j.sal.fs.joinPaths(os.getenv("HOME"),
-                                              "code"), account, name)
 
         accounts.sort()
 
