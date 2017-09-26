@@ -335,8 +335,8 @@ class ExecutorBase:
         if in container write: /hostcfg/me.toml
         if in host write: ~/js9host/cfg/me.toml
         """
-
-        from IPython import embed;embed(colors='Linux')
+        pass 
+        # from IPython import embed;embed(colors='Linux')
 
     @property
     def dir_paths(self):
