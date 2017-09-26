@@ -142,9 +142,9 @@ def jscode(action, name, url, message, branch, accounts, update, force=False, de
 
             nrmods = len(mods["D"]) + len(mods["M"]) + len(mods["N"]) + len(mods["R"])
 
-            if onlychanges and nrmods == 0:
-                if action != 'update' and action != 'update':
-                    continue
+            # if onlychanges and nrmods == 0:
+            #     if action != 'update' and action != 'update':
+            #         continue
 
             # if branch is not None:
             #     if branch != client.branchName:
@@ -165,9 +165,9 @@ def jscode(action, name, url, message, branch, accounts, update, force=False, de
                    len(mods["R"])))
 
         if action in ['commit', 'update', 'push','get']:
-            if nrmods == 0:
-                print("no need to commit/push is in sync")
-                continue
+            # if nrmods == 0:
+            #     print("no need to commit is in sync")
+            #     continue
             if nrmods > 0:
                 print("MODS:")
                 for key, item in list(mods.items()):

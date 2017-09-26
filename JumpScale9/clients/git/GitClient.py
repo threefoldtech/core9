@@ -210,8 +210,6 @@ class GitClient:
         return self.repo.index.commit(message)
 
     def push(self, force=False):    
-        print(678)
-        from IPython import embed;embed(colors='Linux')
         if force:
             self.repo.git.push('-f')
         else:
