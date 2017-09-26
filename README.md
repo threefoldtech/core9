@@ -25,13 +25,16 @@ pip3 install git+https://github.com/Jumpscale/core9@master
 ```
 
 will checkout in local directory & install
+this will not be in development mode !
 
-## how to install from master on own system (not in docker development mode)
-Should be executed under root.
+## how to install in development mode
 
-```
-cd {{code dir of jumpscale}}
-bash install.sh
+- install https://github.com/Jumpscale/bash & ZInstall_host_js9
+
+instructions
+```bash
+curl https://raw.githubusercontent.com/Jumpscale/bash/master/install.sh?$RANDOM > /tmp/install.sh;bash /tmp/install.sh
+ZInstall_host_js9
 ```
 
 ## how to use after install from python
