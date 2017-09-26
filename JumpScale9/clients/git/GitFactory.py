@@ -52,9 +52,9 @@ class GitFactory:
 
         url_pattern_ssh = re.compile('^(git@)(.*?):(.*?)/(.*?)/?$')
         sshmatch = url_pattern_ssh.match(url)
-        url_pattern_ssh = re.compile('^(git@)(.*?)/(.*?)/(.*?)/?$')
+        # url_pattern_ssh = re.compile('^(git@)(.*?)/(.*?)/(.*?)/?$')
         # sshmatch2 = url_pattern_ssh.match(url)
-        # url_pattern_http = re.compile('^(https?://)(.*?)/(.*?)/(.*?)/?$')
+        url_pattern_http = re.compile('^(https?://)(.*?)/(.*?)/(.*?)/?$')
         httpmatch = url_pattern_http.match(url)
         if sshmatch:
             match = sshmatch
