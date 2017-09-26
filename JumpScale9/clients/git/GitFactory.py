@@ -58,20 +58,24 @@ class GitFactory:
         httpmatch = url_pattern_http.match(url)
         if sshmatch:
             match = sshmatch
+            ssh=True
         elif sshmatch2:
             match = sshmatch2
+            ssh=True
         elif httpmatch:
             match = httpmatch
+            ssh=False
         else:
             raise RuntimeError(
                 "Url is invalid. Must be in the form of 'http(s)://hostname/account/repo' or 'git@hostname:account/repo'\nnow:%s"%url)
 
         protocol, repository_host, repository_account, repository_name = match.groups()
 
+        print("git match: proto:%s repohost:%s repoaccount:%s reponame:%s"%( protocol, repository_host, repository_account, repository_name))
         if sshmatch2:
             from IPython import embed;embed(colors='Linux')
             s
-            
+
         if protocol.startswith("git") and ssh is False:
             protocol = "https://"
 
