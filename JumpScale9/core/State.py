@@ -211,6 +211,7 @@ class State():
             path="/hostcfg"
         else:
             path="%s/js9host/cfg"% self.config["dirs"]["HOMEDIR"]
+            self.executor.execute("mkdir -p %s/js9host"% self.config["dirs"]["HOMEDIR"])
         if not self.executor.exists(path):
            self.executor.file_write(path,"")
         return path

@@ -1,5 +1,7 @@
 #for development mode
 
+cd /tmp
+
 echo "INSTALL BASHTOOLS"
 curl https://raw.githubusercontent.com/Jumpscale/bash/master/install.sh?$RANDOM > /tmp/install.sh;bash /tmp/install.sh
 
