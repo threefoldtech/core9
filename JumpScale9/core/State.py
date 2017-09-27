@@ -172,19 +172,49 @@ class State():
         self.configSave()
 
     def configSave(self):
+        """        
+        if in container write: /hostcfg/me.toml
+        if in host write: ~/js9host/cfg/me.toml
+        """        
         if self.readonly:
             raise j.exceptions.Input(
                 message="cannot write config to '%s', because is readonly" %
                 self, level=1, source="", tags="", msgpub="")
         if self.executor == j.tools.executorLocal:
-            print("configsave state on %s" % self.configPath)
+            # print("configsave state on %s" % self.configPath)
             path = self.configPath
             table_open_object = open(path, 'w')
             data = pytoml.dump(self.config, table_open_object, sort_keys=True)
         else:
-            print("configsave state")
+            # print("configsave state")
             data = pytoml.dumps(self.config)
             self.executor.file_write(self.configPath, data)
+
+        path=self.configMePath+"/me.toml"
+
+        cdict={}
+        cdict["me"]=self.config["me"]
+        cdict["email"]=self.config["email"]
+
+        if self.executor == j.tools.executorLocal:
+            # print("configsave state me on %s" % path)
+            table_open_object = open(path, 'w')
+            data = pytoml.dump(cdict, table_open_object, sort_keys=True)
+        else:
+            # print("configsave state me")
+            data = pytoml.dumps(cdict)
+            self.executor.file_write(path, data)     
+
+    @property
+    def configMePath(self):
+        if  self.executor.exists("/hostcfg"):
+            path="/hostcfg"
+        else:
+            path="%s/js9host/cfg"% self.config["dirs"]["HOMEDIR"]
+        if not self.executor.exists(path):
+           self.executor.file_write(path,"")
+        return path
+
 
     def reset(self):
         self.config = {}

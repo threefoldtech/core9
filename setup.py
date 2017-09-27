@@ -61,7 +61,7 @@ setup(
     license='Apache',
     packages=find_packages(),
 
-    # IF YOU CHANGE ANYTHING HERE, LET DESPIEGK NOW
+    # IF YOU CHANGE ANYTHING HERE, LET DESPIEGK NOW (DO NOT INSTALL ANYTHING WHICH NEEDS TO COMPILE)
     install_requires=[
         'GitPython>=2.1.3',
         'click>=6.7',

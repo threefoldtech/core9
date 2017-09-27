@@ -326,17 +326,8 @@ class ExecutorBase:
         self.reset()
         self.cache.reset()
 
-        self.write_me_config()
-
         print ("initenv done on executor base")
 
-    def write_me_config(self):
-        """
-        if in container write: /hostcfg/me.toml
-        if in host write: ~/js9host/cfg/me.toml
-        """
-        pass 
-        # from IPython import embed;embed(colors='Linux')
 
     @property
     def dir_paths(self):
