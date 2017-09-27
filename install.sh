@@ -1,5 +1,21 @@
 #for development mode
 
+export ZLogFile='/tmp/zutils.log'
+
+die() {
+    set +x
+    rm -f /tmp/sdwfa #to remove temp passwd for restic, just to be sure
+    echo
+    echo "**** ERRORLOG ****"
+    cat $ZLogFile
+    echo
+    echo "[-] something went wrong: $1"
+    echo
+    echo
+    # set -x
+    return 1
+}
+
 cd /tmp
 
 echo "INSTALL BASHTOOLS"
