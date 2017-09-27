@@ -24,7 +24,7 @@ class MemoryKeyValueStore(KeyValueStoreBase):
 
     @property
     def keys(self):
-        return [item for item in self.db.keys()]
+        return [item for item in self.db.copy().keys()]
 
     def get(self, key, secret="", die=False):
         key = str(key)
@@ -92,7 +92,7 @@ class MemoryKeyValueStore(KeyValueStoreBase):
         """
         remove all index entry that points to key
         """
-        for k, v in list(self.dbindex.items()):
+        for k, v in list(self.dbindex.copy().items()):
             if v == key:
                 del self.dbindex[k]
 
@@ -103,7 +103,7 @@ class MemoryKeyValueStore(KeyValueStoreBase):
         """
 
         res = set()
-        for item, key in self.dbindex.items():
+        for item, key in self.dbindex.copy().items():
             if re.match(regex, item) is not None:
                 if returnIndex is False:
                     for key2 in key.split(","):
