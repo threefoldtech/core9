@@ -191,6 +191,7 @@ class State():
             self.executor.file_write(self.configPath, data)
 
         path=self.configMePath+"/me.toml"
+        print (path)
 
         cdict={}
         cdict["me"]=self.config["me"]
@@ -211,7 +212,7 @@ class State():
             path="/hostcfg"
         else:
             path="%s/js9host/cfg"% self.config["dirs"]["HOMEDIR"]
-            self.executor.execute("mkdir -p %s/js9host"% self.config["dirs"]["HOMEDIR"])
+            self.executor.execute("mkdir -p %s/js9host/cfg"% self.config["dirs"]["HOMEDIR"])
         return path
 
 

@@ -334,11 +334,14 @@ class ExecutorBase:
         if "dirs" not in self.config:
             if self.exists(self.state.configPath):
                 self.config = self.state.config
+                if self.config=={}:
+                    self.execute("rm %s"%self.state.configPath)
+                    dirConfig = self._getDirPathConfig()
+                    self.config['dirs'] = pytoml.loads(dirConfig)
             else:
                 dirConfig = self._getDirPathConfig()
                 self.config['dirs'] = pytoml.loads(dirConfig)
         return self.config["dirs"]
-
 
     @property
     def platformtype(self):

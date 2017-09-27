@@ -27,7 +27,7 @@ source /opt/code/github/jumpscale/bash/zlibs.sh 2>&1 > /dev/null
 ZDoneReset
 
 echo "install js9"
-ZInstall_host_js9 || die "Could not install core9 of js9"
+ZInstall_host_js9 || die "Could not install core9 of js9" || exit 1
 
 pip3 install Cython
 pip3 install asyncssh
