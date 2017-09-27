@@ -9,8 +9,9 @@ JumpScale is a cloud automation product and a branch from what used to be Pylabs
 
 ## install in development env (RECOMMENDED)
 
-- this means will be installed in a local docker
-- see https://github.com/Jumpscale/bash
+```bash
+curl https://raw.githubusercontent.com/Jumpscale/core9/master/install.sh?$RANDOM > /tmp/install_js9.sh;bash /tmp/install_js9.sh
+```
 
 ## shortcut to install using pip3
 
@@ -26,16 +27,6 @@ pip3 install git+https://github.com/Jumpscale/core9@master
 
 will checkout in local directory & install
 this will not be in development mode !
-
-## how to install in development mode
-
-- install https://github.com/Jumpscale/bash & ZInstall_host_js9
-
-instructions
-```bash
-curl https://raw.githubusercontent.com/Jumpscale/bash/master/install.sh?$RANDOM > /tmp/install.sh;bash /tmp/install.sh
-ZInstall_host_js9
-```
 
 ## how to use after install from python
 
