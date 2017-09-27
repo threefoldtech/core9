@@ -13,7 +13,7 @@ die() {
     echo
     echo
     # set -x
-    return 1
+    exit 1
 }
 
 cd /tmp
@@ -24,9 +24,10 @@ curl https://raw.githubusercontent.com/Jumpscale/bash/master/install.sh?$RANDOM 
 echo "load zlibs"
 source ~/code/github/jumpscale/bash/zlibs.sh 2>&1 > /dev/null
 source /opt/code/github/jumpscale/bash/zlibs.sh 2>&1 > /dev/null
+ZDoneReset
 
 echo "install js9"
-ZInstall_host_js9 || die "Could not install core9 of js9" || return 1
+ZInstall_host_js9 || die "Could not install core9 of js9"
 
 pip3 install Cython
 pip3 install asyncssh
