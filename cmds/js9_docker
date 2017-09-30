@@ -1,4 +1,4 @@
-#!/usr/bin/env jspython
+#! /usr/bin/env python3
 from js9 import j
 import click
 
@@ -11,15 +11,16 @@ def cli():
 @click.option('--parsable', '-p', help='enable parsable output', is_flag=True, type=bool)
 def list(name, parsable):
     running = j.sal.docker.status()
+    host="localhost"
     if not parsable:
-        print(" %-25s %-80s %-20s %-10s %s" % ("Name", "Image", "host", "ssh port", "status"))
-        for name2, image, host, port, status in running:
+        print(" %-25s %-80s %-10s %s" % ("Name", "Image", "ssh port", "status"))
+        for name2, image,  port, status in running:
             if name and name != name2:
                 continue
-            print(" %-25s %-80s %-20s %-10s %s" % (name2, image, host, port, status))
+            print(" %-25s %-80s %-10s %s" % (name2, image, host, port, status))
     else:
         infos = []
-        for name2, image, host, port, status in running:
+        for name2, image, port, status in running:
             if name and name != name2:
                 continue
             infos.append({'name': name2, 'image': image, 'host': host, 'port': port, 'status': status})

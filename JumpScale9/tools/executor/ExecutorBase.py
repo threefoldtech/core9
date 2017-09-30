@@ -372,14 +372,17 @@ class ExecutorBase:
             content2=content.encode('utf-8')
             # sig = hashlib.md5(content2).hexdigest()
             cmd="set -e\n"
+            cmd="set +x\n"
             parent=j.sal.fs.getParent(path)
             cmd+="mkdir -p %s\n"%parent
 
             content_base64 = base64.b64encode(content2).decode()
             if self.platformtype.isMac:
-                cmd += 'echo "%s" | openssl base64 -D '%content_base64
+                # cmd += 'echo "%s" | openssl base64 -D '%content_base64   #DONT KNOW WHERE THIS COMES FROM?
+                cmd += 'echo "%s" | openssl base64 -A -d '%content_base64
             else:
                 cmd += 'echo "%s" | openssl base64 -A -d '%content_base64
+                
             if append:
                 cmd+=">> %s\n"%path
             else:
