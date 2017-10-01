@@ -1,8 +1,6 @@
-
 # Summary
 
 * [Introduction](README.md)
-
   - [Why Using JumpScale](Introduction/WhyJumpScale.md)
   - [Solutions Built with JumpScale](Introduction/JumpScaleSolutions.md)
 
