@@ -181,9 +181,9 @@ class TarantoolFactory:
 
         prefab.core.file_write(luapath, LUA)
 
-        prefab.tmux.createWindow("zconfig", "tarantool")
+        prefab.system.tmux.createWindow("zconfig", "tarantool")
 
-        prefab.tmux.executeInScreen(
+        prefab.system.tmux.executeInScreen(
             "zconfig",
             "tarantool",
             "cd $TMPDIR;rm -rf tarantool;mkdir tarantool;cd tarantool;tarantool %s" %

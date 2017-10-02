@@ -61,7 +61,7 @@
   - [prefab.processmanager](Prefab/prefab.processmanager.md)
   - [prefab.ssh](Prefab/prefab.ssh.md)
   - [prefab.systemservices](Prefab/prefab.systemservices.md)
-  - [prefab.tmux](Prefab/prefab.tmux.md)
+  - [prefab.system.tmux](Prefab/prefab.tmux.md)
 
 * [AYS](AYS/AYS-Introduction.md)
   - [Definitions](AYS/Definitions/0-Definitions.md)

@@ -340,13 +340,14 @@ class SSHClient:
         return self._prefab
 
     def ssh_authorize(self, user, key):
-        self.prefab.ssh.authorize(user, key)
+        self.prefab.system.ssh.authorize(user, key)
 
     def portforwardToLocal(self, remoteport, localport):
         self.portforwardKill(localport)
         C = "ssh -L %s:localhost:%s root@%s -p %s" % (remoteport, localport, self.addr, self.port)
         print(C)
-        j.tools.prefab.local.processmanager.ensure(cmd=C, name="ssh_%s" % localport, wait=0.5)
+        pm = j.tools.prefab.local.system.processManager.get()
+        pm.ensure(cmd=C, name="ssh_%s" % localport, wait=0.5)
         print("Test tcp port to:%s" % localport)
         if not j.sal.nettools.waitConnectionTest("127.0.0.1", localport, 10):
             raise RuntimeError("Cannot open ssh forward:%s_%s_%s" % (self, remoteport, localport))
@@ -354,4 +355,5 @@ class SSHClient:
 
     def portforwardKill(self, localport):
         print("kill portforward %s" % localport)
-        j.tools.prefab.local.processmanager.stop('ssh_%s' % localport)
+        pm = j.tools.prefab.local.system.processManager.get()
+        pm.processmanager.stop('ssh_%s' % localport)

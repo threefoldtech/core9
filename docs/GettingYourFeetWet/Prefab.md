@@ -28,7 +28,7 @@ prefab = j.tools.prefab.get(executor)
 
 - Install MongoDB:
   ```
-  prefab.apps.mongodb.install
+  prefab.db.mongodb.install
   ```
 
 - Copy a file:
