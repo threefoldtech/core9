@@ -36,8 +36,8 @@ class MyMenu():
                         shortcut=None, arguments=["MAIN"], keywords=None)    
         self.m1.addItem(text='Select Active Codedirs', onSelect=self.go2form,
                         shortcut=None, arguments=["FormSelectCodeDirs"], keywords=None)
-        self.m1.addItem(text='Edit Nodes', onSelect=self.go2form,
-                        shortcut=None, arguments=["FormNodes"], keywords=None)
+        self.m1.addItem(text='Edit Nodes', onSelect=self.editNodes,
+                        shortcut=None, arguments=[], keywords=None)
         self.m1.addItem(text='Select Active Nodes', onSelect=self.go2form,
                         shortcut=None, arguments=["FormSelectNodes"], keywords=None)
         self.m1.addItem(text='Sync Code', onSelect=self.go2form,
@@ -48,6 +48,9 @@ class MyMenu():
 
     def go2form(self, name):
         self.parentApp.change_form(name)
+
+    def editNodes(self):
+
 
     def onCleanExit(self):
         npyscreen.notify_wait("Goodbye!")
