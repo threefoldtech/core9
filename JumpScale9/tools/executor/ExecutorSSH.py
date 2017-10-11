@@ -149,9 +149,9 @@ class ExecutorSSH(ExecutorBase):
 
     @property
     def sshclient(self):
-        if self._sshclient is None:
-            return self._getSSHClient(key_filename=self.key_filename, passphrase=self.passphrase)
-        return self._sshclient
+        if self._sshclient and self._sshclient.transport.is_active():
+            return self._sshclient
+        return self._getSSHClient(key_filename=self.key_filename, passphrase=self.passphrase)
 
     def _getSSHClient(self, key_filename=None, passphrase=None):
         self._sshclient = j.clients.ssh.get(self.addr, self.port, login=self.login, passwd=self.passwd,
