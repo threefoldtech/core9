@@ -33,13 +33,16 @@ class DataUnits():
     def __init__(self):
         pass
 
+
 class Portal():
     def __init__(self):
         pass
 
+
 class AtYourService():
     def __init__(self):
         pass
+
 
 class Jumpscale9():
 
@@ -101,7 +104,7 @@ from .core.InstallTools import InstallTools
 j.do = InstallTools()
 
 if "dirs" not in j.core.state.config:
-    print ("####INITENV")
+    print("####INITENV")
     j.tools.executorLocal.initEnv()
 
 from .core.Dirs import Dirs

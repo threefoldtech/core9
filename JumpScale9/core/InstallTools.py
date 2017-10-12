@@ -790,146 +790,49 @@ class FSMethods():
 
         return filesreturn, depth
 
-    def download(
-            self,
-            url,
-            to="",
-            overwrite=True,
-            retry=3,
-            timeout=0,
-            login="",
-            passwd="",
-            minspeed=0,
-            multithread=False,
-            curl=False):
-        """
-        @return path of downloaded file
-        @param minspeed is kbytes per sec e.g. 50, if less than 50 kbytes during 10 min it will restart the download (curl only)
-        @param when multithread True then will use aria2 download tool to get multiple threads
-        """
-        def download(url, to, retry=3):
-            if timeout == 0:
-                handle = urlopen(url)
-            else:
-                handle = urlopen(url, timeout=timeout)
-            nr = 0
-            while nr < retry + 1:
-                try:
-                    with open(to, 'wb') as out:
-                        while True:
-                            data = handle.read(1024)
-                            if len(data) == 0:
-                                break
-                            out.write(data)
-                    handle.close()
-                    out.close()
-                    return
-                except Exception as e:
-                    self.logger.info("DOWNLOAD ERROR:%s\n%s" % (url, e))
-                    try:
-                        handle.close()
-                    except BaseException:
-                        pass
-                    try:
-                        out.close()
-                    except BaseException:
-                        pass
-                    handle = urlopen(url)
-                    nr += 1
 
-        self.logger.info(('Downloading %s ' % (url)))
-        if to == "":
-            to = '/tmp' + "/" + url.replace("\\", "/").split("/")[-1]
 
-        if overwrite:
-            if self.exists(to):
-                self.delete(to)
-                self.delete("%s.downloadok" % to)
-        else:
-            if self.exists(to) and self.exists("%s.downloadok" % to):
-                # print "NO NEED TO DOWNLOAD WAS DONE ALREADY"
-                return to
+    # def expandTarGz(
+    #         self,
+    #         path,
+    #         destdir,
+    #         deleteDestFirst=True,
+    #         deleteSourceAfter=False):
+    #     import gzip
 
-        self.createDir(self.getDirName(to))
+    #     self.lastdir = os.getcwd()
+    #     os.chdir('/tmp')
+    #     basename = os.path.basename(path)
+    #     if basename.find(".tar.gz") == -1:
+    #         raise RuntimeError("Can only expand a tar gz file now %s" % path)
+    #     tarfilename = ".".join(basename.split(".gz")[:-1])
+    #     self.delete(tarfilename)
 
-        if curl and self.checkInstalled("curl"):
-            minspeed = 0
-            if minspeed != 0:
-                minsp = "-y %s -Y 600" % (minspeed * 1024)
-            else:
-                minsp = ""
-            if login:
-                user = "--user %s:%s " % (login, passwd)
-            else:
-                user = ""
+    #     if deleteDestFirst:
+    #         self.delete(destdir)
 
-            cmd = "curl '%s' -o '%s' %s %s --connect-timeout 5 --retry %s --retry-max-time %s" % (
-                url, to, user, minsp, retry, timeout)
-            if self.exists(to):
-                cmd += " -C -"
-            self.logger.info(cmd)
-            self.delete("%s.downloadok" % to)
-            rc, out, err = self.execute(cmd, die=False)
-            if rc == 33:  # resume is not support try again withouth resume
-                self.delete(to)
-                cmd = "curl '%s' -o '%s' %s %s --connect-timeout 5 --retry %s --retry-max-time %s" % (
-                    url, to, user, minsp, retry, timeout)
-                rc, out, err = self.execute(cmd, die=False)
-            if rc:
-                raise RuntimeError(
-                    "Could not download:{}.\nErrorcode: {}".format(
-                        url, rc))
-            else:
-                self.touch("%s.downloadok" % to)
-        elif multithread:
-            raise RuntimeError("not implemented yet")
-        else:
-            download(url, to, retry)
-            self.touch("%s.downloadok" % to)
+    #     if j.core.platformtype.myplatform.isWindows:
+    #         cmd = "gzip -d %s" % path
+    #         os.system(cmd)
+    #     else:
+    #         handle = gzip.open(path)
+    #         with open(tarfilename, 'wb') as out:
+    #             for line in handle:
+    #                 out.write(line)
+    #         out.close()
+    #         handle.close()
 
-        return to
+    #     t = tarfile.open(tarfilename, 'r')
+    #     t.extractall(destdir)
+    #     t.close()
 
-    def expandTarGz(
-            self,
-            path,
-            destdir,
-            deleteDestFirst=True,
-            deleteSourceAfter=False):
-        import gzip
+    #     self.delete(tarfilename)
 
-        self.lastdir = os.getcwd()
-        os.chdir('/tmp')
-        basename = os.path.basename(path)
-        if basename.find(".tar.gz") == -1:
-            raise RuntimeError("Can only expand a tar gz file now %s" % path)
-        tarfilename = ".".join(basename.split(".gz")[:-1])
-        self.delete(tarfilename)
+    #     if deleteSourceAfter:
+    #         self.delete(path)
 
-        if deleteDestFirst:
-            self.delete(destdir)
-
-        if j.core.platformtype.myplatform.isWindows:
-            cmd = "gzip -d %s" % path
-            os.system(cmd)
-        else:
-            handle = gzip.open(path)
-            with open(tarfilename, 'wb') as out:
-                for line in handle:
-                    out.write(line)
-            out.close()
-            handle.close()
-
-        t = tarfile.open(tarfilename, 'r')
-        t.extractall(destdir)
-        t.close()
-
-        self.delete(tarfilename)
-
-        if deleteSourceAfter:
-            self.delete(path)
-
-        os.chdir(self.lastdir)
-        self.lastdir = ""
+    #     os.chdir(self.lastdir)
+    #     self.lastdir = ""
 
     def getParent(self, path):
         """
