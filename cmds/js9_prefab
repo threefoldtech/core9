@@ -3,16 +3,26 @@ from js9 import j
 
 import sys
 
-if len(sys.argv) != 2:
-    print("need to specify name of node to access as command line arg e.g. js9_ssh testnode")
+if len(sys.argv) < 2:
+    print("need to specify name of node to access as command line arg e.g. js9_ssh $testnode $optionalPrefabCommand")
+    print(" example: optionalPrefabCommand = 'js9.js9core.install()'")
 
 name = sys.argv[1]
 
-node = j.tools.develop.nodes.nodeGet(name)
+if len(sys.argv) == 3:
+    cmd = sys.argv[2]
+else:
+    cmd = ""
 
-p = node.prefab
+if name != "local":
+    node = j.tools.develop.nodes.nodeGet(name)
+    p = node.prefab
+else:
+    p = j.tools.prefab.local
 
 print("p=... prefab, do e.g. p.core...")
 
-from IPython import embed
-embed(colors='Linux')
+if cmd != "":
+    if not cmd.startswith("p."):
+        cmd = "p.%s" % cmd
+    exec(cmd)

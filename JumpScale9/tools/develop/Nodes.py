@@ -9,9 +9,7 @@ class Nodes():
 
     @property
     def configpath(self):
-        path = j.core.state.configMePath
-        j.sal.fs.createDir(path)
-        path = j.sal.fs.joinPaths(path, "nodes.cfg")
+        path = j.sal.fs.joinPaths(j.core.state.cfgPath, "nodes.cfg")
         if not j.sal.fs.exists(path):
             j.sal.fs.touch(path)
         return path

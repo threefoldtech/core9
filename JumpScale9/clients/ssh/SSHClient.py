@@ -130,9 +130,9 @@ class SSHClient:
         return self.client.get_transport()
 
     def _connect(self):
-        # with self._lock:
-        self.logger.info("Test sync ssh connection to %s:%s:%s" %
-                         (self.addr, self.port, self.login))
+        with self._lock:
+            self.logger.info("Test sync ssh connection to %s:%s:%s" %
+                             (self.addr, self.port, self.login))
 
         if j.sal.nettools.waitConnectionTest(self.addr, self.port, self.timeout) is False:
             self.logger.error("Cannot connect to ssh server %s:%s with login:%s and using sshkey:%s" %

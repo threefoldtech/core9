@@ -31,109 +31,112 @@ class ExecutorSSH(ExecutorBase):
     #     self.sshclient.ssh_authorize(user=self.login, key=key)
     #     # pass
 
-    def getMacAddr(self):
-        print("Get maccaddr")
-        rc, out, err = self.execute("ifconfig", showout=False)
+    # def getMacAddr(self):
+    #     print("Get maccaddr")
+    #     rc, out, err = self.execute("ifconfig", showout=False)
 
-        def checkOK(nic):
-            excl = ["dummy", "docker", "lxc", "mie", "veth",
-                    "vir", "vnet", "zt", "vms", "weave", "ovs"]
-            check = True
-            for item in excl:
-                if nic.startswith(item):
-                    check = False
-            return check
+    #     def checkOK(nic):
+    #         excl = ["dummy", "docker", "lxc", "mie", "veth",
+    #                 "vir", "vnet", "zt", "vms", "weave", "ovs"]
+    #         check = True
+    #         for item in excl:
+    #             if nic.startswith(item):
+    #                 check = False
+    #         return check
 
-        if out.find("HWaddr") != -1:
-            # e.g. Ubuntu 16.04
-            out = "\n".join([item for item in out.split("\n")
-                             if item.find("HWaddr") != -1])
+    #     if out.find("HWaddr") != -1:
+    #         # e.g. Ubuntu 16.04
+    #         out = "\n".join([item for item in out.split("\n")
+    #                          if item.find("HWaddr") != -1])
 
-            res = {}
-            for line in out.split("\n"):
-                line = line.strip()
+    #         res = {}
+    #         for line in out.split("\n"):
+    #             line = line.strip()
 
-                if line == "":
-                    continue
+    #             if line == "":
+    #                 continue
 
-                addr = line.split("HWaddr")[-1].strip()
-                name = line.split(" ")[0]
+    #             addr = line.split("HWaddr")[-1].strip()
+    #             name = line.split(" ")[0]
 
-                if checkOK(line):
-                    res[name] = addr
+    #             if checkOK(line):
+    #                 res[name] = addr
 
-            if "eth0" in res:
-                self.macaddr = res["eth0"]
-            else:
-                keys = [item for item in res.keys()]
-                keys.sort()
-                self.macaddr = res[keys[0]]
-        else:
-            lastnic = ""
-            for line in out.split("\n"):
-                print(line)
-                if len(out) == 0:
-                    continue
-                if lastnic == "" and out[0] != " ":
-                    if checkOK(line):
-                        lastnic = line.split(":")[0]
-                        print("lastnic:%s" % lastnic)
-                if lastnic != "" and line.find("Ethernet") != -1:
-                    self.macaddr = line.split(
-                        "ether")[1].strip().split(" ")[0].strip()
-                    break
+    #         if "eth0" in res:
+    #             self.macaddr = res["eth0"]
+    #         else:
+    #             keys = [item for item in res.keys()]
+    #             keys.sort()
+    #             self.macaddr = res[keys[0]]
+    #     else:
+    #         lastnic = ""
+    #         for line in out.split("\n"):
+    #             print(line)
+    #             if len(out) == 0:
+    #                 continue
+    #             if lastnic == "" and out[0] != " ":
+    #                 if checkOK(line):
+    #                     lastnic = line.split(":")[0]
+    #                     print("lastnic:%s" % lastnic)
+    #             if lastnic != "" and line.find("Ethernet") != -1:
+    #                 self.macaddr = line.split(
+    #                     "ether")[1].strip().split(" ")[0].strip()
+    #                 break
 
-        if self.macaddr == "":
-            raise j.exceptions.Input(
-                message="could not find macaddr", level=1, source="", tags="", msgpub="")
+    #     if self.macaddr == "":
+    #         raise j.exceptions.Input(
+    #             message="could not find macaddr", level=1, source="", tags="", msgpub="")
 
-        return self.macaddr
+    #     return self.macaddr
 
     @property
     def id(self):
         if self._id is None:
             self._id = '%s:%s' % (self.sshclient.addr, self.sshclient.port)
-            # self._id = '%s_%s' % (self.sshclient.addr, self.getMacAddr())
         return self._id
 
     def executeRaw(self, cmd, die=True, showout=False):
         return self.sshclient.execute(cmd, die=die, showout=showout)
 
-    def execute(self, cmds, die=True, checkok=False, showout=True, timeout=0, env={}, asScript=False):
+    def execute(self, cmds, die=True, checkok=False, showout=True, timeout=0, env={}, asScript=False, hide=False):
         """
         return (rc,out,err)
         """
+        # if cmds.find("cat /root/.bash_profile") != -1:
+        #     raise RuntimeError("JJ")
+        # if cmds.find("test -e /root/.bash_profile") != -1:
+        #     raise RuntimeError("JJ")
 
-        env2 = {}
-        if env:
-            env2 = self.env.copy()
-            env2.update(env)
-
-        cmds2 = self._transformCmds(cmds, die, checkok=checkok, env=env2)
+        cmds2 = self._transformCmds(cmds, die, checkok=checkok, env=env)
 
         if cmds.find("\n") != -1 and asScript:
             if showout:
                 self.logger.info("EXECUTESCRIPT} %s:%s:\n%s" %
                                  (self.sshclient.addr, self.sshclient.port, cmds))
             # sshkey = self.sshclient.key_filename or ""
-            return self._execute_script(content=cmds2, showout=showout, die=die, checkok=checkok)
+            return self._execute_script(content=cmds2, showout=showout, die=die, checkok=checkok, hide=hide)
 
         # online command, we use prefab
         if showout:
             self.logger.info("EXECUTE %s:%s: %s" %
                              (self.sshclient.addr, self.sshclient.port, cmds))
         else:
-            self.logger.debug("EXECUTE %s:%s: %s" %
-                              (self.sshclient.addr, self.sshclient.port, cmds))
+            if not hide:
+                self.logger.debug("EXECUTE %s:%s: %s" %
+                                  (self.sshclient.addr, self.sshclient.port, cmds))
 
-        rc, out, err = self.sshclient.execute(cmds2, die=die, showout=showout)
+        rc, out, err = self.sshclient.execute(
+            cmds2, die=die, showout=showout)
+
+        if hide is False:
+            self.logger.debug("EXECUTE OK")
 
         if checkok and die:
             out = self.docheckok(cmds, out)
 
         return rc, out, err
 
-    def _execute_script(self, content="", die=True, showout=True, checkok=None):
+    def _execute_script(self, content="", die=True, showout=True, checkok=None, hide=False):
         """
         @param remote can be ip addr or hostname of remote, if given will execute cmds there
         """
@@ -142,8 +145,9 @@ class ExecutorSSH(ExecutorBase):
             self.logger.info("EXECUTESCRIPT %s:%s: %s" %
                              (self.sshclient.addr, self.sshclient.port, content))
         else:
-            self.logger.debug("EXECUTESCRIPT %s:%s: %s" %
-                              (self.sshclient.addr, self.sshclient.port, content))
+            if not hide:
+                self.logger.debug("EXECUTESCRIPT %s:%s: %s" %
+                                  (self.sshclient.addr, self.sshclient.port, content))
 
         if content[-1] != "\n":
             content += "\n"
@@ -151,26 +155,20 @@ class ExecutorSSH(ExecutorBase):
         if die:
             content = "set -ex\n%s" % content
 
-        path = j.sal.fs.getTempFileName()
-        path2 = j.sal.fs.getTempFileName()
+        path = "/tmp/prefab_%s.sh" % j.data.idgenerator.generateRandomInt(
+            1, 100000)
         j.sal.fs.writeFile(path, content)
-
         sftp = self.sshclient.getSFTP()
-        parent_dir = j.sal.fs.getParent(path2)
-        try:
-            sftp.stat(parent_dir)
-        except FileNotFoundError:
-            sftp.mkdir(parent_dir)
-        sftp.put(path, path2)
+        sftp.put(path, path)  # is now always on tmp
 
-        cmd = "bash {}".format(path2)
+        cmd = "bash {}".format(path)
         rc, out, err = self.sshclient.execute(cmd, die=die, showout=showout)
 
         if checkok and die:
             out = self.docheckok(content, out)
 
         j.sal.fs.remove(path)
-        sftp.remove(path2)
+        sftp.remove(path)
 
         return rc, out, err
 

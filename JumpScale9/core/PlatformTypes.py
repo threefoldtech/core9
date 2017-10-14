@@ -56,8 +56,8 @@ class PlatformTypes():
         self._platformParents["arch32"] = ["arch", "linux32"]
         self._platformParents["arch64"] = ["arch", "linux64"]
         # is not really linux but better to say I is I guess (kds)
-        self._platformParents["darwin32"] = ["darwin", "linux32"]
-        self._platformParents["darwin64"] = ["darwin", "linux64"]
+        self._platformParents["darwin32"] = ["darwin"]
+        self._platformParents["darwin64"] = ["darwin"]
         self._platformParents["osx64"] = ["darwin64", "osx"]
         self._platformParents["debian"] = ["ubuntu"]
         self._platformParents["debian32"] = ["debian", "linux32"]
@@ -102,11 +102,10 @@ class PlatformType():
         # JSBase.__init__(self)
         self.myplatform = name
         self._platformtypes = None
-        self._uname = None
         self._is64bit = None
         self._osversion = None
         self._hostname = None
-        self._osname = None
+        self._uname = None
         if executor is None:
             self.executor = j.tools.executorLocal
         else:
@@ -127,18 +126,25 @@ class PlatformType():
 
     @property
     def uname(self):
-        if self._uname is None:
-            rc, self._uname, err = self.executor.execute(
-                "uname -mnprs", showout=False, timeout=3, die=False)
-            self._uname = self._uname.strip()
-            if self._uname.find("warning: setlocale") != -1:
+        if self._uname == None:
+            _uname = self.executor.stateOnSystem["uname"]
+            if _uname.find("warning: setlocale") != -1:
                 j.application._fixlocale = True
+                print("NEED TO FIX TERMINFO IN EXECUTOR, now only for local")
+                from IPython import embed
+                embed(colors='Linux')
                 os.environ["LC_ALL"] = 'C.UTF-8'
                 os.environ["TERMINFO"] = 'xterm-256colors'
-            self._uname = self._uname.split("\n")[0]
-            self._osname, self._hostname, self._osversion, self._cpu, self._platform = self._uname.split(
+            _uname = _uname.split("\n")[0]
+            _tmp, self._hostname, _osversion, self._cpu, self._platform = _uname.split(
                 " ")
-            self._osname = self._osname.lower()
+            if self.osname == "darwin":
+                self._osversion = _osversion
+            else:
+                # is for ubuntu
+                if "version_id" in self.executor.stateOnSystem:
+                    self._osversion = self.executor.stateOnSystem["version_id"]
+            self._uname = _uname
         return self._uname
 
     @property
@@ -162,7 +168,9 @@ class PlatformType():
     def osversion(self):
         self.uname
         if self._osversion is None:
+            raise RuntimeError("need to fix, osversion should not be none")
             # print("####OSVERSION")
+            # TELL KRISTOF YOU GOT HERE
             rc, lsbcontent, err = self.executor.execute(
                 "cat /etc/*-release", replaceArgs=False, showout=False, die=False)
             if rc == 0:
@@ -180,18 +188,9 @@ class PlatformType():
 
     @property
     def osname(self):
-        if self._osname is None:
-            # print("####OSNAME")
-            pkgman2dist = {
-                'apt-get': 'ubuntu', 'brew': 'darwin', 'yum': 'fedora', 'apk': 'alpine', 'pacman': 'arch', }
-            for pkgman, dist in pkgman2dist.items():
-                rc, _, err = self.executor.execute(
-                    "which %s" % pkgman, showout=False, die=False, checkok=False)
-                if rc == 0:
-                    self._osname = pkgman2dist[pkgman]
-                    return self._osname
-            raise RuntimeError("could not define osname")
-        return self._osname
+        if "os_type" not in self.executor.stateOnSystem:
+            return "unknown"
+        return self.executor.stateOnSystem["os_type"]
 
     def checkMatch(self, match):
         """
@@ -259,12 +258,7 @@ class PlatformType():
     @property
     def isVirtualBox(self):
         '''Check whether the system supports VirtualBox'''
-        if self.isWindows:
-            # TODO: P3 Implement proper check if VBox on Windows is supported
-            return False
-        exitcode, stdout, stderr = j.sal.process.run(
-            'lsmod |grep vboxdrv |grep -v grep', stopOnError=False)
-        return exitcode == 0
+        return self.executor.stateOnSystem["vboxdrv"]
 
     # @property
     # def isHyperV(self):

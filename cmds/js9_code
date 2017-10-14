@@ -29,25 +29,24 @@ def _repo_info(name, accounts):
 
 
 def _init_action():
-    if "me" not in j.application.config:
-        j.application.config["me"] = {}
+    if "me" not in j.core.state.configMe:
+        raise RuntimeError("did not find me in j.core.state.configMe")
 
-    if "fullname" not in j.application.config["me"]:
-        j.application.config["me"]["fullname"] = input('Your Full Name: ')
-        j.core.state.configSave()
-    if "loginname" not in j.application.config["me"]:
-        j.application.config["me"]["loginname"] = input('Your Loginname: ')
-        j.core.state.configSave()
-    if "email" not in j.application.config["me"]:
-        j.application.config["me"]["email"] = input('Your Email: ')
-        j.core.state.configSave()
+    def check():
+        notok = False
+        for item in ["fullname", "loginname", "email"]:
+            if item not in j.core.state.configMe["me"]:
+                return True
+            if j.core.state.configMe["me"][item].strip() == "":
+                return True
+
+    while check():
+        j.do.executeInteractive("js9_config")
 
     os.system('git config --global user.name "%s"' %
-              j.application.config["me"]["loginname"])
+              j.core.state.configMe["me"]["loginname"])
     os.system('git config --global user.email "%s"' %
-              j.application.config["me"]["email"])
-    # print('Please logout and relogin for your ssh keys to be loaded')
-    # sys.exit(0)
+              j.core.state.configMe["me"]["email"])
 
 
 _init_action()
@@ -128,7 +127,8 @@ def jscode(action, name, url, message, branch, accounts, update, force=False, de
 
         if not client.remoteUrl.startswith("git"):
             newUrl = j.clients.git.rewriteGitRepoUrl(client.remoteUrl)[-2]
-            client.setRemoteURL(newUrl)
+            if "jumpscale" in newUrl.lower() or "itsyouonline" in newUrl or "greenitglobe" in newUrl or "g8os" in newUrl or "greenitglobe" in newUrl:
+                client.setRemoteURL(newUrl)
 
         if action == "update" and deletechanges:
             print(("force update %s/%s/%s" % (provider, account, reponame)))

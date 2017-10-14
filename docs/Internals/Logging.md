@@ -142,7 +142,7 @@ As you can see the JumpScale module are properly shown and use the default loggi
 
 # Configuration
 
-Logging configuration is located by default in `/optvar/hrd/system/logging.hrd`.
+Logging configuration is located by default in jumpscale config file
 
 There are 3 options you can configure.
 

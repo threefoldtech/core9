@@ -93,7 +93,8 @@ class LoggerFactory:
         self.DEV = DEV
         self._quiet = False
 
-        self.logging = self.root_logger = logging.getLogger(self.root_logger_name)
+        self.logging = self.root_logger = logging.getLogger(
+            self.root_logger_name)
 
     def test(self):
 
@@ -123,9 +124,9 @@ class LoggerFactory:
         # FOLLOWING PROVES THAT THE LOOKING FOR FILE & PATH INFO IS THE SLOWING DOWN FACTOR
         # j.tools.performancetrace.profile("perftest(logger)", globals=locals())  # {"perftest": perftest}
 
-    def init(self, mode="DEV", level=10, filter=[]):
-        self.set_mode(mode.upper())
-        self.set_level(level.upper())
+    def init(self, mode="DEV", level=20, filter=[]):
+        self.set_mode(mode)
+        self.set_level(level)
         if filter:
             self.handlers.consoleHandler.addFilter(ModuleFilter(filter))
 
@@ -178,8 +179,11 @@ class LoggerFactory:
 
     def set_level(self, level):
         """
-        level 0 to 10
-        10 being most verbose (need to verify this)
+        TODO: *1 not clear !!! describe well.
+
+        10=debug
+        20=info
+
         """
         for handler in self.handlers._all:
             handler.setLevel(level)

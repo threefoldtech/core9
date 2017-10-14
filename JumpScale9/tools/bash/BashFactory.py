@@ -33,7 +33,8 @@ class Profile:
         self._path = []
         self._includes = []
 
-        content = self.executor.file_read(self.pathProfile)
+        # content = self.executor.file_read(self.pathProfile)
+        content = self.executor.stateOnSystem["bashprofile"].strip()
 
         for match in Profile.env_pattern.finditer(content):
             self._env[match.group(1)] = match.group(2)
@@ -48,10 +49,8 @@ class Profile:
             _path = set()
         # make sure to add the js bin dir to the path
         if "SSHKEYNAME" not in self._env:
-            self._env['SSHKEYNAME'] = os.environ.get('SSHKEYNAME', 'id_rsa')
-        if "HOMEDIR" not in self._env:
-            self._env['HOMEDIR'] = os.environ.get(
-                'HOMEDIR', os.environ.get('HOME', '/root'))
+            self._env['sshkeyname'] = os.environ.get('SSHKEYNAME', 'id_rsa')
+
         _path.add(self.executor.dir_paths['BINDIR'])
 
         for item in _path:
@@ -280,12 +279,7 @@ class Bash:
     @property
     def profileDefault(self):
         if self._profileDefault is None:
-            path = ""
-            ppath = j.sal.fs.joinPaths(self.home, ".jsenv.sh")
-            if self.executor.exists(ppath):
-                path = ppath
-            if path == "":
-                path = "~/.bash_profile"
+            path = "~/.bash_profile"
             self._profileDefault = self.profileGet(path)
         return self._profileDefault
 

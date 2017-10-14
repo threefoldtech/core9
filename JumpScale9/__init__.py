@@ -1,4 +1,5 @@
 
+
 class Sal():
     def __init__(self):
         pass
@@ -60,6 +61,13 @@ class Jumpscale9():
 
 
 j = Jumpscale9()
+
+
+class Empty():
+    pass
+
+j.dirs = Empty()
+j.dirs.TMPDIR = "/tmp"
 
 from .data.text.Text import Text
 j.data.text = Text()
@@ -157,5 +165,11 @@ if logging_cfg:
     filter_module = logging_cfg.get('filter', [])
     j.logger.init(mode, level, filter_module)
 else:
-    j.logger.init('DEV', 'DEBUG', ['j.sal.fs', 'j.application'])
+    #DEV or PRODUCTION
+    j.logger.init('DEV', 10, ['j.sal.fs',
+                              'j.application', "j.sal.process"])
+
+    j.logger.set_level(10)
+
+
 # j.clients.redis.start4core()

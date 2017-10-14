@@ -12,32 +12,20 @@ class State():
     def __init__(self, executor, configPath=""):
         self.readonly = False
         self.executor = executor
-        # if self.executor==j.tools.executorLocal:
-        if configPath == "":
-            if self.executor.exists("/etc/") and self.executor.platformtype.isMac == False:
-                self.configPath = "/etc/jumpscale9.toml"
-            else:
-                self.configPath = "%s/js9host/jumpscale9.toml" % self.executor.env["HOME"]
-        else:
-            self.configPath = configPath
-
         self.load()
 
-    def load(self):
-        if self.executor == j.tools.executorLocal:
-            if j.sal.fs.exists(self.configPath):
-                # print("config load state local:%s"%self.configPath)
-                table_open_object = open(self.configPath, 'r')
-                self.config = pytoml.load(table_open_object)
-            else:
-                self.config = {}
-        else:
-            if self.executor.exists(self.configPath):
-                # print("config load state ssh: %s"%self.configPath)
-                cc = self.executor.file_read(self.configPath)
-                self.config = pytoml.loads(cc)
-            else:
-                self.config = {}
+    def load(self, reset=False):
+        if reset:
+            self.executor.reset()
+        self.configPath = self.executor.stateOnSystem["path_jscfg"] + \
+            "/jumpscale9.toml"
+        self.configMePath = self.executor.stateOnSystem["path_jscfg"] + "/me.toml"
+        self.config = self.executor.stateOnSystem["cfg_js9"]
+        self.configMe = self.executor.stateOnSystem["cfg_me"]
+
+    @property
+    def cfgPath(self):
+        return self.executor.stateOnSystem["path_jscfg"]
 
     @property
     def versions(self):
@@ -178,47 +166,37 @@ class State():
         if in container write: /hostcfg/me.toml
         if in host write: ~/js9host/cfg/me.toml
         """
+        print("configsave")
         if self.readonly:
             raise j.exceptions.Input(
                 message="cannot write config to '%s', because is readonly" %
                 self, level=1, source="", tags="", msgpub="")
-        if self.executor == j.tools.executorLocal:
-            # print("configsave state on %s" % self.configPath)
-            path = self.configPath
-            table_open_object = open(path, 'w')
-            data = pytoml.dump(self.config, table_open_object, sort_keys=True)
-        else:
-            # print("configsave state")
-            data = pytoml.dumps(self.config)
-            self.executor.file_write(self.configPath, data)
+        # if self.executor == j.tools.executorLocal:
+        #     # print("configsave state on %s" % self.configPath)
+        #     path = self.configPath
+        #     table_open_object = open(path, 'w')
+        #     data = pytoml.dump(self.config, table_open_object, sort_keys=True)
+        # else:
+        # print("configsave state")
+        data = pytoml.dumps(self.config)
+        self.executor.file_write(self.configPath, data)
+        data = pytoml.dumps(self.configMe)
+        self.executor.file_write(self.configMePath, data)
 
-        if "me" in self.config:
+        # if "me" in self.config:
 
-            path = self.configMePath + "/me.toml"
-            print(path)
+        #     cdict = {}
+        #     cdict["me"] = self.config["me"]
+        #     cdict["email"] = self.config["email"]
 
-            cdict = {}
-            cdict["me"] = self.config["me"]
-            cdict["email"] = self.config["email"]
-
-            if self.executor == j.tools.executorLocal:
-                # print("configsave state me on %s" % path)
-                table_open_object = open(path, 'w')
-                data = pytoml.dump(cdict, table_open_object, sort_keys=True)
-            else:
-                # print("configsave state me")
-                data = pytoml.dumps(cdict)
-                self.executor.file_write(path, data)
-
-    @property
-    def configMePath(self):
-        if self.executor.exists("/hostcfg"):
-            path = "/hostcfg"
-        else:
-            path = "%s/js9host/cfg" % self.config["dirs"]["HOMEDIR"]
-            self.executor.execute("mkdir -p %s/js9host/cfg" %
-                                  self.config["dirs"]["HOMEDIR"])
-        return path
+        #     if self.executor == j.tools.executorLocal:
+        #         # print("configsave state me on %s" % path)
+        #         table_open_object = open(self.configMePath, 'w')
+        #         data = pytoml.dump(cdict, table_open_object, sort_keys=True)
+        #     else:
+        #         # print("configsave state me")
+        #         data = pytoml.dumps(cdict)
+        #         self.executor.file_write(self.configMePath, data)
 
     def reset(self):
         self.config = {}

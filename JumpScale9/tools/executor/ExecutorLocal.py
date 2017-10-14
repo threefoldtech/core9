@@ -14,11 +14,9 @@ class ExecutorLocal(ExecutorBase):
         self._logger = None
         self.__jslocation__ = "j.tools.executorLocal"
 
-        self.cache=j.data.cache.get(id="executor:%s"%self.id)
+        self.cache = j.data.cache.get(id="executor:%s" % self.id)
 
         # self.init()
-
-        
 
     @property
     def logger(self):
@@ -29,7 +27,7 @@ class ExecutorLocal(ExecutorBase):
     def executeRaw(self, cmd, die=True, showout=False):
         return self.execute(cmd, die=die, showout=showout)
 
-    def execute(self, cmds, die=True, checkok=None, showout=False, outputStderr=False, timeout=1000, env={}):
+    def execute(self, cmds, die=True, checkok=None, showout=False, outputStderr=False, timeout=1000, env={}, hide=False):
         if env:
             self.env.update(env)
         # if self.debug:
@@ -74,7 +72,7 @@ class ExecutorLocal(ExecutorBase):
                 recursive=recursive)
         else:
             j.sal.fs.copyFile(source, dest, overwriteFile=True)
-        self.cache.reset()            
+        self.cache.reset()
 
     def download(self, source, dest, source_prefix=""):
         if source_prefix != "":
@@ -92,7 +90,5 @@ class ExecutorLocal(ExecutorBase):
             rsync=True,
             ssh=False)
 
-
-    def file_read(self,path):
+    def file_read(self, path):
         return j.sal.fs.readFile(path)
-
