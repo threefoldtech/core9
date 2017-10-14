@@ -62,7 +62,7 @@ class PlatformTypes():
         self._platformParents["debian"] = ["ubuntu"]
         self._platformParents["debian32"] = ["debian", "linux32"]
         self._platformParents["debian64"] = ["debian", "linux64"]
-        self._cache={}
+        self._cache = {}
 
         self.__jslocation__ = "j.core.platformtype"
 
@@ -89,15 +89,16 @@ class PlatformTypes():
         """
         @param executor is an executor object, None or $hostname:$port or $ipaddr:$port or $hostname or $ipaddr
         """
-        key=executor.id
+        key = executor.id
         if not key in self._cache:
-            self._cache[key]= PlatformType(executor=executor)
+            self._cache[key] = PlatformType(executor=executor)
         return self._cache[key]
 
 
 class PlatformType():
 
     def __init__(self, name="", executor=None):
+        # print("INIT PLATFORMTYPE:%s" % executor)
         # JSBase.__init__(self)
         self.myplatform = name
         self._platformtypes = None
@@ -137,7 +138,7 @@ class PlatformType():
             self._uname = self._uname.split("\n")[0]
             self._osname, self._hostname, self._osversion, self._cpu, self._platform = self._uname.split(
                 " ")
-            self._osname=self._osname.lower()
+            self._osname = self._osname.lower()
         return self._uname
 
     @property
@@ -161,6 +162,7 @@ class PlatformType():
     def osversion(self):
         self.uname
         if self._osversion is None:
+            # print("####OSVERSION")
             rc, lsbcontent, err = self.executor.execute(
                 "cat /etc/*-release", replaceArgs=False, showout=False, die=False)
             if rc == 0:
@@ -178,14 +180,17 @@ class PlatformType():
 
     @property
     def osname(self):
-        pkgman2dist = {
-             'apt-get': 'ubuntu', 'brew': 'darwin','yum': 'fedora', 'apk': 'alpine','pacman': 'arch',}
-        for pkgman, dist in pkgman2dist.items():
-            rc, _, err = self.executor.execute("which %s" % pkgman, showout=False, die=False, checkok=False)
-            if rc == 0:
-                self._osname = pkgman2dist[pkgman]
-                return self._osname
-        raise RuntimeError("could not define osname")                
+        if self._osname is None:
+            # print("####OSNAME")
+            pkgman2dist = {
+                'apt-get': 'ubuntu', 'brew': 'darwin', 'yum': 'fedora', 'apk': 'alpine', 'pacman': 'arch', }
+            for pkgman, dist in pkgman2dist.items():
+                rc, _, err = self.executor.execute(
+                    "which %s" % pkgman, showout=False, die=False, checkok=False)
+                if rc == 0:
+                    self._osname = pkgman2dist[pkgman]
+                    return self._osname
+            raise RuntimeError("could not define osname")
         return self._osname
 
     def checkMatch(self, match):

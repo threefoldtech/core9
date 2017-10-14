@@ -99,42 +99,6 @@ class SSHClientFactory:
             if key in self.cache:
                 self.cache.pop(key)
 
-    def SSHKeyGetFromAgentPub(self, keyname="", die=True):
-        rc, out, err = j.tools.executorLocal.execute("ssh-add -L", die=False)
-        if rc > 1:
-            err = "Error looking for key in ssh-agent: %s", out
-            if die:
-                raise j.exceptions.RuntimeError(err)
-            else:
-                self.logger.error(err)
-                return None
-
-        if keyname == "":
-            paths = []
-            for line in out.splitlines():
-                line = line.strip()
-                paths.append(line.split(" ")[-1])
-            if len(paths) == 0:
-                raise j.exceptions.RuntimeError(
-                    "could not find loaded ssh-keys")
-
-            path = j.tools.console.askChoice(
-                paths, "Select ssh key to push (public part only).")
-            keyname = j.sal.fs.getBaseName(path)
-
-        for line in out.splitlines():
-            delim = (".ssh/%s" % keyname)
-            if line.endswith(delim):
-                content = line.strip()
-                content = content
-                return content
-        err = "Did not find key with name:%s, check its loaded in ssh-agent with ssh-add -l" % keyname
-        if die:
-            raise j.exceptions.RuntimeError(err)
-        else:
-            self.logger.error(err)
-        return None
-
     def close(self):
         with self._lock:
             for key, client in self.cache.items():
@@ -209,30 +173,6 @@ class SSHClientFactory:
             self.logger.info("ssh key:%s NOT loaded" % keyNamePath)
             return False
 
-    # def _askItemsFromList(self, items, msg=""):
-    #     if len(items) == 0:
-    #         return []
-    #     if msg != "":
-    #         print(msg)
-    #     nr = 0
-    #     for item in items:
-    #         nr += 1
-    #         print(" - %s: %s" % (nr, item))
-    #     print("select item(s) from list (nr or comma separated list of nr, * is all)")
-    #     item = input()
-    #     if item.strip() == "*":
-    #         return items
-    #     elif item.find(",") != -1:
-    #         res = []
-    #         itemsselected = [item.strip() for item in item.split(",") if item.strip() != ""]
-    #         for item in itemsselected:
-    #             item = int(item) - 1
-    #             res.append(items[item])
-    #         return res
-    #     else:
-    #         item = int(item) - 1
-    #         return [items[item]]
-
     def SSHKeysLoad(self, path=None, duration=3600 * 24, die=False):
         """
         will see if ssh-agent has been started
@@ -274,50 +214,22 @@ class SSHClientFactory:
             j.do.executeInteractive(cmd)
 
     def SSHKeyGetPathFromAgent(self, keyname, die=True):
-        try:
-            # TODO: why do we use subprocess here and not j.do.execute?
-            out = subprocess.check_output(["ssh-add", "-L"])
-        except BaseException:
-            return None
-
-        for line in out.splitlines():
-            delim = ("/%s" % keyname).encode()
-
-            if line.endswith(delim):
-                line = line.strip()
-                keypath = line.split(" ".encode())[-1]
-                content = line.split(" ".encode())[-2]
-                if not j.sal.fs.exists(path=keypath):
-                    if j.sal.fs.exists("keys/%s" % keyname):
-                        keypath = "keys/%s" % keyname
-                    else:
-                        raise RuntimeError(
-                            "could not find keypath:%s" % keypath)
-                return keypath.decode()
+        for item in j.clients.ssh.SSHKeysListFromAgent():
+            if item.endswith(keyname):
+                return item
         if die:
             raise RuntimeError(
                 "Did not find key with name:%s, check its loaded in ssh-agent with ssh-add -l" %
                 keyname)
-        return None
 
     def SSHKeyGetFromAgentPub(self, keyname, die=True):
-        try:
-            # TODO: why do we use subprocess here and not j.do.execute?
-            out = subprocess.check_output(["ssh-add", "-L"])
-        except BaseException:
-            return None
-
-        for line in out.splitlines():
-            delim = (".ssh/%s" % keyname).encode()
-            if line.endswith(delim):
-                content = line.strip()
-                content = content.decode()
-                return content
+        for item in j.clients.ssh.SSHKeysListFromAgent():
+            if item.endswith(keyname):
+                return j.sal.fs.readFile(item + ".pub")
         if die:
             raise RuntimeError(
                 "Did not find key with name:%s, check its loaded in ssh-agent with ssh-add -l" %
                 keyname)
-        return None
 
     def SSHKeysListFromAgent(self, keyIncluded=False):
         """
@@ -339,104 +251,25 @@ class SSHClientFactory:
         else:
             return list(map(lambda key: key[2], keys))
 
-    def SSHEnsureKeyname(self, keyname="", username="root"):
-        if not j.sal.fs.exists(keyname):
-            rootpath = "/root/.ssh/" if username == "root" else "/home/%s/.ssh/"
-            fullpath = j.do.joinPaths(rootpath, keyname)
-            if j.sal.fs.exists(fullpath):
-                return fullpath
-        return keyname
+    # def SSHEnsureKeyname(self, keyname="", username="root"):
+    #     if not j.sal.fs.exists(keyname):
+    #         rootpath = "/root/.ssh/" if username == "root" else "/home/%s/.ssh/"
+    #         fullpath = j.do.joinPaths(rootpath, keyname)
+    #         if j.sal.fs.exists(fullpath):
+    #             return fullpath
+    #     return keyname
 
-    def authorize_user(self, sftp_client, ip_address, keyname, username):
-        basename = j.sal.fs.getBaseName(keyname)
-        tmpfile = "/home/%s/.ssh/%s" % (username, basename)
-        self.logger.info("push key to /home/%s/.ssh/%s" % (username, basename))
-        sftp_client.put(keyname, tmpfile)
-
-        # cannot upload directly to root dir
-        auth_key_path = "/home/%s/.ssh/authorized_keys" % username
-        cmd = "ssh %s@%s 'cat %s | sudo tee -a %s '" % username, ip_address, tmpfile, auth_key_path
-        self.logger.info(
-            "do the following on the console\nsudo -s\ncat %s >> %s" %
-            (tmpfile, auth_key_path))
-        self.logger.info(cmd)
-        j.do.executeInteractive(cmd)
-
-    def authorize_root(self, sftp_client, ip_address, keyname):
-        tmppath = '/tmp/authorized_keys'
-        auth_key_path = "/root/.ssh/authorized_keys"
-        j.do.delete(tmppath)
-        try:
-            sftp_client.get(auth_key_path, tmppath)
-        except Exception as e:
-            if str(e).find("No such file") != -1:
-                try:
-                    auth_key_path += "2"
-                    sftp_client.get(auth_key_path, tmppath)
-                except Exception as e:
-                    if str(e).find("No such file") != -1:
-                        j.sal.fs.writeFile(tmppath, "")
-                    else:
-                        raise RuntimeError(
-                            "Could not get authorized key,%s" % e)
-
-            C = j.sal.fs.readFile(tmppath)
-            Cnew = j.sal.fs.readFile(keyname)
-            key = Cnew.split(" ")[1]
-            if C.find(key) == -1:
-                C2 = "%s\n%s\n" % (C.strip(), Cnew)
-                C2 = C2.strip() + "\n"
-                j.sal.fs.writeFile(tmppath, C2)
-                self.logger.info("sshauthorized adjusted")
-                sftp_client.put(tmppath, auth_key_path)
-            else:
-                self.logger.info("ssh key was already authorized")
-
-    def SSHAuthorizeKey(
-            self,
-            remoteipaddr,
-            keyname,
-            login="root",
-            passwd=None,
-            sshport=22,
-            removeothers=False):
+    def SSHKnownHostsRemoveItem(self, item):
         """
-        this required ssh-agent to be loaded !!!
-        the keyname is the name of the key as loaded in ssh-agent
-
-        if remoteothers==True: then other keys will be removed
+        item is ip addr or hostname of the file we need to remove
         """
-        keyname = self.SSHEnsureKeyname(keyname=keyname, username=login)
-        import paramiko
-        paramiko.util.log_to_file("/tmp/paramiko.log")
-        ssh = paramiko.SSHClient()
-
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        self.logger.info("ssh connect:%s %s" % (remoteipaddr, login))
-
-        if not self.SSHKeysListFromAgent(j.sal.fs.getBaseName(keyname)):
-            self.SSHKeysLoad(self.getParent(keyname))
-        ssh.connect(
-            remoteipaddr,
-            username=login,
-            password=passwd,
-            allow_agent=True,
-            look_for_keys=False)
-        self.logger.info("ok")
-
-        ftp = ssh.open_sftp()
-
-        if login != "root":
-            self.authorize_user(
-                sftp_client=ftp,
-                ip_address=remoteipaddr,
-                keyname=keyname,
-                username=login)
-        else:
-            self.authorize_root(
-                sftp_client=ftp,
-                ip_address=remoteipaddr,
-                keyname=keyname)
+        path = "%s/.ssh/known_hosts" % j.dirs.HOMEDIR
+        out = ""
+        for line in j.sal.fs.readFile(path).split("\n"):
+            if line.find(item) is not -1:
+                continue
+            out += "%s\n" % line
+        j.sal.fs.writeFile(path, out)
 
     def _loadSSHAgent(self, path=None, createkeys=False, killfirst=False):
         """

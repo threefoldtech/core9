@@ -50,7 +50,8 @@ class Profile:
         if "SSHKEYNAME" not in self._env:
             self._env['SSHKEYNAME'] = os.environ.get('SSHKEYNAME', 'id_rsa')
         if "HOMEDIR" not in self._env:
-            self._env['HOMEDIR'] = os.environ.get('HOMEDIR', os.environ.get('HOME', '/root'))
+            self._env['HOMEDIR'] = os.environ.get(
+                'HOMEDIR', os.environ.get('HOME', '/root'))
         _path.add(self.executor.dir_paths['BINDIR'])
 
         for item in _path:
@@ -173,7 +174,8 @@ class Profile:
             if self.pathProfile != self.bash.profileDefault.pathProfile:
                 print("INCLUDE IN DEFAULT PROFILE:%s" % self.pathProfile)
                 out = ""
-                inProfile = self.executor.file_read(self.bash.profileDefault.pathProfile)
+                inProfile = self.executor.file_read(
+                    self.bash.profileDefault.pathProfile)
                 for line in inProfile.split("\n"):
                     if line.find(self.pathProfile) != -1:
                         continue
@@ -181,7 +183,8 @@ class Profile:
 
                 out += "\nsource %s\n" % self.pathProfile
                 if out.replace("\n", "") != inProfile.replace("\n", ""):
-                    self.executor.file_write(self.bash.profileDefault.pathProfile, out)
+                    self.executor.file_write(
+                        self.bash.profileDefault.pathProfile, out)
                     self.bash.profileDefault.load()
 
         self.bash.reset()  # do not remove !
@@ -244,16 +247,18 @@ class Bash:
         """
         checks cmd Exists and returns the path
         """
-        rc, out, err = self.executor.execute("source ~/.bash_profile;which %s" % cmd, die=False, showout=False)
+        rc, out, err = self.executor.execute(
+            "source ~/.bash_profile;which %s" % cmd, die=False, showout=False)
         if rc > 0:
             if die:
-                raise j.exceptions.RuntimeError("Did not find command: %s" % cmd)
+                raise j.exceptions.RuntimeError(
+                    "Did not find command: %s" % cmd)
             else:
                 return False
 
-        out=out.strip()
-        if out=="":
-            raise RuntimeError("did not find cmd:%s"%cmd)
+        out = out.strip()
+        if out == "":
+            raise RuntimeError("did not find cmd:%s" % cmd)
 
         return out
 
@@ -301,6 +306,3 @@ class Bash:
 
     def envDelete(self, key):
         return self.profileJS.envDelete(key)
-
-    def installTools(self):
-        self.executor.execute("curl https://raw.githubusercontent.com/Jumpscale/bash/master/install.sh?$RANDOM > /tmp/install.sh;bash /tmp/install.sh")

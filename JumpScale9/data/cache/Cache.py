@@ -10,7 +10,7 @@ class Cache:
         self.__jslocation__ = "j.data.cache"
         self._cache = {}
 
-    def get(self, id="main", db=None, reset=False, expiration=3):
+    def get(self, id="main", db=None, reset=False, expiration=30):
         """
         @param id is a unique id for the cache
         db = when none then will be in memory

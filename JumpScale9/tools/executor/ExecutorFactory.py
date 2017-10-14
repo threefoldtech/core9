@@ -14,54 +14,12 @@ class ExecutorFactory:
     def __init__(self):
         self.__jslocation__ = "j.tools.executor"
 
-    def pushkey(self, addr, passwd, keyname="", pubkey="", port=22, login="root"):
-        """
-        @param keyname is name of key (pub)
-        @param pubkey is the content of the pub key
-        """
-        executor = ExecutorSSH(
-            addr,
-            port=port,
-            login=login,
-            passwd=passwd,
-            pubkey=pubkey,
-            key_filename=keyname,
-            look_for_keys=True,
-            allow_agent=True)
-        executor.pushkey()
-
-    def getSSHViaProxy(self, jumphost, jmphostuser, host, username, port, identityfile, proxycommand=None):
-        """
-        To get an executor to host through a jumphost *knows about*.
-
-        @param  jumphost is the host we connect through
-        @param jmphostuser is the user at the jumphost
-        @host is the host we connect to through the jumphost
-        @username is the username on host
-
-        local> ssh jmphostuser@jumphost
-        jmphostuser@jumphost> ssh user@host
-        user@host>
-
-        example:
-        In [1]: ex=j.tools.executor.getSSHViaProxy("192.168.21.163", "cloudscalers",
-            "192.168.21.156","cloudscalers", 22, "/home/ahmed/.ssh/id_rsa")
-
-        In [2]: ex.prefab.core.run("hostname")
-        [Tue06 14:22] - ...mpScale/tools/executor/ExecutorSSH.py:114  - DEBUG    - cmd: hostname
-        [Tue06 14:22] - ...mpScale/tools/executor/ExecutorSSH.py:128  - INFO     - EXECUTE :22: hostname
-        vm-6
-
-        """
-        executor = ExecutorSSH()
-        ex = executor.getSSHViaProxy(jumphost, jmphostuser, host, username, port, identityfile, proxycommand)
-        with self._lock:
-            self._executors[host] = ex
-        return ex
-
     def get(self, executor="localhost"):
         """
-        @param executor is an executor object, None or $hostname:$port or $ipaddr:$port or $hostname or $ipaddr
+        @param executor is localhost or $hostname:$port or $ipaddr:$port or $hostname or $ipaddr
+
+        for ssh only root access is allowed !
+
         """
         #  test if it's in cache
         with self._lock:
@@ -77,13 +35,12 @@ class ExecutorFactory:
         if j.data.types.string.check(executor):
             if executor.find(":") > 0:
                 nbr = executor.count(':')
-                login = 'root'
                 if nbr == 1:
                     # ssh with port
                     addr, port = executor.split(":")
                 if nbr == 2:
-                    addr, port, login = executor.split(":")
-                return self.getSSHBased(addr=addr.strip(), port=int(port), login=login)
+                    raise RuntimeError("no longer supported, only root access")
+                return self.getSSHBased(addr=addr.strip(), port=int(port))
             else:
                 return self.getSSHBased(addr=executor.strip())
         else:
@@ -92,33 +49,30 @@ class ExecutorFactory:
     def getLocal(self, jumpscale=False, debug=False, checkok=False):
         return ExecutorLocal(debug=debug, checkok=debug)
 
-    def getSSHBased(self, addr="localhost", port=22, login="root", passwd=None, debug=False, allow_agent=True,
-                    look_for_keys=True, timeout=5, usecache=True, passphrase=None, key_filename=None):
+    def getSSHBased(self, addr="localhost", port=22, timeout=5, usecache=True):
         """
-        returns an ssh-based executor where:
-        allow_agent: uses the ssh-agent to connect
-        look_for_keys: will iterate over keys loaded on the ssh-agent and try to use them to authenticate
-        pushkey: authorizes itself on remote
-        pubkey: uses this particular key (path) to connect
+        returns an ssh-based executor, the ssh key needs to be loaded in ssh-agent
         usecache: gets cached executor if available. False to get a new one.
         """
         with self._lock:
-            key = '%s:%s:%s' % (addr, port, login)
+            key = '%s:%s' % (addr, port)
             if key not in self._executors or usecache is False:
-                self._executors[key] = ExecutorSSH(addr=addr,
-                                                   port=port,
-                                                   login=login,
-                                                   passwd=passwd,
-                                                   debug=debug,
-                                                   allow_agent=allow_agent,
-                                                   look_for_keys=look_for_keys,
-                                                   timeout=timeout,
-                                                   key_filename=key_filename,
-                                                   passphrase=passphrase)
+                sshclient = j.clients.ssh.get(
+                    addr=addr, port=port, timeout=timeout, usecache=usecache)
+                self._executors[key] = ExecutorSSH(sshclient=sshclient)
             return self._executors[key]
 
-    def getAsyncSSHBased(self, addr="localhost", port=22, login="root", passwd=None, debug=False, allow_agent=True,
-                         look_for_keys=True, timeout=5, usecache=True, passphrase=None, key_filename=()):
+    def getFromSSHClient(self, sshclient, usecache=True):
+        """
+        get sshclient from j.clients.ssh
+        """
+        with self._lock:
+            key = '%s:%s' % (sshclient.addr, sshclient.port)
+            if key not in self._executors or usecache is False:
+                self._executors[key] = ExecutorSSH(sshclient=sshclient)
+            return self._executors[key]
+
+    def getAsyncSSHBased(self, addr="localhost", port=22, timeout=5, usecache=True):
         """
         returns an asyncssh-based executor where:
         allow_agent: uses the ssh-agent to connect
@@ -127,6 +81,8 @@ class ExecutorFactory:
         pubkey: uses this particular key (path) to connect
         usecache: gets cached executor if available. False to get a new one.
         """
+        #@TODO: *1 needs to be fixed
+        raise RuntimeError("not implemented")
         with self._lock:
             key = '%s:%s:%s' % (addr, port, login)
             if key not in self._executors_async or usecache is False:
@@ -143,9 +99,6 @@ class ExecutorFactory:
 
             return self._executors_async[key]
 
-    def getJSAgentBased(self, agentControllerClientKey, debug=False, checkok=False):
-        return ExecutorAgent2(addr, debug=debug, checkok=debug)
-
     def reset(self, executor):
         """
         reset remove the executor passed in argument from the cache.
@@ -153,7 +106,7 @@ class ExecutorFactory:
         if j.data.types.string.check(executor):
             key = executor
         elif executor.type == 'ssh':
-            key = '%s:%s:%s' % (executor.addr, executor.port, executor.login)
+            key = '%s:%s' % (executor.addr, executor.port)
         else:
             raise j.exceptions.Input(message='executor type not recognize.')
         with self._lock:

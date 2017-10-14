@@ -76,7 +76,8 @@ class SSHClient:
             self.key_filename = key_filename
             self.passphrase = passphrase
 
-        self.logger = j.logger.get("ssh sync client: %s(%s):" % (self.addr, self.port))
+        self.logger = j.logger.get(
+            "ssh sync client: %s(%s):" % (self.addr, self.port))
 
         self._transport = None
         self._client = None
@@ -124,12 +125,14 @@ class SSHClient:
     @property
     def transport(self):
         if self.client is None:
-            raise j.exceptions.RuntimeError("Could not connect to %s:%s" % (self.addr, self.port))
+            raise j.exceptions.RuntimeError(
+                "Could not connect to %s:%s" % (self.addr, self.port))
         return self.client.get_transport()
 
     def _connect(self):
         # with self._lock:
-        self.logger.info("Test sync ssh connection to %s:%s:%s" % (self.addr, self.port, self.login))
+        self.logger.info("Test sync ssh connection to %s:%s:%s" %
+                         (self.addr, self.port, self.login))
 
         if j.sal.nettools.waitConnectionTest(self.addr, self.port, self.timeout) is False:
             self.logger.error("Cannot connect to ssh server %s:%s with login:%s and using sshkey:%s" %
@@ -138,7 +141,8 @@ class SSHClient:
 
         self.pkey = None
         if self.key_filename is not None and self.key_filename != '':
-            self.pkey = paramiko.RSAKey.from_private_key_file(self.key_filename, password=self.passphrase)
+            self.pkey = paramiko.RSAKey.from_private_key_file(
+                self.key_filename, password=self.passphrase)
 
         self._client = paramiko.SSHClient()
         self._client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -167,7 +171,8 @@ class SSHClient:
                 return self._client
 
             except (BadHostKeyException, AuthenticationException) as e:
-                self.logger.error("Authentification error. Aborting connection : %s" % str(e))
+                self.logger.error(
+                    "Authentification error. Aborting connection : %s" % str(e))
                 self.logger.error(str(e))
                 raise j.exceptions.RuntimeError(str(e))
 
@@ -182,11 +187,13 @@ class SSHClient:
 
             except Exception as e:
                 j.clients.ssh.removeFromCache(self)
-                msg = "Could not connect to ssh on %s@%s:%s. Error was: %s" % (self.login, self.addr, self.port, e)
+                msg = "Could not connect to ssh on %s@%s:%s. Error was: %s" % (
+                    self.login, self.addr, self.port, e)
                 raise j.exceptions.RuntimeError(msg)
 
         if self._client is None:
-            raise j.exceptions.RuntimeError('Impossible to create SSH connection to %s:%s' % (self.addr, self.port))
+            raise j.exceptions.RuntimeError(
+                'Impossible to create SSH connection to %s:%s' % (self.addr, self.port))
 
     @property
     def client(self):
@@ -332,7 +339,8 @@ class SSHClient:
     @property
     def prefab(self):
         if not self.usesproxy and self._prefab is None:
-            executor = j.tools.executor.getSSHBased(self.addr, self.port, self.login, self.passwd)
+            executor = j.tools.executor.getSSHBased(
+                self.addr, self.port, self.login, self.passwd)
             self._prefab = executor.prefab
         if self.usesproxy:
             ex = j.tools.executor.getSSHViaProxy(self.host)
@@ -344,16 +352,41 @@ class SSHClient:
 
     def portforwardToLocal(self, remoteport, localport):
         self.portforwardKill(localport)
-        C = "ssh -L %s:localhost:%s root@%s -p %s" % (remoteport, localport, self.addr, self.port)
+        C = "ssh -L %s:localhost:%s root@%s -p %s" % (
+            remoteport, localport, self.addr, self.port)
         print(C)
         pm = j.tools.prefab.local.system.processmanager.get()
         pm.ensure(cmd=C, name="ssh_%s" % localport, wait=0.5)
         print("Test tcp port to:%s" % localport)
         if not j.sal.nettools.waitConnectionTest("127.0.0.1", localport, 10):
-            raise RuntimeError("Cannot open ssh forward:%s_%s_%s" % (self, remoteport, localport))
+            raise RuntimeError("Cannot open ssh forward:%s_%s_%s" %
+                               (self, remoteport, localport))
         print("Connection ok")
 
     def portforwardKill(self, localport):
         print("kill portforward %s" % localport)
         pm = j.tools.prefab.local.system.processmanager.get()
         pm.processmanager.stop('ssh_%s' % localport)
+
+    def SSHAuthorizeKey(
+            self,
+            keyname):
+        """
+        this required ssh-agent to be loaded !!!
+        the keyname is the name of the key as loaded in ssh-agent
+
+        if remoteothers==True: then other keys will be removed
+        """
+
+        key = j.clients.ssh.SSHKeyGetFromAgentPub(keyname)
+        ftp = self.client.open_sftp()
+
+        f = ftp.open("/home/%s/authorized_keys" % self.login, mode='rw')
+        f.write(key)
+        f.close()
+
+        cmd = "echo '%s' | sudo -S bash -c 'mkdir -p /root/.ssh;mv /home/%s/authorized_keys  /root/.ssh/authorized_keys; chmod 644 /root/.ssh/authorized_keys;chown root:root /root/.ssh/authorized_keys'" % (
+            self.passwd, self.login)
+        self.execute(cmd)
+
+        j.clients.ssh.SSHKnownHostsRemoveItem(self.addr)

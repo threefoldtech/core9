@@ -10,7 +10,6 @@ class GitFactory:
         self.logger = j.logger.get('j.clients.git')
         self.__jslocation__ = "j.clients.git"
 
-
     def execute(self, *args, **kwargs):
         return j.do.execute(*args, **kwargs)
 
@@ -19,7 +18,7 @@ class GitFactory:
         Rewrite the url of a git repo with login and passwd if specified
 
         Args:
-            url (str): the HTTP URL of the Git repository. ex: 'https://github.com/odoo/odoo'
+            url (str): the HTTP URL of the Git repository. ex: 'https://github.com/despiegk/odoo'
             login (str): authentication login name
             passwd (str): authentication login password
             ssh = if True will build ssh url, if "auto" will check if there is ssh-agent available & keys are loaded,
@@ -38,40 +37,39 @@ class GitFactory:
                 "ssh needs to be auto, first or True or False: here:'%s'" %
                 ssh)
 
-        url=url.replace("ssh://","")
+        url = url.replace("ssh://", "")
 
-
-        port=None
+        port = None
         if ssh:
             try:
-                port=int(url.split(":")[1].split("/")[0])
-                url=url.replace(":%s/"%(port),":")
+                port = int(url.split(":")[1].split("/")[0])
+                url = url.replace(":%s/" % (port), ":")
             except:
                 pass
-            
 
         url_pattern_ssh = re.compile('^(git@)(.*?):(.*?)/(.*?)/?$')
         sshmatch = url_pattern_ssh.match(url)
-        # url_pattern_ssh = re.compile('^(git@)(.*?)/(.*?)/(.*?)/?$')
-        # sshmatch2 = url_pattern_ssh.match(url)
+        url_pattern_ssh2 = re.compile('^(git@)(.*?)/(.*?)/(.*?)/?$')
+        sshmatch2 = url_pattern_ssh2.match(url)
         url_pattern_http = re.compile('^(https?://)(.*?)/(.*?)/(.*?)/?$')
         httpmatch = url_pattern_http.match(url)
         if sshmatch:
             match = sshmatch
-            ssh=True
-        # elif sshmatch2:
-        #     match = sshmatch2
-        #     ssh=True
+            ssh = True
+        elif sshmatch2:
+            match = sshmatch2
+            ssh = True
         elif httpmatch:
             match = httpmatch
-            ssh=False
+            ssh = False
         else:
             raise RuntimeError(
-                "Url is invalid. Must be in the form of 'http(s)://hostname/account/repo' or 'git@hostname:account/repo'\nnow:\n%s"%url)
+                "Url is invalid. Must be in the form of 'http(s)://hostname/account/repo' or 'git@hostname:account/repo'\nnow:\n%s" % url)
 
         protocol, repository_host, repository_account, repository_name = match.groups()
 
-        # print("git match: proto:%s repohost:%s repoaccount:%s reponame:%s"%( protocol, repository_host, repository_account, repository_name))
+        # print("git match: proto:%s repohost:%s repoaccount:%s reponame:%s" %
+        #       (protocol, repository_host, repository_account, repository_name))
 
         if protocol.startswith("git") and ssh is False:
             protocol = "https://"
@@ -80,8 +78,8 @@ class GitFactory:
             repository_name += '.git'
 
         if login == 'ssh' or ssh:
-            if port ==None:
-                repository_url = 'ssh://git@%(host)s:%(account)s/%(name)s' % {
+            if port == None:
+                repository_url = 'ssh://git@%(host)s/%(account)s/%(name)s' % {
                     'host': repository_host,
                     'account': repository_account,
                     'name': repository_name,
@@ -115,7 +113,10 @@ class GitFactory:
         if repository_name.endswith(".git"):
             repository_name = repository_name[:-4]
 
-        return protocol, repository_host, repository_account, repository_name, repository_url,port
+        print("git match: proto:%s repohost:%s repoaccount:%s reponame:%s \n url:%s port:%s" %
+              (protocol, repository_host, repository_account, repository_name, repository_url, port))
+
+        return protocol, repository_host, repository_account, repository_name, repository_url, port
 
     def getGitRepoArgs(
             self,
@@ -256,7 +257,7 @@ class GitFactory:
                     ssh=True,
                     executor=executor)
             except Exception as e:
-                base, provider, account, repo, dest, url,port = self.getGitRepoArgs(
+                base, provider, account, repo, dest, url, port = self.getGitRepoArgs(
                     url, dest, login, passwd, reset=reset, ssh=False, codeDir=codeDir, executor=executor)
                 return self.pullGitRepo(
                     url,
@@ -272,7 +273,7 @@ class GitFactory:
                     ssh=False,
                     executor=executor)
 
-        base, provider, account, repo, dest, url,port = self.getGitRepoArgs(
+        base, provider, account, repo, dest, url, port = self.getGitRepoArgs(
             url, dest, login, passwd, reset=reset, ssh=ssh, codeDir=codeDir, executor=executor)
 
         self.logger.info("%s:pull:%s ->%s" % (executor, url, dest))
@@ -286,7 +287,8 @@ class GitFactory:
 
         if existsDir:
             if not existsGit:
-                raise RuntimeError("found directory but .git not found in %s" % dest)
+                raise RuntimeError(
+                    "found directory but .git not found in %s" % dest)
             # if we don't specify the branch, try to find the currently
             # checkedout branch
             cmd = 'cd %s; git rev-parse --abbrev-ref HEAD' % dest
@@ -338,8 +340,10 @@ class GitFactory:
                         self.logger.info(cmd)
                         self.execute(cmd, timeout=timeout, executor=executor)
                     except Exception as e:
-                        protocol, host, account, repo_name, repo_url = self.rewriteGitRepoUrl(url=url, ssh=False)
-                        cmd = "cd %s;git -c http.sslVerify=false pull %s %s" % (dest, repo_url, branch)
+                        protocol, host, account, repo_name, repo_url = self.rewriteGitRepoUrl(
+                            url=url, ssh=False)
+                        cmd = "cd %s;git -c http.sslVerify=false pull %s %s" % (
+                            dest, repo_url, branch)
                         self.logger.info(cmd)
                         self.execute(cmd, timeout=timeout, executor=executor)
 
@@ -390,16 +394,12 @@ class GitFactory:
             rc, out, err = self.execute(cmd, showout=False, outputStderr=False)
             if rc == 0:
                 branch = out.strip()
-            else:  # if we can't retreive current branch, use master as default
+            else:  # if we can't retrieve current branch, use master as default
                 branch = 'master'
         except BaseException:
             branch = 'master'
 
         return branch
-
-
-
-
 
     def parseUrl(self, url):
         """
@@ -438,7 +438,7 @@ class GitFactory:
             path = ""
             branch = ""
 
-        a, b, c, d, dest, e,port = self.getGitRepoArgs(url)
+        a, b, c, d, dest, e, port = self.getGitRepoArgs(url)
 
         if "tree" in dest:
             # means is a directory
@@ -496,11 +496,13 @@ class GitFactory:
 
         """
         if not j.sal.fs.exists(urlOrPath, followlinks=True):
-            repository_url, gitpath, relativepath = self.getContentInfoFromURL(urlOrPath)
+            repository_url, gitpath, relativepath = self.getContentInfoFromURL(
+                urlOrPath)
         else:
             repository_host, repository_type, repository_account, repository_name, repository_url, branch, gitpath, relativepath = j.clients.git.parseUrl(
                 urlOrPath)
-            j.clients.git.pullGitRepo(repository_url, branch=branch)  # to make sure we pull the info
+            # to make sure we pull the info
+            j.clients.git.pullGitRepo(repository_url, branch=branch)
 
         path = j.sal.fs.joinPaths(gitpath, relativepath)
         return path
@@ -520,7 +522,8 @@ class GitFactory:
         if j.sal.fs.exists(urlOrPath, followlinks=True):
 
             return urlOrPath
-        repository_url, gitpath, relativepath = self.getContentInfoFromURL(urlOrPath)
+        repository_url, gitpath, relativepath = self.getContentInfoFromURL(
+            urlOrPath)
         path = j.sal.fs.joinPaths(gitpath, relativepath)
         return path
 
@@ -666,7 +669,8 @@ class GitFactory:
             if line2.find("[remote") != -1:
                 state = "remote"
             if line2.find("[branch"):
-                branch = line.split(" \"")[1].strip("]\" ").strip("]\" ").strip("]\" ")
+                branch = line.split(" \"")[1].strip(
+                    "]\" ").strip("]\" ").strip("]\" ")
 
     def getGitReposListLocal(self, provider="", account="", name="", errorIfNone=True):
         repos = {}
@@ -681,7 +685,8 @@ class GitFactory:
                                                        recursive=False, dirNameOnly=True, findDirectorySymlinks=True):
                 if account != "" and account != accountfound:
                     continue
-                accountfounddir = "/%s/%s/%s" % (j.dirs.CODEDIR, top, accountfound)
+                accountfounddir = "/%s/%s/%s" % (j.dirs.CODEDIR,
+                                                 top, accountfound)
                 for reponame in j.sal.fs.listDirsInDir(
                     "%s/%s/%s" %
                     (j.dirs.CODEDIR,
@@ -692,11 +697,13 @@ class GitFactory:
                         findDirectorySymlinks=True):
                     if name != "" and name != reponame:
                         continue
-                    repodir = "%s/%s/%s/%s" % (j.dirs.CODEDIR, top, accountfound, reponame)
+                    repodir = "%s/%s/%s/%s" % (j.dirs.CODEDIR,
+                                               top, accountfound, reponame)
                     if j.sal.fs.exists(path="%s/.git" % repodir):
                         repos[reponame] = repodir
         if len(list(repos.keys())) == 0:
-            raise RuntimeError("Cannot find git repo '%s':'%s':'%s'" % (provider, account, name))
+            raise RuntimeError(
+                "Cannot find git repo '%s':'%s':'%s'" % (provider, account, name))
         return repos
 
     def pushGitRepos(self, message, name="", update=True, provider="", account=""):
@@ -759,10 +766,13 @@ class GitFactory:
                         # print line
                         if line.find("@git") == -1:
                             # print 'REPLACE'
-                            provider2 = line.split("//", 1)[1].split("/", 1)[0].strip()
+                            provider2 = line.split(
+                                "//", 1)[1].split("/", 1)[0].strip()
                             account2 = line.split("//", 1)[1].split("/", 2)[1]
-                            name2 = line.split("//", 1)[1].split("/", 2)[2].replace(".git", "")
-                            line = "\turl = git@%s:%s/%s.git" % (provider2, account2, name2)
+                            name2 = line.split(
+                                "//", 1)[1].split("/", 2)[2].replace(".git", "")
+                            line = "\turl = git@%s:%s/%s.git" % (
+                                provider2, account2, name2)
                             change = True
                         # print line
                     text2 += "%s\n" % line
@@ -776,4 +786,5 @@ class GitFactory:
                     j.sal.fs.writeFile(configpath, text2)
 
         if pushmessage != "":
-            self.pushGitRepos(pushmessage, name=name, update=True, provider=provider, account=account)
+            self.pushGitRepos(pushmessage, name=name, update=True,
+                              provider=provider, account=account)
