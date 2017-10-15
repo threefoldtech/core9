@@ -10,6 +10,8 @@ JumpScale is a cloud automation product and a branch from what used to be Pylabs
 ## install in development env (RECOMMENDED)
 
 ```bash
+#to define branch:
+#export JS9BRANCH="9.3.0"
 curl https://raw.githubusercontent.com/Jumpscale/core9/master/install.sh?$RANDOM > /tmp/install_js9.sh;bash /tmp/install_js9.sh
 ```
 
