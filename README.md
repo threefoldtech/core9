@@ -23,7 +23,7 @@ to follow the install
 tail -f /tmp/zutils.log
 ```
 
-## test its installed
+#### to test that it worked:
 
 ```bash
 js9
