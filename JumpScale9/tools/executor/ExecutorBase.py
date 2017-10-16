@@ -170,7 +170,8 @@ class ExecutorBase:
 
             #OS
             apt-get -v > /dev/null 2>&1 && echo 'OS_TYPE="ubuntu"'
-            pacman -v > /dev/null 2>&1 && echo 'OS_TYPE="arch"'
+            test -f /etc/arch-release > /dev/null 2>&1 && echo 'OS_TYPE="arch"'
+            test -f /etc/redhat-release > /dev/null 2>&1 && echo 'OS_TYPE="redhat"'
             apk -v > /dev/null 2>&1 && echo 'OS_TYPE="alpine"'
             brew -v > /dev/null 2>&1 && echo 'OS_TYPE="darwin"'
             cat /etc/os-release | grep "VERSION_ID"

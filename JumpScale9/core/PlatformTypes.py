@@ -55,6 +55,9 @@ class PlatformTypes():
         self._platformParents["arch"] = ["linux"]
         self._platformParents["arch32"] = ["arch", "linux32"]
         self._platformParents["arch64"] = ["arch", "linux64"]
+        self._platformParents["redhat"] = ["linux"]
+        self._platformParents["redhat32"] = ["redhat", "linux32"]
+        self._platformParents["redhat64"] = ["redhat", "linux64"]
         # is not really linux but better to say I is I guess (kds)
         self._platformParents["darwin32"] = ["darwin"]
         self._platformParents["darwin64"] = ["darwin"]
