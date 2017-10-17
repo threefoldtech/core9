@@ -159,9 +159,17 @@ class ExecutorBase:
             set +ex
             ls "/root/.iscontainer"  > /dev/null 2>&1 && echo 'ISCONTAINER = 1' || echo 'ISCONTAINER = 0'
             echo UNAME = \""$(uname -mnprs)"\"
-            ls "/hostcfg"  > /dev/null 2>&1 && echo 'export PATH_JSCFG="/hostcfg"'
-            ls "/$HOME/js9host/cfg"  > /dev/null 2>&1 && export PATH_JSCFG="$HOME/js9host/cfg"
+
+
+            if [ "$(uname)" == "Darwin" ]; then
+                export PATH_JSCFG="$HOME/js9host/cfg"
+            elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+                export PATH_JSCFG="$HOME/js9host/cfg"
+            else
+                die "platform not supported"
+            fi
             echo PATH_JSCFG = \"$PATH_JSCFG\"
+                        
             echo "PATH_HOME = $HOME"
             echo HOSTNAME = "$(hostname)"
 
@@ -316,7 +324,9 @@ class ExecutorBase:
 
     def _replaceInToml(self, T):
         T = T.replace("~", self.env["HOME"])
-        T = T.replace("{{TMPDIR}}", self.env["TMPDIR"])
+        # T = T.replace("{{TMPDIR}}", self.env["TMPDIR"])
+        # need to see if this works well on mac
+        T = T.replace("{{TMPDIR}}", "/tmp")
         # will replace  variables in itself
         counter = 0
         while "{{" in T and counter < 10:
