@@ -298,7 +298,7 @@ class ExecutorBase:
 
         BASE = '''
         HOMEDIR = "~"
-        TMPDIR = "/tmp"
+        TMPDIR = "{{TMPDIR}}"
         BASEDIRJS = "{{BASEDIR}}/jumpscale9"
         JSAPPSDIR= "{{BASEDIRJS}}/app"
         TEMPLATEDIR ="{{VARDIR}}/templates"
@@ -316,6 +316,7 @@ class ExecutorBase:
 
     def _replaceInToml(self, T):
         T = T.replace("~", self.env["HOME"])
+        T = T.replace("{{TMPDIR}}", self.env["TMPDIR"])
         # will replace  variables in itself
         counter = 0
         while "{{" in T and counter < 10:
