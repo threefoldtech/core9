@@ -194,8 +194,8 @@ class State():
         print (path)
 
         cdict={}
-        cdict["me"]=self.config["me"]
-        cdict["email"]=self.config["email"]
+        cdict["me"]=self.config.get("me")
+        cdict["email"]=self.config.get("email")
 
         if self.executor == j.tools.executorLocal:
             # print("configsave state me on %s" % path)
