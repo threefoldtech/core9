@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package zerorobot;
+
+import "domain.proto";
+import "template.proto";
+import "zerorobot.proto";
+
+message Service {
+  string guid = 1;
+  string previous = 2; //to find previous versions of this one, is guid  
+  int32 version = 3;  
+  string instance = 4;
+  DomainPointer domain = 5;  
+  TemplatePointer template = 6;
+  
+  enum ServiceStatus {
+    NEW = 0;
+    OK = 1;
+    ERROR = 2;
+    DISABLED = 3;
+  }
+
+  ServiceStatus status = 7;
+  repeated ServiceConsumption consumptions = 8;
+  ServicePointer parent = 9;
+  repeated ServiceAction actions = 10;
+
+}
+
+message ServicePointer {
+  string guid = 1;
+  string instance = 2;
+  string name = 3;
+  DomainPointer domain = 4;  
+}  
+
+message ServiceConsumption {
+    ServicePointer service = 1;
+    enum ServiceConsumptionStatus {
+      NEW = 0;
+      OK = 1;
+      ERROR = 2;
+      DISABLED = 3;
+    }   
+    ServiceConsumptionStatus status = 2; 
+}
+
+
+message ActionConsumption {
+  ServicePointer service = 1;
+  string action_name = 2;
+  enum ActionConsumptionStatus {
+    NEW = 0;
+    OK = 1;
+    ERROR = 2;
+    DISABLED = 3;
+  }   
+  ActionConsumptionStatus status = 3;   
+}
+
+message ServiceAction {
+    string name = 1;
+    repeated ActionConsumption consumption = 2;
+}    
+ 

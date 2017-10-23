@@ -1,5 +1,6 @@
 from js9 import j
 import tarantool
+from .TarantoolDB import TarantoolDB
 # import itertools
 
 
@@ -33,9 +34,11 @@ class Tarantool():
         @param opstype in integer the type of operation - "read" = 1, or "write" = 2, or "execute" = 4, or a combination such as "read,write,execute".
         """
         if objname == "":
-            C = "box.schema.user.grant('%s',%s,'%s')" % (user, operation, objtype)
+            C = "box.schema.user.grant('%s',%s,'%s')" % (
+                user, operation, objtype)
         else:
-            C = "box.schema.user.grant('%s',%s,'%s','%s')" % (user, operation, objtype, objname)
+            C = "box.schema.user.grant('%s',%s,'%s','%s')" % (
+                user, operation, objtype, objname)
 
         self.db.eval(C)
 
@@ -48,12 +51,18 @@ class Tarantool():
 
         then use with self.call...
         """
-        if code == "":
-            code = """
-            function echo3(name)
-              return name
-            end
+        self.eval(code)
+
+    def bootstrap(self, code):
+        code = """
+            box.once("bootstrap", function()
+                box.schema.space.create('$space')
+                box.space.test:create_index('primary',
+                    { type = 'TREE', parts = {1, 'NUM'}})
+            end)
+            box.schema.user.grant('$user', 'read,write,execute', 'universe')
             """
+        code = code.replace("$space", space)
         self.eval(code)
 
 
@@ -127,74 +136,36 @@ class TarantoolFactory:
     def __init__(self):
         self.__jslocation__ = "j.clients.tarantool"
         self.__imports__ = "tarantool"
+        if j.core.platformtype.myplatform.isMac:
+            self.cfgdir = "/usr/local/etc/tarantool/instances.available"
+        else:
+            self.cfgdir = "/etc/tarantool/instances.available"
         self._tarantool = {}
         self._tarantoolq = {}
-        # self._config = {}
-        # self._prefab = j.tools.prefab.get()
 
-    # def getInstance(self, prefab):
-    #     self._prefab = prefab
-    #     return self
+    def install(self, start=True):
+        j.tools.prefab.local.db.tarantool.install()
+        if start:
+            self.start()
 
-    def deployRun(self, addr, passwd, port=3333, bootstrap=""):
-        """
-        @param addr in format myserver:22 or myserver (is the ssh connection)
-        @param boostrap can be used to e.g. create a scheme
+    # def start(self):
+    #     j.tools.prefab.local.db.tarantool.start()
 
-        default:
-                box.once("bootstrap", function()
-                    box.schema.space.create('test')
-                    box.space.test:create_index('primary',
-                        { type = 'TREE', parts = {1, 'NUM'}})
-                    box.schema.user.grant('$user', 'read,write,execute', 'universe')
-                end)
-
-        """
-        prefab = j.tools.prefab.get(addr)
-
-        if bootstrap == "":
-            bootstrap = """
-                    box.once("bootstrap", function()
-                        box.schema.space.create('test')
-                        box.space.test:create_index('primary',
-                            { type = 'TREE', parts = {1, 'NUM'}})
-                    end)
-                    box.schema.user.grant('$user', 'read,write,execute', 'universe')
-                    """
-
-        prefab.fw.allowIncoming(port)
-
-        prefab.core.run("apt-get install tarantool -y")
-
-        LUA = """
-        box.cfg{listen = $port}
-        box.schema.user.create('admin', {if_not_exists = true,password = '$passwd'})
-        box.schema.user.passwd('admin','$passwd')
-        require('console').start()
-        """
-        LUA = LUA.replace("$passwd", passwd)
-        LUA = LUA.replace("$port", str(port))
-
-        luapath = prefab.core.replace("$TMPDIR/tarantool.lua")
-
-        print("write lua startup to:%s" % luapath)
-
-        prefab.core.file_write(luapath, LUA)
-
-        prefab.system.tmux.createWindow("zconfig", "tarantool")
-
-        prefab.system.tmux.executeInScreen(
-            "zconfig",
-            "tarantool",
-            "cd $TMPDIR;rm -rf tarantool;mkdir tarantool;cd tarantool;tarantool %s" %
-            luapath,
-            replaceArgs=True)
-
-    def get(self, ipaddr="localhost", port=3301, login="guest", password=None, fromcache=True):
+    def clientGet(self, ipaddr="localhost", port=3301, login="admin", password="admin007", fromcache=True):
         key = "%s_%s" % (ipaddr, port)
         if key not in self._tarantool or fromcache is False:
-            self._tarantool[key] = tarantool.connect(ipaddr, user=login, port=port, password=password)
+            self._tarantool[key] = tarantool.connect(
+                ipaddr, user=login, port=port, password=password)
         return Tarantool(self._tarantool[key])
+
+    def serverGet(self, name="test", path="$DATADIR/tarantool/$NAME", adminsecret="admin007", port=3301):
+        return TarantoolDB(name=name, path=path, adminsecret=adminsecret, port=port)
+
+    def serverStart(self, name="test", path="$DATADIR/tarantool/$NAME", adminsecret="admin007", port=3301, configTemplatePath=None):
+        db = self.serverGet(name=name, path=path,
+                            adminsecret=adminsecret, port=port)
+        db.configTemplatePath = configTemplatePath
+        db.start()
 
     def test(self):
         C = """
@@ -202,6 +173,9 @@ class TarantoolFactory:
           return name
         end
         """
-        tt = self.get("192.168.99.100", 3301)
+        tt = self.get()
         tt.eval(C)
         print("return:%s" % tt.call("echo3", "testecho"))
+
+        from IPython import embed
+        embed(colors='Linux')
