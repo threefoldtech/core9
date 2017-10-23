@@ -169,7 +169,7 @@ class ExecutorBase:
                 die "platform not supported"
             fi
             echo PATH_JSCFG = \"$PATH_JSCFG\"
-                        
+
             echo "PATH_HOME = $HOME"
             echo HOSTNAME = "$(hostname)"
 
@@ -191,14 +191,14 @@ class ExecutorBase:
             echo "CFG_JS9 = --TEXT--"
             cat $PATH_JSCFG/jumpscale9.toml 2>/dev/null || echo ""
             echo --TEXT--
-            
-            echo "BASHPROFILE = --TEXT--"            
-            cat $HOME/.profile_js 2>/dev/null || echo ""
-            echo --TEXT--   
 
-            echo "ENV = --TEXT--"            
+            echo "BASHPROFILE = --TEXT--"
+            cat $HOME/.profile_js 2>/dev/null || echo ""
+            echo --TEXT--
+
+            echo "ENV = --TEXT--"
             export
-            echo --TEXT--   
+            echo --TEXT--
 
             """
             C = j.data.text.strip(C)
@@ -285,6 +285,7 @@ class ExecutorBase:
             CODEDIR = "/opt/code"
             HOSTDIR = "/host"
             HOSTCFGDIR = "/hostcfg"
+            CFGDIR = "{{HOSTCFGDIR}}"
             VARDIR = "{{HOSTDIR}}/var"
             '''
         elif self.platformtype.isMac:
@@ -293,6 +294,7 @@ class ExecutorBase:
             CODEDIR = "{{HOMEDIR}}/code"
             HOSTDIR = "{{HOMEDIR}}/js9host/"
             HOSTCFGDIR = "{{HOMEDIR}}/js9host/cfg/"
+            CFGDIR = "{{HOSTCFGDIR}}"
             VARDIR = "{{BASEDIR}}/var"
             '''
         else:
@@ -301,6 +303,7 @@ class ExecutorBase:
             CODEDIR = "/opt/code"
             HOSTDIR = "{{HOMEDIR}}/js9host/"
             HOSTCFGDIR = "{{HOMEDIR}}/js9host/cfg/"
+            CFGDIR = "{{BASEDIR}}/cfg"
             VARDIR = "{{BASEDIR}}/var"
             '''
 
@@ -315,7 +318,6 @@ class ExecutorBase:
         LIBDIR = "{{BASEDIR}}/lib/"
         LOGDIR = "{{VARDIR}}/log"
         BINDIR="{{BASEDIR}}/bin"
-        CFGDIR = "{{BASEDIR}}/cfg"
         '''
 
         TXT = j.data.text.strip(BASE) + "\n" + j.data.text.strip(T)
