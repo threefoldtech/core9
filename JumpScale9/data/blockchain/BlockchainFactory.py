@@ -30,3 +30,5 @@ class BlockchainFactory:
 
     def dbConnect(self, adminsecret="admin007"):
         self.db.connect()
+
+    def getBaseMessage(self):
