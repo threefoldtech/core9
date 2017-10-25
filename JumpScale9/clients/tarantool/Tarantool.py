@@ -148,8 +148,7 @@ class TarantoolFactory:
         if start:
             self.start()
 
-    # def start(self):
-    #     j.tools.prefab.local.db.tarantool.start()
+
 
     def clientGet(self, ipaddr="localhost", port=3301, login="admin", password="admin007", fromcache=True):
         key = "%s_%s" % (ipaddr, port)

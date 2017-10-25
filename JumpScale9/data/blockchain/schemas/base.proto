@@ -12,7 +12,7 @@ message Message {
 
     unint32 date =6;
     string author =7 ; //guid of author is in category person
-    string signature = 8; //signature done by private key of person
+    string signature = 8; //signature done by private key of person (8 bytes)
 
     enum Compression {
       NONE = 0;
@@ -36,11 +36,47 @@ message Message {
   }
 
 message Decrypt {
-  string userguid = 1; //can be a group too (a group has also a private key)
+  string userguid = 1; //can be a group too (a group has also a private key & corresponding userguid)
   //symmetrical encryption key which has been encrypted with the public key of the user 
   //encryption key was: blake_hash_256+random 4bytes (salt)
   //encryption done by means of TOBEDEFINED???
   string encrkey =2 ; 
+  //if you have access to the data (means you have a record which allows you to get to the encr key)
+  // then you can add/remove other users who can have access
+
+}
+
+//by purpose group's like this have no name/description, this needs to live on higher level layer
+message Group {
+  string guid = 1;  //in category: group
+  string objguid = 2; //unique addr for object over time (because each new change creates a new guid)
+  string previous = 3; // link to previous unique address (to the previous guid)  
+  repeated GroupMember members = 4; //list of of members with their corresponding rights
+  //only admin's can change a group
+  unint32 date =6;
+  string author =7 ; //guid of author is in category person & needs to be an admin of this group
+  string signature = 8; //signature done by private key of admin person, 
+                        //can only be admin person, should discard objects which where changed by non admin persons
+                        //need to discard at check function of blockchain, to make sure it doesn't get into the blockchain
+
+}
+
+message GroupMember {
+  string user_guid =1;
+  enum Right {
+    ADMIN = 0;
+    READ = 1;
+    WRITE = 2;
+    EXECUTE = 3;
+  }
+}
+
+
+
+message SecurityPolicy {
+  string guid = 1;  //in category: securitypolicy
+
+
 
 }
 

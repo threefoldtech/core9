@@ -53,6 +53,7 @@ class TarantoolDB():
         # j.tools.prefab.local.db.tarantool.start()
         self._setConfig()
         j.do.execute("tarantoolctl start test")
+        j.do.executeInteractive("tarantoolctl enter test")
 
     def connect(self, addr="localhost", port=3301):
         cmd = "tarantoolctl connect root:admin007@%s:%s" % (addr, port)
