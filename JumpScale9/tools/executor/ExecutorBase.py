@@ -439,15 +439,15 @@ class ExecutorBase:
         rc, out, err = self.execute("cat %s" % path, showout=False, hide=True)
         return out
 
-    def file_write(self, path, content, mode=None, owner=None, group=None, append=False):
+    def file_write(self, path, content, mode=None, owner=None, group=None, append=False,hide=False):
         """
         @param append if append then will add to file
 
         if file bigger than 100k it will not set the attributes!
 
         """
-
-        self.logger.debug("file write:%s" % path)
+        if hide==False:
+            self.logger.debug("file write:%s" % path)
         # if sig != self.file_md5(location):
         # cmd = 'set -ex && echo "%s" | openssl base64 -A -d > %s' % (content_base64, location)
 

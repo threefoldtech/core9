@@ -26,6 +26,9 @@ source ~/code/github/jumpscale/bash/zlibs.sh > /dev/null 2>&1
 source /opt/code/github/jumpscale/bash/zlibs.sh > /dev/null 2>&1 
 ZDoneReset
 
+rm ~/js9host/cfg/me.toml > /dev/null 2>&1
+rm ~/js9host/cfg/jumpscale9.toml > /dev/null 2>&1
+
 echo "install js9"
 export JS9BRANCH="9.3.0"
 ZInstall_host_js9 || die "Could not install core9 of js9" || exit 1

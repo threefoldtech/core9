@@ -107,6 +107,9 @@ class ExecutorSSH(ExecutorBase):
         # if cmds.find("test -e /root/.bash_profile") != -1:
         #     raise RuntimeError("JJ")
 
+        if hide:
+            showout=False
+
         cmds2 = self._transformCmds(cmds, die, checkok=checkok, env=env)
 
         if cmds.find("\n") != -1 and asScript:

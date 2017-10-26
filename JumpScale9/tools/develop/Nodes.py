@@ -88,9 +88,9 @@ class Nodes():
         """
         format is:
 
-            test localhost:22 [mycat ]
+            test localhost:22 [mycat]
             test2 localhost:24 [mycat2]
-            test3 localhost [mycat ]
+            test3 localhost [mycat]
 
             test4 localhost
             test5 localhost:8000

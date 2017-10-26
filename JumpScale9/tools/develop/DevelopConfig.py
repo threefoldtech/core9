@@ -45,8 +45,8 @@ class MyMenu():
                         shortcut=None, arguments=[], keywords=None)
         self.m1.addItem(text='Select Active Nodes', onSelect=self.go2form,
                         shortcut=None, arguments=["FormSelectNodes"], keywords=None)
-        self.m1.addItem(text='Sync Code', onSelect=self.go2form,
-                        shortcut=None, arguments=["SyncCodeForm"], keywords=None)
+        # self.m1.addItem(text='Sync Code', onSelect=self.go2form,
+        #                 shortcut=None, arguments=["SyncCodeForm"], keywords=None)
         self.m1.addItem(text='Quit', onSelect=self.exit_application,
                         shortcut=None, keywords=None)
 

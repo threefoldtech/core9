@@ -4,6 +4,7 @@ import sys
 
 from js9 import j
 
+
 import argparse
 j.application.start("jsshell")
 
