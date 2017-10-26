@@ -173,7 +173,7 @@ class FSMethods():
                     dest = dest.split(':')[1] if ':' in dest else dest
             else:
                 if not sys.platform.startswith("darwin"):
-                    executor.prefab.package.ensure('rsync')
+                    executor.prefab.system.package.ensure('rsync')
                 if executor.prefab.core.dir_exists(source):
                     if dest[-1] != "/":
                         dest += "/"
@@ -1090,7 +1090,7 @@ class InstallTools(ExecutorMethods, FSMethods):
     # def linkJSCommandsToSystem(self):
     #     src = "%s/github/jumpscale/core9/cmds/" % j.core.state.config["dirs"]["CODEDIR"]
     #     self.symlinkFilesInDir(src, "/usr/local/bin", delete=True, includeDirs=False, makeExecutable=True)
-        
+
 
     @property
     def mascot(self):

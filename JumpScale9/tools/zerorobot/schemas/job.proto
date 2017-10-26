@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package zerorobot;
+
+import "service.proto";
+import "domain.proto";
+
+//ask for a specific action
+message JobRequest {
+    string guid = 1;
+    ServicePointer service = 2; //know where to execute thx to service
+    string action = 3; //the name of the action we want to execute
+    DomainPointer domain = 4;
+      
+    string args = 5; //is protobuf encoded msg  
+  
+    uint32 date_start = 6; //epoch when to start
+    uint32 deadline = 7; //last time 
+    uint32 maxretry = 8; //how many times to retry if error
+  
+    uint32 recurring_period = 9; //repeat per X nr of minutes e.g. 5 min
+      
+  }
+
+message Job {
+  string guid = 1;
+  string jobrequest_guid = 2;
+  ServicePointer service = 3;
+  string action = 4; //the name of the action we want to execute
+  DomainPointer domain = 5;
+  
+  enum Status {
+    INIT = 0;
+    RUNNING = 1;
+    OK = 2;
+    ERROR = 3;
+  }
+
+  Status status = 6;
+
+  string args = 7; //is protobuf encoded msg  
+
+  uint32 time_start = 8; //epoch when to start
+  uint32 time_stop = 9; //epoch when to start
+
+}
+
+message JobRecurring {
+    string guid = 1;
+    ServicePointer service = 2;
+    string action = 3; //the name of the action we want to execute
+    DomainPointer domain = 4;
+    
+    enum Status {
+      INIT = 0;
+      OK = 1;
+      ERROR = 2;
+      SCHEDULED = 3;
+    }
+  
+    Status status = 5;
+  
+    string args = 6; //is protobuf encoded msg  
+  
+    uint32 startdate = 7; //epoch when to start
+    uint32 deadline = 8; //last time 
+    uint32 maxretry = 9; //how many times to retry if error
+  
+  }

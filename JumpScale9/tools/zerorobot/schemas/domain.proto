@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package zerorobot;
+
+message Domain {
+    string guid = 1;
+    string name = 2;
+    repeated string pubkey = 3;
+    repeated string giturl = 4;
+    string description = 5;
+    repeated string company = 6;
+    repeated string url = 7;
+    repeated string email = 8;
+}
+
+message DomainPointer {
+    string guid = 1;
+    string name = 2;
+}

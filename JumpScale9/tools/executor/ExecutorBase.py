@@ -159,9 +159,17 @@ class ExecutorBase:
             set +ex
             ls "/root/.iscontainer"  > /dev/null 2>&1 && echo 'ISCONTAINER = 1' || echo 'ISCONTAINER = 0'
             echo UNAME = \""$(uname -mnprs)"\"
-            ls "/hostcfg"  > /dev/null 2>&1 && echo 'export PATH_JSCFG="/hostcfg"'
-            ls "/$HOME/js9host/cfg"  > /dev/null 2>&1 && export PATH_JSCFG="$HOME/js9host/cfg"
+
+
+            if [ "$(uname)" == "Darwin" ]; then
+                export PATH_JSCFG="$HOME/js9host/cfg"
+            elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+                export PATH_JSCFG="$HOME/js9host/cfg"
+            else
+                die "platform not supported"
+            fi
             echo PATH_JSCFG = \"$PATH_JSCFG\"
+
             echo "PATH_HOME = $HOME"
             echo HOSTNAME = "$(hostname)"
 
@@ -170,7 +178,8 @@ class ExecutorBase:
 
             #OS
             apt-get -v > /dev/null 2>&1 && echo 'OS_TYPE="ubuntu"'
-            pacman -v > /dev/null 2>&1 && echo 'OS_TYPE="arch"'
+            test -f /etc/arch-release > /dev/null 2>&1 && echo 'OS_TYPE="arch"'
+            test -f /etc/redhat-release > /dev/null 2>&1 && echo 'OS_TYPE="redhat"'
             apk -v > /dev/null 2>&1 && echo 'OS_TYPE="alpine"'
             brew -v > /dev/null 2>&1 && echo 'OS_TYPE="darwin"'
             cat /etc/os-release | grep "VERSION_ID"
@@ -182,14 +191,14 @@ class ExecutorBase:
             echo "CFG_JS9 = --TEXT--"
             cat $PATH_JSCFG/jumpscale9.toml 2>/dev/null || echo ""
             echo --TEXT--
-            
-            echo "BASHPROFILE = --TEXT--"            
-            cat $HOME/.profile_js 2>/dev/null || echo ""
-            echo --TEXT--   
 
-            echo "ENV = --TEXT--"            
+            echo "BASHPROFILE = --TEXT--"
+            cat $HOME/.profile_js 2>/dev/null || echo ""
+            echo --TEXT--
+
+            echo "ENV = --TEXT--"
             export
-            echo --TEXT--   
+            echo --TEXT--
 
             """
             C = j.data.text.strip(C)
@@ -276,6 +285,7 @@ class ExecutorBase:
             CODEDIR = "/opt/code"
             HOSTDIR = "/host"
             HOSTCFGDIR = "/hostcfg"
+            CFGDIR = "{{HOSTCFGDIR}}"
             VARDIR = "{{HOSTDIR}}/var"
             '''
         elif self.platformtype.isMac:
@@ -284,6 +294,7 @@ class ExecutorBase:
             CODEDIR = "{{HOMEDIR}}/code"
             HOSTDIR = "{{HOMEDIR}}/js9host/"
             HOSTCFGDIR = "{{HOMEDIR}}/js9host/cfg/"
+            CFGDIR = "{{HOSTCFGDIR}}"
             VARDIR = "{{BASEDIR}}/var"
             '''
         else:
@@ -292,12 +303,13 @@ class ExecutorBase:
             CODEDIR = "/opt/code"
             HOSTDIR = "{{HOMEDIR}}/js9host/"
             HOSTCFGDIR = "{{HOMEDIR}}/js9host/cfg/"
+            CFGDIR = "{{BASEDIR}}/cfg"
             VARDIR = "{{BASEDIR}}/var"
             '''
 
         BASE = '''
         HOMEDIR = "~"
-        TMPDIR = "/tmp"
+        TMPDIR = "{{TMPDIR}}"
         BASEDIRJS = "{{BASEDIR}}/jumpscale9"
         JSAPPSDIR= "{{BASEDIRJS}}/app"
         TEMPLATEDIR ="{{VARDIR}}/templates"
@@ -306,7 +318,6 @@ class ExecutorBase:
         LIBDIR = "{{BASEDIR}}/lib/"
         LOGDIR = "{{VARDIR}}/log"
         BINDIR="{{BASEDIR}}/bin"
-        CFGDIR = "{{BASEDIR}}/cfg"
         '''
 
         TXT = j.data.text.strip(BASE) + "\n" + j.data.text.strip(T)
@@ -315,6 +326,9 @@ class ExecutorBase:
 
     def _replaceInToml(self, T):
         T = T.replace("~", self.env["HOME"])
+        # T = T.replace("{{TMPDIR}}", self.env["TMPDIR"])
+        # need to see if this works well on mac
+        T = T.replace("{{TMPDIR}}", "/tmp")
         # will replace  variables in itself
         counter = 0
         while "{{" in T and counter < 10:

@@ -1,0 +1,127 @@
+syntax = "proto3";
+
+package blockchain;
+
+//ask for a specific action
+message Message {
+    string guid = 1; //unique address on the blockchain (per new mod there is a new version of the object)
+    string objguid = 2; //unique addr for object over time
+    string previous = 3; // link to previous unique address (to the previous guid)
+    string data = 4; //the payload
+    string category = 5;//each object is in specific category
+
+    unint32 date =6;
+    string author =7 ; //guid of author is in category person
+    string signature = 8; //signature done by private key of person (8 bytes)
+
+    enum Compression {
+      NONE = 0;
+      BLOSC = 1;
+      SNAPPY = 2;
+    }
+    Compression compression_type = 9;
+
+    uint32 expiration = 10; //after that date the data is no longer usable/valid
+
+
+    
+  
+    Status status = 6;
+    ServicePointer service = 2; //know where to execute thx to service
+    string action = 3; //the name of the action we want to execute
+    DomainPointer domain = 4;
+      
+  
+      
+  }
+
+message Decrypt {
+  string userguid = 1; //can be a group too (a group has also a private key & corresponding userguid)
+  //symmetrical encryption key which has been encrypted with the public key of the user 
+  //encryption key was: blake_hash_256+random 4bytes (salt)
+  //encryption done by means of TOBEDEFINED???
+  string encrkey =2 ; 
+  //if you have access to the data (means you have a record which allows you to get to the encr key)
+  // then you can add/remove other users who can have access
+
+}
+
+//by purpose group's like this have no name/description, this needs to live on higher level layer
+message Group {
+  string guid = 1;  //in category: group
+  string objguid = 2; //unique addr for object over time (because each new change creates a new guid)
+  string previous = 3; // link to previous unique address (to the previous guid)  
+  repeated GroupMember members = 4; //list of of members with their corresponding rights
+  //only admin's can change a group
+  unint32 date =6;
+  string author =7 ; //guid of author is in category person & needs to be an admin of this group
+  string signature = 8; //signature done by private key of admin person, 
+                        //can only be admin person, should discard objects which where changed by non admin persons
+                        //need to discard at check function of blockchain, to make sure it doesn't get into the blockchain
+
+}
+
+message GroupMember {
+  string user_guid =1;
+  enum Right {
+    ADMIN = 0;
+    READ = 1;
+    WRITE = 2;
+    EXECUTE = 3;
+  }
+}
+
+
+
+message SecurityPolicy {
+  string guid = 1;  //in category: securitypolicy
+
+
+
+}
+
+message Job {
+  string guid = 1;
+  string jobrequest_guid = 2;
+  ServicePointer service = 3;
+  string action = 4; //the name of the action we want to execute
+  DomainPointer domain = 5;
+  
+  enum Status {
+    INIT = 0;
+    RUNNING = 1;
+    OK = 2;
+    ERROR = 3;
+  }
+
+  Status status = 6;
+
+  string args = 7; //is protobuf encoded msg  
+
+  uint32 time_start = 8; //epoch when to start
+  uint32 time_stop = 9; //epoch when to start
+
+}
+
+message JobRecurring {
+    string guid = 1;
+    ServicePointer service = 2;
+    string action = 3; //the name of the action we want to execute
+    DomainPointer domain = 4;
+    
+    enum Status {
+      INIT = 0;
+      OK = 1;
+      ERROR = 2;
+      SCHEDULED = 3;
+    }
+  
+    Status status = 5;
+  
+    string args = 6; //is protobuf encoded msg  
+  
+    uint32 startdate = 7; //epoch when to start
+    uint32 deadline = 8; //last time 
+    uint32 maxretry = 9; //how many times to retry if error
+  
+  }
