@@ -9,7 +9,7 @@ class JSBase:
 
     @property
     def j(self):
-        if self.__logger == None:
+        if self.__logger is None:
             self.__logger = j.logger.get()
         return self.__logger
 

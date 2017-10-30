@@ -173,7 +173,7 @@ class SSHClientFactory:
             self.logger.info("ssh key:%s NOT loaded" % keyNamePath)
             return False
 
-    def SSHKeysLoad(self, path=None, duration=3600 * 24, die=False):
+    def SSHKeysLoad(self, path=None, duration=3600 * 24):
         """
         will see if ssh-agent has been started
         will check keys in home dir
@@ -195,10 +195,10 @@ class SSHClientFactory:
                       for item in self.SSHKeysListFromAgent()]
 
         if j.do.isDir(path):
-            keysinfs = [j.sal.fs.getBaseName(item).replace(".pub", "") for item in self.listFilesInDir(
+        import ipdb; ipdb.set_trace()
+            keysinfs = [j.sal.fs.getBaseName(item).replace(".pub", "") for item in j.sal.fs.listFilesInDir(
                 path, filter="*.pub") if j.sal.fs.exists(item.replace(".pub", ""))]
             keysinfs = [item for item in keysinfs if item not in keysloaded]
-
             res = self.askItemsFromList(
                 keysinfs,
                 "select ssh keys to load, use comma separated list e.g. 1,4,3 and press enter.")

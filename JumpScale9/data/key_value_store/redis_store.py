@@ -245,7 +245,7 @@ class RedisKeyValueStore(KeyValueStoreBase):
         #         @param reset, will just ignore the changelog
         #         @param delete, means even delete the changelog on master
         #         """
-        #         if self.redisclient.get("changelog:lastid") == None:
+        #         if self.redisclient.get("changelog:lastid")is None:
         #             return
         #         lastid = int(self.redisclient.get("changelog:lastid"))
         #         result = []

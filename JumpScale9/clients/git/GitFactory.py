@@ -78,7 +78,7 @@ class GitFactory:
             repository_name += '.git'
 
         if login == 'ssh' or ssh:
-            if port == None:
+            if port is None:
                 repository_url = 'ssh://git@%(host)s/%(account)s/%(name)s' % {
                     'host': repository_host,
                     'account': repository_account,

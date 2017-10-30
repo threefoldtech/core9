@@ -1,3 +1,4 @@
+
 from JumpScale9 import j
 import time
 import libtmux as tmuxp
@@ -7,7 +8,7 @@ import os
 class Session:
 
     def __init__(self, session):
-        if j.core.db == None:
+        if j.core.db is None:
             j.clients.redis.start4core()
             j.core.db = j.clients.redis.get()
         self.id = session.get("session_id")

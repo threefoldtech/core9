@@ -52,12 +52,12 @@ class FSMethods():
         self.createDir(destjs)
         return destjs
 
-    def readFile(self, filename):
+    def readFile(self, filename, encoding="utf-8"):
         """Read a file and get contents of that file
         @param filename: string (filename to open for reading )
         @rtype: string representing the file contents
         """
-        with open(filename) as fp:
+        with open(filename, encoding=encoding) as fp:
             data = fp.read()
         return data
 

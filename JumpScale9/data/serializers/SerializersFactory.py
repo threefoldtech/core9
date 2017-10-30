@@ -172,7 +172,7 @@ class SerializersFactory:
 
         , separated string goes to [] if default = []
         """
-        if val == None or val == "" or val==[]:
+        if val is None or val == "" or val==[]:
             return default
 
         if j.data.types.list.check(default):
@@ -202,7 +202,7 @@ class SerializersFactory:
             res=int(val)
         else:
             res=str(val)
-        return res    
+        return res
 
 
 class Serializer:

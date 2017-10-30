@@ -8,20 +8,20 @@ import os
 def _post_install(libname, libpath):
     from JumpScale9 import j  # here its still the boostrap JumpScale9
 
-    #NO LONGER NEEDED
+    # NO LONGER NEEDED
     # # add this plugin to the config
     # c = {}  # first time need to make sure is empty
     # c[libname] = libpath
     # j.core.state.configSet('plugins', c)
 
-    #remove leftovers
+    # remove leftovers
     for item in j.sal.fs.find("/usr/local/bin/",fileregex="js9*"):
          j.sal.fs.remove("/usr/local/bin/%s"%item)
     j.sal.fs.remove(j.sal.fs.joinPaths(j.dirs.HOMEDIR,".jumpscale9.toml"))
-    
+
     j.tools.executorLocal.initEnv()
     j.tools.jsloader.generate()
-    
+
 
 
 class install(_install):
