@@ -355,13 +355,13 @@ class Application:
 
     def appsGet(self):
 
-        defunctlist = self.getDefunctProcesses()
+        defunctlist = j.sal.process.getDefunctProcesses()
         result = {}
         for item in self.appsGetNames():
             pids = self.appGetPidsActive(item)
             pids = [pid for pid in pids if pid not in defunctlist]
 
-            if pids == []:
+            if not pids:
                 j.core.db.hdelete("application", item)
             else:
                 result[item] = pids
