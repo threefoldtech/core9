@@ -17,15 +17,15 @@ class ExecutorAsyncSSH(ExecutorSSH):
         self.init()
 
     def _getSSHClient(self, key_filename=None, passphrase=None):
-        self._sshclient = j.clients.ssh.getAsync(self.addr,
-                                                 self.port,
-                                                 login=self.login,
-                                                 passwd=self.passwd,
-                                                 allow_agent=self.allow_agent,
-                                                 look_for_keys=self.look_for_keys,
-                                                 key_filename=key_filename,
-                                                 passphrase=passphrase,
-                                                 timeout=self.timeout,
-                                                 usecache=True)
+        self._sshclient = j.clients.ssh.get_async(self.addr,
+                                                  self.port,
+                                                  login=self.login,
+                                                  passwd=self.passwd,
+                                                  allow_agent=self.allow_agent,
+                                                  look_for_keys=self.look_for_keys,
+                                                  key_filename=key_filename,
+                                                  passphrase=passphrase,
+                                                  timeout=self.timeout,
+                                                  usecache=True)
 
         return self._sshclient

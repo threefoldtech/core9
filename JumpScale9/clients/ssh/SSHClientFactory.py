@@ -31,19 +31,19 @@ class SSHClientFactory:
         gets an ssh client.
 
 
-        @param addr: the server to connect to
-        @param port: port to connect to
-        @param login: the username to authenticate as
-        @param passwd: leave empty if logging in with sshkey
-        @param stdout: show output
-        @param foward_agent: fowrward all keys to new connection
-        @param allow_agent: set to False to disable connecting to the SSH agent
-        @param look_for_keys: set to False to disable searching for discoverable private key files in ~/.ssh/
-        @param timeout: an optional timeout (in seconds) for the TCP connect
-        @param key_filename: the filename to try for authentication
-        @param passphrase: a password to use for unlocking a private key
-        @param die: die on error
-        @param usecache: use cached client. False to get a new connection
+        :param addr: the server to connect to
+        :param port: port to connect to
+        :param login: the username to authenticate as
+        :param passwd: leave empty if logging in with sshkey
+        :param stdout: show output
+        :param foward_agent: fowrward all keys to new connection
+        :param allow_agent: set to False to disable connecting to the SSH agent
+        :param look_for_keys: set to False to disable searching for discoverable private key files in ~/.ssh/
+        :param timeout: an optional timeout (in seconds) for the TCP connect
+        :param key_filename: the filename to try for authentication
+        :param passphrase: a password to use for unlocking a private key
+        :param die: die on error
+        :param usecache: use cached client. False to get a new connection
 
         If password is passed, sshclient will try to authenticated with login/passwd.
         If key_filename is passed, it will override look_for_keys and allow_agent and try to connect with this key.
@@ -74,11 +74,10 @@ class SSHClientFactory:
 
             return self.cache[key]
 
-    def getAsync(self, addr='', port=22, login="root", passwd=None, stdout=True, forward_agent=True, allow_agent=True,
-                 look_for_keys=True, timeout=5, key_filename=(), passphrase=None, die=True, usecache=True):
+    def get_async(self, addr='', port=22, login="root", passwd=None, forward_agent=True, allow_agent=True,
+                 look_for_keys=True, timeout=5, key_filename=(), passphrase=None, usecache=True):
 
-        key = "%s_%s_%s_%s_async" % (
-            addr, port, login, j.data.hash.md5_string(str(passwd)))
+        key = "%s_%s_%s_%s_async" % (addr, port, login, j.data.hash.md5_string(str(passwd)))
 
         if key not in self.cache or usecache is False:
             self.cache[key] = AsyncSSHClient(
@@ -104,10 +103,10 @@ class SSHClientFactory:
 
     def close(self):
         with self._lock:
-            for key, client in self.cache.items():
+            for _, client in self.cache.items():
                 client.close()
 
-    def _add_ssh_agent_to_bash_profile(self, path=None):
+    def _add_ssh_agent_to_bash_profile(self):
 
         bashprofile_path = os.path.expanduser("~/.bash_profile")
         if not j.sal.fs.exists(bashprofile_path):
@@ -147,7 +146,7 @@ class SSHClientFactory:
         os.environ['SSH_AUTH_SOCK'] = socketpath
         return socketpath
 
-    def SSHAgentCheck(self):
+    def ssh_agent_check(self):
         if "SSH_AUTH_SOCK" not in os.environ:
             self._init_ssh_env()
             self._add_ssh_agent_to_bash_profile()
@@ -159,7 +158,7 @@ class SSHClientFactory:
         load ssh key referred in the path to the ssh-agent
         :param path: is name or full path
         """
-        self.SSHAgentCheck()
+        self.ssh_agent_check()
         if self.ssh_agent_check_key_is_loaded(path):
             return
         self.logger.info("load ssh key: %s", path)
@@ -180,14 +179,15 @@ class SSHClientFactory:
         self.logger.debug("ssh key: %s is not loaded", key_name_path)
         return False
 
-    def SSHKeysLoad(self, path=None, duration=3600 * 24):
+    def ssh_keys_load(self, path=None, duration=3600 * 24):
         """
-        will see if ssh-agent has been started
-        will check keys in home dir
-        will ask which keys to load
+        ensure ssh-agent has been started
         will adjust .profile file to make sure that env param is set to allow ssh-agent to find the keys
+        :param path: will fall back to ~/.ssh if path is None,
+                     enters interactive mode and ask which keys to load if dir path was provided
+        :param duration: duration to retain the keys loaded in the agent
         """
-        self.SSHAgentCheck()
+        self.ssh_agent_check()
 
         if path is None:
             path = os.path.expanduser("~/.ssh")
@@ -198,14 +198,9 @@ class SSHClientFactory:
 
         self.start_ssh_agent()
 
-        keysloaded = [j.sal.fs.getBaseName(item)
-                      for item in self.ssh_keys_list_from_agent()]
-
         if j.do.isDir(path):
-            keysinfs = [j.sal.fs.getBaseName(item).replace(".pub", "") for item in j.sal.fs.listFilesInDir(
-                path, filter="*.pub") if j.sal.fs.exists(item.replace(".pub", ""))]
-            keysinfs = [item for item in keysinfs if item not in keysloaded]
-            res = self.askItemsFromList(
+            keysinfs = self._list_not_loaded_keys(path)
+            res = j.tools.console.askChoice(
                 keysinfs,
                 "select ssh keys to load, use comma separated list e.g. 1,4,3 and press enter.")
         else:
@@ -215,7 +210,7 @@ class SSHClientFactory:
         for item in res:
             pathkey = "%s/%s" % (path, item)
             # timeout after 24 h
-            self.logger.info("load sshkey: %s" % pathkey)
+            self.logger.info("load sshkey: %s", pathkey)
             cmd = "ssh-add -t %s %s " % (duration, pathkey)
             j.do.executeInteractive(cmd)
 
@@ -267,9 +262,9 @@ class SSHClientFactory:
     #             return fullpath
     #     return keyname
 
-    def SSHKnownHostsRemoveItem(self, item):
+    def remove_item_from_known_hosts(self, item):
         """
-        item is ip addr or hostname of the file we need to remove
+        :param item: is ip addr or hostname to be removed from known_hosts
         """
         path = "%s/.ssh/known_hosts" % j.dirs.HOMEDIR
         out = ""
@@ -401,3 +396,19 @@ class SSHClientFactory:
             # remove previous socketpath
             j.do.delete(socketpath)
             j.do.delete(j.do.joinPaths('/tmp', "ssh-agent-pid"))
+
+
+    def _list_not_loaded_keys(self, path):
+        """
+        list private keys that's not loaded in the ssh-agent
+        :param path: path of the directory that holds they keys
+        :return: list of key paths
+        """
+        loaded_keys = [j.sal.fs.getBaseName(item) for item in self.ssh_keys_list_from_agent()]
+
+        keysinfs = []
+        private_keys = j.sal.fs.listFilesInDir(path, filter="*.pub")
+        for item in private_keys:
+            if j.sal.fs.exists(item.replace(".pub", "")):
+                keysinfs.append(j.sal.fs.getBaseName(item).replace(".pub", ""))
+        return [item for item in keysinfs if item not in loaded_keys]

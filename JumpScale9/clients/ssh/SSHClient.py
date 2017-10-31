@@ -151,7 +151,7 @@ class SSHClient:
             self.allow_agent = True
             self.look_for_keys = True
             if j.clients.ssh.SSHKeyGetPathFromAgent(self.key_filename, die=False) is not None and not self.passphrase:
-                j.clients.ssh.SSHKeysLoad(self.key_filename)
+                j.clients.ssh.ssh_keys_load(self.key_filename)
 
         start = j.data.time.getTimeEpoch()
         while start + self.timeout > j.data.time.getTimeEpoch():
@@ -389,4 +389,4 @@ class SSHClient:
             self.passwd, self.login)
         self.execute(cmd)
 
-        j.clients.ssh.SSHKnownHostsRemoveItem(self.addr)
+        j.clients.ssh.remove_item_from_known_hosts(self.addr)
