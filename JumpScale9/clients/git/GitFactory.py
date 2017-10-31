@@ -29,7 +29,7 @@ class GitFactory:
         """
 
         if ssh == "auto" or ssh == "first":
-            ssh = j.clients.ssh.SSHAgentAvailable()
+            ssh = j.clients.ssh.ssh_agent_available()
         elif ssh or ssh is False:
             pass
         else:

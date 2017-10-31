@@ -1,9 +1,10 @@
-from js9 import j
-
 import os
 import threading
-from .SSHClient import SSHClient
+
+from js9 import j
+
 from .AsyncSSHClient import AsyncSSHClient
+from .SSHClient import SSHClient
 
 
 class SSHClientFactory:
@@ -16,18 +17,20 @@ class SSHClientFactory:
     def __init__(self):
         self.__jslocation__ = "j.clients.ssh"
         self.__imports__ = "paramiko,asyncssh"
-        self.loadSSHAgent = self._loadSSHAgent
 
     def reset(self):
         with self._lock:
-            for key, client in self.cache.items():
+            for _, client in self.cache.items():
                 client.close()
             self.cache = {}
 
-    def get(self, addr='', port=22, login="root", passwd=None, stdout=True, forward_agent=True, allow_agent=True,
-            look_for_keys=True, timeout=5, key_filename=None, passphrase=None, die=True, usecache=True):
+    def get(self, addr='', port=22, login="root", passwd=None, stdout=True,
+            forward_agent=True, allow_agent=True, look_for_keys=True, timeout=5,
+            key_filename=None, passphrase=None, die=True, usecache=True):
         """
         gets an ssh client.
+
+
         @param addr: the server to connect to
         @param port: port to connect to
         @param login: the username to authenticate as
@@ -104,7 +107,7 @@ class SSHClientFactory:
             for key, client in self.cache.items():
                 client.close()
 
-    def _addSSHAgentToBashProfile(self, path=None):
+    def _add_ssh_agent_to_bash_profile(self, path=None):
 
         bashprofile_path = os.path.expanduser("~/.bash_profile")
         if not j.sal.fs.exists(bashprofile_path):
@@ -125,17 +128,17 @@ class SSHClientFactory:
             j.sal.fs.writeFile(bashprofile_path, out)
             return
 
-        out += "export SSH_AUTH_SOCK=%s" % self._getSSHSocketpath()
+        out += "export SSH_AUTH_SOCK=%s" % self._get_ssh_socket_path()
         out = out.replace("\n\n\n", "\n\n")
         out = out.replace("\n\n\n", "\n\n")
         j.sal.fs.writeFile(bashprofile_path, out)
 
-    def _initSSH_ENV(self, force=False):
+    def _init_ssh_env(self, force=True):
         if force or "SSH_AUTH_SOCK" not in os.environ:
-            os.putenv("SSH_AUTH_SOCK", self._getSSHSocketpath())
-            os.environ["SSH_AUTH_SOCK"] = self._getSSHSocketpath()
+            os.putenv("SSH_AUTH_SOCK", self._get_ssh_socket_path())
+            os.environ["SSH_AUTH_SOCK"] = self._get_ssh_socket_path()
 
-    def _getSSHSocketpath(self):
+    def _get_ssh_socket_path(self):
 
         if "SSH_AUTH_SOCK" in os.environ:
             return(os.environ["SSH_AUTH_SOCK"])
@@ -146,32 +149,36 @@ class SSHClientFactory:
 
     def SSHAgentCheck(self):
         if "SSH_AUTH_SOCK" not in os.environ:
-            self._initSSH_ENV(True)
-            self._addSSHAgentToBashProfile()
-        if not self.SSHAgentAvailable():
-            self._loadSSHAgent()
+            self._init_ssh_env()
+            self._add_ssh_agent_to_bash_profile()
+        if not self.ssh_agent_available():
+            self.start_ssh_agent()
 
-    def SSHKeyLoad(self, path, duration=3600 * 24):
+    def _load_ssh_key(self, path, duration=3600 * 24):
         """
-        @param path is name or full path
+        load ssh key referred in the path to the ssh-agent
+        :param path: is name or full path
         """
         self.SSHAgentCheck()
-        if self.SSHAgentCheckKeyIsLoaded(path):
+        if self.ssh_agent_check_key_is_loaded(path):
             return
-        self.logger.info("load ssh key:%s" % path)
+        self.logger.info("load ssh key: %s", path)
         j.do.chmod(path, 0o600)
         cmd = "ssh-add -t %s %s " % (duration, path)
         j.do.executeInteractive(cmd)
 
-    def SSHAgentCheckKeyIsLoaded(self, keyNamePath):
-        keysloaded = [j.sal.fs.getBaseName(item)
-                      for item in self.SSHKeysListFromAgent()]
-        if j.sal.fs.getBaseName(keyNamePath) in keysloaded:
-            self.logger.info("ssh key:%s loaded" % keyNamePath)
+    def ssh_agent_check_key_is_loaded(self, key_name_path):
+        """
+        check if key is loaded in the ssh agent
+        :param key_name_path: path or name of the ssh key
+        """
+        keysloaded = [j.sal.fs.getBaseName(item) for item in self.ssh_keys_list_from_agent()]
+        if j.sal.fs.getBaseName(key_name_path) in keysloaded:
+            self.logger.debug("ssh key: %s loaded", key_name_path)
             return True
-        else:
-            self.logger.info("ssh key:%s NOT loaded" % keyNamePath)
-            return False
+
+        self.logger.debug("ssh key: %s is not loaded", key_name_path)
+        return False
 
     def SSHKeysLoad(self, path=None, duration=3600 * 24):
         """
@@ -187,12 +194,12 @@ class SSHClientFactory:
         j.do.createDir(path)
 
         if "SSH_AUTH_SOCK" not in os.environ:
-            self._initSSH_ENV(True)
+            self._init_ssh_env()
 
-        self._loadSSHAgent()
+        self.start_ssh_agent()
 
         keysloaded = [j.sal.fs.getBaseName(item)
-                      for item in self.SSHKeysListFromAgent()]
+                      for item in self.ssh_keys_list_from_agent()]
 
         if j.do.isDir(path):
             keysinfs = [j.sal.fs.getBaseName(item).replace(".pub", "") for item in j.sal.fs.listFilesInDir(
@@ -213,7 +220,7 @@ class SSHClientFactory:
             j.do.executeInteractive(cmd)
 
     def SSHKeyGetPathFromAgent(self, keyname, die=True):
-        for item in j.clients.ssh.SSHKeysListFromAgent():
+        for item in j.clients.ssh.ssh_keys_list_from_agent():
             if item.endswith(keyname):
                 return item
         if die:
@@ -222,7 +229,7 @@ class SSHClientFactory:
                 keyname)
 
     def SSHKeyGetFromAgentPub(self, keyname, die=True):
-        for item in j.clients.ssh.SSHKeysListFromAgent():
+        for item in j.clients.ssh.ssh_keys_list_from_agent():
             if item.endswith(keyname):
                 return j.sal.fs.readFile(item + ".pub")
         if die:
@@ -230,22 +237,24 @@ class SSHClientFactory:
                 "Did not find key with name:%s, check its loaded in ssh-agent with ssh-add -l" %
                 keyname)
 
-    def SSHKeysListFromAgent(self, keyIncluded=False):
+    def ssh_keys_list_from_agent(self, key_included=False):
         """
-        returns list of paths
+        list ssh keys from the agent
+        :param key_included:
+        :return: list of paths
         """
         if "SSH_AUTH_SOCK" not in os.environ:
-            self._initSSH_ENV(True)
-        self._loadSSHAgent()
+            self._init_ssh_env()
+        self.start_ssh_agent()
         cmd = "ssh-add -L"
-        rc, out, err = j.do.execute(cmd, False, False, die=False)
-        if rc:
-            if rc == 1 and out.find("The agent has no identities") != -1:
+        return_code, out, err = j.do.execute(cmd, False, False, die=False)
+        if return_code:
+            if return_code == 1 and out.find("The agent has no identities") != -1:
                 return []
             raise RuntimeError("error during listing of keys :%s" % err)
         keys = [line.split()
                 for line in out.splitlines() if len(line.split()) == 3]
-        if keyIncluded:
+        if key_included:
             return list(map(lambda key: key[2:0:-1], keys))
         else:
             return list(map(lambda key: key[2], keys))
@@ -270,104 +279,125 @@ class SSHClientFactory:
             out += "%s\n" % line
         j.sal.fs.writeFile(path, out)
 
-    def _loadSSHAgent(self, path=None, createkeys=False, killfirst=False):
+    def start_ssh_agent(self):
         """
-        check if ssh-agent is available & there is key loaded
-
-        @param path: is path to private ssh key
-
-        the primary key is 'id_rsa' and will be used as default e.g. if authorizing another node then this key will be used
-
+        start ssh-agent, kills other agents if more than one are found
         """
         # check if more than 1 agent
-        socketpath = self._getSSHSocketpath()
-        res = [
-            item for item in j.do.execute(
-                "ps aux|grep ssh-agent",
-                False,
-                False)[1].split("\n") if item.find("grep ssh-agent") == -
-            1]
+        socketpath = self._get_ssh_socket_path()
+        self._clean_ssh_agents(socketpath)
+
+        socketpath_exists = j.sal.fs.exists(socketpath)
+        if not socketpath_exists:
+            j.do.createDir(j.do.getParent(socketpath))
+            # ssh-agent not loaded
+            self.logger.info("load ssh agent")
+            return_code, out, err = j.do.execute("ssh-agent -a %s" % socketpath,
+                                                 die=False,
+                                                 showout=False,
+                                                 outputStderr=False)
+            if not return_code:
+                raise RuntimeError(
+                    "Could not start ssh-agent, \nstdout:%s\nstderr:%s\n" % (out, err))
+            else:
+                if not socketpath_exists:
+                    err_msg = "Serious bug, ssh-agent not started while there was no error, "\
+                              "should never get here"
+                    raise RuntimeError(err_msg)
+
+                # get pid from out of ssh-agent being started
+                piditems = [item for item in out.split("\n") if item.find("pid") != -1]
+
+                # print(piditems)
+                if len(piditems) < 1:
+                    self.logger.debug("results was: %s", out)
+                    raise RuntimeError("Cannot find items in ssh-add -l")
+
+                self._init_ssh_env()
+
+                pid = int(piditems[-1].split(" ")[-1].strip("; "))
+
+                socket_path = j.do.joinPaths("/tmp", "ssh-agent-pid")
+                j.sal.fs.writeFile(socket_path, str(pid))
+                self._add_ssh_agent_to_bash_profile()
+            return
+
+        # ssh agent should be loaded because ssh-agent socket has been
+        # found
+        if os.environ.get("SSH_AUTH_SOCK") != socketpath:
+            self._init_ssh_env()
+
+
+    def load_ssh_key(self, path="", create_keys=False):
+        """
+        load ssh key in ssh-agent, if no ssh-agent is found, new ssh-agent will be started
+        :path: path of ssh key to be loaded, it'll default to ~/.ssh/id_rsa if not provided
+        :create_keys: if True, new keys will be created
+        """
+        path = path or j.sal.fs.joinPaths(j.dirs.HOMEDIR, ".ssh", "id_rsa")
+        path_found = j.sal.fs.exists(path)
+        if not path_found and not create_keys:
+            raise RuntimeError("key %s is not found" % path)
+
+        self.start_ssh_agent()
+
+        # create new key if path not found
+        if not path_found and create_keys:
+            return_code, out, err = j.do.execute("ssh-keygen -t rsa -f %s -N \"\"" % path,
+                                                 die=False,
+                                                 showout=False,
+                                                 outputStderr=False)
+            if not return_code:
+                raise RuntimeError(
+                    "Could not add key to the ssh-agent, \nstdout:%s\nstderr:%s\n" % (out, err))
+
+        self._load_ssh_key(path)
+
+
+
+
+    def ssh_agent_available(self):
+        """
+        Check if agent available
+        :return: bool
+        """
+        if not j.sal.fs.exists(self._get_ssh_socket_path()):
+            return False
+        if "SSH_AUTH_SOCK" not in os.environ:
+            self._init_ssh_env()
+        return_code, out, _ = j.do.execute("ssh-add -l",
+                                           showout=False,
+                                           outputStderr=False,
+                                           die=False)
+        if 'The agent has no identities.' in out:
+            return True
+        if return_code != 0:
+            return False
+        else:
+            return True
+
+    def _clean_ssh_agents(self, socketpath):
+        """
+        Kill all agents if more than one is found
+        :param socketpath: socketpath
+        """
+        _, out, _ = j.do.execute("ps aux|grep ssh-agent", showout=False, outputStderr=False)
+        res = [item for item in out.split("\n") if item.find("grep ssh-agent") == -1]
         res = [item for item in res if item.strip() != ""]
         res = [item for item in res if item[-2:] != "-l"]
 
+        # delete socketpath if no ssh-agents found, aka, dangling socket
+        socketpath_exists = j.sal.fs.exists(socketpath)
+        if not res and socketpath_exists:
+            j.do.delete(socketpath)
+            return
+
         if len(res) > 1:
             self.logger.info("more than 1 ssh-agent, will kill all")
-            killfirst = True
-        if len(res) == 0 and j.sal.fs.exists(socketpath):
-            j.do.delete(socketpath)
 
-        if killfirst:
             cmd = "killall ssh-agent"
             # self.logger.info(cmd)
             j.do.execute(cmd, showout=False, outputStderr=False, die=False)
             # remove previous socketpath
             j.do.delete(socketpath)
             j.do.delete(j.do.joinPaths('/tmp', "ssh-agent-pid"))
-
-        if not j.sal.fs.exists(socketpath):
-            j.do.createDir(j.do.getParent(socketpath))
-            # ssh-agent not loaded
-            self.logger.info("load ssh agent")
-            rc, result, err = j.do.execute(
-                "ssh-agent -a %s" %
-                socketpath, die=False, showout=False, outputStderr=False)
-
-            if rc > 0:
-                # could not start ssh-agent
-                raise RuntimeError(
-                    "Could not start ssh-agent, something went wrong,\nstdout:%s\nstderr:%s\n" %
-                    (result, err))
-            else:
-                # get pid from result of ssh-agent being started
-                if not j.sal.fs.exists(socketpath):
-                    raise RuntimeError(
-                        "Serious bug, ssh-agent not started while there was no error, should never get here")
-                piditems = [item for item in result.split(
-                    "\n") if item.find("pid") != -1]
-                # print(piditems)
-                if len(piditems) < 1:
-                    print("results was:")
-                    print(result)
-                    print("END")
-                    raise RuntimeError("Cannot find items in ssh-add -l")
-                self._initSSH_ENV(True)
-                pid = int(piditems[-1].split(" ")[-1].strip("; "))
-                j.sal.fs.writeFile(
-                    j.do.joinPaths(
-                        '/tmp',
-                        "ssh-agent-pid"),
-                    str(pid))
-                self._addSSHAgentToBashProfile()
-
-            # ssh agent should be loaded because ssh-agent socket has been
-            # found
-            if os.environ.get("SSH_AUTH_SOCK") != socketpath:
-                self._initSSH_ENV(True)
-            rc, result, err = j.do.execute(
-                "ssh-add -l", die=False, showout=False, outputStderr=False)
-            if rc == 2:
-                # no ssh-agent found
-                print(result)
-                raise RuntimeError(
-                    "Could not connect to ssh-agent, this is bug, ssh-agent should be loaded by now")
-            elif rc == 1:
-                # no keys but agent loaded
-                result = ""
-            elif rc > 0:
-                raise RuntimeError(
-                    "Could not start ssh-agent, something went wrong,\nstdout:%s\nstderr:%s\n" %
-                    (result, err))
-
-    def SSHAgentAvailable(self):
-        if not j.sal.fs.exists(self._getSSHSocketpath()):
-            return False
-        if "SSH_AUTH_SOCK" not in os.environ:
-            self._initSSH_ENV(True)
-        rc, out, err = j.do.execute(
-            "ssh-add -l", showout=False, outputStderr=False, die=False)
-        if 'The agent has no identities.' in out:
-            return True
-        if rc != 0:
-            return False
-        else:
-            return True
