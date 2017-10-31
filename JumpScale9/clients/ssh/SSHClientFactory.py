@@ -195,7 +195,6 @@ class SSHClientFactory:
                       for item in self.SSHKeysListFromAgent()]
 
         if j.do.isDir(path):
-        import ipdb; ipdb.set_trace()
             keysinfs = [j.sal.fs.getBaseName(item).replace(".pub", "") for item in j.sal.fs.listFilesInDir(
                 path, filter="*.pub") if j.sal.fs.exists(item.replace(".pub", ""))]
             keysinfs = [item for item in keysinfs if item not in keysloaded]
