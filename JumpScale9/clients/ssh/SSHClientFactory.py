@@ -282,20 +282,19 @@ class SSHClientFactory:
         socketpath = self._get_ssh_socket_path()
         self._clean_ssh_agents(socketpath)
 
-        socketpath_exists = j.sal.fs.exists(socketpath)
-        if not socketpath_exists:
+        if not j.sal.fs.exists(socketpath):
             j.do.createDir(j.do.getParent(socketpath))
             # ssh-agent not loaded
             self.logger.info("load ssh agent")
-            return_code, out, err = j.do.execute("ssh-agent -a %s" % socketpath,
-                                                 die=False,
-                                                 showout=False,
-                                                 outputStderr=False)
-            if not return_code:
+            _, out, err = j.do.execute("ssh-agent -a %s" % socketpath,
+                                       die=False,
+                                       showout=False,
+                                       outputStderr=False)
+            if err:
                 raise RuntimeError(
                     "Could not start ssh-agent, \nstdout:%s\nstderr:%s\n" % (out, err))
             else:
-                if not socketpath_exists:
+                if not j.sal.fs.exists(socketpath):
                     err_msg = "Serious bug, ssh-agent not started while there was no error, "\
                               "should never get here"
                     raise RuntimeError(err_msg)
