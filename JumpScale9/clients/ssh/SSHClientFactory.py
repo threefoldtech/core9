@@ -19,17 +19,23 @@ class SSHClientFactory:
         self.__imports__ = "paramiko,asyncssh"
 
     def reset(self):
+        """
+        Close and clear cached ssh clients
+        """
         with self._lock:
             for _, client in self.cache.items():
                 client.close()
             self.cache = {}
 
-    def get(self, addr='', port=22, login="root", passwd=None, stdout=True,
+    def get(self, addr="localhost", port=22, login="root", passwd=None, stdout=True,
             forward_agent=True, allow_agent=True, look_for_keys=True, timeout=5,
-            key_filename=None, passphrase=None, die=True, usecache=True):
+            key_filename=None, passphrase=None, usecache=True):
         """
-        gets an ssh client.
+        gets an ssh client
 
+        If password is passed, sshclient will try to authenticated with login/passwd.
+        If key_filename is passed, it will override look_for_keys
+        and allow_agent and try to connect with this key.
 
         :param addr: the server to connect to
         :param port: port to connect to
@@ -38,26 +44,23 @@ class SSHClientFactory:
         :param stdout: show output
         :param foward_agent: fowrward all keys to new connection
         :param allow_agent: set to False to disable connecting to the SSH agent
-        :param look_for_keys: set to False to disable searching for discoverable private key files in ~/.ssh/
+        :param look_for_keys: set to False to disable searching
+                              for discoverable private key files in ~/.ssh/
         :param timeout: an optional timeout (in seconds) for the TCP connect
         :param key_filename: the filename to try for authentication
         :param passphrase: a password to use for unlocking a private key
-        :param die: die on error
         :param usecache: use cached client. False to get a new connection
-
-        If password is passed, sshclient will try to authenticated with login/passwd.
-        If key_filename is passed, it will override look_for_keys and allow_agent and try to connect with this key.
         """
         with self._lock:
-            key = "%s_%s_%s_%s_sync" % (
-                addr, port, login, j.data.hash.md5_string(str(passwd)))
+            key = "%s_%s_%s_%s_sync" % (addr, port, login, j.data.hash.md5_string(str(passwd)))
 
             if key in self.cache and usecache:
                 try:
-                    if not self.cache[key].transport.is_active():
-                        usecache = False
-                except Exception:
+                    _ssh_transport = self.cache[key].transport
+                    usecache = not (not _ssh_transport or not _ssh_transport.is_active())
+                except j.exceptions.RuntimeError:
                     usecache = False
+
             if key not in self.cache or usecache is False:
                 self.cache[key] = SSHClient(
                     addr,
@@ -74,8 +77,29 @@ class SSHClientFactory:
 
             return self.cache[key]
 
-    def get_async(self, addr='', port=22, login="root", passwd=None, forward_agent=True, allow_agent=True,
-                 look_for_keys=True, timeout=5, key_filename=(), passphrase=None, usecache=True):
+    def get_async(self, addr="localhost", port=22, login="root", passwd=None,
+                  forward_agent=True, allow_agent=True, look_for_keys=True, timeout=5,
+                  key_filename=(), passphrase=None, usecache=True):
+        """
+        gets an async ssh client
+
+        If password is passed, sshclient will try to authenticated with login/passwd.
+        If key_filename is passed, it will override look_for_keys
+        and allow_agent and try to connect with this key.
+
+        :param addr: the server to connect to
+        :param port: port to connect to
+        :param login: the username to authenticate as
+        :param passwd: leave empty if logging in with sshkey
+        :param forward_agent: fowrward all keys to new connection
+        :param allow_agent: set to False to disable connecting to the SSH agent
+        :param look_for_keys: set to False to disable searching
+                              for discoverable private key files in ~/.ssh/
+        :param timeout: an optional timeout (in seconds) for the TCP connect
+        :param key_filename: the filename to try for authentication
+        :param passphrase: a password to use for unlocking a private key
+        :param usecache: use cached client. False to get a new connection
+        """
 
         key = "%s_%s_%s_%s_async" % (addr, port, login, j.data.hash.md5_string(str(passwd)))
 

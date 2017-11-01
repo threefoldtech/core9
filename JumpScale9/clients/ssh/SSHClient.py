@@ -1,13 +1,13 @@
-from js9 import j
+import io
+import queue
+import socket
+import threading
+import time
 
 import paramiko
-from paramiko.ssh_exception import SSHException, BadHostKeyException, AuthenticationException
-import time
-import socket
-import os
-import threading
-import queue
-import io
+from js9 import j
+from paramiko.ssh_exception import (AuthenticationException,
+                                    BadHostKeyException, SSHException)
 
 
 class StreamReader(threading.Thread):
