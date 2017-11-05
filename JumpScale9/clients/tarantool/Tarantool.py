@@ -148,8 +148,6 @@ class TarantoolFactory:
         if start:
             self.start()
 
-
-
     def clientGet(self, ipaddr="localhost", port=3301, login="admin", password="admin007", fromcache=True):
         key = "%s_%s" % (ipaddr, port)
         if key not in self._tarantool or fromcache is False:

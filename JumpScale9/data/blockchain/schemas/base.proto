@@ -5,10 +5,10 @@ package blockchain;
 //ask for a specific action
 message Message {
     string guid = 1; //each message gets a unique guid
-    string pguid = 2; //permanent guid over time for the object, set at first time
-    string previous = 3; // link to previous unique address (to the previous guid)
-    string data = 4; //the payload
-    string domain = 5;//unique domain in which the messages live in
+    string domain = 2;//unique domain in which the messages live in    
+    string pguid = 3; //permanent guid over time for the object, set at first time
+    string previous = 4; // link to previous unique address (to the previous guid)
+    string data = 5; //the payload
     unint32 date =6;//for last change
     string author =7 ; //guid of author is in domain 'system.person'
     string signature = 8; //signature of data done by private key of author (8 bytes)

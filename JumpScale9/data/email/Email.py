@@ -62,5 +62,7 @@ class EmailTool:
 
         :return: Sender instance
         """
-        cfg = j.data.serializer.yaml.load(j.sal.fs.joinPaths(j.dirs.JSCFGDIR, 'smtp.yaml'))
-        return self.getSender(cfg['username'], cfg['password'], cfg['host'], cfg['port'])
+        #BAD SHOULD NOT BE DONE LIKE THIS !
+        
+        # cfg = j.data.serializer.yaml.load(j.sal.fs.joinPaths(j.dirs.JSCFGDIR, 'smtp.yaml'))
+        # return self.getSender(cfg['username'], cfg['password'], cfg['host'], cfg['port'])

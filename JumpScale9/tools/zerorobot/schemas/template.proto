@@ -26,6 +26,10 @@ message Template {
 
   string dataschema = 10; // .proto schema of the data obj liked to this template
 
+  //optional link to git
+  repeated string giturl = 4;
+  
+
 }
 
 message TemplatePointer {
