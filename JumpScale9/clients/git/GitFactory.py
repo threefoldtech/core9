@@ -194,7 +194,7 @@ class GitFactory:
 
         if not dest:
             if codeDir is None:
-                if not executor:
+                if executor is None:
                     codeDir = j.dirs.CODEDIR
                 else:
                     codeDir = executor.prefab.core.dir_paths['CODEDIR']
@@ -206,7 +206,10 @@ class GitFactory:
             }
 
         if reset:
-            self.delete(dest)
+            if executor is not None:
+                executor.prefab.core.dir_remove(dest)
+            else:
+                j.sal.fs.removeDirTree(dest)
 
         # self.createDir(dest)
 

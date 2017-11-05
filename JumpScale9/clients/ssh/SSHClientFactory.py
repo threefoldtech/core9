@@ -3,7 +3,8 @@ from js9 import j
 import os
 import threading
 from .SSHClient import SSHClient
-from .AsyncSSHClient import AsyncSSHClient
+
+# from .AsyncSSHClient import AsyncSSHClient  #DO NOT LOAD THIS HERE EVER
 
 
 class SSHClientFactory:
@@ -73,6 +74,8 @@ class SSHClientFactory:
 
     def getAsync(self, addr='', port=22, login="root", passwd=None, stdout=True, forward_agent=True, allow_agent=True,
                  look_for_keys=True, timeout=5, key_filename=(), passphrase=None, die=True, usecache=True):
+
+        from .AsyncSSHClient import AsyncSSHClient
 
         key = "%s_%s_%s_%s_async" % (
             addr, port, login, j.data.hash.md5_string(str(passwd)))

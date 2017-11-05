@@ -4,34 +4,28 @@ package blockchain;
 
 //ask for a specific action
 message Message {
-    string guid = 1; //unique address on the blockchain (per new mod there is a new version of the object)
-    string objguid = 2; //unique addr for object over time
+    string guid = 1; //each message gets a unique guid
+    string pguid = 2; //permanent guid over time for the object, set at first time
     string previous = 3; // link to previous unique address (to the previous guid)
     string data = 4; //the payload
-    string category = 5;//each object is in specific category
-
-    unint32 date =6;
-    string author =7 ; //guid of author is in category person
-    string signature = 8; //signature done by private key of person (8 bytes)
-
+    string domain = 5;//unique domain in which the messages live in
+    unint32 date =6;//for last change
+    string author =7 ; //guid of author is in domain 'system.person'
+    string signature = 8; //signature of data done by private key of author (8 bytes)
+    string signature_previous = 9; //signature of previous message data done by private key of author (8 bytes)
+    
     enum Compression {
       NONE = 0;
       BLOSC = 1;
       SNAPPY = 2;
     }
+
+
     Compression compression_type = 9;
 
     uint32 expiration = 10; //after that date the data is no longer usable/valid
 
-
-    
-  
-    Status status = 6;
-    ServicePointer service = 2; //know where to execute thx to service
-    string action = 3; //the name of the action we want to execute
-    DomainPointer domain = 4;
-      
-  
+    string tags = 11; //to link metadata to the message, will be used to index
       
   }
 
@@ -48,8 +42,6 @@ message Decrypt {
 
 //by purpose group's like this have no name/description, this needs to live on higher level layer
 message Group {
-  string guid = 1;  //in category: group
-  string objguid = 2; //unique addr for object over time (because each new change creates a new guid)
   string previous = 3; // link to previous unique address (to the previous guid)  
   repeated GroupMember members = 4; //list of of members with their corresponding rights
   //only admin's can change a group
@@ -71,6 +63,23 @@ message GroupMember {
   }
 }
 
+message Domain {
+  string guid = 1;
+  // fullname like dns: e.g. incubaid.com
+  string name = 2;
+  //pubkey e.g. used to verify signature of the code, this to make sure that original authors produced the code
+  repeated string pubkey = 3;     
+  string description = 5;
+  //identify a domain, can be linked to a company, but all of this is optional
+  repeated string company = 6;
+  repeated string url = 7;
+  repeated string email = 8;
+}
+
+message DomainPointer {
+  string guid = 1;
+  string name = 2;
+}
 
 
 message SecurityPolicy {
@@ -79,49 +88,3 @@ message SecurityPolicy {
 
 
 }
-
-message Job {
-  string guid = 1;
-  string jobrequest_guid = 2;
-  ServicePointer service = 3;
-  string action = 4; //the name of the action we want to execute
-  DomainPointer domain = 5;
-  
-  enum Status {
-    INIT = 0;
-    RUNNING = 1;
-    OK = 2;
-    ERROR = 3;
-  }
-
-  Status status = 6;
-
-  string args = 7; //is protobuf encoded msg  
-
-  uint32 time_start = 8; //epoch when to start
-  uint32 time_stop = 9; //epoch when to start
-
-}
-
-message JobRecurring {
-    string guid = 1;
-    ServicePointer service = 2;
-    string action = 3; //the name of the action we want to execute
-    DomainPointer domain = 4;
-    
-    enum Status {
-      INIT = 0;
-      OK = 1;
-      ERROR = 2;
-      SCHEDULED = 3;
-    }
-  
-    Status status = 5;
-  
-    string args = 6; //is protobuf encoded msg  
-  
-    uint32 startdate = 7; //epoch when to start
-    uint32 deadline = 8; //last time 
-    uint32 maxretry = 9; //how many times to retry if error
-  
-  }
