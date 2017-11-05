@@ -29,7 +29,7 @@ class GitFactory:
         """
 
         if ssh == "auto" or ssh == "first":
-            ssh = j.clients.ssh.SSHAgentAvailable()
+            ssh = j.clients.ssh.ssh_agent_available()
         elif ssh or ssh is False:
             pass
         else:
@@ -78,7 +78,7 @@ class GitFactory:
             repository_name += '.git'
 
         if login == 'ssh' or ssh:
-            if port == None:
+            if port is None:
                 repository_url = 'ssh://git@%(host)s/%(account)s/%(name)s' % {
                     'host': repository_host,
                     'account': repository_account,

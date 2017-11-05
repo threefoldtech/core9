@@ -129,7 +129,7 @@ class PlatformType():
 
     @property
     def uname(self):
-        if self._uname == None:
+        if self._uname is None:
             _uname = self.executor.stateOnSystem["uname"]
             if _uname.find("warning: setlocale") != -1:
                 j.application._fixlocale = True

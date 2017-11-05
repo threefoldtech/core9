@@ -24,7 +24,7 @@ class TarantoolDB():
         if path None then will use template which is in this dir
         """
         path = self.configTemplatePath
-        if path == None:
+        if path is None:
             path = "%s/config_template.lua" % self._path
         C = j.sal.fs.readFile(path)
         data = {}

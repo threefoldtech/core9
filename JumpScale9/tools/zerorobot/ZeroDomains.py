@@ -9,8 +9,8 @@ class BlockchainFactory():
 
     @property
     def model(self):
-        if self._model == None:
-            if self.guid == None:
+        if self._model is None:
+            if self.guid is None:
                 self._model = j.tools.zerorobot.messages.Domain()
             else:
                 self_model = None
@@ -55,7 +55,7 @@ class ZeroDomains:
         d = ZeroDomain()
 
     def load(self, path=None):
-        if path == None:
+        if path is None:
             repos = j.clients.git.getGitReposListLocal()
             for key, val in repos.items():
                 if key.startswith("zerorobot"):

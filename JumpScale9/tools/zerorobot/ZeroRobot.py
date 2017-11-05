@@ -32,7 +32,7 @@ class ZeroRobot:
 
     @property
     def messages(self):
-        if self._messages == None:
+        if self._messages is None:
             self._messages = Messages()
             self._loadSchemas()
         return self._messages

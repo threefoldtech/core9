@@ -34,7 +34,7 @@ class ExecutorBase:
 
     @property
     def state(self):
-        if self._state == None:
+        if self._state is None:
             from JumpScale9.core.State import State
             self._state = State(self)
             self.config = self.state.config
@@ -154,7 +154,7 @@ class ExecutorBase:
         """
         is dict of all relevant param's on system
         """
-        if self._stateOnSystem == None:
+        if self._stateOnSystem is None:
             C = """
             set +ex
             ls "/root/.iscontainer"  > /dev/null 2>&1 && echo 'ISCONTAINER = 1' || echo 'ISCONTAINER = 0'
