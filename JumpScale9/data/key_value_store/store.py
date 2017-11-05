@@ -22,7 +22,6 @@ class KeyValueStoreBase:  # , metaclass=ABCMeta):
         self.changelog = changelog
         self.masterdb = masterdb
         self._schema = b""
-        # self.owner = j.application.owner
         self.owner = ""  # std empty
         self.inMem = False
 
@@ -46,7 +45,7 @@ class KeyValueStoreBase:  # , metaclass=ABCMeta):
 
     @property
     def keys(self):
-        raise RuntimeError("keys not implemented, only works for mem & redis for now")
+        raise RuntimeError("keys not implemented, only works for mem & redis")
 
     def destroy(self):
         # delete data
