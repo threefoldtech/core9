@@ -365,7 +365,7 @@ class SystemProcess:
         # devnull = open(os.devnull, 'wb') # use this in python < 3.3
         # Popen(['nohup', cmd+" &"], stdout=devnull, stderr=devnull)
         cmd2 = "nohup %s > /dev/null 2>&1 &" % cmd
-        cmd2 = j.dirs.replaceTxtDirVars(cmd2)
+        cmd2 = j.dirs.replace_txt_dir_vars(cmd2)
         print(cmd2)
         j.sal.process.executeWithoutPipe(cmd2)
 

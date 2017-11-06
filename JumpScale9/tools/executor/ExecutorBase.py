@@ -431,7 +431,7 @@ class ExecutorBase:
 
         if self.type == "local":
             src = "%s/github/jumpscale/core9/cmds/" % j.core.state.config["dirs"]["CODEDIR"]
-            j.do.symlinkFilesInDir(
+            j.sal.fs.symlinkFilesInDir(
                 src, "/usr/local/bin", delete=True, includeDirs=False, makeExecutable=True)
 
         print("initenv done on executor base")

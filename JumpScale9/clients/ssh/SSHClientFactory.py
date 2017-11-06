@@ -186,7 +186,7 @@ class SSHClientFactory:
         if self.ssh_agent_check_key_is_loaded(path):
             return
         self.logger.info("load ssh key: %s", path)
-        j.do.chmod(path, 0o600)
+        j.sal.fs.chmod(path, 0o600)
         cmd = "ssh-add -t %s %s " % (duration, path)
         j.do.executeInteractive(cmd)
 
@@ -215,21 +215,21 @@ class SSHClientFactory:
 
         if path is None:
             path = os.path.expanduser("~/.ssh")
-        j.do.createDir(path)
+        j.sal.fs.createDir(path)
 
         if "SSH_AUTH_SOCK" not in os.environ:
             self._init_ssh_env()
 
         self.start_ssh_agent()
 
-        if j.do.isDir(path):
+        if j.sal.fs.isDir(path):
             keysinfs = self._list_not_loaded_keys(path)
             res = j.tools.console.askChoice(
                 keysinfs,
                 "select ssh keys to load, use comma separated list e.g. 1,4,3 and press enter.")
         else:
             res = [j.sal.fs.getBaseName(path).replace(".pub", "")]
-            path = j.do.getParent(path)
+            path = j.sal.fs.getParent(path)
 
         for item in res:
             pathkey = "%s/%s" % (path, item)
@@ -307,7 +307,7 @@ class SSHClientFactory:
         self._clean_ssh_agents(socketpath)
 
         if not j.sal.fs.exists(socketpath):
-            j.do.createDir(j.do.getParent(socketpath))
+            j.sal.fs.createDir(j.sal.fs.getParent(socketpath))
             # ssh-agent not loaded
             self.logger.info("load ssh agent")
             _, out, err = j.do.execute("ssh-agent -a %s" % socketpath,
@@ -335,7 +335,7 @@ class SSHClientFactory:
 
                 pid = int(piditems[-1].split(" ")[-1].strip("; "))
 
-                socket_path = j.do.joinPaths("/tmp", "ssh-agent-pid")
+                socket_path = j.sal.fs.joinPaths("/tmp", "ssh-agent-pid")
                 j.sal.fs.writeFile(socket_path, str(pid))
                 self._add_ssh_agent_to_bash_profile()
             return
@@ -407,7 +407,7 @@ class SSHClientFactory:
         # delete socketpath if no ssh-agents found, aka, dangling socket
         socketpath_exists = j.sal.fs.exists(socketpath)
         if not res and socketpath_exists:
-            j.do.delete(socketpath)
+            j.sal.fs.remove(socketpath)
             return
 
         if len(res) > 1:
@@ -417,8 +417,8 @@ class SSHClientFactory:
             # self.logger.info(cmd)
             j.do.execute(cmd, showout=False, outputStderr=False, die=False)
             # remove previous socketpath
-            j.do.delete(socketpath)
-            j.do.delete(j.do.joinPaths('/tmp', "ssh-agent-pid"))
+            j.sal.fs.remove(socketpath)
+            j.sal.fs.remove(j.sal.fs.joinPaths('/tmp', "ssh-agent-pid"))
 
 
     def _list_not_loaded_keys(self, path):

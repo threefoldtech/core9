@@ -983,6 +983,26 @@ class SystemFS:
             print(cmd)
             j.sal.process.execute(cmd)
 
+    def symlinkFilesInDir(self, src, dest, delete=True, includeDirs=False, makeExecutable=False):
+        if includeDirs:
+            items = j.sal.fs.listFilesAndDirsInDir(
+                src, recursive=False, followSymlinks=False, listSymlinks=False)
+        else:
+            items = j.sal.fs.listFilesInDir(
+                src,
+                recursive=False,
+                followSymlinks=True,
+                listSymlinks=True)
+        for item in items:
+            dest2 = "%s/%s" % (dest, j.sal.fs.getBaseName(item))
+            dest2 = dest2.replace("//", "/")
+            self.logger.info(("link %s:%s" % (item, dest2)))
+            j.sal.fs.symlink(item, dest2, overwriteTarget=delete)
+            if makeExecutable:
+                # print("executable:%s" % dest2)
+                j.sal.fs.chmod(dest2, 0o770)
+                j.sal.fs.chmod(item, 0o770)
+
     def hardlinkFile(self, source, destin):
         """Create a hard link pointing to source named destin. Availability: Unix.
         @param source: string
@@ -1174,6 +1194,10 @@ class SystemFS:
 
         if not filename:
             raise TypeError('File name is None in system.fs.unlink')
+        if j.core.platformtype.myplatform.isWindows:
+            cmd = "junction -d %s 2>&1 > null" % (path)
+            self.logger.info(cmd)
+            os.system(cmd)
         try:
             os.unlink(filename)
         except BaseException:

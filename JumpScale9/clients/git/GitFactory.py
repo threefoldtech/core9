@@ -173,7 +173,7 @@ class GitFactory:
         if url == "":
             if dest is None:
                 raise RuntimeError("dest cannot be None (url is also '')")
-            if not j.do.exists(dest):
+            if not j.sal.exists(dest):
                 raise RuntimeError(
                     "Could not find git repo path:%s, url was not specified so git destination needs to be specified." %
                     (dest))
@@ -281,11 +281,11 @@ class GitFactory:
 
         self.logger.info("%s:pull:%s ->%s" % (executor, url, dest))
 
-        existsDir = j.do.exists(
+        existsDir = j.sal.fs.exists(
             dest) if not executor else executor.exists(dest)
 
         checkdir = "%s/.git" % (dest)
-        existsGit = j.do.exists(
+        existsGit = j.sal.fs.exists(
             checkdir) if not executor else executor.exists(checkdir)
 
         if existsDir:
