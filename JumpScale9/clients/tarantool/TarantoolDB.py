@@ -20,7 +20,7 @@ class TarantoolDB():
 
     @property
     def _path(self):
-        return j.sal.fs.getDirName(os.path.abspath(__file__))
+        return j.sal.fs.getDirName(os.path.abspath(__file__)).rstrip("/")
 
     def _setConfig(self):
         """
@@ -38,6 +38,15 @@ class TarantoolDB():
 
         C2 = pystache.render(C, **data)
 
+        #add path to systemscripts
+        systempath="%s/systemscripts"%self._path
+        C3="\npackage.path = '$path/?.lua;' .. package.path\n"
+        C3=C3.replace("$path",systempath)
+        for path0 in j.sal.fs.listFilesInDir(systempath, recursive=False, filter="*.lua"):
+            bname=j.sal.fs.getBaseName(path0)[:-4]
+            C3+="require('%s')\n"%bname
+        C2+=C3
+
         j.sal.fs.writeFile(j.clients.tarantool.cfgdir +
                            "/%s.lua" % self.name, C2)
 
@@ -45,8 +54,7 @@ class TarantoolDB():
         """
         will start a local tarantool in console
         """
-        self._setConfig()
-        j.do.execute("tarantoolctl start %s"%self.name)
+        self.start()
         j.do.executeInteractive("tarantoolctl enter %s"%self.name)
 
         # FOR TEST PURPOSES (DEBUG ON CONSOLE)
@@ -55,7 +63,18 @@ class TarantoolDB():
     def start(self):
         # j.tools.prefab.local.db.tarantool.start()
         self._setConfig()
-        j.do.execute("tarantoolctl start %s"%self.name)
+        cpath=j.clients.tarantool.cfgdir +"/%s.lua" % self.name
+        j.tools.tmux.execute("tarantool -i %s"%cpath,window="tarantool")
+
+        j.sal.nettools.waitConnectionTest("localhost",self.port,5)
+
+        c=j.clients.tarantool.client_get(self.addr,self.port,self.login,self.adminsecret)
+        c.call("ping")
+
+        #IF WE USE THE FOLLOWING THEN HAVE SECURITY ISSUES BECAUSE WILL RUN AS TARANTOOL
+        # j.sal.fs.chown(self.path,"tarantool")
+        # j.do.execute("tarantoolctl stop %s"%self.name)
+        # j.do.execute("tarantoolctl start %s"%self.name)
         # j.do.executeInteractive("tarantoolctl enter %s"%self.name)
 
     def connect_shell(self):
