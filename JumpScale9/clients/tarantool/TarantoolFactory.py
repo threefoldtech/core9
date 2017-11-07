@@ -46,14 +46,21 @@ class TarantoolFactory:
             self._tarantool[key]=TarantoolClient(client=client)
         return self._tarantool[key]
 
-    def server_get(self, name="test", path="$DATADIR/tarantool/$NAME", adminsecret="admin007", port=3301):
+    def server_get(self, name="main", path="$DATADIR/tarantool/$NAME", adminsecret="admin007", port=3301):
         return TarantoolDB(name=name, path=path, adminsecret=adminsecret, port=port)
 
-    def server_start(self, name="test", path="$DATADIR/tarantool/$NAME", adminsecret="admin007", port=3301, configTemplatePath=None):
+    def server_start(self, name="main", path="$DATADIR/tarantool/$NAME", adminsecret="admin007", port=3301, configTemplatePath=None):
         db = self.server_get(name=name, path=path,
                             adminsecret=adminsecret, port=port)
         db.configTemplatePath = configTemplatePath
         db.start()
+
+
+
+    def testmodels(self):
+        tt = self.client_get()
+        tt.addScripts() #will add the system scripts
+        tt.addModels()
 
     def test(self):
         C = """
@@ -75,9 +82,14 @@ class TarantoolFactory:
         }
 
         """
-        
+        lpath=j.dirs.TMPDIR+"/test.capnp"
+        j.sal.fs.writeFile(lpath,capnpSchema)
 
-        tt.scripts_execute()
+        res=j.data.capnp.schema_generate_lua(lpath)
 
+
+
+        # tt.scripts_execute()
+        print(test)
         from IPython import embed
         embed(colors='Linux')

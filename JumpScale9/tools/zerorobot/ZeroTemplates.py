@@ -1,6 +1,7 @@
 
 from js9 import j
 
+from google.protobuf import json_format
 
 class ZeroTemplate():
     def __init__(self):
@@ -16,37 +17,49 @@ class ZeroTemplate():
                 self_model = None
         return self._model
 
-    def _loadFromPath(self, domain, path):
+    def _loadFromPath(self, path):
         self.model.name = j.sal.fs.getBaseName(path)
-        from IPython import embed
-        embed(colors='Linux')
+        #load action files
+        for item in j.sal.fs.listFilesInDir(path,False,"*.py"):
+            self._processTemplateActions(item)
 
     def _processTemplateActions(self, path):
         state = "start"
         C = j.sal.fs.fileGetContents(path)
         basename = j.sal.fs.getBaseName(path)
         name = basename.replace(".py", "").lower()
-        out = "class %s():\n" % name
+        out = ""
+        if C.find("class")!=-1:
+            raise RuntimeError("action file not structured properly, needs to be list of defs, no class inside.")
+        state=""
         for line in C.split("\n"):
-            # if state=="method":
-            #     if line.strip().find("def")==0:
+            print(line)
+            if state=="method":
+                if line.strip().find("def")==0:
+                    self._processTemplateAction(method_name,j.data.text.strip(method_content))
+                    state=""
+                    continue
+                method_content+="%s\n"%line
 
-            if state == "class":
-                # now processing the methods
-                if line.strip().find("def") == 0:
-                    # state=="method"
-                    pre = line.split("(", 1)[0]
-                    pre = pre.replace("def ", "")
-                    method_name = pre.strip()
-                    out += "    @app.task(name='%s_%s')\n" % (name,
-                                                              method_name)
+            # now processing the methods
+            if state=="" and line.strip().find("def") == 0:
+                state="method"
+                pre = line.split("(", 1)[0]
+                pre = pre.replace("def ", "")
+                method_name = pre.strip()
+                method_content = line+"\n"
+                continue
 
-                out += "%s\n" % line
+        if state=="method":
+            self._processTemplateAction(method_name,method_content)
 
-            if line.strip().find("class") == 0:
-                state = "class"
-        out += "\n"
-        return out
+    def _processTemplateAction(self,method_name,method_content):
+        if method_name in [name for item.name in self.model.actions]:
+            raise j.exceptions.Input("method name:%s was already defined for:%s"%(method_name,self))
+        
+        print(678)
+        from IPython import embed;embed(colors='Linux')
+        p
 
 
 class ZeroTemplates:
@@ -67,5 +80,3 @@ class ZeroTemplates:
         name = j.sal.fs.getBaseName(path)
         templ = ZeroTemplate()
         templ._loadFromPath(path)
-        from IPython import embed
-        embed(colors='Linux')

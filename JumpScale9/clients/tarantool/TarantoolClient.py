@@ -50,19 +50,39 @@ class TarantoolClient():
         """
         self.eval(code)
 
-    def bootstrap(self, code):
-        code = """
-            box.once("bootstrap", function()
-                box.schema.space.create('$space')
-                box.space.test:create_index('primary',
-                    { type = 'TREE', parts = {1, 'NUM'}})
-            end)
-            box.schema.user.grant('$user', 'read,write,execute', 'universe')
-            """
-        code = code.replace("$space", space)
-        self.eval(code)
 
-    def scripts_execute(self,path=None):
+    def addModels(self,path="",login="user",passwd="secret",dbtype="memtx"):
+        """
+        @PARAM path is the directory where the capnp, lua, ... can be found, each subdir has a model name
+               if not specified will look for models underneith the capnp extension
+        @PARAM dbtype vinyl or memtx
+        """
+
+        FGRANT = """
+        box.schema.func.create('write', {if_not_exists = true})
+        box.schema.user.grant('$login', '$fname', 'function', 'write',{ if_not_exists= true})
+        """
+        C=C.replace("$login",login)
+        C=C.replace("$fname",fname)
+        C=C.replace("$mymodelname",mname)
+
+        C=C.replace("$login",login)
+        C=C.replace("$passwd",passwd)
+        
+
+    # def bootstrap(self, code):
+    #     code = """
+    #         box.once("bootstrap", function()
+    #             box.schema.space.create('$space')
+    #             box.space.test:create_index('primary',
+    #                 { type = 'TREE', parts = {1, 'NUM'}})
+    #         end)
+    #         box.schema.user.grant('$user', 'read,write,execute', 'universe')
+    #         """
+    #     code = code.replace("$space", space)
+    #     self.eval(code)
+
+    def addScripts(self,path=None):
         """
         load all lua scripts in path (sorted) & execute in the tarantool instance
 
@@ -70,4 +90,13 @@ class TarantoolClient():
         """
         if path==None:
             path="%s/testscripts"%self._path
-        from IPython import embed;embed(colors='Linux')
+        for path0 in j.sal.fs.listFilesInDir(path, recursive=False, filter="*.lua"):
+            self.addScript(path0)
+
+    def addScript(self,path):
+        C=j.sal.fs.readFile(path0)
+        bname=j.sal.fs.getBaseName(path0)[:-4]
+        #write the lua script to the location on server
+        self.db.call("add_lua_script",(bname,C))
+        self.eval("require('%s')"%(bname))
+    
