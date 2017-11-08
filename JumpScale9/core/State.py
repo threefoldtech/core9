@@ -3,6 +3,20 @@ from JumpScale9 import j
 import sys
 import os
 
+class ClientConfig():
+    def __init__(self, category,name):
+        if category not in j.core.state.config.keys():
+            j.core.state.config[category]={}
+        if name not in j.core.state.config[category].keys():
+            j.core.state.config[category][name]={}
+        self.data=j.core.state.config[category][name]
+        self.category=category
+        self.name=name
+
+    def save(self):
+        j.core.state.config[self.category][self.name]=self.data
+        j.core.state.configSave()
+
 
 class State():
     """
@@ -197,6 +211,9 @@ class State():
         #         # print("configsave state me")
         #         data = pytoml.dumps(cdict)
         #         self.executor.file_write(self.configMePath, data)
+
+    def clientConfigGet(self,category,name):
+        return ClientConfig(category,name)
 
     def reset(self):
         self.config = {}
