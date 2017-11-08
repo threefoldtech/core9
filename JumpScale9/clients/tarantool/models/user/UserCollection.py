@@ -17,8 +17,10 @@ class UserModel(ModelBase):
         self.reSerialize()
         self._pre_save()
         buff = self.dbobj.to_bytes()                    
-        ddict=self.collection._db.call("model_user_set",(buff)) #call the stored procedure which will put in db
-        print(ddict)
+        return self.collection._db.call("model_user_set",(buff))
+
+    def delete(self,name="",id=0):                    
+        return self.collection._db.call("model_user_del",(name,id))
 
 class UserCollection(ModelBaseCollection):
     '''
@@ -34,6 +36,14 @@ class UserCollection(ModelBaseCollection):
         mpath=j.sal.fs.getDirName(os.path.abspath(__file__))+"/model.capnp"
         SchemaCapnp=j.data.capnp.getSchemaFromPath(mpath,name='User')
         super().__init__(SchemaCapnp, category=category, namespace=namespace, modelBaseClass=UserModel, db=db, indexDb=db)
+
+    def get(self,name="",id=0):                    
+        buff=self._db.call("model_user_get",(name,id))
+        print(456789)
+        from IPython import embed;embed(colors='Linux')
+        o
+        print(ddict)  
+
 
     ##BELOW IS ALL EXAMPLE CODE WHICH NEEDS TO BE REPLACED
 

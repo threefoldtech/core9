@@ -81,13 +81,16 @@ class TarantoolFactory:
         tt.addScripts() #will add the system scripts
         tt.addModels()
 
-        for i in range(1):
+        for i in range(10):
             d=tt.models.UserCollection.new()
             d.dbobj.name="name_%s"%i
             d.dbobj.description="this is some description %s"%i
             d.dbobj.region=10
             d.dbobj.epoch=j.data.time.getTimeEpoch()
             d.save()
+
+        d2=tt.models.UserCollection.get(name="name_3")
+        d3=tt.models.UserCollection.get(id=2)
 
         # print("list of users")
         # print(tt.models.UserCollection.list())
