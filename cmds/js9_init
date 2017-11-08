@@ -13,9 +13,8 @@ except:
 
 import sys
 
-print(j.do.mascot)
+print(j.core.state.mascot)
 
-j.do.debug = False
 
 #make sure we don't do autopip
 j.core.state.configSetInDict('system','autopip',False)

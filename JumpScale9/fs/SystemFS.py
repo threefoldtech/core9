@@ -102,6 +102,9 @@ class SystemFS:
         return self.move(filePath, new_name)
 
     def removeIrrelevantFiles(self, path, followSymlinks=True):
+        """Will remove files having extensions: pyc, bak
+        @param path: string (path to search in)
+        """
         ext = ["pyc", "bak"]
         for path in self.listFilesInDir(path, recursive=True, followSymlinks=followSymlinks):
             if self.getFileExtension(path) in ext:
@@ -187,6 +190,12 @@ class SystemFS:
         it will be created as well as missing parent directories
         @param src: string (source of directory tree to be copied)
         @param rsyncdelete will remove files on dest which are not on source (default)
+        @param recursive:  recursively look in all subdirs
+        @param ignoredir:  list (name of directories to exclude)
+        @param ignorefiles: list (name of files to exclude)
+        @param ssh:  bool (copy to remote)
+        @param sshport int (ssh port)
+        @param createdir:   bool (when ssh creates parent directory)
         @param dst: string (path directory to be copied to...should not already exist)
         @param keepsymlinks: bool (True keeps symlinks instead of copying the content of the file)
         @param deletefirst: bool (Set to True if you want to erase destination first, be carefull, this can erase directories)
@@ -279,7 +288,7 @@ class SystemFS:
 
     def removeDirTree(self, path, onlyLogWarningOnRemoveError=False):
         """Recursively delete a directory tree.
-            @param path: the path to be removed
+            @param path: string (the path to be removed)
         """
         def errorHandler(shutilFunc, shutilPath, shutilExc_info):
             self.logger.debug(

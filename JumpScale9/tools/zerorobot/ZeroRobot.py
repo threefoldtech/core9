@@ -56,7 +56,7 @@ class ZeroRobot:
         j.sal.fs.removeDirTree("%s/schemaspy" % self._path)
         cmd = "cd %s;mkdir -p %s;protoc -I=schemas --python3_out=schemaspy/ schemas/job.proto" % (
             self._path, "%s/schemaspy" % self._path)
-        j.do.execute(cmd)
+        j.sal.process.execute(cmd)
 
         j.sal.fs.touch("%s/schemaspy/__init__.py" % self._path)
 

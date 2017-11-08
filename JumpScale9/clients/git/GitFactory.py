@@ -11,7 +11,7 @@ class GitFactory:
         self.__jslocation__ = "j.clients.git"
 
     def execute(self, *args, **kwargs):
-        return j.do.execute(*args, **kwargs)
+        return j.sal.process.execute(*args, **kwargs)
 
     def rewriteGitRepoUrl(self, url="", login=None, passwd=None, ssh="auto"):
         """

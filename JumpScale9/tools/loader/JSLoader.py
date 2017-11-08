@@ -107,8 +107,8 @@ class JSLoader():
 
     def _installDevelopmentEnv(self):
         cmd = "apt-get install python3-dev libssl-dev -y"
-        j.do.execute(cmd)
-        j.do.execute("pip3 install pudb")
+        j.sal.process.execute(cmd)
+        j.sal.process.execute("pip3 install pudb")
 
     def _findSitePath(self):
         res = ""
