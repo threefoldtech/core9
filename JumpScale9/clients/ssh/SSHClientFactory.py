@@ -99,42 +99,6 @@ class SSHClientFactory:
             if key in self.cache:
                 self.cache.pop(key)
 
-    def SSHKeyGetFromAgentPub(self, keyname="", die=True):
-        rc, out, err = j.tools.executorLocal.execute("ssh-add -L", die=False)
-        if rc > 1:
-            err = "Error looking for key in ssh-agent: %s", out
-            if die:
-                raise j.exceptions.RuntimeError(err)
-            else:
-                self.logger.error(err)
-                return None
-
-        if keyname == "":
-            paths = []
-            for line in out.splitlines():
-                line = line.strip()
-                paths.append(line.split(" ")[-1])
-            if len(paths) == 0:
-                raise j.exceptions.RuntimeError(
-                    "could not find loaded ssh-keys")
-
-            path = j.tools.console.askChoice(
-                paths, "Select ssh key to push (public part only).")
-            keyname = j.sal.fs.getBaseName(path)
-
-        for line in out.splitlines():
-            delim = (".ssh/%s" % keyname)
-            if line.endswith(delim):
-                content = line.strip()
-                content = content
-                return content
-        err = "Did not find key with name:%s, check its loaded in ssh-agent with ssh-add -l" % keyname
-        if die:
-            raise j.exceptions.RuntimeError(err)
-        else:
-            self.logger.error(err)
-        return None
-
     def close(self):
         with self._lock:
             for key, client in self.cache.items():
