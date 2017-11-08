@@ -1,22 +1,3 @@
-require ("lfs")
-lfs.mkdir("/tmp/lua")
-
-package.path = '/tmp/lua/?.lua;' .. package.path
-
-
-function file_write (name,content)
-    local fio = require('fio')
-    local errno = require('errno')  
-    path = "/tmp/lua/".. name .. ".lua"  
-    local f = fio.open(path, {'O_CREAT', 'O_WRONLY', 'O_APPEND'},
-        tonumber('0666', 8))
-    if not f then
-        error("Failed to open file: "..errno.strerror())
-    end
-    f:write(content);
-    f:close()
-end
-
 
 
 -- schemadef = {
