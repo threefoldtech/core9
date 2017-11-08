@@ -311,7 +311,7 @@ class ExecutorBase:
         HOMEDIR = "~"
         TMPDIR = "{{TMPDIR}}"
         BASEDIRJS = "{{BASEDIR}}/jumpscale9"
-        JSAPPSDIR= "{{BASEDIRJS}}/app"
+        JSAPPSDIR= "{{BASEDIRJS}}/apps"
         TEMPLATEDIR ="{{VARDIR}}/templates"
         DATADIR = "{{VARDIR}}/data"
         BUILDDIR = "{{VARDIR}}/build"
