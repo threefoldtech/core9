@@ -54,7 +54,7 @@ class TarantoolClient():
         self.eval(code)
 
     def _pyModelFix(self,path,name,dbtype,login,passwd):
-        lcontent=j.sal.fs.readFile(path)
+        lcontent=j.sal.fs.readFile(path)        
 
         if lcontent.find("ModelBaseCollection")==-1:
             C="""
@@ -77,8 +77,10 @@ class TarantoolClient():
                     self.reSerialize()
                     self._pre_save()
                     buff = self.dbobj.to_bytes()                    
-                    ddict=self.collection._db.call("model_$name_set",(buff)) #call the stored procedure which will put in db
-                    print(ddict)
+                    return self.collection._db.call("model_$name_set",(buff))
+
+                def delete(self,name="",id=0):                    
+                    return self.collection._db.call("model_$name_del",(name,id))
 
             class $NameCollection(ModelBaseCollection):
                 '''
@@ -94,6 +96,14 @@ class TarantoolClient():
                     mpath=j.sal.fs.getDirName(os.path.abspath(__file__))+"/model.capnp"
                     SchemaCapnp=j.data.capnp.getSchemaFromPath(mpath,name='$Name')
                     super().__init__(SchemaCapnp, category=category, namespace=namespace, modelBaseClass=$NameModel, db=db, indexDb=db)
+
+                def get(self,name="",id=0):                    
+                    buff=self._db.call("model_$name_get",(name,id))
+                    print(456789)
+                    from IPython import embed;embed(colors='Linux')
+                    o
+                    print(ddict)  
+
 
                 ##BELOW IS ALL EXAMPLE CODE WHICH NEEDS TO BE REPLACED
 
@@ -149,8 +159,18 @@ class TarantoolClient():
         funcname='model_%s_get'%name
         if lcontent.find("function %s"%funcname)==-1:
             C="""
-            function $funcname(id)
-                return box.space.$name:get(id)
+            function $funcname(name,id)
+                id = id or 0
+                if id == 0 then
+                    res= box.space.$name.index.secondary:get(name)     
+                else
+                    res= box.space.$name:get(id)
+                end
+                if res==nil then
+                    return nil
+                else
+                    return res
+                end 
             end
 
             box.schema.func.create('$funcname', {if_not_exists = true})
@@ -162,9 +182,13 @@ class TarantoolClient():
         funcname='model_%s_get_json'%name
         if lcontent.find("function %s"%funcname)==-1:
             C="""
-            function $funcname(id)
-                bdata= box.space.$name:get(id)
-                return model_capnp_$name.$Name.parse(bdata)
+            function $funcname(name,id)
+                res0= model_$name_get(name,id)
+                if res0 == nil then
+                    return nil
+                else
+                    return model_capnp_$name.$Name.parse(res0[3])
+                end
             end
 
             box.schema.func.create('$funcname', {if_not_exists = true})
@@ -176,15 +200,20 @@ class TarantoolClient():
         funcname='model_%s_set'%name
         if lcontent.find("function %s"%funcname)==-1:
             C="""
-            function $funcname(id,data)
+            function $funcname(data)
                 obj=model_capnp_$name.$Name.parse(data) --deserialze capnp
-                if id==0 then
-                    res = box.space.$name:auto_increment({data})
-                    return res[1]
+                name=obj["name"]
+                res0= model_$name_get(name)
+                if res0==nil then
+                    res = box.space.$name:auto_increment({obj['name'],data}) -- indexes the name
+                    id=res[1]
                 else
-                    box.space.$name:put{id,data}
-                    return id
-                end                
+                    id=res0[1]                      
+                end
+                obj["id"]=res[1]
+                data=model_capnp_$name.$Name.serialize(obj) --reserialze with id inside                    
+                box.space.$name:put{id,obj['name'],data}
+                return id
             end
 
             box.schema.func.create('$funcname', {if_not_exists = true})
@@ -196,8 +225,12 @@ class TarantoolClient():
         funcname='model_%s_del'%name
         if lcontent.find("function %s"%funcname)==-1:
             C="""
-            function $funcname(guid)
-                return box.$name.user:delete(id)
+            function $funcname(name,id)
+                res= model_$name_get(name,id)
+                if not res==nil then     
+                    id=res[1]
+                    box.space.$name:delete(id)
+                end
             end
             box.schema.func.create('$funcname', {if_not_exists = true})
             box.schema.user.grant('$login', 'execute', 'function', '$funcname',{ if_not_exists= true})
@@ -205,13 +238,16 @@ class TarantoolClient():
             """     
             lcontent+=j.data.text.strip(C.replace("$funcname",funcname))
         
+
         funcname='model_%s_find'%name
         if lcontent.find("function %s"%funcname)==-1:
             C="""
             function $funcname(query)
-                --todo
-                return True
+                -- needs to be implemented
+                res={}
+                return res
             end
+                
             box.schema.func.create('$funcname', {if_not_exists = true})
             box.schema.user.grant('$login', 'execute', 'function', '$funcname',{ if_not_exists= true})
 
@@ -263,8 +299,9 @@ class TarantoolClient():
                 C="""
                 box.schema.space.create('mymodelname',{if_not_exists= true, engine="$dbtype"})
 
-                box.space.mymodelname:create_index('primary',{ type = 'hash', parts = {1, 'unsigned'}, if_not_exists= true})
-                -- box.space.mymodelname:create_index('secondary', {type = 'tree', parts = {2, 'string'}, if_not_exists= true})
+                box.space.mymodelname:create_index('primary',{ parts = {1, 'unsigned'}, if_not_exists= true})
+                --create 2nd index for e.g. name
+                box.space.mymodelname:create_index('secondary', {type = 'tree', parts = {2, 'string'}, if_not_exists= true})
 
                 box.schema.user.create('$login', {password = '$passwd', if_not_exists= true})
 
