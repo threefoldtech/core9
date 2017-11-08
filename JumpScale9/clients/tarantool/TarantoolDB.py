@@ -8,7 +8,7 @@ import os
 class TarantoolDB():
 
     def __init__(self, name="test", path="$DATADIR/tarantool/$NAME", adminsecret="admin007", port=3301):
-        self.path = j.dirs.replaceTxtDirVars(
+        self.path = j.dirs.replace_txt_dir_vars(
             path).replace("$NAME", name).strip()
         j.sal.fs.createDir(self.path)
         self.name = name
@@ -46,8 +46,8 @@ class TarantoolDB():
         will start a local tarantool in console
         """
         self._setConfig()
-        j.do.execute("tarantoolctl start %s"%self.name)
-        j.do.executeInteractive("tarantoolctl enter %s"%self.name)
+        j.sal.process.execute("tarantoolctl start %s"%self.name)
+        j.sal.process.executeInteractive("tarantoolctl enter %s"%self.name)
 
         # FOR TEST PURPOSES (DEBUG ON CONSOLE)
         # rm 000*;rm -rf /Users/kristofdespiegeleer1/opt/var/data/tarantool/test;tarantoolctl start test; cat /Users/kristofdespiegeleer1/opt/var/data/tarantool/test/instance.log
@@ -55,14 +55,14 @@ class TarantoolDB():
     def start(self):
         # j.tools.prefab.local.db.tarantool.start()
         self._setConfig()
-        j.do.execute("tarantoolctl start %s"%self.name)
-        # j.do.executeInteractive("tarantoolctl enter %s"%self.name)
+        j.sal.process.execute("tarantoolctl start %s"%self.name)
+        # j.sal.process.executeInteractive("tarantoolctl enter %s"%self.name)
 
     def connect_shell(self):
         """
         connect over tcp to the running tarantool
         """
         cmd = "tarantoolctl connect %s:%s@%s:%s" % (self.login,self.adminsecret,self.addr, self.port)
-        j.do.executeInteractive(cmd)
+        j.sal.process.executeInteractive(cmd)
 
 

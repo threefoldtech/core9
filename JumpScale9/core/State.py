@@ -36,6 +36,14 @@ class State():
         return versions
 
     @property
+    def mascot(self):
+        mascotpath = "%s/.mascot.txt" % os.environ["HOME"]
+        if not j.sal.fs.exists(mascotpath):
+            print("env has not been installed properly (missing mascot), please follow init instructions on https://github.com/Jumpscale/core9")
+            sys.exit(1)
+        return j.sal.fs.readFile(mascotpath)
+
+    @property
     def db(self):
         return None
         if self._db is None and j.clients is not None:

@@ -4,7 +4,7 @@ from js9 import *
 import os
 os.environ["LC_ALL"] = 'en_US.UTF-8'
 
-print(j.do.mascot)
+print(j.core.state.mascot)
 
 
 #!/usr/bin/env jspython
@@ -41,7 +41,7 @@ def _init_action():
                 return True
 
     while check():
-        j.do.executeInteractive("js9_config")
+        j.sal.process.executeInteractive("js9_config")
 
     os.system('git config --global user.name "%s"' %
               j.core.state.configMe["me"]["loginname"])

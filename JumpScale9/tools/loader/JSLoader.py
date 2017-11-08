@@ -107,8 +107,8 @@ class JSLoader():
 
     def _installDevelopmentEnv(self):
         cmd = "apt-get install python3-dev libssl-dev -y"
-        j.do.execute(cmd)
-        j.do.execute("pip3 install pudb")
+        j.sal.process.execute(cmd)
+        j.sal.process.execute("pip3 install pudb")
 
     def _findSitePath(self):
         res = ""
@@ -356,7 +356,7 @@ class JSLoader():
 
         for classfile in j.sal.fs.listFilesInDir(path, True, "*.py"):
             # print(classfile)
-            basename = j.do.getBaseName(classfile)
+            basename = j.sal.fs.getBaseName(classfile)
             if basename.startswith("_"):
                 continue
             if "jsloader" in basename.lower() or "actioncontroller" in basename.lower():
@@ -408,7 +408,7 @@ class JSLoader():
                 item += "/"
 
             if j.sal.fs.exists(item, followlinks=True):
-                j.do.copyTree(item,
+                j.sal.fs.copyDirTree(item,
                               autocompletepath,
                               overwriteFiles=True,
                               ignoredir=['*.egg-info',
@@ -442,7 +442,7 @@ class JSLoader():
         for name, path in j.application.config['plugins'].items():
             if j.sal.fs.exists(path, followlinks=True):
                 # link libs to location for hostos
-                j.do.copyTree(path,
+                j.sal.fs.copyDirTree(path,
                                 os.path.join(autocompletepath, name),
                                 overwriteFiles=True,
                                 ignoredir=['*.egg-info',

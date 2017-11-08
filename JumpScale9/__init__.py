@@ -108,8 +108,6 @@ j.clients.redis = RedisFactory()
 
 j.core.state = j.tools.executorLocal.state
 
-from .core.InstallTools import InstallTools
-j.do = InstallTools()
 
 if "dirs" not in j.core.state.config:
     print("####INITENV")

@@ -10,4 +10,4 @@ name = sys.argv[1]
 
 node = j.tools.develop.nodes.nodeGet(name)
 
-j.do.executeInteractive("ssh root@%s -p %s" % (node.addr, node.port))
+j.sal.process.executeInteractive("ssh root@%s -p %s" % (node.addr, node.port))

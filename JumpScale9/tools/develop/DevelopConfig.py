@@ -55,12 +55,12 @@ class MyMenu():
 
     def editNodes(self):
         j.tools.prefab.local.apps.microeditor.install()
-        j.do.executeInteractive("micro %s" % j.tools.develop.nodes.configpath)
+        j.sal.process.executeInteractive("micro %s" % j.tools.develop.nodes.configpath)
         j.tools.develop.nodes.load()
 
     def editConfigFile(self):
         j.tools.prefab.local.apps.microeditor.install()
-        j.do.executeInteractive("micro %s" % j.core.state.configPath)
+        j.sal.process.executeInteractive("micro %s" % j.core.state.configPath)
         j.core.state.load()
 
     def onCleanExit(self):
