@@ -8,8 +8,7 @@ import os
 class TarantoolDB():
 
     def __init__(self, name="test", path="$DATADIR/tarantool/$NAME", adminsecret="admin007", port=3301):
-        self.path = j.dirs.replace_txt_dir_vars(
-            path).replace("$NAME", name).strip()
+        self.path = j.dirs.replaceTxtDirVars(path).replace("$NAME", name).strip()
         j.sal.fs.createDir(self.path)
         self.name = name
         self.login = "root"
@@ -47,8 +46,7 @@ class TarantoolDB():
             C3 += "require('%s')\n" % bname
         C2 += C3
 
-        j.sal.fs.writeFile(j.clients.tarantool.cfgdir +
-                           "/%s.lua" % self.name, C2)
+        j.sal.fs.writeFile(j.clients.tarantool.cfgdir + "/%s.lua" % self.name, C2)
 
     def start_connect(self):
         """
@@ -68,7 +66,7 @@ class TarantoolDB():
 
         j.sal.nettools.waitConnectionTest("localhost", self.port, 5)
 
-        c = j.clients.tarantool.client_get(self.addr, self.port, self.login, self.adminsecret)
+        c = j.clients.tarantool.client_get(name=self.name)
         c.call("ping")
 
         # IF WE USE THE FOLLOWING THEN HAVE SECURITY ISSUES BECAUSE WILL RUN AS TARANTOOL

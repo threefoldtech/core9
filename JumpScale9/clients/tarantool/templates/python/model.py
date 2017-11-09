@@ -7,21 +7,21 @@ ModelBase = j.data.capnp.getModelBaseClass()
 from JumpScale9.clients.tarantool.KVSInterface import KVSTarantool
 
 
-class UserModel(ModelBase):
+class $NameModel(ModelBase):
     '''
     '''
     pass
 
 
-class UserCollection(ModelBaseCollection):
+class $NameCollection(ModelBaseCollection):
     '''
-    This class represent a collection of Users
-    It's used to list/find/create new Instance of User Model object
+    This class represent a collection of $Names
+    It's used to list/find/create new Instance of $Name Model object
     '''
 
     def __init__(self):
-        self.logger = j.logger.get('model.user')
-        category = 'user'
+        self.logger = j.logger.get('model.$name')
+        category = '$name'
         namespace = ""
 
         # instanciate the KVS interface on top of tarantool
@@ -29,15 +29,15 @@ class UserCollection(ModelBaseCollection):
         db = KVSTarantool(cl, category)
 
         mpath = j.sal.fs.getDirName(os.path.abspath(__file__)) + "/model.capnp"
-        SchemaCapnp = j.data.capnp.getSchemaFromPath(mpath, name='User')
+        SchemaCapnp = j.data.capnp.getSchemaFromPath(mpath, name='$Name')
 
-        super().__init__(SchemaCapnp, category=category, namespace=namespace, modelBaseClass=UserModel, db=db, indexDb=db)
+        super().__init__(SchemaCapnp, category=category, namespace=namespace, modelBaseClass=$NameModel, db=db, indexDb=db)
 
     def new(self):
-        return UserModel(collection=self, new=True)
+        return $NameModel(collection=self, new=True)
 
     def get(self, key):
-        return UserModel(key=key, collection=self, new=False)
+        return $NameModel(key=key, collection=self, new=False)
 
     # BELOW IS ALL EXAMPLE CODE WHICH NEEDS TO BE REPLACED
 
