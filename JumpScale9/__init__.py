@@ -109,8 +109,7 @@ j.clients.redis = RedisFactory()
 j.core.state = j.tools.executorLocal.state
 
 
-if "dirs" not in j.core.state.config:
-    print("####INITENV")
+if not j.core.state._configJS:
     j.tools.executorLocal.initEnv()
 
 from .core.Dirs import Dirs
@@ -156,7 +155,7 @@ j.exceptions = JSExceptions
 j.core.db = j.clients.redis.get4core()
 
 j.core.logger = j.logger
-logging_cfg = j.application.config.get('logging')
+logging_cfg = j.core.state.configGet('logging', {})
 if logging_cfg:
     level = logging_cfg.get('level', 'DEBUG')
     mode = logging_cfg.get('mode', 'DEV')

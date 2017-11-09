@@ -27,11 +27,7 @@ class Dirs:
         self.reload()
 
     def reload(self):
-        """
-        Set the values of JumpScale directory paths values
-        """
-
-        for key, val in j.core.state.config["dirs"].items():
+        for key, val in j.core.state.configGet("dirs").items():
             self.__dict__[key] = val
             os.environ[key] = val
 
@@ -63,10 +59,8 @@ class Dirs:
         txt = txt.replace("$TMPDIR", self.TMPDIR)
         txt = txt.replace("$JSLIBDIR", self.JSLIBDIR)
         txt = txt.replace("$JSAPPSDIR", self.JSAPPSDIR)
-        # txt = txt.replace("$jslibextdir", self.JSLIBEXTDIR)
-        # txt = txt.replace("$jsbindir", self.BINDIR)
-        # txt = txt.replace("$nodeid", str(j.application.whoAmI.nid))
-        for key, value in list(additional_args.items()):
+
+        for key, value in list(additionalArgs.items()):
             txt = txt.replace("$%s" % key, str(value))
         return txt
 

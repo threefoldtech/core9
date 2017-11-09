@@ -59,11 +59,9 @@ class ErrorConditionObject(BaseException):
                 self.funclinenr = ""
 
             self.appname = j.application.appname  # name as used by application
-            self.gid = j.application.whoAmI.gid
-            self.nid = j.application.whoAmI.nid
             # if hasattr(j, 'core') and hasattr(j.core, 'grid') and hasattr(j.core.grid, 'aid'):
             #     self.aid = j.core.grid.aid
-            self.pid = j.application.whoAmI.pid
+            self.pid = j.application.systempid
             self.jid = 0
             self.masterjid = 0
 
