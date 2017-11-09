@@ -11,9 +11,10 @@ class GitFactory:
         self.__jslocation__ = "j.clients.git"
 
     def execute(self, *args, **kwargs):
+        executor = None
         if 'executor' in kwargs:
             executor = kwargs.pop('executor')
-        else:
+        if not executor:
             executor = j.tools.executorLocal
         return executor.execute(*args, **kwargs)
 
