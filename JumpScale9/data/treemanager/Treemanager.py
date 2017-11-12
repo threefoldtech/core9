@@ -213,6 +213,12 @@ class Tree():
                 return self.items[key]
         raise j.exceptions.Input("could not find %s in \n%s" % (path, self))
 
+    def findByName(self, name):
+        for item in self.find():
+            if item.name == name:
+                return item
+        raise j.exceptions.Input("could not find %s in \n%s" % (name, self))
+
     def __repr__(self):
         return self.__str__()
 

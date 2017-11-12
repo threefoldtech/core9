@@ -56,7 +56,7 @@ class ExecutorFactory:
         """
         with self._lock:
             key = '%s:%s' % (addr, port)
-            if key not in self._executors or usecache is False:
+            if key not in self._executors or usecache is False or (key in self._executors and self._executors[key].sshclient.transport is None):
                 sshclient = j.clients.ssh.get(
                     addr=addr, port=port, timeout=timeout, usecache=usecache)
                 self._executors[key] = ExecutorSSH(sshclient=sshclient)
@@ -68,7 +68,7 @@ class ExecutorFactory:
         """
         with self._lock:
             key = '%s:%s' % (sshclient.addr, sshclient.port)
-            if key not in self._executors or usecache is False:
+            if key not in self._executors or usecache is False or (key in self._executors and self._executors[key].sshclient.transport is None):
                 self._executors[key] = ExecutorSSH(sshclient=sshclient)
             return self._executors[key]
 
