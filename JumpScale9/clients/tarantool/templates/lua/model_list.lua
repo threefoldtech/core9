@@ -1,4 +1,4 @@
-function $funcname()
+local function list()
     local space = box.space['$name']
     local keys = {}
     for _, v in space:pairs() do
@@ -8,6 +8,6 @@ function $funcname()
     return keys
 end
 
-box.schema.func.create('$funcname', {if_not_exists = true})
-box.schema.user.grant('$login', 'execute', 'function', '$funcname',{ if_not_exists= true})
+box.schema.func.create('list', {if_not_exists = true})
+box.schema.user.grant('$login', 'execute', 'function', 'list',{ if_not_exists= true})
 
