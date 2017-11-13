@@ -13,7 +13,7 @@ class KVSTarantool:
         self.inMem = False
 
     def _build_call(self, method):
-        return "model_%s_%s" % (self.space, method)
+        return "model_%s.%s" % (self.space, method)
 
     def _call(self, method, *args):
         return self._db.call(
