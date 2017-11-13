@@ -102,14 +102,16 @@ class TarantoolFactory:
 
         # remove the generated code
         todel = j.sal.fs.getDirName(os.path.abspath(__file__)) + "models/user/"
-        # j.sal.fs.remove(todel + "/model.lua")
-        # j.sal.fs.remove(todel + "/UserCollection.py")
+        j.sal.fs.remove(todel + "/model.lua")
+        j.sal.fs.remove(todel + "/UserCollection.py")
 
         tt = self.client_get()
         tt.addScripts()  # will add the system scripts
         tt.addModels()
 
-        for i in range(10):
+        tt.models.UserCollection.destroy()
+        num_user = 1
+        for i in range(num_user):
             d = tt.models.UserCollection.new()
             d.dbobj.name = "name_%s" % i
             d.dbobj.description = "this is some description %s" % i
@@ -124,10 +126,21 @@ class TarantoolFactory:
         assert d.dbobj.epoch == d2.dbobj.epoch
 
         print("list of users")
-        print(tt.models.UserCollection.list())
+        users = tt.models.UserCollection.list()
+        assert len(users) == num_user
 
-        # from IPython import embed
-        # embed(colors='Linux')
+    def test_find(self):
+        cl = self.client_get()
+        cl.addScripts()  # will add the system scripts
+        cl.addModels()
+
+        user = cl.models.UserCollection.new()
+        user.dbobj.name = "zaibon"
+        user.dbobj.description = 'this is a description'
+        user.dbobj.region = 10
+        user.dbobj.epoch = j.data.time.getTimeEpoch()
+        user.save()
+        print("user {} created".format(user))
 
     def test(self):
         C = """
