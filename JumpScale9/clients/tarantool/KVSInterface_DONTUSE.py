@@ -22,7 +22,7 @@ class KVSTarantool:
         )
 
     def set(self, key, value):
-        # taarantool doesn't support binary value
+        # taarantool doesn't support binary value, this is not true (despiegk)
         if isinstance(value, bytes):
             value = base64.b64encode(value)
         self._call('set', (key, value))

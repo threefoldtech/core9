@@ -107,6 +107,7 @@ class TarantoolFactory:
 
         tt = self.client_get()
         tt.addScripts()  # will add the system scripts
+        tt.reloadSystemScripts()
         tt.addModels()
 
         tt.models.UserCollection.destroy()
@@ -119,7 +120,7 @@ class TarantoolFactory:
             d.dbobj.epoch = j.data.time.getTimeEpoch()
             d.save()
 
-        d2 = tt.models.UserCollection.get(key=d.key)
+        d2 = tt.models.UserCollection().get(key=d.key)
         assert d.dbobj.name == d2.dbobj.name
         assert d.dbobj.description == d2.dbobj.description
         assert d.dbobj.region == d2.dbobj.region
@@ -143,30 +144,43 @@ class TarantoolFactory:
         print("user {} created".format(user))
 
     def test(self):
+
+        tt = self.client_get()
+        tt.addScripts()
+        tt.reloadSystemScripts()
+        tt.addModels()
+
+        print(1)
+        for i in range(1000):
+            bytestr = j.data.hash.hex2bin(j.data.hash.sha512_string("%s" % i))
+            md5hex = j.data.hash.md5_string(bytestr)
+            md5hex2 = tt.call("binarytest", (bytestr))[0][0]
+            assert(md5hex == md5hex2)
+        print(2)
+
         C = """
         function echo3(name)
           return name
         end
         """
-        tt = self.client_get()
         tt.eval(C)
         print("return:%s" % tt.call("echo3", "testecho"))
 
-        capnpSchema = """
-        @0x9a7562d859cc7ffa;
+        # capnpSchema = """
+        # @0x9a7562d859cc7ffa;
 
-        struct User {
-        id @0 :UInt32;
-        name @1 :Text;
-        }
+        # struct User {
+        # id @0 :UInt32;
+        # name @1 :Text;
+        # }
 
-        """
-        lpath = j.dirs.TMPDIR + "/test.capnp"
-        j.sal.fs.writeFile(lpath, capnpSchema)
+        # """
+        # lpath = j.dirs.TMPDIR + "/test.capnp"
+        # j.sal.fs.writeFile(lpath, capnpSchema)
 
-        res = j.data.capnp.schema_generate_lua(lpath)
+        # res = j.data.capnp.schema_generate_lua(lpath)
 
-        # tt.scripts_execute()
-        print(test)
-        from IPython import embed
-        embed(colors='Linux')
+        # # tt.scripts_execute()
+        # print(test)
+        # from IPython import embed
+        # embed(colors='Linux')

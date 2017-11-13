@@ -64,12 +64,12 @@ class TarantoolClient():
         This will generate the python models.
         some template file are required to be present in the template/python folder
         """
-        lcontent = j.sal.fs.readFile(path)
 
-        if lcontent.find("ModelBaseCollection") == -1:
-            template_path = j.sal.fs.joinPaths(self._template_dir, 'python', 'model.py')
-            template = j.sal.fs.fileGetContents(template_path)
-            lcontent += j.data.text.strip(template)
+        lcontent = ""
+
+        template_path = j.sal.fs.joinPaths(self._template_dir, 'python', 'model.py')
+        template = j.sal.fs.fileGetContents(template_path)
+        lcontent += j.data.text.strip(template)
 
         # TODO: use real templating engine (puppet) ?
         lcontent = lcontent.replace("$dbtype", dbtype)
@@ -80,6 +80,10 @@ class TarantoolClient():
         lcontent = lcontent.replace("$login", login)
         lcontent = lcontent.replace("$passwd", passwd)
 
+        if not j.sal.fs.exists(path):
+            j.sal.fs.writeFile(path, lcontent)
+        path=path[:-3]
+        path+="_template.py"
         j.sal.fs.writeFile(path, lcontent)
 
     def _luaModelFix(self, path, name, dbtype, login, passwd):
@@ -155,9 +159,6 @@ class TarantoolClient():
                 template = j.sal.fs.fileGetContents(template_path)
                 j.sal.fs.writeFile(lpath, j.data.text.strip(template))
 
-            if not j.sal.fs.exists(ppath):
-                j.sal.fs.createEmptyFile(ppath)
-
             self._luaModelFix(path=lpath, name=name, dbtype=dbtype, login=login, passwd=passwd)
             self._pyModelFix(path=ppath, name=name, dbtype=dbtype, login=login, passwd=passwd)
 
@@ -167,19 +168,8 @@ class TarantoolClient():
             cmd = cmd.replace("$name", name)
             cmd = cmd.replace("$Name", name_upper)
             exec(cmd)
-            exec("self.models.$NameCollection=$NameCollection.$NameCollection()".replace("$Name", name_upper))
-
-        # def bootstrap(self, code):
-        #     code = """
-        #         box.once("bootstrap", function()
-        #             box.schema.space.create('$space')
-        #             box.space.test:create_index('primary',
-        #                 { type = 'TREE', parts = {1, 'NUM'}})
-        #         end)
-        #         box.schema.user.grant('$user', 'read,write,execute', 'universe')
-        #         """
-        #     code = code.replace("$space", space)
-        #     self.eval(code)
+            exec("self.models.$NameCollection=$NameCollection.$NameCollection".replace("$Name", name_upper))
+            exec("self.models.$NameModel=$NameCollection.$NameModel".replace("$Name", name_upper))
 
     def addScripts(self, path=None, require=False):
         """
@@ -192,6 +182,14 @@ class TarantoolClient():
         for path0 in j.sal.fs.listFilesInDir(path, recursive=False, filter="*.lua"):
             self.addScript(path0, require=require)
 
+
+    def reloadSystemScripts(self):
+        systempath = "%s/systemscripts" % self._path
+        for path0 in j.sal.fs.listFilesInDir(systempath, recursive=False, filter="*.lua"):
+            name=j.sal.fs.getBaseName(path0)[:-4]
+            self.eval("package.loaded['%s']=nil"%name)
+            self.eval("require ('%s')"%name)        
+
     def addScript(self, path, name="", require=True):
         print("addscript %s %s" % (path, name))
         C = j.sal.fs.readFile(path)
@@ -200,6 +198,8 @@ class TarantoolClient():
         # write the lua script to the location on server
         self.db.call("add_lua_script", (name, C))
         if require:
+            self.eval("package.loaded['%s']=nil"%name)
+            self.eval("require ('%s')"%name)                    
             cmd = "%s=require('%s')" % (name, name)
             print(cmd)
             self.eval(cmd)

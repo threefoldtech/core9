@@ -1,4 +1,4 @@
--- this function takes a capnp schema and create and index for each fied of the schema
+-- this function takes a capnp schema and create and index for each field of the schema
 -- into the space prodived
 
 function create_capnp_index(capnp_schema, space)

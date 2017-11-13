@@ -48,6 +48,7 @@ class TarantoolDB():
 
         j.sal.fs.writeFile(j.clients.tarantool.cfgdir + "/%s.lua" % self.name, C2)
 
+
     def start_connect(self):
         """
         will start a local tarantool in console
