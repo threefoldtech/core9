@@ -1045,7 +1045,7 @@ class SystemFS:
         self.logger.debug('path %s is not an empty directory' % path)
         return False
 
-    @path_check(path={"required", "exists", "file"})
+    @path_check(path={"required", "exists"})
     def isFile(self, path, followSoftlink=True):
         """Check if the specified file exists for the given path
         @param path: string
