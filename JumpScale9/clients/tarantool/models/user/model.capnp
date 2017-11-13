@@ -12,4 +12,5 @@ struct User {
   link @6     :UInt32; #link to Base object which has all data for this user in namespace 1 which is special namespace for user
   name @7     :Text;
   description @8     :Text;
+  guid @9     :Text;
 }

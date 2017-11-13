@@ -10,8 +10,10 @@ box.schema.user.create('user', {password = 'secret', if_not_exists= true})
 
 
 
+
 function model_user_get(key)
-    return box.space.user:get(key)
+    res = box.space.user:get{key}
+    return res
     -- if type(key) == 'number' then
     --     return box.space.user:get(key)
     -- end
@@ -37,7 +39,7 @@ box.schema.user.grant('user', 'execute', 'function', 'model_user_get_json',{ if_
 
 
 
-function model_user_set(key, data)
+function model_user_set(key,data)
     -- local obj = model_capnp_user.User.parse(data) --deserialze capnp
     -- local name = obj["name"]
     -- res0 = model_user_get(name)
@@ -47,10 +49,16 @@ function model_user_set(key, data)
     -- else
     --     id = res0[1]
     -- end
-    -- obj["id"] = id
+
+    -- if key==0 then
+    --     res = box.space.user:auto_increment({data}) 
+    --     key = res[1]
+    -- end
+    -- obj["id"] = key
     -- data = model_capnp_user.User.serialize(obj) --reserialze with id inside
+    
     box.space.user:put{key, data}
-    return
+    return key
 end
 
 box.schema.func.create('model_user_set', {if_not_exists = true})

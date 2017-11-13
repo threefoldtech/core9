@@ -1,5 +1,5 @@
-function $funcname(key, data)
-    local obj = model_capnp_$name.$Name.parse(data) --deserialze capnp
+function $funcname(key,data)
+    -- local obj = model_capnp_$name.$Name.parse(data) --deserialze capnp
     -- local name = obj["name"]
     -- res0 = model_$name_get(name)
     -- if res0 == nil then
@@ -8,10 +8,16 @@ function $funcname(key, data)
     -- else
     --     id = res0[1]
     -- end
-    -- obj["id"] = id
+
+    -- if key==0 then
+    --     res = box.space.$name:auto_increment({data}) 
+    --     key = res[1]
+    -- end
+    -- obj["id"] = key
     -- data = model_capnp_$name.$Name.serialize(obj) --reserialze with id inside
+    
     box.space.$name:put{key, data}
-    return
+    return key
 end
 
 box.schema.func.create('$funcname', {if_not_exists = true})

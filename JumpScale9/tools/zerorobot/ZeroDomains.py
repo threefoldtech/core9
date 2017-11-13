@@ -1,7 +1,6 @@
 
 from js9 import j
 
-from .ZeroTemplates import *
 
 class ZeroDomains:
 

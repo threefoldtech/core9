@@ -1,5 +1,7 @@
+
 function $funcname(key)
-    return box.space.$name:get(key)
+    res = box.space.$name:get{key}
+    return res
     -- if type(key) == 'number' then
     --     return box.space.$name:get(key)
     -- end
