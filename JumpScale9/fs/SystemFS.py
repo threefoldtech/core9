@@ -120,17 +120,18 @@ class SystemFS:
         target_folder = os.path.dirname(to)
         if createDirIfNeeded:
             self.createDir(target_folder)
-        if overwriteFile is False:
-            if self.exists(to) and os.path.samefile(to, target_folder):
-                destfilename = os.path.join(to, os.path.basename(fileFrom))
-                if self.exists(destfilename):
+        if self.exists(to):
+            if overwriteFile is False:
+                if os.path.samefile(to, target_folder):
+                    destfilename = os.path.join(to, os.path.basename(fileFrom))
+                    if self.exists(destfilename):
+                        return
+                else:
                     return
-            elif self.exists(to):
-                return
-        elif self.isFile(to):
-            # overwriting some open  files is frustrating and may not work
-            # due to locking [delete/copy is a better strategy]
-            self.remove(to)
+            elif self.isFile(to):
+                # overwriting some open  files is frustrating and may not work
+                # due to locking [delete/copy is a better strategy]
+                self.remove(to)
         shutil.copy(fileFrom, to)
         self.logger.debug("Copied file from %s to %s" % (fileFrom, to))
 
@@ -195,13 +196,13 @@ class SystemFS:
             raise j.exceptions.RuntimeError("Cannot use file notation here")
         self.logger.debug(
             'Creating directory if not exists %s' % j.data.text.toStr(newdir))
+        if self.exists(newdir):
+            if self.isLink(newdir) and unlink:
+                self.unlink(newdir)
 
-        if self.isLink(newdir) and unlink:
-            self.unlink(newdir)
-
-        if self.isDir(newdir):
-            self.logger.debug(
-                'Directory trying to create: [%s] already exists' % j.data.text.toStr(newdir))
+            if self.isDir(newdir):
+                self.logger.debug(
+                    'Directory trying to create: [%s] already exists' % j.data.text.toStr(newdir))
         else:
             head, tail = os.path.split(newdir)
             if head and not self.isDir(head):
@@ -951,7 +952,7 @@ class SystemFS:
         if target[-1] == "/":
             target = target[:-1]
 
-        if overwriteTarget and (self.exists(target) or self.isLink(target)):
+        if overwriteTarget and self.exists(target):
             if self.isLink(target):
                 self.unlink(target)
             elif self.isDir(target):
