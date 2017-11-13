@@ -445,7 +445,7 @@ class ExecutorBase:
 
     @property
     def dir_paths(self):
-        if not self.state.configGet('dirs', None):
+        if not self.state.configGet('dirs', []):
                 self.initEnv()
         return self.state.configGet("dirs")
 
