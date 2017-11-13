@@ -92,19 +92,22 @@ class TarantoolClient():
         some template file are required to be present in the template/lua folder
         """
         # The matching works like this: if you want to generate  method called
-        # `model_user_set` then you need to have a template called model_set.lua in the template/lua fodler
-        # To add a new method, just add a new method name in the for loop and add the required lua template file
+        # `set` then you need to have a template called model_set.lua in the template/lua folder
+        # this method will walk over all the files match this model and add the lua stored procedure to tarantool
 
         lcontent = j.sal.fs.readFile(path)
         name_upper = name[0].upper() + name[1:]
-
-        for method in ['get', 'get_json', 'set', 'delete', 'find', 'exists', 'destroy', 'list']:
+        function_names = []
+        for template_path in j.sal.fs.listFilesInDir(self._template_dir + '/lua', filter='model_*.lua'):
+            # strip model_ and .lua out of the template path
+            method = j.sal.fs.getBaseName(template_path)[len('model_'):-4]
+            function_names.append(method)
             template_name = 'model_{}.lua'.format(method)
-            function_name = 'model_{}_{}'.format(name, method)
-            if lcontent.find("function {}".format(function_name)) == -1:
+
+            if lcontent.find("local function {}".format(method)) == -1:
                 template_path = j.sal.fs.joinPaths(self._template_dir, 'lua', template_name)
                 template = j.sal.fs.fileGetContents(template_path)
-                lcontent += "\n\n" + j.data.text.strip(template.replace("$funcname", function_name))
+                lcontent += "\n\n" + j.data.text.strip(template)
 
         lcontent = lcontent.replace("$dbtype", dbtype)
         lcontent = lcontent.replace("$name", name)
@@ -112,6 +115,14 @@ class TarantoolClient():
         lcontent = lcontent.replace("mymodelname", name)
         lcontent = lcontent.replace("$login", login)
         lcontent = lcontent.replace("$passwd", passwd)
+
+        # FIXME: this is ugly
+        if lcontent.find("return %s" % name) == -1:
+            lcontent += '\n%s = {\n' % name
+            for function_name in function_names:
+                lcontent += "\t%s = %s,\n" % (function_name, function_name)
+            lcontent += '}\n'
+            lcontent += 'return %s' % name
 
         j.sal.fs.writeFile(path, lcontent)
 

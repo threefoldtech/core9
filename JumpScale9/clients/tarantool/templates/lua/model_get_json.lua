@@ -1,5 +1,5 @@
-function $funcname(key)
-    local res = model_$name_get(key)
+local function get_json(key)
+    local res = get(key)
     if res == nil then
         return nil
     else
@@ -7,6 +7,6 @@ function $funcname(key)
     end
 end
 
-box.schema.func.create('$funcname', {if_not_exists = true})
-box.schema.user.grant('$login', 'execute', 'function', '$funcname',{ if_not_exists= true})
+box.schema.func.create('get_json', {if_not_exists = true})
+box.schema.user.grant('$login', 'execute', 'function', 'get_json',{ if_not_exists= true})
 
