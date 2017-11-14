@@ -60,7 +60,7 @@ class Dirs:
         txt = txt.replace("$JSLIBDIR", self.JSLIBDIR)
         txt = txt.replace("$JSAPPSDIR", self.JSAPPSDIR)
 
-        for key, value in list(additionalArgs.items()):
+        for key, value in list(additional_args.items()):
             txt = txt.replace("$%s" % key, str(value))
         return txt
 

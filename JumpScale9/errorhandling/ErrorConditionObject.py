@@ -125,10 +125,10 @@ class ErrorConditionObject(BaseException):
         return unique key for object, is used to define unique id
         """
         if self.category != "":
-            C = "%s_%s_%s_%s_%s_%s_%s_%s" % (self.gid, self.nid, self.category, self.level,
+            C = "%s_%s_%s_%s_%s_%s" % (self.category, self.level,
                                              self.funcname, self.funcfilename, self.appname, self.type)
         else:
-            C = "%s_%s_%s_%s_%s_%s_%s_%s" % (self.gid, self.nid, self.errormessage,
+            C = "%s_%s_%s_%s_%s_%s" % (self.errormessage,
                                              self.level, self.funcname, self.funcfilename, self.appname, self.type)
         self.uniquekey = j.data.hash.md5_string(C)
         return self.uniquekey
