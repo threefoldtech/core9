@@ -18,12 +18,21 @@ die() {
 
 cd /tmp
 
+export ZUTILSBRANCH=${ZUTILSBRANCH:-master}
+
 echo "INSTALL BASHTOOLS"
-curl https://raw.githubusercontent.com/Jumpscale/bash/master/install.sh?$RANDOM > /tmp/install.sh;bash /tmp/install.sh
+curl https://raw.githubusercontent.com/Jumpscale/bash/$ZUTILSBRANCH/install.sh?$RANDOM > /tmp/install.sh;bash /tmp/install.sh
 
 echo "load zlibs"
-source ~/code/github/jumpscale/bash/zlibs.sh 2>&1 > /dev/null
-source /opt/code/github/jumpscale/bash/zlibs.sh 2>&1 > /dev/null
+if [ -f ~/code/github/jumpscale/bash/zlibs.sh ]; then
+    source ~/code/github/jumpscale/bash/zlibs.sh 2>&1 > /dev/null
+elif [ -f /opt/code/github/jumpscale/bash/zlibs.sh ]; then
+    source /opt/code/github/jumpscale/bash/zlibs.sh 2>&1 > /dev/null
+else
+    die "Cannot find zlibs"
+fi
+
+
 ZDoneReset
 
 echo "install js9"
