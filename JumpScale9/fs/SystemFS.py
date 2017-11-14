@@ -602,7 +602,7 @@ class SystemFS:
                     if str(e).find("No such file or directory") == -1:
                         raise j.exceptions.RuntimeError("%s" % e)
 
-    @path_check(baseDir={"required",})
+    @path_check(path={"required"})
     def pathParse(self, path, baseDir="", existCheck=True, checkIsFile=False):
         """
         parse paths of form /root/tmp/33_adoc.doc into the path, priority which is numbers before _ at beginning of path
