@@ -445,9 +445,11 @@ class ExecutorBase:
 
     @property
     def dir_paths(self):
-        if not self.state.configGet('dirs', []):
-                self.initEnv()
-        return self.state.configGet("dirs")
+        if self.exists(self.state.configJSPath):
+            return self.state.configGet('dirs')
+        else:
+            dir_config = self._getDirPathConfig()
+            return pytoml.loads(dir_config)
 
     @property
     def platformtype(self):
