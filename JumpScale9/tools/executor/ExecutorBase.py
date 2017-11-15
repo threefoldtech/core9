@@ -446,6 +446,8 @@ class ExecutorBase:
     @property
     def dir_paths(self):
         if self.exists(self.state.configJSPath):
+            if not self.state.configGet('dirs', {}):
+                self.reset()
             return self.state.configGet('dirs')
         else:
             dir_config = self._getDirPathConfig()
