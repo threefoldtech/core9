@@ -133,7 +133,7 @@ class TarantoolClient():
         @PARAM dbtype vinyl or memtx
 
         will be available in tarantool as require("model_capnp_$name")  $name of the model which is the directory name
-        and the lua model as "model_$name" which has the required stored procedures _set _get _delete _find
+        and the lua model as "model_$name" which has the required stored procedures set, get, delete, find...
         """
 
         if path == "":
@@ -143,13 +143,14 @@ class TarantoolClient():
             sys.path.append(path)
 
         for name in j.sal.fs.listDirsInDir(path, False, True):
+            if name == '__pycache__':
+                continue
             name_upper = name[0].upper() + name[1:]
             cpath = j.sal.fs.joinPaths(path, name, "model.capnp")
             lpath = j.sal.fs.joinPaths(path, name, "model.lua")
             ppath = j.sal.fs.joinPaths(path, name, "%sCollection.py" % name_upper)
             j.sal.fs.touch(j.sal.fs.joinPaths(path, name, "__init__.py"))
             if j.sal.fs.exists(cpath):
-                # j.sal.fs.readFile(cpath)
                 res = j.data.capnp.schema_generate_lua(cpath)
                 self.addScript(res, "model_capnp_%s" % name)
                 j.sal.fs.remove(res)

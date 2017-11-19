@@ -365,7 +365,7 @@ class SystemProcess:
         # devnull = open(os.devnull, 'wb') # use this in python < 3.3
         # Popen(['nohup', cmd+" &"], stdout=devnull, stderr=devnull)
         cmd2 = "nohup %s > /dev/null 2>&1 &" % cmd
-        cmd2 = j.dirs.replaceTxtDirVars(cmd2)
+        cmd2 = j.dirs.replace_txt_dir_vars(cmd2)
         print(cmd2)
         j.sal.process.executeWithoutPipe(cmd2)
 
@@ -382,6 +382,61 @@ class SystemProcess:
         except Exception as err:
             raise j.exceptions.RuntimeError(
                 'Failed to execute the specified script: %s, %s' % (scriptName, str(err)))
+
+    def executeBashScript(
+            self,
+            content="",
+            path=None,
+            die=True,
+            remote=None,
+            sshport=22,
+            showout=True,
+            outputStderr=True,
+            sshkey="",
+            timeout=600,
+            executor=None):
+        """
+        @param remote can be ip addr or hostname of remote, if given will execute cmds there
+        """
+        if path is not None:
+            content = j.sal.fs.readFile(path)
+        if content[-1] != "\n":
+            content += "\n"
+
+        if remote is None:
+            tmppath = "/tmp"
+            content = "cd %s\n%s" % (tmppath, content)
+        else:
+            content = "cd /tmp\n%s" % content
+
+        if die:
+            content = "set -ex\n%s" % content
+
+        tmppathdest = "/tmp/do.sh"
+        j.sal.fs.writeFile(tmppathdest, content)
+
+        if remote is not None:
+            if sshkey:
+                if not j.clients.ssh.SSHKeyGetPathFromAgent(sshkey, die=False) is None:
+                    self.execute('ssh-add %s' % sshkey)
+                sshkey = '-i %s ' % sshkey.replace('!', '\!')
+            self.execute(
+                "scp %s -oStrictHostKeyChecking=no -P %s %s root@%s:%s " %
+                (sshkey, sshport, tmppathdest, remote, tmppathdest), die=die)
+            rc, res, err = self.execute(
+                "ssh %s -oStrictHostKeyChecking=no -A -p %s root@%s 'bash %s'" %
+                (sshkey, sshport, remote, tmppathdest), die=die, timeout=timeout)
+        else:
+            rc, res, err = self.execute(
+                "bash %s" %
+                tmppathdest, die=die, showout=showout, outputStderr=outputStderr, timeout=timeout)
+        return rc, res, err
+
+    def executeInteractive(self, command, die=True):
+        exitcode = os.system(command)
+        if exitcode != 0 and die:
+            raise RuntimeError("Could not execute %s" % command)
+        return exitcode
 
     def executeInSandbox(self, command, timeout=0):
         """Executes a command
@@ -478,6 +533,18 @@ class SystemProcess:
         elif j.core.platformtype.myplatform.isWindows:
             return j.sal.windows.isPidAlive(pid)
 
+    def checkInstalled(self, cmdname):
+        """
+        @param cmdname is cmd to check e.g. curl
+        """
+        rc, out, err = self.execute(
+            "which %s" %
+            cmdname, die=False, showout=False, outputStderr=False)
+        if rc == 0:
+            return True
+        else:
+            return False
+
     def kill(self, pid, sig=None):
         """
         Kill a process with a signal
@@ -506,6 +573,34 @@ class SystemProcess:
                 win32process.TerminateProcess(handle, 0)
             except BaseException:
                 raise
+    
+    def psfind(self, name):
+        rc, out, err = self.execute("ps ax | grep %s" % name, showout=False)
+        for line in out.split("\n"):
+            if line.strip() == "":
+                continue
+            if "grep" in line:
+                continue
+            return True
+        return False
+
+    def killall(self, name):
+        rc, out, err = self.execute("ps ax | grep %s" % name, showout=False)
+        for line in out.split("\n"):
+            # print("L:%s" % line)
+            if line.strip() == "":
+                continue
+            if "grep" in line:
+                continue
+            line = line.strip()
+            pid = line.split(" ")[0]
+            self.logger.info("kill:%s (%s)" % (name, pid))
+            self.kill(pid)
+        if self.psfind(name):
+            raise RuntimeError("stop debug here")
+            raise RuntimeError(
+                "Could not kill:%s, is still, there check if its not autorestarting." %
+                name)
 
     def getPidsByFilterSortable(self, filterstr, sortkey=None):
         """

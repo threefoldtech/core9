@@ -114,7 +114,7 @@ class RedisFactory:
         j.sal.process.execute("redis-cli -s %s/redis.sock shutdown" %
                               j.dirs.TMPDIR, die=False, showout=False, outputStderr=False)
         j.sal.process.execute("redis-cli shutdown", die=False, showout=False, outputStderr=False)
-        j.do.killall("redis")
+        j.sal.process.killall("redis")
 
     def start4core(self, timeout=20):
         """
@@ -122,10 +122,10 @@ class RedisFactory:
         standard on $tmpdir/redis.sock
         """
         if j.core.platformtype.myplatform.isMac:
-            if not j.do.checkInstalled("redis-server"):
+            if not j.sal.process.checkInstalled("redis-server"):
                 j.sal.process.execute("brew unlink redis", die=False)
                 j.sal.process.execute("brew install redis;brew link redis")
-            if not j.do.checkInstalled("redis-server"):
+            if not j.sal.process.checkInstalled("redis-server"):
                 raise RuntimeError("Cannot find redis-server even after install")
             j.sal.process.execute("redis-cli -s %s/redis.sock shutdown" %
                                   j.dirs.TMPDIR, die=False, showout=False, outputStderr=False)

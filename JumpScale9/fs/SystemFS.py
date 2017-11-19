@@ -1,4 +1,5 @@
 import sys
+import re
 import os
 import os.path
 import hashlib
@@ -10,6 +11,7 @@ import codecs
 import pickle as pickle
 import stat
 from stat import ST_MTIME
+from functools import wraps
 
 from JumpScale9 import j
 
@@ -23,6 +25,73 @@ def cleanupString(string, replacewith="_", regex="([^A-Za-z0-9])"):
     return re.sub(regex, replacewith, string)
 
 
+def path_check(**arguments):
+    """
+    Decorator to check if specified path arguments pass the specified validators.
+    The following validations are supported:
+    - "required": Means that the path argument value must not be None or empty string
+    - "exists": Means that the path argument value must be an existing directory
+    - "file": Means that the path argument value must be an existing file or a link to a file
+    - "pureFile": Means that the path argument value must be an existing file
+    - "dir": Means that the path argument value must be an existing directory or a link to a directory
+    - "pureDir": Means that the path argument value must be an existing directory
+    When no validations are added, the value of the path argument will still be expanded 
+    with the current home directory if the path starts with ~
+
+    E.g.
+    @path_check(sourceDir={"required","exists"}, destDir={"required"})
+    def copyDir(sourceDir, destDir):
+        pass
+    """
+    for argument, validators in arguments.items():
+        if not isinstance(validators, set):
+            raise ValueError("Expected tuple of validators for argument %s" % argument)
+        for validator in validators:
+            if validator not in {"required", "exists", "file", "dir", "pureFile", "pureDir"}:
+                raise ValueError("Unsupported validator '%s' for argument %s" % (validator, argument))
+
+    def decorator(func):
+        signature = inspect.signature(func)
+        for argument in arguments:
+            if signature.parameters.get(argument) is None:
+                raise ValueError("Argument %s not found in function declaration of %s" % (argument, func.__name__))
+
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            jslocation = lambda: "%s." % args[0].__jslocation__ if hasattr(args[0], "__jslocation__") else ""
+            args = list(args)
+            position = 0
+            for parameter in signature.parameters.values():
+                if parameter.name in arguments:
+                    value = args[position] if position < len(args) else kwargs[parameter.name]
+                    if value and value.startswith("~%s" % os.sep):
+                        if "HOME" in os.environ:
+                            value = os.path.expanduser(value)
+                        else:
+                            value = "%s%s" % (j.dirs.HOMEDIR, value[1:])
+                        if position < len(args):
+                            args[position] = value
+                        else:
+                            kwargs[parameter.name] = value
+                    validators = arguments[parameter.name]
+                    if value and validators.intersection({"exists", "file", "dir", "pureFile", "pureDir"}) and not os.path.exists(value):
+                        raise ValueError("Argument %s in %s%s expects an existing path value! %s does not exist." % (parameter.name, jslocation(), func.__name__, value))
+                    if "required" in validators and (value is None or value.strip() == ""):
+                        raise ValueError("Argument %s in %s%s should not be None or empty string!" % (parameter.name, jslocation(), func.__name__))
+                    if value and validators.intersection({"file", "pureFile"}) and not os.path.isfile(value):
+                        raise ValueError("Argument %s in %s%s expects a file path! %s is not a file." % (parameter.name, jslocation(), func.__name__, value))
+                    if value and "pureFile" in validators and os.path.islink(value) :
+                        raise ValueError("Argument %s in %s%s expects a file path! %s is not a file but a link." % (parameter.name, jslocation(), func.__name__, value))
+                    if value and validators.intersection({"dir", "pureDir"}) and not os.path.isdir(value):
+                        raise ValueError("Argument %s in %s%s expects a directory path! %s is not a directory." % (parameter.name, jslocation(), func.__name__, value))
+                    if value and "pureDir" in validators and os.path.islink(value):
+                        raise ValueError("Argument %s in %s%s expects a directory path! %s is not a directory but a link." % (parameter.name, jslocation(), func.__name__, value))
+                position += 1
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+
 class SystemFS:
 
     def __init__(self):
@@ -30,6 +99,7 @@ class SystemFS:
         self.logger = j.logger.get("j.sal.fs")
         # self.logger.disabled = True
 
+    @path_check(fileFrom={"required", "exists", "file"}, to={"required"})
     def copyFile(self, fileFrom, to, createDirIfNeeded=False, overwriteFile=True):
         """Copy file
 
@@ -46,53 +116,33 @@ class SystemFS:
         @autocomplete
 
         """
-
-        if ((fileFrom is None) or (to is None)):
-            raise TypeError(
-                "No parameters given to system.fs.copyFile from %s, to %s" % (fileFrom, to))
-        if j.sal.fs.isFile(fileFrom):
-            # Create target folder first, otherwise copy fails
-            target_folder = os.path.dirname(to)
-            if createDirIfNeeded:
-                self.createDir(target_folder)
+        # Create target folder first, otherwise copy fails
+        target_folder = os.path.dirname(to)
+        if createDirIfNeeded:
+            self.createDir(target_folder)
+        if self.exists(to):
             if overwriteFile is False:
-                if self.exists(to) and os.path.samefile(to, target_folder):
+                if os.path.samefile(to, target_folder):
                     destfilename = os.path.join(to, os.path.basename(fileFrom))
                     if self.exists(destfilename):
                         return
-                elif self.exists(to):
+                else:
                     return
             elif self.isFile(to):
                 # overwriting some open  files is frustrating and may not work
                 # due to locking [delete/copy is a better strategy]
                 self.remove(to)
-            try:
-                shutil.copy(fileFrom, to)
-                self.logger.debug("Copied file from %s to %s" % (fileFrom, to))
-            except Exception as e:
-                raise j.exceptions.RuntimeError(
-                    "Could not copy file from %s to %s, error %s" % (fileFrom, to, e))
-        else:
-            raise j.exceptions.RuntimeError(
-                "Can not copy file, file: %s does not exist in system.fs.copyFile" % (fileFrom))
+        shutil.copy(fileFrom, to)
+        self.logger.debug("Copied file from %s to %s" % (fileFrom, to))
 
+    @path_check(source={"exists", "required", "file"}, destin={"required"})
     def moveFile(self, source, destin):
         """Move a  File from source path to destination path
         @param source: string (Source file path)
         @param destination: string (Destination path the file should be moved to )
         """
         self.logger.debug('Move file from %s to %s' % (source, destin))
-        if ((source is None) or (destin is None)):
-            raise TypeError(
-                "Not enough parameters given to system.fs.moveFile: move from %s, to %s" % (source, destin))
-        if not j.sal.fs.isFile(source):
-            raise j.exceptions.RuntimeError(
-                "The specified source path in system.fs.moveFile does not exist or is no file: %s" % source)
-        try:
-            self.move(source, destin)
-        except Exception as e:
-            raise j.exceptions.RuntimeError(
-                "File could not be moved...in system.fs.moveFile: from %s to %s , Error %s" % (source, destin, str(e)))
+        self.move(source, destin)
 
     def renameFile(self, filePath, new_name):
         """
@@ -101,49 +151,41 @@ class SystemFS:
         self.logger.debug("WARNING: renameFIle should not be used")
         return self.move(filePath, new_name)
 
+    @path_check(path={"exists", "required", "dir"})
     def removeIrrelevantFiles(self, path, followSymlinks=True):
+        """Will remove files having extensions: pyc, bak
+        @param path: string (path to search in)
+        """
         ext = ["pyc", "bak"]
         for path in self.listFilesInDir(path, recursive=True, followSymlinks=followSymlinks):
             if self.getFileExtension(path) in ext:
                 self.remove(path)
 
+    @path_check(path={"required"})
     def remove(self, path):
         """Remove a File
-        @param path: string (File path required to be removed
+        @param path: string (File path required to be removed)
         """
         self.logger.debug('Remove file with path: %s' % path)
         if len(path) > 0 and path[-1] == os.sep:
             path = path[:-1]
-        if path is None:
-            raise TypeError(
-                'Not enough parameters passed to system.fs.removeFile: %s' % path)
         if os.path.islink(path):
             os.unlink(path)
         if self.exists(path):
-            try:
-                os.remove(path)
-            except Exception as e:
-                raise j.exceptions.RuntimeError(
-                    "File with path: %s could not be removed\nDetails: %s\n%s" % (path, e, sys.exc_info()[0]))
+            os.remove(path)
             self.logger.debug('Done removing file with path: %s' % path)
 
+    @path_check(filename={"required",})
     def createEmptyFile(self, filename):
         """Create an empty file
         @param filename: string (file path name to be created)
         """
+        self.logger.debug('creating an empty file with name & path: %s' % filename)
+        open(filename, "w").close()
         self.logger.debug(
-            'creating an empty file with name & path: %s' % filename)
-        if filename is None:
-            raise ArithmeticError(
-                'Not enough parameters passed to system.fs.createEmptyFile: %s' % filename)
-        try:
-            open(filename, "w").close()
-            self.logger.debug(
-                'Empty file %s has been successfully created' % filename)
-        except Exception:
-            raise j.exceptions.RuntimeError(
-                "Failed to create an empty file with the specified filename: %s" % filename)
+            'Empty file %s has been successfully created' % filename)
 
+    @path_check(newdir={"required",})
     def createDir(self, newdir, unlink=True):
         """Create new Directory
         @param newdir: string (Directory path/name)
@@ -154,20 +196,16 @@ class SystemFS:
             raise j.exceptions.RuntimeError("Cannot use file notation here")
         self.logger.debug(
             'Creating directory if not exists %s' % j.data.text.toStr(newdir))
+        if self.exists(newdir):
+            if self.isLink(newdir) and unlink:
+                self.unlink(newdir)
 
-        if newdir == '' or newdir is None:
-            raise TypeError(
-                'The newdir-parameter of system.fs.createDir() is None or an empty string.')
-
-        if self.isLink(newdir) and unlink:
-            self.unlink(newdir)
-
-        if self.isDir(newdir):
-            self.logger.debug(
-                'Directory trying to create: [%s] already exists' % j.data.text.toStr(newdir))
+            if self.isDir(newdir):
+                self.logger.debug(
+                    'Directory trying to create: [%s] already exists' % j.data.text.toStr(newdir))
         else:
             head, tail = os.path.split(newdir)
-            if head and not j.sal.fs.isDir(head):
+            if head and not self.isDir(head):
                 self.createDir(head, unlink=False)
             if tail:
                 try:
@@ -187,6 +225,12 @@ class SystemFS:
         it will be created as well as missing parent directories
         @param src: string (source of directory tree to be copied)
         @param rsyncdelete will remove files on dest which are not on source (default)
+        @param recursive:  recursively look in all subdirs
+        @param ignoredir:  list (name of directories to exclude)
+        @param ignorefiles: list (name of files to exclude)
+        @param ssh:  bool (copy to remote)
+        @param sshport int (ssh port)
+        @param createdir:   bool (when ssh creates parent directory)
         @param dst: string (path directory to be copied to...should not already exist)
         @param keepsymlinks: bool (True keeps symlinks instead of copying the content of the file)
         @param deletefirst: bool (Set to True if you want to erase destination first, be carefull, this can erase directories)
@@ -202,10 +246,10 @@ class SystemFS:
                 raise TypeError(
                     'Not enough parameters passed in system.fs.copyDirTree to copy directory from %s to %s ' %
                     (src, dst))
-            if j.sal.fs.isDir(src):
+            if self.isDir(src):
                 names = os.listdir(src)
 
-                if not j.sal.fs.exists(dst):
+                if not self.exists(dst):
                     self.createDir(dst)
 
                 errors = []
@@ -216,20 +260,20 @@ class SystemFS:
                     else:
                         name2 = name
 
-                    srcname = j.sal.fs.joinPaths(src, name)
-                    dstname = j.sal.fs.joinPaths(dst, name2)
+                    srcname = self.joinPaths(src, name)
+                    dstname = self.joinPaths(dst, name2)
                     if deletefirst and self.exists(dstname):
                         if self.isDir(dstname, False):
                             self.removeDirTree(dstname)
                         if self.isLink(dstname):
                             self.unlink(dstname)
 
-                    if keepsymlinks and j.sal.fs.isLink(srcname):
-                        linkto = j.sal.fs.readLink(srcname)
-                        j.sal.fs.symlink(linkto, dstname, overwriteFiles)
-                    elif j.sal.fs.isDir(srcname):
+                    if keepsymlinks and self.isLink(srcname):
+                        linkto = self.readLink(srcname)
+                        self.symlink(linkto, dstname, overwriteFiles)
+                    elif self.isDir(srcname):
                         # print "1:%s %s"%(srcname,dstname)
-                        j.sal.fs.copyDirTree(srcname, dstname, keepsymlinks, deletefirst,
+                        self.copyDirTree(srcname, dstname, keepsymlinks, deletefirst,
                                              overwriteFiles=overwriteFiles, applyHrdOnDestPaths=applyHrdOnDestPaths)
                     else:
                         # print "2:%s %s"%(srcname,dstname)
@@ -277,95 +321,61 @@ class SystemFS:
 
             return j.tools.executorLocal.execute(cmd)[1]
 
+    @path_check(path={"required", "exists"})
     def removeDirTree(self, path, onlyLogWarningOnRemoveError=False):
         """Recursively delete a directory tree.
-            @param path: the path to be removed
+            @param path: string (the path to be removed)
         """
         def errorHandler(shutilFunc, shutilPath, shutilExc_info):
             self.logger.debug(
                 'WARNING: could not remove %s while recursively deleting %s' % (shutilPath, path))
-        if path is None:
-            raise ValueError('Path is None in system.fs.removeDir')
         self.logger.debug('Removing directory tree with path: %s' % path)
         if self.isLink(path):
             self.remove(path)
         if self.isFile(path):
             self.remove(path)
-
-        if(j.sal.fs.exists(path)):
-            if(self.isDir(path)):
-                if onlyLogWarningOnRemoveError:
-
-                    self.logger.debug(
-                        'Trying to remove Directory tree with path: %s (warn on errors)' % path)
-                    shutil.rmtree(path, onerror=errorHandler)
-                else:
-                    self.logger.debug(
-                        'Trying to remove Directory tree with path: %s' % path)
-                    shutil.rmtree(path, onerror=errorHandler)
-
+        else:
+            if onlyLogWarningOnRemoveError:
                 self.logger.debug(
-                    'Directory tree with path: %s is successfully removed' % path)
+                    'Trying to remove Directory tree with path: %s (warn on errors)' % path)
+                shutil.rmtree(path, onerror=errorHandler)
             else:
-                raise ValueError(
-                    "Specified path: %s is not a Directory in system.fs.removeDirTree" % path)
+                self.logger.debug(
+                    'Trying to remove Directory tree with path: %s' % path)
+                shutil.rmtree(path, onerror=errorHandler)
+            self.logger.debug(
+                'Directory tree with path: %s is successfully removed' % path)
 
+    @path_check(path={"required", "exists", "dir"})
     def removeDir(self, path):
         """Remove a Directory
         @param path: string (Directory path that should be removed)
         """
         self.logger.debug('Removing the directory with path: %s' % path)
-        if path is None:
-            raise TypeError('Path is None in system.fs.removeDir')
-        if(j.sal.fs.exists(path)):
-            if(j.sal.fs.isDir(path)):
-                os.rmdir(path)
-                self.logger.debug(
-                    'Directory with path: %s is successfully removed' % path)
-            else:
-                raise ValueError(
-                    "Path: %s is not a Directory in system.fs.removeDir" % path)
-        else:
-            raise j.exceptions.RuntimeError(
-                "Path: %s does not exist in system.fs.removeDir" % path)
+        os.rmdir(path)
+        self.logger.debug('Directory with path: %s is successfully removed' % path)
 
+    @path_check(path={"required", "exists", "dir"})
     def changeDir(self, path):
         """Changes Current Directory
         @param path: string (Directory path to be changed to)
         """
         self.logger.debug('Changing directory to: %s' % path)
-        if path is None:
-            raise TypeError('Path is not given in system.fs.changeDir')
-        if(j.sal.fs.exists(path)):
-            if(j.sal.fs.isDir(path)):
-                os.chdir(path)
-                newcurrentPath = os.getcwd()
-                self.logger.debug(
-                    'Directory successfully changed to %s' % path)
-                return newcurrentPath
-            else:
-                raise ValueError(
-                    "Path: %s in system.fs.changeDir is not a Directory" % path)
-        else:
-            raise j.exceptions.RuntimeError(
-                "Path: %s in system.fs.changeDir does not exist" % path)
+        os.chdir(path)
+        newcurrentPath = os.getcwd()
+        self.logger.debug(
+            'Directory successfully changed to %s' % path)
+        return newcurrentPath
 
+    @path_check(source={"exists", "required", "dir"})
     def moveDir(self, source, destin):
         """Move Directory from source to destination
         @param source: string (Source path where the directory should be removed from)
         @param destin: string (Destination path where the directory should be moved into)
         """
         self.logger.debug('Moving directory from %s to %s' % (source, destin))
-        if ((source is None) or (destin is None)):
-            raise TypeError(
-                'Not enough passed parameters to moveDirectory from %s to %s in system.fs.moveDir ' % (source, destin))
-        if(j.sal.fs.isDir(source)):
-            j.sal.fs.move(source, destin)
-            self.logger.debug(
-                'Directory is successfully moved from %s to %s' % (source, destin))
-        else:
-            raise j.exceptions.RuntimeError(
-                "Specified Source path: %s does not exist in system.fs.moveDir" % source)
+        self.move(source, destin)
+        self.logger.debug('Directory is successfully moved from %s to %s' % (source, destin))
 
     def joinPaths(self, *args):
         """Join one or more path components.
@@ -389,12 +399,9 @@ class SystemFS:
                     item = item[1:]
                 args2.append(item)
             args = args2
-        try:
-            return os.path.join(*args)
-        except Exception as e:
-            raise j.exceptions.RuntimeError(
-                "Failed to join paths: %s, Error %s " % (str(args), str(e)))
+        return os.path.join(*args)
 
+    @path_check(path={"required",})
     def getDirName(self, path, lastOnly=False, levelsUp=None):
         """
         Return a directory name from pathname path.
@@ -406,8 +413,6 @@ class SystemFS:
          e.g. ...getDirName("/opt/qbase/bin/something/test.py", levelsUp=10) would raise an error
         """
         self.logger.debug('Get directory name of path: %s' % path)
-        if path is None:
-            raise TypeError('Path is not passed in system.fs.getDirName')
         dname = os.path.dirname(path)
         dname = dname.replace("/", os.sep)
         dname = dname.replace("//", os.sep)
@@ -424,17 +429,13 @@ class SystemFS:
                     "Cannot find part of dir %s levels up, path %s is not long enough" % (levelsUp, path))
         return dname + os.sep if dname else dname
 
+    @path_check(path={"required",})
     def getBaseName(self, path):
         """Return the base name of pathname path."""
         self.logger.debug('Get basename for path: %s' % path)
-        if path is None:
-            raise TypeError('Path is not passed in system.fs.getDirName')
-        try:
-            return os.path.basename(path.rstrip(os.path.sep))
-        except Exception as e:
-            raise j.exceptions.RuntimeError(
-                'Failed to get base name of the given path: %s, Error: %s' % (path, str(e)))
+        return os.path.basename(path.rstrip(os.path.sep))
 
+    @path_check(path={"required",})
     def pathShorten(self, path):
         """
         Clean path (change /var/www/../lib to /var/lib). On Windows, if the
@@ -456,6 +457,7 @@ class SystemFS:
                 cleanedPath = "%s%s" % (cleanedPath, sep)
         return cleanedPath
 
+    @path_check(path={"required",})
     def pathClean(self, path):
         """
         goal is to get a equal representation in / & \ in relation to os.sep
@@ -468,6 +470,7 @@ class SystemFS:
         path = path.strip()
         return path
 
+    @path_check(path={"required",})
     def pathDirClean(self, path):
         path = path + os.sep
         return self.pathClean(path)
@@ -475,6 +478,7 @@ class SystemFS:
     def dirEqual(self, path1, path2):
         return self.pathDirClean(path1) == self.pathDirClean(path2)
 
+    @path_check(path={"required",})
     def pathNormalize(self, path, root=""):
         """
         paths are made absolute & made sure they are in line with os.sep
@@ -528,6 +532,7 @@ class SystemFS:
                 result.append(item)
         return "/".join(result)
 
+    @path_check(path={"required",})
     def getParent(self, path):
         """
         Returns the parent of the path:
@@ -542,10 +547,12 @@ class SystemFS:
             return os.sep
         return os.sep.join(parts)
 
+    @path_check(path={"required",})
     def getFileExtension(self, path):
         ext = os.path.splitext(path)[1]
         return ext.strip('.')
 
+    @path_check(path={"required",})
     def chown(self, path, user, group=None):
         from pwd import getpwnam
         from grp import getgrnam
@@ -572,6 +579,7 @@ class SystemFS:
                     if str(e).find("No such file or directory") == -1:
                         raise j.exceptions.RuntimeError("%s" % e)
 
+    @path_check(path={"required", "exists"})
     def chmod(self, path, permissions):
         """
         @param permissions e.g. 0o660 (USE OCTAL !!!)
@@ -594,6 +602,7 @@ class SystemFS:
                     if str(e).find("No such file or directory") == -1:
                         raise j.exceptions.RuntimeError("%s" % e)
 
+    @path_check(path={"required"})
     def pathParse(self, path, baseDir="", existCheck=True, checkIsFile=False):
         """
         parse paths of form /root/tmp/33_adoc.doc into the path, priority which is numbers before _ at beginning of path
@@ -638,7 +647,7 @@ class SystemFS:
             path = self.pathRemoveDirPart(path, baseDir)
 
         if name == "":
-            dirOrFilename = j.sal.fs.getDirName(path, lastOnly=True)
+            dirOrFilename = self.getDirName(path, lastOnly=True)
         else:
             dirOrFilename = name
         # check for priority
@@ -660,12 +669,9 @@ class SystemFS:
         @rtype: string (current working directory path)
         """
         self.logger.debug('Get current working directory')
-        try:
-            return os.getcwd()
-        except Exception as e:
-            raise j.exceptions.RuntimeError(
-                'Failed to get current working directory')
+        return os.getcwd()
 
+    @path_check(path={"required",})
     def readLink(self, path, absolute=True):
         """Works only for unix
         Return a string representing the path to which the symbolic link points.
@@ -675,14 +681,8 @@ class SystemFS:
         while path[-1] == "/" or path[-1] == "\\":
             path = path[:-1]
         self.logger.debug('Read link with path: %s' % path)
-        if path is None:
-            raise TypeError('Path is not passed in system.fs.readLink')
         if j.core.platformtype.myplatform.isUnix:
-            try:
-                res = os.readlink(path)
-            except Exception as e:
-                raise j.exceptions.RuntimeError(
-                    'Failed to read link with path: %s \nERROR: %s' % (path, str(e)))
+            res = os.readlink(path)
         elif j.core.platformtype.myplatform.isWindows:
             raise j.exceptions.RuntimeError('Cannot readLink on windows')
         else:
@@ -698,34 +698,24 @@ class SystemFS:
 
         return res
 
+    @path_check(path={"required", "exists"})
     def removeLinks(self, path):
         """
         find all links & remove
         """
-        if not self.exists(path):
-            return
         items = self._listAllInDir(
             path=path, recursive=True, followSymlinks=False, listSymlinks=True)
-        items = [item for item in items[0] if j.sal.fs.isLink(item)]
+        items = [item for item in items[0] if self.isLink(item)]
         for item in items:
-            j.sal.fs.unlink(item)
+            self.unlink(item)
 
+    @path_check(path={"required", "exists", "dir"})
     def _listInDir(self, path, followSymlinks=True):
         """returns array with dirs & files in directory
         @param path: string (Directory path to list contents under)
         """
-        if path is None:
-            raise TypeError('Path is not passed in system.fs.listDir')
-        if(j.sal.fs.exists(path)):
-            if self.isDir(path, followSymlinks):
-                names = os.listdir(path)
-                return names
-            else:
-                raise ValueError(
-                    "Specified path: %s is not a Directory in system.fs.listDir" % path)
-        else:
-            raise j.exceptions.RuntimeError(
-                "Specified path: %s does not exist in system.fs.listDir" % path)
+        names = os.listdir(path)
+        return names
 
     def listFilesInDir(self, path, recursive=False, filter=None, minmtime=None, maxmtime=None,
                        depth=None, case_sensitivity='os', exclude=[], followSymlinks=True, listSymlinks=False):
@@ -913,22 +903,24 @@ class SystemFS:
         @rtype: list
         """
         result = []
-        for file in j.sal.fs.listFilesInDir(path, recursive=recursive, filter=filter):
+        for file in self.listFilesInDir(path, recursive=recursive, filter=filter):
             if file.endswith(".py"):
                 # filename = file.split(os.sep)[-1]
                 # scriptname = filename.rsplit(".", 1)[0]
                 result.append(file)
         return result
 
+    @path_check(source={"exists", "required"}, destin={"exists", "required"})
     def move(self, source, destin):
         """Main Move function
         @param source: string (If the specified source is a File....Calls moveFile function)
         (If the specified source is a Directory....Calls moveDir function)
         """
-        if not j.sal.fs.exists(source):
+        if not self.exists(source):
             raise IOError('%s does not exist' % source)
         shutil.move(source, destin)
 
+    @path_check(path={"required"})
     def exists(self, path, followlinks=True):
         """Check if the specified path exists
         @param path: string
@@ -947,6 +939,7 @@ class SystemFS:
         self.logger.debug('path %s does not exist' % str(path.encode("utf-8")))
         return False
 
+    @path_check(path={"required", "exists"}, target={"required",})
     def symlink(self, path, target, overwriteTarget=False):
         """Create a symbolic link
         @param path: source path desired to create a symbolic link for
@@ -955,13 +948,11 @@ class SystemFS:
         """
         self.logger.debug(
             'Getting symlink for path: %s to target %s' % (path, target))
-        if (path is None):
-            raise TypeError('Path is None in system.fs.symlink')
 
         if target[-1] == "/":
             target = target[:-1]
 
-        if overwriteTarget and (self.exists(target) or self.isLink(target)):
+        if overwriteTarget and self.exists(target):
             if self.isLink(target):
                 self.unlink(target)
             elif self.isDir(target):
@@ -969,9 +960,9 @@ class SystemFS:
             else:
                 self.remove(target)
 
-        dir = j.sal.fs.getDirName(target)
-        if not j.sal.fs.exists(dir):
-            j.sal.fs.createDir(dir)
+        dir = self.getDirName(target)
+        if not self.exists(dir):
+            self.createDir(dir)
 
         if j.core.platformtype.myplatform.isUnix:
             self.logger.debug("Creating link from %s to %s" % (path, target))
@@ -983,6 +974,27 @@ class SystemFS:
             print(cmd)
             j.sal.process.execute(cmd)
 
+    def symlinkFilesInDir(self, src, dest, delete=True, includeDirs=False, makeExecutable=False):
+        if includeDirs:
+            items = self.listFilesAndDirsInDir(
+                src, recursive=False, followSymlinks=False, listSymlinks=False)
+        else:
+            items = self.listFilesInDir(
+                src,
+                recursive=False,
+                followSymlinks=True,
+                listSymlinks=True)
+        for item in items:
+            dest2 = "%s/%s" % (dest, self.getBaseName(item))
+            dest2 = dest2.replace("//", "/")
+            self.logger.info(("link %s:%s" % (item, dest2)))
+            self.symlink(item, dest2, overwriteTarget=delete)
+            if makeExecutable:
+                # print("executable:%s" % dest2)
+                self.chmod(dest2, 0o770)
+                self.chmod(item, 0o770)
+
+    @path_check(source={"required", "exists"}, destin={"required"})
     def hardlinkFile(self, source, destin):
         """Create a hard link pointing to source named destin. Availability: Unix.
         @param source: string
@@ -990,21 +1002,14 @@ class SystemFS:
         @rtype: concatenation of dirname, and optionally linkname, etc.
         with exactly one directory separator (os.sep) inserted between components, unless path2 is empty
         """
-        self.logger.debug(
-            'Create a hard link pointing to %s named %s' % (source, destin))
-        if (source is None):
-            raise TypeError(
-                'Source path is not passed in system.fs.hardlinkFile')
-        try:
-            if j.core.platformtype.myplatform.isUnix:
-                return os.link(source, destin)
-            else:
-                raise j.exceptions.RuntimeError(
-                    'Cannot create a hard link on windows')
-        except BaseException:
+        self.logger.debug('Create a hard link pointing to %s named %s' % (source, destin))
+        if j.core.platformtype.myplatform.isUnix:
+            return os.link(source, destin)
+        else:
             raise j.exceptions.RuntimeError(
-                'Failed to hardLinkFile from %s to %s' % (source, destin))
+                'Cannot create a hard link on windows')
 
+    @path_check(path={"required",})
     def checkDirParam(self, path):
         if(path.strip() == ""):
             raise TypeError("path parameter cannot be empty.")
@@ -1016,37 +1021,32 @@ class SystemFS:
         path = path.replace("/", os.sep)
         return path
 
+    @path_check(path={"required", "exists"})
     def isDir(self, path, followSoftlink=False):
         """Check if the specified Directory path exists
         @param path: string
         @param followSoftlink: boolean
         @rtype: boolean (True if directory exists)
         """
-        if (path is None):
-            raise TypeError('Directory path is None in system.fs.isDir')
         if self.isLink(path):
             if not followSoftlink:
                 return False
             path = self.readLink(path)
         return os.path.isdir(path)
 
+    @path_check(path={"required", "exists", "dir"})
     def isEmptyDir(self, path):
         """Check if the specified directory path is empty
         @param path: string
         @rtype: boolean (True if directory is empty)
         """
-        if (path is None):
-            raise TypeError('Directory path is None in system.fs.isEmptyDir')
-        try:
-            if(self._listInDir(path) == []):
-                self.logger.debug('path %s is an empty directory' % path)
-                return True
-            self.logger.debug('path %s is not an empty directory' % path)
-            return False
-        except BaseException:
-            raise j.exceptions.RuntimeError(
-                'Failed to check if the specified path: %s is an empty directory...in system.fs.isEmptyDir' % path)
+        if(self._listInDir(path) == []):
+            self.logger.debug('path %s is an empty directory' % path)
+            return True
+        self.logger.debug('path %s is not an empty directory' % path)
+        return False
 
+    @path_check(path={"required", "exists"})
     def isFile(self, path, followSoftlink=True):
         """Check if the specified file exists for the given path
         @param path: string
@@ -1054,28 +1054,23 @@ class SystemFS:
         @rtype: boolean (True if file exists for the given path)
         """
         self.logger.debug("isfile:%s" % path)
+        if not followSoftlink and self.isLink(path):
+            self.logger.debug('path %s is a file' % path)
+            return True
 
-        if (path is None):
-            raise TypeError('File path is None in system.fs.isFile')
-        try:
-            if not followSoftlink and self.isLink(path):
-                self.logger.debug('path %s is a file' % path)
-                return True
+        if(os.path.isfile(path)):
+            self.logger.debug('path %s is a file' % path)
+            return True
 
-            if(os.path.isfile(path)):
-                self.logger.debug('path %s is a file' % path)
-                return True
+        self.logger.debug('path %s is not a file' % path)
+        return False
 
-            self.logger.debug('path %s is not a file' % path)
-            return False
-        except BaseException:
-            raise j.exceptions.RuntimeError(
-                'Failed to check if the specified path: %s is a file...in system.fs.isFile' % path)
-
+    @path_check(path={"required", "exists", "file"})
     def isExecutable(self, path):
         statobj = self.statPath(path, follow_symlinks=False)
         return not (stat.S_IXUSR & statobj.st_mode == 0)
 
+    @path_check(path={"required", "exists"})
     def isLink(self, path, checkJunction=False):
         """Check if the specified path is a link
         @param path: string
@@ -1083,8 +1078,6 @@ class SystemFS:
         """
         if path[-1] == os.sep:
             path = path[:-1]
-        if (path is None):
-            raise TypeError('Link path is None in system.fs.isLink')
 
         if checkJunction and j.core.platformtype.myplatform.isWindows:
             cmd = "junction %s" % path
@@ -1107,6 +1100,7 @@ class SystemFS:
         self.logger.debug('path %s is not a link' % path)
         return False
 
+    @path_check(path={"required", "dir", "exists"})
     def isMount(self, path):
         """Return true if pathname path is a mount point:
         A point in a file system where a different file system has been mounted.
@@ -1116,18 +1110,14 @@ class SystemFS:
             raise TypeError('Path is passed null in system.fs.isMount')
         return os.path.ismount(path)
 
+    @path_check(path={"required", "exists"})
     def statPath(self, path, follow_symlinks=True):
         """Perform a stat() system call on the given path
         @rtype: object whose attributes correspond to the members of the stat structure
         """
-        if path is None:
-            raise TypeError('Path is None in system.fs.statPath')
-        try:
-            return os.stat(path, follow_symlinks=follow_symlinks)
-        except BaseException:
-            raise OSError(
-                'Failed to perform stat system call on the specific path: %s in system.fs.statPath' % (path))
+        return os.stat(path, follow_symlinks=follow_symlinks)
 
+    @path_check(dirname={"required", "exists", "dir"}, newname={"required",})
     def renameDir(self, dirname, newname, overwrite=False):
         """Rename Directory from dirname to newname
         @param dirname: string (Directory original name)
@@ -1136,34 +1126,22 @@ class SystemFS:
         self.logger.debug('Renaming directory %s to %s' % (dirname, newname))
         if dirname == newname:
             return
-        if ((dirname is None) or (newname is None)):
-            raise TypeError(
-                'Not enough parameters passed to system.fs.renameDir...[%s, %s]' % (dirname, newname))
-        if(self.isDir(dirname)):
-            if overwrite and self.exists(dirname):
-                self.removeDirTree(dirname)
-            os.rename(dirname, newname)
-        else:
-            raise ValueError(
-                'Path: %s is not a directory in system.fs.renameDir' % dirname)
+        if overwrite and self.exists(newname):
+            if self.isDir(newname):
+                self.removeDirTree(newname)
+            else:
+                self.remove(newname)
+        os.rename(dirname, newname)
 
+    @path_check(filename={"required", "exists", "pureFile"})
     def unlinkFile(self, filename):
         """Remove the file path (only for files, not for symlinks)
         @param filename: File path to be removed
         """
         self.logger.debug('Unlink file with path: %s' % filename)
+        os.unlink(filename)
 
-        if (filename is None):
-            raise TypeError('File name is None in QSstem.unlinkFile')
-        if not self.isFile(filename):
-            raise j.exceptions.RuntimeError(
-                "filename is not a file so cannot unlink")
-        try:
-            os.unlink(filename)
-        except BaseException:
-            raise OSError(
-                'Failed to unlink the specified file path: %s in system.fs.unlinkFile' % filename)
-
+    @path_check(filename={"required", "exists", "file"})
     def unlink(self, filename):
         '''Remove the given file if it's a file or a symlink
 
@@ -1172,22 +1150,19 @@ class SystemFS:
         '''
         self.logger.debug('Unlink path: %s' % filename)
 
-        if not filename:
-            raise TypeError('File name is None in system.fs.unlink')
-        try:
-            os.unlink(filename)
-        except BaseException:
-            raise OSError(
-                'Failed to unlink the specified file path: [%s] in system.ds.unlink' % filename)
+        if j.core.platformtype.myplatform.isWindows:
+            cmd = "junction -d %s 2>&1 > null" % (path)
+            self.logger.info(cmd)
+            os.system(cmd)
+        os.unlink(filename)
 
+    @path_check(filename={"required", "exists", "file"})
     def fileGetContents(self, filename, binary=False, encoding='utf-8'):
         """Read a file and get contents of that file
         @param filename: string (filename to open for reading )
         @rtype: string representing the file contents
         @param encoding utf-8 or ascii
         """
-        if filename is None:
-            raise TypeError('File name is None in system.fs.fileGetContents')
         self.logger.debug('Opened file %s for reading' % filename)
         self.logger.debug('Reading file %s' % filename)
         if binary:
@@ -1200,13 +1175,12 @@ class SystemFS:
         self.logger.debug('File %s is closed after reading' % filename)
         return data
 
+    @path_check(filename={"required", "exists", "file"})
     def fileGetBinaryContents(self, filename):
         """Read a file in binary mode and get contents of that file
         @param filename: string (filename to open for reading )
         @rtype: string representing the file contents
         """
-        if filename is None:
-            raise TypeError('File name is None in system.fs.fileGetContents')
         self.logger.debug('Opened file %s for reading' % filename)
         self.logger.debug('Reading file %s' % filename)
         with open(filename, mode='rb') as fp:
@@ -1214,6 +1188,7 @@ class SystemFS:
         self.logger.debug('File %s is closed after reading' % filename)
         return data
 
+    @path_check(filename={"required", "exists", "file"})
     def readFile(self, filename, binary=False):
         """
         Get contents as string from filename.
@@ -1222,13 +1197,12 @@ class SystemFS:
         """
         return self.fileGetContents(filename, binary=binary)
 
+    @path_check(filename={"required", "exists", "file"})
     def fileGetUncommentedContents(self, filename):
         """Read a file and get uncommented contents of that file
         @param filename: string (filename to open for reading )
         @rtype: list of lines of uncommented file contents
         """
-        if filename is None:
-            raise TypeError('File name is None in system.fs.fileGetContents')
         self.logger.debug('Opened file %s for reading' % filename)
         # self.logger.debug('Reading file %s'% filename,9)
         with open(filename) as fp:
@@ -1241,14 +1215,12 @@ class SystemFS:
             self.logger.debug('File %s is closed after reading' % filename)
             return uncommented
 
+    @path_check(filename={"required", "exists", "file"})
     def fileGetTextContents(self, filename):
         """Read a UTF-8 file and get contents of that file. Takes care of the [BOM](http://en.wikipedia.org/wiki/Byte_order_mark)
         @param filename: string (filename to open for reading)
         @rtype: string representing the file contents
         """
-        if filename is None:
-            raise TypeError(
-                'File name is None in system.fs.fileGetTextContents')
         with open(filename, encoding='utf8') as f:  # enforce utf8 encoding
             s = f.read()
 
@@ -1267,18 +1239,19 @@ class SystemFS:
             for item in paths:
                 self.touch(item, overwrite=overwrite)
         path = paths
-        self.createDir(j.sal.fs.getDirName(path))
+        self.createDir(self.getDirName(path))
         if overwrite:
             self.remove(path)
         if not self.exists(path=path):
             self.writeFile(path, "")
 
+    @path_check(filename={"required"})
     def writeFile(self, filename, contents, append=False):
         """
         Open a file and write file contents, close file afterwards
         @param contents: string (file contents to be written)
         """
-        if (filename is None) or (contents is None):
+        if contents is None:
             raise TypeError('Passed None parameters in system.fs.writeFile')
         self.logger.debug('Opened file %s for writing' % filename)
         if append is False:
@@ -1293,28 +1266,22 @@ class SystemFS:
         # fp.write(contents)
         fp.close()
 
+    @path_check(filename={"required", "exists", "file"})
     def fileSize(self, filename):
         """Get Filesize of file in bytes
         @param filename: the file u want to know the filesize of
         @return: int representing file size
         """
-        self.logger.debug('Getting filesize of file: %s' % filename)
-        if not self.exists(filename):
-            raise j.exceptions.RuntimeError(
-                "Specified file: %s does not exist" % filename)
-        try:
-            return os.path.getsize(filename)
-        except Exception as e:
-            raise OSError("Could not get filesize of %s\nError: %s" %
-                          (filename, str(e)))
+        return os.path.getsize(filename)
 
+    @path_check(filelocation={"required"})
     def writeObjectToFile(self, filelocation, obj):
         """
         Write a object to a file(pickle format)
         @param filelocation: location of the file to which we write
         @param obj: object to pickle and write to a file
         """
-        if not filelocation or not obj:
+        if not obj:
             raise ValueError(
                 "You should provide a filelocation or a object as parameters")
         self.logger.debug(
@@ -1324,29 +1291,23 @@ class SystemFS:
         except Exception as e:
             raise Exception(
                 "Could not create pickle from the object \nError: %s" % (str(e)))
-        j.sal.fs.writeFile(filelocation, pcl)
+        self.writeFile(filelocation, pcl)
         if not self.exists(filelocation):
             raise Exception("File isn't written to the filesystem")
 
+    @path_check(filelocation={"required", "exists", "file"})
     def readObjectFromFile(self, filelocation):
         """
         Read a object from a file(file contents in pickle format)
         @param filelocation: location of the file
         @return: object
         """
-        if not filelocation:
-            raise ValueError(
-                "You should provide a filelocation as a parameter")
         self.logger.debug("Opening file %s for reading" % filelocation)
-        contents = j.sal.fs.fileGetContents(filelocation)
+        contents = self.fileGetContents(filelocation)
         self.logger.debug("creating object")
-        try:
-            obj = pickle.loads(contents)
-        except Exception as e:
-            raise Exception(
-                "Could not create the object from the file contents \n Error: %s" % (str(e)))
-        return obj
+        return pickle.loads(contents)
 
+    @path_check(filename={"required", "exists", "file"})
     def md5sum(self, filename):
         """Return the hex digest of a file without loading it all into memory
         @param filename: string (filename to get the hex digest of it) or list of files
@@ -1354,24 +1315,19 @@ class SystemFS:
         """
         self.logger.debug(
             'Get the hex digest of file %s without loading it all into memory' % filename)
-        if filename is None:
-            raise('File name is None in system.fs.md5sum')
         if not isinstance(filename, list):
             filename = [filename]
         digest = hashlib.md5()
-        try:
-            for filepath in filename:
-                with open(filepath, 'rb') as fh:
-                    while True:
-                        buf = fh.read(4096)
-                        if buf == b"":
-                            break
-                        digest.update(buf)
-            return digest.hexdigest()
-        except Exception as e:
-            raise j.exceptions.RuntimeError(
-                "Failed to get the hex digest of the file %sin system.fs.md5sum. Error: %s" % (filename, str(e)))
+        for filepath in filename:
+            with open(filepath, 'rb') as fh:
+                while True:
+                    buf = fh.read(4096)
+                    if buf == b"":
+                        break
+                    digest.update(buf)
+        return digest.hexdigest()
 
+    @path_check(folder={"required", "exists", "dir"})
     def getFolderMD5sum(self, folder):
         files = sorted(self.walk(folder, recurse=1))
         return self.md5sum(files)
@@ -1380,9 +1336,9 @@ class SystemFS:
         """
         create a tmp dir name and makes sure the dir exists
         """
-        tmpdir = j.sal.fs.joinPaths(j.dirs.TMPDIR, j.data.idgenerator.generateXCharID(10))
+        tmpdir = self.joinPaths(j.dirs.TMPDIR, j.data.idgenerator.generateXCharID(10))
         if create is True:
-            j.sal.fs.createDir(tmpdir)
+            self.createDir(tmpdir)
         return tmpdir
 
     def getTmpFilePath(self, cygwin=False):
@@ -1410,12 +1366,13 @@ class SystemFS:
         @rtype: string representing the generated temp file path
         """
         if dir is None:
-            return j.sal.fs.joinPaths(j.dirs.TMPDIR, prefix +
+            return self.joinPaths(j.dirs.TMPDIR, prefix +
                                       str(j.data.idgenerator.generateRandomInt(0, 1000000000000)) + ".tmp")
         else:
             dir = dir or j.dirs.TMPDIR
             return tempfile.mktemp('', prefix, dir)
 
+    @path_check(filename={"required", "exists", "file"})
     def isAsciiFile(self, filename, checksize=4096):
         # TODO: let's talk about checksize feature.
         try:
@@ -1425,9 +1382,11 @@ class SystemFS:
         except UnicodeDecodeError:
             return False
 
+    @path_check(filename={"required", "exists", "file"})
     def isBinaryFile(self, filename, checksize=4096):
         return not self.isAsciiFile(filename, checksize)
 
+    @path_check(path={"required"})
     def isAbsolute(self, path):
         return os.path.isabs(path)
 
@@ -1541,6 +1500,7 @@ class SystemFS:
         raise NotImplementedError(
             'Filename validation on given platform not supported')
 
+    @path_check(startDir={"required", "exists", "dir"})
     def find(self, startDir, fileregex):
         """Search for files or folders matching a given pattern
         this is a very weard function, don't use is better to use the list functions
@@ -1549,7 +1509,7 @@ class SystemFS:
         @param fileregex: The regex pattern to match
         @type fileregex: string
         """
-        pwd = j.sal.fs.getcwd()
+        pwd = self.getcwd()
         try:
             self.changeDir(startDir)
             import glob
@@ -1618,6 +1578,7 @@ class SystemFS:
         from JumpScale9.core.Dirs import Dirs
         return Dirs.pathToUnicode(path)
 
+    @path_check(sourcepath={"required", "exists", "dir"}, destinationpath={"required"})
     def targzCompress(
             self,
             sourcepath,
@@ -1645,14 +1606,10 @@ class SystemFS:
         import os.path
         import tarfile
 
-        if not j.sal.fs.isDir(sourcepath):
-            raise j.exceptions.RuntimeError(
-                "Cannot find file (exists but is not a file or dir) %s" % sourcepath)
-
         self.logger.debug("Compressing directory %s to %s" %
                           (sourcepath, destinationpath))
-        if not j.sal.fs.exists(j.sal.fs.getDirName(destinationpath)):
-            j.sal.fs.createDir(j.sal.fs.getDirName(destinationpath))
+        if not self.exists(self.getDirName(destinationpath)):
+            self.createDir(self.getDirName(destinationpath))
         t = tarfile.open(name=destinationpath, mode='w:gz')
         if not(followlinks or destInTar != "" or pathRegexIncludes != ['.*'] or pathRegexExcludes != []
                or contentRegexIncludes != [] or contentRegexExcludes != [] or depths != []):
@@ -1661,10 +1618,10 @@ class SystemFS:
             def addToTar(params, path):
                 tarfile = params["t"]
                 destInTar = params["destintar"]
-                destpath = j.sal.fs.joinPaths(
-                    destInTar, j.sal.fs.pathRemoveDirPart(path, sourcepath))
-                if j.sal.fs.isLink(path) and followlinks:
-                    path = j.sal.fs.readLink(path)
+                destpath = self.joinPaths(
+                    destInTar, self.pathRemoveDirPart(path, sourcepath))
+                if self.isLink(path) and followlinks:
+                    path = self.readLink(path)
                 self.logger.debug("fs.tar: add file %s to tar" % path)
                 # print "fstar: add file %s to tar" % path
                 if not (j.core.platformtype.myplatform.isWindows and j.sal.windows.checkFileToIgnore(path)):
@@ -1693,9 +1650,10 @@ class SystemFS:
                 for extrafile in extrafiles:
                     source = extrafile[0]
                     destpath = extrafile[1]
-                    t.add(source, j.sal.fs.joinPaths(destInTar, destpath))
+                    t.add(source, self.joinPaths(destInTar, destpath))
         t.close()
 
+    @path_check(sourceFile={"required", "exists", "file"}, destFile={"required"})
     def gzip(self, sourceFile, destFile):
         """
         Gzip source file into destination zip
@@ -1710,6 +1668,7 @@ class SystemFS:
         f_out.close()
         f_in.close()
 
+    @path_check(sourceFile={"required", "exists", "file"}, destFile={"required"})
     def gunzip(self, sourceFile, destFile):
         """
         Gunzip gzip sourcefile into destination file
@@ -1725,6 +1684,7 @@ class SystemFS:
         f_out.close()
         f_in.close()
 
+    @path_check(sourceFile={"required", "exists", "file"}, destinationdir={"required"})
     def targzUncompress(self, sourceFile, destinationdir, removeDestinationdir=True):
         """
         compress dirname recursive
@@ -1732,15 +1692,13 @@ class SystemFS:
         @param destinationpath: path of to destiniation dir, sourcefile will end up uncompressed in destination dir
         """
         if removeDestinationdir:
-            j.sal.fs.removeDirTree(destinationdir)
-        if not j.sal.fs.exists(destinationdir):
-            j.sal.fs.createDir(destinationdir)
+            self.removeDirTree(destinationdir)
+        if not self.exists(destinationdir):
+            self.createDir(destinationdir)
         import tarfile
-        if not j.sal.fs.exists(destinationdir):
-            j.sal.fs.createDir(destinationdir)
 
         # The tar of python does not create empty directories.. this causes
-        # manny problem while installing so we choose to use the linux tar here
+        # many problem while installing so we choose to use the linux tar here
         if j.core.platformtype.myplatform.isWindows:
             tar = tarfile.open(sourceFile)
             tar.extractall(destinationdir)

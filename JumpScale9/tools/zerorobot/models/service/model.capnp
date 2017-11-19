@@ -72,9 +72,7 @@ struct Service {
         ok @1;
         error @2;
         feedback @3; #waiting to deliver feedback to the originator !
-    }   
-    MINVERSION 
-    zerorobot_dns
+    }    
   }
 
 }

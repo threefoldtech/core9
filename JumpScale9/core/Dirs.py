@@ -27,18 +27,22 @@ class Dirs:
         self.reload()
 
     def reload(self):
-
-        for key, val in j.core.state.config["dirs"].items():
+        for key, val in j.core.state.configGet("dirs").items():
             self.__dict__[key] = val
             os.environ[key] = val
 
         self.TEMPLATEDIR =self.VARDIR+"/templates/"
-        self.JSAPPSDIR =self.BASEDIRJS+"/app/"
+        self.JSAPPSDIR =self.BASEDIRJS+"/apps/"
 
-    def replaceTxtDirVars(self, txt, additionalArgs={}):
+    def replace_txt_dir_vars(self, txt, additional_args={}):
         """
-        replace $BASEDIR,$VARDIR,$JSCFGDIR,$bindir,$codedir,$tmpdir,$logdir,$appdir with props of this class
-        also the Dir... get replaces e.g. varDir
+        replace $BASEDIR,$VARDIR,$JSCFGDIR,$bindir,$codedir,$tmpdir,$logdir,$appdir with props of
+        this class also the Dir... get replaces e.g. varDir
+        @param   txt:             Text to be replaced
+        @type    txt:             string
+        @param   additional_args: Specify more variables and their values to be replaced in the path
+        @type    additional_args: dict
+        @return: string with replaced values
         """
 
         for key, val in self.__dict__.items():
@@ -55,26 +59,38 @@ class Dirs:
         txt = txt.replace("$TMPDIR", self.TMPDIR)
         txt = txt.replace("$JSLIBDIR", self.JSLIBDIR)
         txt = txt.replace("$JSAPPSDIR", self.JSAPPSDIR)
-        # txt = txt.replace("$jslibextdir", self.JSLIBEXTDIR)
-        # txt = txt.replace("$jsbindir", self.BINDIR)
-        # txt = txt.replace("$nodeid", str(j.application.whoAmI.nid))
-        for key, value in list(additionalArgs.items()):
+
+        for key, value in list(additional_args.items()):
             txt = txt.replace("$%s" % key, str(value))
         return txt
 
     @property
     def JSLIBDIR(self):
+        """
+        Returns location of JumpScale library
+        """
         return j.sal.fs.getParent(
             j.sal.fs.getDirName(
                 j.sal.fs.getPathOfRunningFunction(
                     j.logger.__init__)))
 
-    def replaceFilesDirVars(
+    def replace_files_dir_vars(
             self,
             path,
             recursive=True,
             filter=None,
-            additionalArgs={}):
+            additional_args={}):
+        """
+            Replace JumpSacle directory variables in path with their values from this class
+            @param path:            Could be either path to file or directory
+            @type  path:            string
+            @param recursive:       If True will search recursively in all subdirectories
+            @type  recursive:       boolean
+            @param filter:          unix-style wildcard (e.g. *.py) - this is not a regular expression
+            @type  filter:          string
+            @param additional_args: Specify more variables and their values to be replaced in the path
+            @type  additional_args: dict
+        """
         if j.sal.fs.isFile(path):
             paths = [path]
         else:
@@ -82,30 +98,9 @@ class Dirs:
 
         for path in paths:
             content = j.sal.fs.fileGetContents(path)
-            content2 = self.replaceTxtDirVars(content, additionalArgs)
+            content2 = self.replace_txt_dir_vars(content, additional_args)
             if content2 != content:
                 j.sal.fs.writeFile(filename=path, contents=content2)
-
-    # def _getParent(self, path):
-    #     """
-    #     Returns the parent of the path:
-    #     /dir1/dir2/file_or_dir -> /dir1/dir2/
-    #     /dir1/dir2/            -> /dir1/
-    #     TODO: why do we have 2 implementations which are almost the same see getParentDirName()
-    #     """
-    #     parts = path.split(os.sep)
-    #     if parts[-1] == '':
-    #         parts = parts[:-1]
-    #     parts = parts[:-1]
-    #     if parts == ['']:
-    #         return os.sep
-    #     return os.sep.join(parts)
-    #
-    # def _getLibPath(self):
-    #     parent = self._getParent
-    #     libDir = parent(parent(__file__))
-    #     libDir = os.path.abspath(libDir).rstrip("/")
-    #     return libDir 
 
     def __str__(self):
         out = ""

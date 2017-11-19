@@ -10,16 +10,16 @@ function $funcname(key,data)
     -- end
 
     -- if key==0 then
-    --     res = box.space.$name:auto_increment({data}) 
+    --     res = box.space.$name:auto_increment({data})
     --     key = res[1]
     -- end
     -- obj["id"] = key
     -- data = model_capnp_$name.$Name.serialize(obj) --reserialze with id inside
-    
+
     box.space.$name:put{key, data}
     return key
 end
 
-box.schema.func.create('$funcname', {if_not_exists = true})
-box.schema.user.grant('$login', 'execute', 'function','$funcname',{ if_not_exists= true})
+box.schema.func.create('set', {if_not_exists = true})
+box.schema.user.grant('$login', 'execute', 'function','set',{ if_not_exists= true})
 

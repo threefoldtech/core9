@@ -8,6 +8,6 @@ function $funcname(key)
     -- return box.space.$name.index.secondary:get(key)
 end
 
-box.schema.func.create('$funcname', {if_not_exists = true})
-box.schema.user.grant('$login', 'execute', 'function', '$funcname',{ if_not_exists= true})
+box.schema.func.create('get', {if_not_exists = true})
+box.schema.user.grant('$login', 'execute', 'function', 'get',{ if_not_exists= true})
 

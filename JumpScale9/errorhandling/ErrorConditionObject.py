@@ -59,11 +59,9 @@ class ErrorConditionObject(BaseException):
                 self.funclinenr = ""
 
             self.appname = j.application.appname  # name as used by application
-            self.gid = j.application.whoAmI.gid
-            self.nid = j.application.whoAmI.nid
             # if hasattr(j, 'core') and hasattr(j.core, 'grid') and hasattr(j.core.grid, 'aid'):
             #     self.aid = j.core.grid.aid
-            self.pid = j.application.whoAmI.pid
+            self.pid = j.application.systempid
             self.jid = 0
             self.masterjid = 0
 
@@ -127,10 +125,10 @@ class ErrorConditionObject(BaseException):
         return unique key for object, is used to define unique id
         """
         if self.category != "":
-            C = "%s_%s_%s_%s_%s_%s_%s_%s" % (self.gid, self.nid, self.category, self.level,
+            C = "%s_%s_%s_%s_%s_%s" % (self.category, self.level,
                                              self.funcname, self.funcfilename, self.appname, self.type)
         else:
-            C = "%s_%s_%s_%s_%s_%s_%s_%s" % (self.gid, self.nid, self.errormessage,
+            C = "%s_%s_%s_%s_%s_%s" % (self.errormessage,
                                              self.level, self.funcname, self.funcfilename, self.appname, self.type)
         self.uniquekey = j.data.hash.md5_string(C)
         return self.uniquekey

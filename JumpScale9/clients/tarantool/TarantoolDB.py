@@ -81,4 +81,4 @@ class TarantoolDB():
         connect over tcp to the running tarantool
         """
         cmd = "tarantoolctl connect %s:%s@%s:%s" % (self.login, self.adminsecret, self.addr, self.port)
-        j.do.executeInteractive(cmd)
+        j.sal.process.executeInteractive(cmd)

@@ -110,8 +110,10 @@ class TarantoolFactory:
         tt.reloadSystemScripts()
         tt.addModels()
 
-        for i in range(10):
-            d = tt.models.UserCollection().new()
+        tt.models.UserCollection.destroy()
+        num_user = 1
+        for i in range(num_user):
+            d = tt.models.UserCollection.new()
             d.dbobj.name = "name_%s" % i
             d.dbobj.description = "this is some description %s" % i
             d.dbobj.region = 10
@@ -125,24 +127,36 @@ class TarantoolFactory:
         assert d.dbobj.epoch == d2.dbobj.epoch
 
         print("list of users")
-        print(tt.models.UserCollection().list())
+        users = tt.models.UserCollection.list()
+        assert len(users) == num_user
 
+    def test_find(self):
+        cl = self.client_get()
+        cl.addScripts()  # will add the system scripts
+        cl.addModels()
+
+        user = cl.models.UserCollection.new()
+        user.dbobj.name = "zaibon"
+        user.dbobj.description = 'this is a description'
+        user.dbobj.region = 10
+        user.dbobj.epoch = j.data.time.getTimeEpoch()
+        user.save()
+        print("user {} created".format(user))
 
     def test(self):
 
         tt = self.client_get()
-        tt.addScripts() 
+        tt.addScripts()
         tt.reloadSystemScripts()
         tt.addModels()
-        
+
         print(1)
         for i in range(1000):
-            bytestr=j.data.hash.hex2bin(j.data.hash.sha512_string("%s"%i))
-            md5hex=j.data.hash.md5_string(bytestr)
-            md5hex2 = tt.call("binarytest",(bytestr))[0][0]
-            assert(md5hex==md5hex2)
+            bytestr = j.data.hash.hex2bin(j.data.hash.sha512_string("%s" % i))
+            md5hex = j.data.hash.md5_string(bytestr)
+            md5hex2 = tt.call("binarytest", (bytestr))[0][0]
+            assert(md5hex == md5hex2)
         print(2)
-
 
         C = """
         function echo3(name)

@@ -29,7 +29,6 @@ class ExecutorBase:
         self._iscontainer = None
         self._state = None
         self._stateOnSystem = None
-        self.config = {}
         self._prefab = None
 
     @property
@@ -37,7 +36,6 @@ class ExecutorBase:
         if self._state is None:
             from JumpScale9.core.State import State
             self._state = State(self)
-            self.config = self.state.config
         return self._state
 
     @property
@@ -140,7 +138,7 @@ class ExecutorBase:
 
     @property
     def isDebug(self):
-        return self.config["system"]["debug"] == "1" or self.config["system"]["debug"] == 1 or self.config["system"]["debug"] == True or self.config["system"]["debug"] == "true"
+        return self.state.configGetFromDict("system", "debug") == "1" or self.state.configGetFromDict("system", "debug") == 1 or self.state.configGetFromDict("system", "debug") == True or self.state.configGetFromDict("system", "debug") == "true"
 
     @property
     def isContainer(self):
@@ -190,6 +188,10 @@ class ExecutorBase:
 
             echo "CFG_JS9 = --TEXT--"
             cat $PATH_JSCFG/jumpscale9.toml 2>/dev/null || echo ""
+            echo --TEXT--
+
+            echo "CFG_STATE = --TEXT--"
+            cat $PATH_JSCFG/state.toml 2> /dev/null || echo ""
             echo --TEXT--
 
             echo "BASHPROFILE = --TEXT--"
@@ -245,6 +247,15 @@ class ExecutorBase:
                         "Could not load jumpscale config file (pytoml error)\n%s\n" % res["cfg_js9"])
             else:
                 res["cfg_js9"] = {}
+            if res["cfg_state"].strip() != "":
+                try:
+                    res["cfg_state"] = pytoml.loads(res["cfg_state"])
+                except Exception as e:
+                    raise RuntimeError(
+                        "Could not load jumpscale config file (pytoml error)\n%s\n" % res["cfg_state"])
+
+            else:
+                res["cfg_state"] = {}
 
             if res["cfg_me"].strip() != "":
                 try:
@@ -273,7 +284,7 @@ class ExecutorBase:
         return self._stateOnSystem
 
     def enableDebug(self):
-        self.config["system"]["debug"] = value
+        self.state.configSetInDictBool("system", "debug", True)
         self.state.configSave()
         self.cache.reset()
 
@@ -311,7 +322,7 @@ class ExecutorBase:
         HOMEDIR = "~"
         TMPDIR = "{{TMPDIR}}"
         BASEDIRJS = "{{BASEDIR}}/jumpscale9"
-        JSAPPSDIR= "{{BASEDIRJS}}/app"
+        JSAPPSDIR= "{{BASEDIRJS}}/apps"
         TEMPLATEDIR ="{{VARDIR}}/templates"
         DATADIR = "{{VARDIR}}/data"
         BUILDDIR = "{{VARDIR}}/build"
@@ -364,10 +375,6 @@ class ExecutorBase:
         autopip = false
         readonly = false
         container = false
-
-        [grid]
-        gid = 0
-        nid = 0
 
         [redis]
         enabled = false
@@ -430,19 +437,19 @@ class ExecutorBase:
             self.execute(out)
 
         if self.type == "local":
-            src = "%s/github/jumpscale/core9/cmds/" % j.core.state.config["dirs"]["CODEDIR"]
-            j.do.symlinkFilesInDir(
+            src = "%s/github/jumpscale/core9/cmds/" % j.core.state.configGetFromDict("dirs", "CODEDIR")
+            j.sal.fs.symlinkFilesInDir(
                 src, "/usr/local/bin", delete=True, includeDirs=False, makeExecutable=True)
 
         print("initenv done on executor base")
 
     @property
     def dir_paths(self):
-        if "dirs" not in self.config:
-            self.config = self.state.config
-            if "dirs" not in self.config:
-                self.initEnv()
-        return self.config["dirs"]
+        if self.exists(self.state.configJSPath):
+            return self.state.configGet('dirs')
+        else:
+            dir_config = self._getDirPathConfig()
+            return pytoml.loads(dir_config)
 
     @property
     def platformtype(self):

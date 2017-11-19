@@ -55,7 +55,7 @@ class Nodes():
 
     def nodeSet(self, name, addr, port=22, cat="", description="", selected=None):
         if self.nodeExists(name):
-            tpath = self.tree.find("test7")[0].path
+            tpath = self.tree.findByName(name).path
             self.tree.items.pop(tpath)
         self._nodeSet(name=name, addr=addr, port=port, cat=cat,
                       description=description, selected=selected)
