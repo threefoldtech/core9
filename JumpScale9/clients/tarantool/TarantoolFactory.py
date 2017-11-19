@@ -66,12 +66,12 @@ class TarantoolFactory:
         :param fromcache: if false don't try to re-use a client instance from the client cache
         :type fromcache: bool
         """
-        cfg = j.core.state.clientConfigGet("tarantool", name=name)
+        cfg = j.core.state.clientConfigGet("tarantool", instance=name)
 
         # if client for this instance is not configured yet, we generate default config
         if "ipaddr" not in cfg.data.keys():
             self.client_configure(name=name)
-            cfg = j.core.state.clientConfigGet("tarantool", name=name)
+            cfg = j.core.state.clientConfigGet("tarantool", instance=name)
         # return client instance from cache or create new one
         cfg = cfg.data
         key = "%s_%s" % (cfg["ipaddr"], cfg["port"])

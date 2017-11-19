@@ -8,7 +8,7 @@ import os
 class TarantoolDB():
 
     def __init__(self, name="test", path="$DATADIR/tarantool/$NAME", adminsecret="admin007", port=3301):
-        self.path = j.dirs.replaceTxtDirVars(path).replace("$NAME", name).strip()
+        self.path = j.dirs.replace_txt_dir_vars(path).replace("$NAME", name).strip()
         j.sal.fs.createDir(self.path)
         self.name = name
         self.login = "root"
