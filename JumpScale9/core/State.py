@@ -209,7 +209,6 @@ class State():
         if in container write: /hostcfg/me.toml
         if in host write: ~/js9host/cfg/me.toml
         """
-        print("configsave")
         if self.readonly:
             raise j.exceptions.Input(
                 message="cannot write config to '%s', because is readonly" %
