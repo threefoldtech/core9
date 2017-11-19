@@ -4,18 +4,14 @@ import sys
 import os
 
 class ClientConfig():
-    def __init__(self, category,name):
-        if category not in j.core.state.config.keys():
-            j.core.state.config[category]={}
-        if name not in j.core.state.config[category].keys():
-            j.core.state.config[category][name]={}
-        self.data=j.core.state.config[category][name]
+    def __init__(self, category,instance):
         self.category=category
-        self.name=name
+        self.instance=instance
+        self.key="client_%s_%s"%(self.category,self.instance)
+        self.data=j.core.state.configGet(self.key,defval={})
 
     def save(self):
-        j.core.state.config[self.category][self.name]=self.data
-        j.core.state.configSave()
+        j.core.state.configSet(self.key,self.data)
 
 
 class State():
@@ -239,11 +235,13 @@ class State():
         data = pytoml.dumps(self._configState)
         self.executor.file_write(self.configStatePath, data)
 
-    def clientConfigGet(self,category,name):
-        return ClientConfig(category,name)
+    def clientConfigGet(self,category,instance):
+        """
+        @PARAm category e.g. openvcloud
+        @PARAM instance e.g. gig1
+        """
+        return ClientConfig(category,instance)
 
-    def clientConfigGet(self,category,name):
-        return ClientConfig(category,name)
 
     def reset(self):
         self._configJS = {}

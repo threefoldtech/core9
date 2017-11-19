@@ -220,7 +220,7 @@ class GitClient:
         if force:
             self.repo.git.push('-f')
         else:
-            self.repo.git.push('--all')
+            self.repo.git.push()
 
     def getChangedFiles(self, fromref='', toref='', fromepoch=None, toepoch=None, author=None, paths=[]):
         """
