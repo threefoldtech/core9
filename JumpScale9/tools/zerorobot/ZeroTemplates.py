@@ -4,16 +4,34 @@ import sys
 import inspect
 
 
-TemplateCollectionClass= j.tools.zerorobot.models.TemplateCollection
-TemplateModelClass= j.tools.zerorobot.models.TemplateModel
+# TemplateCollectionClass= j.tools.zerorobot.models.TemplateCollection
+# TemplateModelClass= j.tools.zerorobot.models.TemplateModel
 
-class ZeroTemplate(TemplateModelClass):
+class ZeroTemplate():
+    pass
 
-    def __init__(self, key="", new=False, collection=None):
-        pass
+import time
+def our_decorator(func):
+    def function_wrapper(x):
+        print("Before calling " + func.__name__)
+        func(x)
+        print("After calling " + func.__name__)
+    return function_wrapper
 
-class ZeroTemplates(TemplateCollectionClass):
-    def _init(self):
+def retry(func):
+    def function_wrapper(x):
+        print("retry " + func.__name__)
+        while True:
+            try:
+                func(x)
+            except Exception as e:
+                print ("ERROR:%s"%e)
+        print("retry " + func.__name__)
+    return function_wrapper
+
+
+class ZeroTemplates():
+    def __init__(self):
         #is executed after the __init__ of the superclass
         self.__templateTmpDir=None
 
@@ -29,16 +47,8 @@ class ZeroTemplates(TemplateCollectionClass):
 
 
     def load(self, path=None,repo=None):
-        if path is None:
-            repos = j.clients.git.getGitReposListLocal()
-            for key, repo in repos.items():
-                if key.startswith("zerorobot"):
-                    self.load(repo=repo,path=repos[key])
-        else:
-            tpath = "%s/templates/" % path
-            if j.sal.fs.exists(tpath):
-                for tpath2 in j.sal.fs.listDirsInDir(tpath, recursive=True, dirNameOnly=False):
-                    self._loadTemplate(repo=repo,path=tpath2)
+        for repo in j.tools.zerorobot.repos:
+            repo.templatesLoad()
 
     def _checkConfig(self,config):
         good=["recurring","log","job","timeout_policy"]
@@ -116,20 +126,22 @@ class ZeroTemplates(TemplateCollectionClass):
         dpath=self._templateTmpDir+"/actions_%s.py"%name
         j.sal.fs.copyFile(tpath,dpath)
         Name=name[0].upper()+name[1:]
-        exec("from actions_%s import Service as %s"%(name,Name))
+        exec("from actions_%s import Template as %s"%(name,Name))
         cl=eval("%s()"%(Name))
-
-        for name,method in inspect.getmembers(cl, predicate=inspect.ismethod):
-            code=inspect.getsource(method.__func__)
-            try:
-                code,doc,config=self._parse(code)
-            except Exception as e:
-                raise j.exceptions.Input("Cannot parse method:%s in path:%s\n%s"%(name,path,e))     
-
-        from IPython import embed;embed(colors='Linux')       
-            
-        gitrepo=j.clients.git.get(repo)
-        key="%s/%s"%(gitrepo.unc,name)
+        cl.start()
         from IPython import embed;embed(colors='Linux')
-        templNew = ZeroTemplate(key,new=True,collection=self)
-        templ._loadFromPath(path)
+
+        # for name,method in inspect.getmembers(cl, predicate=inspect.ismethod):
+        #     code=inspect.getsource(method.__func__)
+        #     try:
+        #         code,doc,config=self._parse(code)
+        #     except Exception as e:
+        #         raise j.exceptions.Input("Cannot parse method:%s in path:%s\n%s"%(name,path,e))     
+
+        # from IPython import embed;embed(colors='Linux')       
+            
+        # gitrepo=j.clients.git.get(repo)
+        # key="%s/%s"%(gitrepo.unc,name)
+        # from IPython import embed;embed(colors='Linux')
+        # templNew = ZeroTemplate(key,new=True,collection=self)
+        # templ._loadFromPath(path)

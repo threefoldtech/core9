@@ -4,11 +4,11 @@ box.schema.space.create('template',{if_not_exists= true, engine="memtx"})
 box.space.template:create_index('primary',{ type = 'tree', parts = {1, 'string'}, if_not_exists= true})   --md5hash of the full unc path (is without version)
 
 box.space.template:create_index('secondary', {type = 'tree', parts = {2, 'string'}, if_not_exists= true}) --githost
-box.space.template:create_index('secondary', {type = 'tree', parts = {3, 'string'}, if_not_exists= true}) --account
-box.space.template:create_index('secondary', {type = 'tree', parts = {4, 'string'}, if_not_exists= true}) --repo
-box.space.template:create_index('secondary', {type = 'tree', parts = {5, 'string'}, if_not_exists= true}) --brach
-box.space.template:create_index('secondary', {type = 'tree', parts = {6, 'string'}, if_not_exists= true}) --name
-box.space.template:create_index('secondary', {type = 'tree', parts = {7, 'unsigned'}, if_not_exists= true}) --version
+-- box.space.template:create_index('secondary', {type = 'tree', parts = {3, 'string'}, if_not_exists= true}) --account
+-- box.space.template:create_index('secondary', {type = 'tree', parts = {4, 'string'}, if_not_exists= true}) --repo
+-- box.space.template:create_index('secondary', {type = 'tree', parts = {5, 'string'}, if_not_exists= true}) --brach
+-- box.space.template:create_index('secondary', {type = 'tree', parts = {6, 'string'}, if_not_exists= true}) --name
+-- box.space.template:create_index('secondary', {type = 'tree', parts = {7, 'unsigned'}, if_not_exists= true}) --version
 
 box.schema.user.create('user', {password = 'secret', if_not_exists= true})
 

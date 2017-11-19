@@ -2,6 +2,10 @@
 from js9 import j
 import os
 
+from .ZeroTemplates import *
+from .ZeroRepos import *
+# from .ZeroServices import *
+
 
 class ZeroRobot:
 
@@ -10,33 +14,44 @@ class ZeroRobot:
         self._models=None
         self._tarantool=None
         self._templates=None
+        self._repos=None
+        # self.ZeroServiceClass = 
+        self.ZeroTemplateClass = ZeroTemplate
 
     @property
     def templates(self):
         if self._templates==None:
-            from .ZeroTemplates import ZeroTemplates
             self._templates=ZeroTemplates()
         return self._templates
+
+    @property
+    def repos(self):
+        if self._repos==None:
+            self._repos=ZeroRepos()
+            self._repos.load() #auto load the known ones
+        return self._repos
+
 
     @property
     def _path(self):
         return j.sal.fs.getDirName(os.path.abspath(__file__))
 
-    @property
-    def tarantool(self):
-        if self._tarantool==None:
-            self._tarantool = j.clients.tarantool.client_get()
-        return self._tarantool
+    # @property
+    # def tarantool(self):
+    #     if self._tarantool==None:
+    #         self._tarantool = j.clients.tarantool.client_get()
+    #     return self._tarantool
 
-    @property
-    def models(self):
-        if self._models==None:
-            self.tarantool.addModels(self._path+"models") 
-            self._models= self.tarantool.models
-        return self._models
+    # @property
+    # def models(self):
+    #     if self._models==None:
+    #         self.tarantool.addModels(self._path+"models") 
+    #         self._models= self.tarantool.models
+    #     return self._models
 
     def test(self):
         self.templates.load() #will load all templates it can find
+
         from IPython import embed;embed(colors='Linux')
         
 
