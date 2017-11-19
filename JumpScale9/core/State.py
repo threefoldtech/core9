@@ -23,7 +23,7 @@ class State():
 
     """
 
-    def __init__(self, executor, configPath=""):
+    def __init__(self, executor):
         self.readonly = False
         self.executor = executor
         self.load()
@@ -46,14 +46,13 @@ class State():
     @property
     def versions(self):
         versions = {}
-        for name, path in self.config.get('plugins', {}).items():
+        for name, path in self.configGet('plugins', {}).items():
             repo = j.clients.git.get(path)
             _, versions[name] = repo.getBranchOrTag()
         return versions
 
     def stateSet(self, key, val, save=True):
         return self._set(key=key, val=val, save=save, config=self._configState, path=self.configStatePath)
-
 
     def stateGet(self, key, defval=None, set=False):
         return self._get(key=key, defval=defval, set=set, config=self._configState, path=self.configStatePath)
@@ -104,15 +103,13 @@ class State():
             val2 = None
         if val != val2:
             config[key] = val
-            # print("config set %s:%s" % (key, val))
-            # print("config changed")
             self._config_changed = True
             if save:
-                self.configSave(path)
+                self.configSave(config, path)
             return True
         else:
             if save:
-                self.configSave(path)
+                self.configSave(config, path)
             return False
     def configSetInDict(self, key, dkey, dval):
         self._setInDict(key=key, dkey=dkey, dval=dval, config=self._configJS, path=self.configJSPath)
