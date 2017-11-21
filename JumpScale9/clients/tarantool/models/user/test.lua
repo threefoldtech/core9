@@ -79,13 +79,14 @@ obj={
 package.path = '/opt/code/github/jumpscale/core9/JumpScale9/clients/tarantool/systemscripts/?.lua;' .. package.path
 package.path = '/tmp/lua/?.lua;' .. package.path
 
-model_capnp_user=require("model_capnp_user")
+-- model_capnp_user=require("model_capnp_user")
 
-bdata=model_capnp_user.User.serialize(obj)
-print(model_capnp_user.User.parse(bdata)["name"])
+-- bdata=model_capnp_user.User.serialize(obj)
+-- print(model_capnp_user.User.parse(bdata)["name"])
 
 -- print(model_user_set(bdata))
 
 -- print( model_user_find("S"))
 
 -- print (model_user_set(0,bdata))
+
