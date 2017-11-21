@@ -321,7 +321,7 @@ class SystemFS:
 
             return j.tools.executorLocal.execute(cmd)[1]
 
-    @path_check(path={"required", "exists"})
+    @path_check(path={"required",})
     def removeDirTree(self, path, onlyLogWarningOnRemoveError=False):
         """Recursively delete a directory tree.
             @param path: string (the path to be removed)
@@ -329,6 +329,8 @@ class SystemFS:
         def errorHandler(shutilFunc, shutilPath, shutilExc_info):
             self.logger.debug(
                 'WARNING: could not remove %s while recursively deleting %s' % (shutilPath, path))
+        if not self.exists(path):
+            return
         self.logger.debug('Removing directory tree with path: %s' % path)
         if self.isLink(path):
             self.remove(path)
