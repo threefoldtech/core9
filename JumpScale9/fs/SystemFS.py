@@ -205,7 +205,7 @@ class SystemFS:
                     'Directory trying to create: [%s] already exists' % j.data.text.toStr(newdir))
         else:
             head, tail = os.path.split(newdir)
-            if head and not self.isDir(head):
+            if head and (not self.exists(head) or not self.isDir(head)):
                 self.createDir(head, unlink=False)
             if tail:
                 try:
