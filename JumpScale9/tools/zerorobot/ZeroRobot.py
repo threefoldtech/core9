@@ -15,7 +15,7 @@ try:
     from template import *
     from zerorobot import *
 except:
-    print("WARNING: COULD NOT LOAD SCHEMAS FOR ZEROROBOT, REGENERATE !!!")
+    j.logger.logging.warning("Could not load schemas for ZeroRobot. Regenerate!")
 
 
 class Messages():
