@@ -106,7 +106,6 @@ class Nodes():
             line = line.strip()
 
             name, line = line.split(" ", 1)
-            name = name.lower().strip()
             line = line.strip()
 
             selected = None
