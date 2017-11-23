@@ -158,10 +158,6 @@ j.core.logger = j.logger
 logging_cfg = j.core.state.configGet('logging', {})
 if logging_cfg:
     level = logging_cfg.get('level', 'DEBUG').upper()
-    import logging
-    # convert level to int
-    level = getattr(logging, level) if hasattr(logging, level) else 10
-    
     mode = logging_cfg.get('mode', 'DEV')
     filter_module = logging_cfg.get('filter', [])
     j.logger.init(mode, level, filter_module)
