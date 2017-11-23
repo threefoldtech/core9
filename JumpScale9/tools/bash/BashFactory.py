@@ -240,7 +240,7 @@ class Bash:
 
     @property
     def home(self):
-        return self.executor.dir_paths["HOMEDIR"]
+        return self.executor.env.get("HOME") or self.executor.dir_paths["HOMEDIR"]
 
     def cmdGetPath(self, cmd, die=True):
         """
