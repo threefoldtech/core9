@@ -157,7 +157,7 @@ j.core.db = j.clients.redis.get4core()
 j.core.logger = j.logger
 logging_cfg = j.core.state.configGet('logging', {})
 if logging_cfg:
-    level = logging_cfg.get('level', 'DEBUG')
+    level = logging_cfg.get('level', 'DEBUG').upper()
     mode = logging_cfg.get('mode', 'DEV')
     filter_module = logging_cfg.get('filter', [])
     j.logger.init(mode, level, filter_module)
@@ -166,7 +166,6 @@ else:
     j.logger.init('DEV', 10, ['j.sal.fs',
                               'j.application', "j.sal.process"])
 
-    j.logger.set_level(10)
 
 
 # j.clients.redis.start4core()
