@@ -348,7 +348,7 @@ class GitFactory:
                         self.logger.info(cmd)
                         self.execute(cmd, timeout=timeout, executor=executor)
                     except Exception as e:
-                        protocol, host, account, repo_name, repo_url = self.rewriteGitRepoUrl(
+                        protocol, host, account, repo_name, repo_url, port = self.rewriteGitRepoUrl(
                             url=url, ssh=False)
                         cmd = "cd %s;git -c http.sslVerify=false pull %s %s" % (
                             dest, repo_url, branch)
