@@ -46,6 +46,7 @@ class GitFactory:
 
         port = None
         if ssh:
+            login="ssh"
             try:
                 port = int(url.split(":")[1].split("/")[0])
                 url = url.replace(":%s/" % (port), ":")
