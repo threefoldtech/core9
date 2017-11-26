@@ -153,7 +153,7 @@ class PlatformType():
     @property
     def hostname(self):
         self.uname
-        return self._hostname0.split(".")[0]
+        return self._hostname.split(".")[0]
 
     @property
     def is64bit(self):

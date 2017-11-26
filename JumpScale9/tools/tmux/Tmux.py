@@ -8,9 +8,9 @@ import os
 class Session:
 
     def __init__(self, session):
-        if j.core.db is None:
-            j.clients.redis.start4core()
-            j.core.db = j.clients.redis.get()
+        # if j.core.db is None:
+        #     j.clients.redis.start4core()
+        #     j.core.db = j.clients.redis.get()
         self.id = session.get("session_id")
         self.name = session.get("session_name")
         self.mgmt = session
@@ -29,7 +29,7 @@ class Session:
             wname = w.get("window_name")
             if name == wname:
                 w.kill_window()
-        j.core.db.delete("tmux:pane:%s" % self.name)
+        # j.core.db.delete("tmux:pane:%s" % self.name)
         self.reload()
 
     def existsWindow(self, name):
@@ -52,7 +52,7 @@ class Session:
                 return window
 
         print("create window:%s" % name)
-        j.core.db.delete("tmux:pane:%s" % name)
+        # j.core.db.delete("tmux:pane:%s" % name)
         res = self.mgmt.new_window(
             name, start_directory=start_directory, attach=attach)
 
@@ -152,18 +152,18 @@ class Pane:
         self.id = pane.get("pane_id")
         self.window = window
 
-    @property
-    def name(self):
-        res = j.core.db.hget("tmux:%s:name" % self.window.name, str(self.id))
-        if res is None:
-            return ""
-        else:
-            res = res.decode()
-            return res
+    # @property
+    # def name(self):
+    #     res = j.core.db.hget("tmux:%s:name" % self.window.name, str(self.id))
+    #     if res is None:
+    #         return ""
+    #     else:
+    #         res = res.decode()
+    #         return res
 
-    @name.setter
-    def name(self, name):
-        j.core.db.hset("tmux:%s:name" % self.window.name, str(self.id), name)
+    # @name.setter
+    # def name(self, name):
+    #     j.core.db.hset("tmux:%s:name" % self.window.name, str(self.id), name)
 
     def select(self):
         self.mgmt.select_pane()
@@ -201,25 +201,25 @@ class Pane:
         return res
 
     def execute(self, cmd, wait=False):
-        j.core.db.hset("tmux:%s:exec" % self.window.name,
-                       self.name, "%s" % j.data.time.getTimeEpoch())
+        # j.core.db.hset("tmux:%s:exec" % self.window.name,
+        #                self.name, "%s" % j.data.time.getTimeEpoch())
         # set exit code and date in front
-        cmd2 = "echo HSET tmux:%s:exec %s %s:$? | redis-cli -s /tmp/redis.sock -x > /dev/null 2>&1" %\
-            (self.window.name, self.name, j.data.time.getTimeEpoch())
-        cmdall = cmd + ";" + cmd2
+        # cmd2 = "echo HSET tmux:%s:exec %s %s:$? | redis-cli -s /tmp/redis.sock -x > /dev/null 2>&1" %\
+        #     (self.window.name, self.name, j.data.time.getTimeEpoch())
+        # cmdall = cmd + ";" + cmd2
         # print (cmd)
-        self.mgmt.send_keys(cmdall)
+        self.mgmt.send_keys(cmd)
         if wait:
             return self.wait()
 
-    def resetState(self):
-        """
-        make sure that previous exit code is removed and all is clean for next run
-        """
-        j.core.db.hset("tmux:%s:exec" % self.window.name, self.name, "")
+    # def resetState(self):
+    #     """
+    #     make sure that previous exit code is removed and all is clean for next run
+    #     """
+    #     j.core.db.hset("tmux:%s:exec" % self.window.name, self.name, "")
 
     def check(self):
-        res = j.core.db.hget("tmux:%s:exec" % self.window.name, self.name)
+        # res = j.core.db.hget("tmux:%s:exec" % self.window.name, self.name)
         if res == "":
             return ""
         res = res.decode()

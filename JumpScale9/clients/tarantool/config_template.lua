@@ -151,8 +151,8 @@ box.cfg {
 }
 
 local function bootstrap()
-    local space = box.schema.create_space("main")
-    space:create_index('primary')
+    -- local space = box.schema.create_space("main")
+    -- space:create_index('primary')
     -- Comment this if you need fine grained access control (without it, guest
     -- will have access to everything)
     -- box.schema.user.grant('guest', 'read,write,execute', 'universe')
@@ -211,3 +211,4 @@ box.once('bootstrap_{{NAME}}', bootstrap)
 --    full_scan_time = 3600
 --  })
 
+package.path = '/tmp/lua/?.lua;' .. package.path
