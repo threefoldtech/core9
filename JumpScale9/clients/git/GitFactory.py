@@ -420,10 +420,8 @@ class GitFactory:
         - https://github.com/Jumpscale/jumpscale_core9/tree/master/lib/JumpScale/tools/docgenerator/macros
 
         """
-
-        repository_host, repository_type, repository_account, repository_name, repository_url = self.rewriteGitRepoUrl(
+        repository_host, repository_type, repository_account, repository_name, repository_url, port = self.rewriteGitRepoUrl(
             url)
-
         url_end = ""
         if "tree" in repository_url:
             # means is a directory
@@ -451,7 +449,7 @@ class GitFactory:
         if "tree" in dest:
             # means is a directory
             gitpath, ee = dest.split("tree")
-        elif "blob" in repository_url:
+        elif "blob" in dest:
             # means is a directory
             gitpath, ee = dest.split("blob")
         else:
