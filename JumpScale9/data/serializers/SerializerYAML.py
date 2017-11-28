@@ -21,11 +21,16 @@ class SerializerYAML(SerializerBase):
     def load(self, path):
         try:
             s = j.sal.fs.readFile(path)
+        except Exception as e:
+            error = "error:%s\n" % e
+            error += '\npath:%s\n' % path
+            raise j.exceptions.Input(message=error, level=1, source="", tags="", msgpub="")
+
+        try:
             return yaml.load(s)
         except Exception as e:
             error = "error:%s\n" % e
             error += "\nyaml could not parse:\n%s\n" % s
-            error += '\npath:%s\n' % path
             raise j.exceptions.Input(message=error, level=1, source="", tags="", msgpub="")
 
     def ordered_load(self, stream, Loader=yaml.Loader, object_pairs_hook=OrderedDict):
