@@ -1,3 +1,3 @@
 #!/bin/bash
 
-js9 'print(j.data.time.getLocalTimeHR())'
+pytest -v /opt/code/github/jumpscale/core9/JumpScale9/
