@@ -1,0 +1,45 @@
+#! /usr/bin/env python3
+from js9 import j
+import click
+
+@click.group()
+def cli():
+    pass
+
+@click.command()
+# @click.option('--parsable', '-p', help='enable parsable output', is_flag=True, type=bool)
+def init():
+    j.tools.raml.init()
+
+@click.command()
+@click.option('--reset', '-r', help='reset will delete previously coded server, be carefull', is_flag=True, type=bool)
+def generate(reset):
+    j.tools.raml.generate(reset=reset)
+
+@click.command()
+# @click.option('--parsable', '-p', help='enable parsable output', is_flag=True, type=bool)
+def server():
+    j.tools.raml.server()
+
+@click.command()
+# @click.option('--parsable', '-p', help='enable parsable output', is_flag=True, type=bool)
+def install():
+    j.tools.raml.install()
+
+@click.command()
+# @click.option('--parsable', '-p', help='enable parsable output', is_flag=True, type=bool)
+def upgrade():
+    j.tools.raml.upgrade()
+
+
+
+
+cli.add_command(install)
+cli.add_command(init)
+cli.add_command(generate)
+cli.add_command(server)
+cli.add_command(upgrade)
+
+
+if __name__ == '__main__':
+    cli()
