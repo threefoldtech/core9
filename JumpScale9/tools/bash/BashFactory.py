@@ -33,8 +33,8 @@ class Profile:
         self._path = []
         self._includes = []
 
-        # content = self.executor.file_read(self.pathProfile)
-        content = self.executor.stateOnSystem["bashprofile"].strip()
+        content = self.executor.file_read(self.pathProfile)
+        # content = self.executor.stateOnSystem["bashprofile"].strip()  ##WHY??????? 
 
         for match in Profile.env_pattern.finditer(content):
             self._env[match.group(1)] = match.group(2)
