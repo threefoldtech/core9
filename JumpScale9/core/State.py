@@ -3,6 +3,16 @@ from JumpScale9 import j
 import sys
 import os
 
+class ClientConfig():
+    def __init__(self, category,instance):
+        self.category=category
+        self.instance=instance
+        self.key="client_%s_%s"%(self.category,self.instance)
+        self.data=j.core.state.configGet(self.key,defval={})
+
+    def save(self):
+        j.core.state.configSet(self.key,self.data)
+
 
 class State():
     """
@@ -223,6 +233,14 @@ class State():
         self.executor.file_write(self.configMePath, data)
         data = pytoml.dumps(self._configState)
         self.executor.file_write(self.configStatePath, data)
+
+    def clientConfigGet(self,category,instance):
+        """
+        @PARAm category e.g. openvcloud
+        @PARAM instance e.g. gig1
+        """
+        return ClientConfig(category,instance)
+
 
     def reset(self):
         self._configJS = {}

@@ -68,6 +68,13 @@ class GitClient:
         return self.repo.git.rev_parse('HEAD', abbrev_ref=True)
 
     @property
+    def unc(self):
+        """
+        $gitcategory/$account/$repo/$branch
+        """
+        return "%s/%s/%s/%s"%( j.clients.git.rewriteGitRepoUrl(self.remoteUrl)[1],self.account,self.name,self.branchName)
+
+    @property
     def repo(self):
         # Load git when we absolutly need it cause it does not work in gevent
         # mode
@@ -213,7 +220,7 @@ class GitClient:
         if force:
             self.repo.git.push('-f')
         else:
-            self.repo.git.push('--all')
+            self.repo.git.push()
 
     def getChangedFiles(self, fromref='', toref='', fromepoch=None, toepoch=None, author=None, paths=[]):
         """

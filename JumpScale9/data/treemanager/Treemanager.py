@@ -62,7 +62,6 @@ class Tree():
         return self.items[""].children
 
     def _pathNormalize(self, path):
-        path = path.lower()
         path = path.strip()
         return path
 
@@ -159,7 +158,7 @@ class Tree():
         self.set(path="")
         for line in lines:
             path, cat, id, selected, descr,data = line.split(":")
-            selected= selected.strip().lower()=="true" or selected.strip().lower()=="1"
+            selected= selected.strip().casefold()=="true" or selected.strip().casefold()=="1"
             path = path.strip()
 
             id = id.strip()

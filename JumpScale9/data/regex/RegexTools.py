@@ -315,9 +315,7 @@ class RegexTools:
         for line in lines:
             if self.matchMultiple(includes, line) and not self.matchMultiple(excludes, line):
                 line = replaceFunction(arg, line)
-            # if line.strip()<>"":
-            if line:
-                out = "%s%s\n" % (out, line)
+            out = "%s%s\n" % (out, line)
         if out[-2:] == "\n\n":
             out = out[:-1]
         return out

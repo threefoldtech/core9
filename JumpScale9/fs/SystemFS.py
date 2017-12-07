@@ -4,7 +4,7 @@ import os
 import os.path
 import hashlib
 import fnmatch
-import inspect
+# import inspect
 import shutil
 import tempfile
 import codecs
@@ -12,84 +12,8 @@ import pickle as pickle
 import stat
 from stat import ST_MTIME
 from functools import wraps
-
+from .SystemFSDecorators import *
 from JumpScale9 import j
-
-
-def cleanupString(string, replacewith="_", regex="([^A-Za-z0-9])"):
-    '''Remove all non-numeric or alphanumeric characters'''
-    # Please don't use the logging system here. The logging system
-    # needs this method, using the logging system here would
-    # introduce a circular dependency. Be careful not to call other
-    # functions that use the logging system.
-    return re.sub(regex, replacewith, string)
-
-
-def path_check(**arguments):
-    """
-    Decorator to check if specified path arguments pass the specified validators.
-    The following validations are supported:
-    - "required": Means that the path argument value must not be None or empty string
-    - "exists": Means that the path argument value must be an existing directory
-    - "file": Means that the path argument value must be an existing file or a link to a file
-    - "pureFile": Means that the path argument value must be an existing file
-    - "dir": Means that the path argument value must be an existing directory or a link to a directory
-    - "pureDir": Means that the path argument value must be an existing directory
-    When no validations are added, the value of the path argument will still be expanded
-    with the current home directory if the path starts with ~
-
-    E.g.
-    @path_check(sourceDir={"required","exists"}, destDir={"required"})
-    def copyDir(sourceDir, destDir):
-        pass
-    """
-    for argument, validators in arguments.items():
-        if not isinstance(validators, set):
-            raise ValueError("Expected tuple of validators for argument %s" % argument)
-        for validator in validators:
-            if validator not in {"required", "exists", "file", "dir", "pureFile", "pureDir"}:
-                raise ValueError("Unsupported validator '%s' for argument %s" % (validator, argument))
-
-    def decorator(func):
-        signature = inspect.signature(func)
-        for argument in arguments:
-            if signature.parameters.get(argument) is None:
-                raise ValueError("Argument %s not found in function declaration of %s" % (argument, func.__name__))
-
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            jslocation = lambda: "%s." % args[0].__jslocation__ if hasattr(args[0], "__jslocation__") else ""
-            args = list(args)
-            position = 0
-            for parameter in signature.parameters.values():
-                if parameter.name in arguments:
-                    value = args[position] if position < len(args) else kwargs[parameter.name]
-                    if value and value.startswith("~%s" % os.sep):
-                        if "HOME" in os.environ:
-                            value = os.path.expanduser(value)
-                        else:
-                            value = "%s%s" % (j.dirs.HOMEDIR, value[1:])
-                        if position < len(args):
-                            args[position] = value
-                        else:
-                            kwargs[parameter.name] = value
-                    validators = arguments[parameter.name]
-                    if value and validators.intersection({"exists", "file", "dir", "pureFile", "pureDir"}) and not os.path.exists(value):
-                        raise ValueError("Argument %s in %s%s expects an existing path value! %s does not exist." % (parameter.name, jslocation(), func.__name__, value))
-                    if "required" in validators and (value is None or value.strip() == ""):
-                        raise ValueError("Argument %s in %s%s should not be None or empty string!" % (parameter.name, jslocation(), func.__name__))
-                    if value and validators.intersection({"file", "pureFile"}) and not os.path.isfile(value):
-                        raise ValueError("Argument %s in %s%s expects a file path! %s is not a file." % (parameter.name, jslocation(), func.__name__, value))
-                    if value and "pureFile" in validators and os.path.islink(value) :
-                        raise ValueError("Argument %s in %s%s expects a file path! %s is not a file but a link." % (parameter.name, jslocation(), func.__name__, value))
-                    if value and validators.intersection({"dir", "pureDir"}) and not os.path.isdir(value):
-                        raise ValueError("Argument %s in %s%s expects a directory path! %s is not a directory." % (parameter.name, jslocation(), func.__name__, value))
-                    if value and "pureDir" in validators and os.path.islink(value):
-                        raise ValueError("Argument %s in %s%s expects a directory path! %s is not a directory but a link." % (parameter.name, jslocation(), func.__name__, value))
-                position += 1
-            return func(*args, **kwargs)
-        return wrapper
-    return decorator
 
 
 class SystemFS:
@@ -166,26 +90,32 @@ class SystemFS:
         """Remove a File
         @param path: string (File path required to be removed)
         """
-        self.logger.debug('Remove file with path: %s' % path)
-        if len(path) > 0 and path[-1] == os.sep:
-            path = path[:-1]
-        if os.path.islink(path):
-            os.unlink(path)
-        if self.exists(path):
-            os.remove(path)
-            self.logger.debug('Done removing file with path: %s' % path)
+        if not self.exists(path):
+            return
+        if self.isFile(path) or self.isLink(path):
+            self.logger.debug('Remove file with path: %s' % path)
+            if len(path) > 0 and path[-1] == os.sep:
+                path = path[:-1]
+            if os.path.islink(path):
+                os.unlink(path)
+            if self.exists(path):
+                os.remove(path)
+                self.logger.debug('Done removing file with path: %s' % path)
+        else:
+            return self.removeDirTree(path)
 
-    @path_check(filename={"required",})
+    @path_check(filename={"required", })
     def createEmptyFile(self, filename):
         """Create an empty file
         @param filename: string (file path name to be created)
         """
-        self.logger.debug('creating an empty file with name & path: %s' % filename)
+        self.logger.debug(
+            'creating an empty file with name & path: %s' % filename)
         open(filename, "w").close()
         self.logger.debug(
             'Empty file %s has been successfully created' % filename)
 
-    @path_check(newdir={"required",})
+    @path_check(newdir={"required", })
     def createDir(self, newdir, unlink=True):
         """Create new Directory
         @param newdir: string (Directory path/name)
@@ -215,7 +145,8 @@ class SystemFS:
                     if e.errno != os.errno.EEXIST:  # File exists
                         raise
 
-            self.logger.debug('Created the directory [%s]' % j.data.text.toStr(newdir))
+            self.logger.debug(
+                'Created the directory [%s]' % j.data.text.toStr(newdir))
 
     def copyDirTree(self, src, dst, keepsymlinks=False, deletefirst=False,
                     overwriteFiles=True, ignoredir=[".egg-info", ".dist-info"], ignorefiles=[".egg-info"], rsync=True,
@@ -274,7 +205,7 @@ class SystemFS:
                     elif self.isDir(srcname):
                         # print "1:%s %s"%(srcname,dstname)
                         self.copyDirTree(srcname, dstname, keepsymlinks, deletefirst,
-                                             overwriteFiles=overwriteFiles, applyHrdOnDestPaths=applyHrdOnDestPaths)
+                                         overwriteFiles=overwriteFiles, applyHrdOnDestPaths=applyHrdOnDestPaths)
                     else:
                         # print "2:%s %s"%(srcname,dstname)
                         self.copyFile(
@@ -321,7 +252,7 @@ class SystemFS:
 
             return j.tools.executorLocal.execute(cmd)[1]
 
-    @path_check(path={"required",})
+    @path_check(path={"required", })
     def removeDirTree(self, path, onlyLogWarningOnRemoveError=False):
         """Recursively delete a directory tree.
             @param path: string (the path to be removed)
@@ -355,7 +286,8 @@ class SystemFS:
         """
         self.logger.debug('Removing the directory with path: %s' % path)
         os.rmdir(path)
-        self.logger.debug('Directory with path: %s is successfully removed' % path)
+        self.logger.debug(
+            'Directory with path: %s is successfully removed' % path)
 
     @path_check(path={"required", "exists", "dir"})
     def changeDir(self, path):
@@ -377,7 +309,8 @@ class SystemFS:
         """
         self.logger.debug('Moving directory from %s to %s' % (source, destin))
         self.move(source, destin)
-        self.logger.debug('Directory is successfully moved from %s to %s' % (source, destin))
+        self.logger.debug(
+            'Directory is successfully moved from %s to %s' % (source, destin))
 
     def joinPaths(self, *args):
         """Join one or more path components.
@@ -403,7 +336,7 @@ class SystemFS:
             args = args2
         return os.path.join(*args)
 
-    @path_check(path={"required",})
+    @path_check(path={"required", })
     def getDirName(self, path, lastOnly=False, levelsUp=None):
         """
         Return a directory name from pathname path.
@@ -431,13 +364,13 @@ class SystemFS:
                     "Cannot find part of dir %s levels up, path %s is not long enough" % (levelsUp, path))
         return dname + os.sep if dname else dname
 
-    @path_check(path={"required",})
+    @path_check(path={"required", })
     def getBaseName(self, path):
         """Return the base name of pathname path."""
         self.logger.debug('Get basename for path: %s' % path)
         return os.path.basename(path.rstrip(os.path.sep))
 
-    @path_check(path={"required",})
+    #NO DECORATORS HERE
     def pathShorten(self, path):
         """
         Clean path (change /var/www/../lib to /var/lib). On Windows, if the
@@ -448,51 +381,30 @@ class SystemFS:
         @return: Cleaned (short) path
         @rtype: string
         """
-        cleanedPath = os.path.normpath(path)
-        if j.core.platformtype.myplatform.isWindows and self.exists(cleanedPath):
-            # Only execute on existing paths, otherwise an error will be raised
-            import win32api
-            cleanedPath = win32api.GetShortPathName(cleanedPath)
-            # Re-add '\' if original path had one
-            sep = os.path.sep
-            if path and path[-1] == sep and cleanedPath[-1] != sep:
-                cleanedPath = "%s%s" % (cleanedPath, sep)
-        return cleanedPath
+        return pathShorten(path)
 
-    @path_check(path={"required",})
+    #NO DECORATORS HERE
     def pathClean(self, path):
         """
         goal is to get a equal representation in / & \ in relation to os.sep
         """
-        path = path.replace("/", os.sep)
-        path = path.replace("//", os.sep)
-        path = path.replace("\\", os.sep)
-        path = path.replace("\\\\", os.sep)
-        # path=self.pathNormalize(path)
-        path = path.strip()
-        return path
+        return pathClean(path)
 
-    @path_check(path={"required",})
+    #NO DECORATORS HERE
     def pathDirClean(self, path):
-        path = path + os.sep
-        return self.pathClean(path)
+        return pathDirClean(path)
 
+    #NO DECORATORS HERE
     def dirEqual(self, path1, path2):
-        return self.pathDirClean(path1) == self.pathDirClean(path2)
+        return dirEqual(path)
 
-    @path_check(path={"required",})
-    def pathNormalize(self, path, root=""):
+    #NO DECORATORS HERE
+    def pathNormalize(self, path):
         """
         paths are made absolute & made sure they are in line with os.sep
         @param path: path to normalize
-        @root is std the application you are in, can overrule
         """
-        if root == "":
-            root = self.getcwd()
-        path = self.pathClean(path)
-        if len(path) > 0 and path[0] != os.sep and path[0] != "~":
-            path = self.joinPaths(root, path)
-        return path
+        return pathNormalize(path)
 
     def pathRemoveDirPart(self, path, toremove, removeTrailingSlash=False):
         """
@@ -534,7 +446,7 @@ class SystemFS:
                 result.append(item)
         return "/".join(result)
 
-    @path_check(path={"required",})
+    @path_check(path={"required", })
     def getParent(self, path):
         """
         Returns the parent of the path:
@@ -549,12 +461,12 @@ class SystemFS:
             return os.sep
         return os.sep.join(parts)
 
-    @path_check(path={"required",})
+    @path_check(path={"required", })
     def getFileExtension(self, path):
         ext = os.path.splitext(path)[1]
         return ext.strip('.')
 
-    @path_check(path={"required",})
+    @path_check(path={"required", })
     def chown(self, path, user, group=None):
         from pwd import getpwnam
         from grp import getgrnam
@@ -673,12 +585,11 @@ class SystemFS:
         self.logger.debug('Get current working directory')
         return os.getcwd()
 
-    @path_check(path={"required",})
-    def readLink(self, path, absolute=True):
+    @path_check(path={"required"})
+    def readLink(self, path):
         """Works only for unix
         Return a string representing the path to which the symbolic link points.
-        @param absolute, if True then look for absolute source location
-        returns the source location
+        returns the source location (non relative)
         """
         while path[-1] == "/" or path[-1] == "\\":
             path = path[:-1]
@@ -690,14 +601,9 @@ class SystemFS:
         else:
             raise RuntimeError("cant read link, dont understand platform")
 
-        if res.startswith("..") and absolute:
-            if self.isFile(path):
-                srcDir = self.getParent(self.getDirName(path))
-            else:
-                srcDir = self.getDirName(path)
-            path2 = self.joinPaths(srcDir, res)
-            res = os.path.abspath(path2)
-
+        if res.startswith(".."):
+            srcDir = self.getDirName(path)
+            res = self.pathNormalize("%s%s"%(srcDir,res))
         return res
 
     @path_check(path={"required", "exists"})
@@ -711,7 +617,6 @@ class SystemFS:
         for item in items:
             self.unlink(item)
 
-    @path_check(path={"required", "exists", "dir"})
     def _listInDir(self, path, followSymlinks=True):
         """returns array with dirs & files in directory
         @param path: string (Directory path to list contents under)
@@ -719,8 +624,9 @@ class SystemFS:
         names = os.listdir(path)
         return names
 
+    @path_check(path={"required", "exists", "dir"})
     def listFilesInDir(self, path, recursive=False, filter=None, minmtime=None, maxmtime=None,
-                       depth=None, case_sensitivity='os', exclude=[], followSymlinks=True, listSymlinks=False):
+                       depth=None, case_sensitivity='os', exclude=[], followSymlinks=False, listSymlinks=False):
         """Retrieves list of files found in the specified directory
         @param path:       directory path to search in
         @type  path:       string
@@ -747,8 +653,9 @@ class SystemFS:
                                                 exclude=exclude, followSymlinks=followSymlinks, listSymlinks=listSymlinks)
         return filesreturn
 
+    @path_check(path={"required", "exists", "dir"})
     def listFilesAndDirsInDir(self, path, recursive=False, filter=None, minmtime=None,
-                              maxmtime=None, depth=None, type="fd", followSymlinks=True, listSymlinks=False):
+                              maxmtime=None, depth=None, type="fd", followSymlinks=False, listSymlinks=False):
         """Retrieves list of files found in the specified directory
         @param path:       directory path to search in
         @type  path:       string
@@ -797,9 +704,9 @@ class SystemFS:
         for direntry in dircontent:
             fullpath = self.joinPaths(path, direntry)
 
-            # if followSymlinks:
-            #     if self.isLink(fullpath):
-            #         fullpath=self.readLink(fullpath)
+            if followSymlinks:
+                if self.isLink(fullpath):
+                    fullpath=self.readLink(fullpath)
 
             if self.isFile(fullpath) and "f" in type:
                 includeFile = False
@@ -864,7 +771,7 @@ class SystemFS:
         """
         apply templateengine to list of found files
         @param templateengine =te  #example below
-            te=j.tools.code.templateengine.new()
+            te=j.tools.code.template_engine_get()
             te.add("name",self.a.name)
             te.add("description",self.ayses.description)
             te.add("version",self.ayses.version)
@@ -931,17 +838,19 @@ class SystemFS:
         if path is None:
             raise TypeError('Path is not passed in system.fs.exists')
         if os.path.exists(path) or os.path.islink(path):
-            if self.isLink(path) and followlinks:
-                self.logger.debug('path %s exists' % str(path.encode("utf-8")))
+            if os.path.islink(path) and followlinks:
+                self.logger.debug('path %s exists' %
+                                  str(path.encode("utf-8")))
                 relativelink = self.readLink(path)
-                newpath = self.joinPaths(self.getParent(path), relativelink)
+                newpath = self.joinPaths(
+                    self.getParent(path), relativelink)
                 return self.exists(newpath)
             else:
                 return True
         self.logger.debug('path %s does not exist' % str(path.encode("utf-8")))
         return False
 
-    @path_check(path={"required", "exists"}, target={"required",})
+    @path_check(path={"required", "exists"}, target={"required", })
     def symlink(self, path, target, overwriteTarget=False):
         """Create a symbolic link
         @param path: source path desired to create a symbolic link for
@@ -961,6 +870,9 @@ class SystemFS:
                 self.removeDirTree(target)
             else:
                 self.remove(target)
+
+        if os.path.islink(target):
+            self.remove(target)
 
         dir = self.getDirName(target)
         if not self.exists(dir):
@@ -1004,14 +916,15 @@ class SystemFS:
         @rtype: concatenation of dirname, and optionally linkname, etc.
         with exactly one directory separator (os.sep) inserted between components, unless path2 is empty
         """
-        self.logger.debug('Create a hard link pointing to %s named %s' % (source, destin))
+        self.logger.debug(
+            'Create a hard link pointing to %s named %s' % (source, destin))
         if j.core.platformtype.myplatform.isUnix or j.core.platformtype.myplatform.isMac:
             return os.link(source, destin)
         else:
             raise j.exceptions.RuntimeError(
                 'Cannot create a hard link on windows')
 
-    @path_check(path={"required",})
+    @path_check(path={"required", })
     def checkDirParam(self, path):
         if(path.strip() == ""):
             raise TypeError("path parameter cannot be empty.")
@@ -1119,7 +1032,7 @@ class SystemFS:
         """
         return os.stat(path, follow_symlinks=follow_symlinks)
 
-    @path_check(dirname={"required", "exists", "dir"}, newname={"required",})
+    @path_check(dirname={"required", "exists", "dir"}, newname={"required", })
     def renameDir(self, dirname, newname, overwrite=False):
         """Rename Directory from dirname to newname
         @param dirname: string (Directory original name)
@@ -1338,7 +1251,8 @@ class SystemFS:
         """
         create a tmp dir name and makes sure the dir exists
         """
-        tmpdir = self.joinPaths(j.dirs.TMPDIR, j.data.idgenerator.generateXCharID(10))
+        tmpdir = self.joinPaths(
+            j.dirs.TMPDIR, j.data.idgenerator.generateXCharID(10))
         if create is True:
             self.createDir(tmpdir)
         return tmpdir
@@ -1369,7 +1283,7 @@ class SystemFS:
         """
         if dir is None:
             return self.joinPaths(j.dirs.TMPDIR, prefix +
-                                      str(j.data.idgenerator.generateRandomInt(0, 1000000000000)) + ".tmp")
+                                  str(j.data.idgenerator.generateRandomInt(0, 1000000000000)) + ".tmp")
         else:
             dir = dir or j.dirs.TMPDIR
             return tempfile.mktemp('', prefix, dir)
