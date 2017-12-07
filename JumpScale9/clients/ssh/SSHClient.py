@@ -159,7 +159,7 @@ class SSHClient:
                 self.logger.info("connect to:%s" % self.addr)
                 self._client.connect(
                     self.addr,
-                    self.port,
+                    int(self.port),
                     username=self.login,
                     password=self.passwd,
                     pkey=self.pkey,
