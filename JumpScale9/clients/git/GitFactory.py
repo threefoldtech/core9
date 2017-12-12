@@ -61,13 +61,13 @@ class GitFactory:
         httpmatch = url_pattern_http.match(url)
         if sshmatch:
             match = sshmatch
-            ssh = True
+            url_ssh = True
         elif sshmatch2:
             match = sshmatch2
-            ssh = True
+            url_ssh = True
         elif httpmatch:
             match = httpmatch
-            ssh = False
+            url_ssh = False
         else:
             raise RuntimeError(
                 "Url is invalid. Must be in the form of 'http(s)://hostname/account/repo' or 'git@hostname:account/repo'\nnow:\n%s" % url)
@@ -83,7 +83,7 @@ class GitFactory:
         if not repository_name.endswith('.git'):
             repository_name += '.git'
 
-        if login == 'ssh' or ssh:
+        if (login == 'ssh' or url_ssh) and ssh != False:
             if port is None:
                 repository_url = 'ssh://git@%(host)s/%(account)s/%(name)s' % {
                     'host': repository_host,
