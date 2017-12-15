@@ -3,15 +3,17 @@ from JumpScale9 import j
 import sys
 import os
 
+
 class ClientConfig():
-    def __init__(self, category,instance):
-        self.category=category
-        self.instance=instance
-        self.key="client_%s_%s"%(self.category,self.instance)
-        self.data=j.core.state.configGet(self.key,defval={})
+
+    def __init__(self, category, instance):
+        self.category = category
+        self.instance = instance
+        self.key = "client_%s_%s" % (self.category, self.instance)
+        self.data = j.core.state.configGet(self.key, defval={})
 
     def save(self):
-        j.core.state.configSet(self.key,self.data)
+        j.core.state.configSet(self.key, self.data)
 
 
 class State():
@@ -235,13 +237,41 @@ class State():
         data = pytoml.dumps(self._configState)
         self.executor.file_write(self.configStatePath, data)
 
-    def clientConfigGet(self,category,instance):
+    def clientConfigGet(self, category, instance):
         """
         @PARAm category e.g. openvcloud
         @PARAM instance e.g. gig1
         """
-        return ClientConfig(category,instance)
+        return ClientConfig(category, instance)
 
+    def clientConfigSet(self, category, instance, data):
+        """
+        Attach client config data to the category and instance
+
+        @param category: name of the client category
+        @param instance: instance name of the client
+        @param data: dictionnary of data attached to the category and instance
+        """
+        if not isinstance(data, dict):
+            raise ValueError('data should be a dict, not %s' % type(data))
+        cfg = ClientConfig(category, instance)
+        cfg.data = data
+        cfg.save()
+
+    def clientConfigList(self, category):
+        """
+        List all client configuration stored for category
+        @param category: name of the client category
+
+        @return:  list of ClientConfig object
+        """
+        prefix = "client_%s" % category
+        out = []
+        for key, val in self._configJS.items():
+            if key.startswith(prefix):
+                instance = key[len(prefix) + 1:]
+                out.append(ClientConfig(category, instance))
+        return out
 
     def reset(self):
         self._configJS = {}
