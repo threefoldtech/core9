@@ -44,6 +44,7 @@ def _init_action():
 
     while check():
         j.sal.process.executeInteractive("js9_config")
+        j.core.state.load(reset=True)
 
     os.system('git config --global user.name "%s"' %
               j.core.state.configMe["me"]["loginname"])
