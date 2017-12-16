@@ -36,8 +36,10 @@ def _init_action():
         notok = False
         for item in ["fullname", "loginname", "email"]:
             if item not in j.core.state.configMe["me"]:
+                print("did not find %s in j.core.state.configMe"%item)
                 return True
             if j.core.state.configMe["me"][item].strip() == "":
+                print("did not find %s, was empty: in j.core.state.configMe"%item)
                 return True
 
     while check():
