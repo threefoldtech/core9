@@ -281,8 +281,6 @@ class ExecutorBase:
 
             self._stateOnSystem = res
 
-        return self._stateOnSystem
-
     def enableDebug(self):
         self.state.configSetInDictBool("system", "debug", True)
         self.state.configSave()

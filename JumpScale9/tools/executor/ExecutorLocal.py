@@ -2,7 +2,7 @@ from JumpScale9 import j
 from .ExecutorBase import ExecutorBase
 import subprocess
 import os
-
+import pytoml
 
 class ExecutorLocal(ExecutorBase):
 
@@ -23,6 +23,50 @@ class ExecutorLocal(ExecutorBase):
         if self._logger is None:
             self._logger = j.logger.get("executor.localhost")
         return self._logger
+
+    @property
+    def stateOnSystem(self):
+        """
+        is dict of all relevant param's on system
+        """
+        if self._stateOnSystem is None:
+            homedir=os.environ["HOMEDIR"]
+            cfgdir="%s/js9host/cfg"%homedir
+            res={}
+            
+            def load(name):
+                path="%s/%s.toml"%(cfgdir,name)
+                if os.path.exists(path):
+                    return pytoml.loads(j.sal.fs.fileGetContents(path))
+                else:
+                    return {}
+
+            res["cfg_js9"]=load("jumpscale9")
+            res["cfg_state"]=load("state")
+            res["cfg_me"]=load("me")
+            res["env"] = os.environ
+
+            res["uname"]= subprocess.Popen("uname -mnprs", stdout=subprocess.PIPE, shell=True).stdout.read().decode().strip()
+
+            if "darwin" in res["uname"].lower():
+                res["os_type"] = "darwin"
+            else:
+                print("need to fix for other types (check executorlocal")
+                from IPython import embed;embed(colors='Linux')
+
+
+            path=path="%s/.profile_js"%(homedir)
+            if os.path.exists(path):
+                res["bashprofile"]=j.sal.fs.fileGetContents(path)
+            else:
+                res["bashprofile"]=""
+
+            res["path_jscfg"]=cfgdir
+
+            self._stateOnSystem=res
+
+        return self._stateOnSystem
+        
 
     def executeRaw(self, cmd, die=True, showout=False):
         return self.execute(cmd, die=die, showout=showout)

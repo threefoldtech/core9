@@ -114,9 +114,11 @@ j.data.kvs = StoreFactory()
 from .data.time.Time import Time_
 j.data.time = Time_()
 
+from .data.queue.MemQueue import MemQueueFactory
+j.data.memqueue = MemQueueFactory()
+
 from .data.cache.Cache import Cache
 j.data.cache = Cache()
-
 
 from .tools.executor.ExecutorLocal import ExecutorLocal
 j.tools.executorLocal = ExecutorLocal()  # needed in platformtypes
@@ -127,8 +129,6 @@ j.core.platformtype = PlatformTypes()
 from .clients.redis.RedisFactory import RedisFactory
 j.clients.redis = RedisFactory()
 
-
-# #ON MY MACHINE THIS TAKES 2 SEC (non SSD), this is really ugly
 
 j.core.state = j.tools.executorLocal.state
 
