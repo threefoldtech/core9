@@ -105,6 +105,9 @@ class SystemProcess:
         fcntl(p.stdout, F_SETFL, flags | O_NONBLOCK)
         fcntl(p.stderr, F_SETFL, flags | O_NONBLOCK)
 
+        out=""
+        err=""
+
         if async:
             return p        
 

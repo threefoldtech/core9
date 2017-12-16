@@ -30,7 +30,7 @@ class ExecutorLocal(ExecutorBase):
         is dict of all relevant param's on system
         """
         if self._stateOnSystem is None:            
-            if "HOMEDIR" in os.environ:
+            if "HOMEDIR" in os.environ.keys():
                 homedir=os.environ["HOMEDIR"]
             else:
                 homedir=os.environ["HOME"]
@@ -50,6 +50,7 @@ class ExecutorLocal(ExecutorBase):
             res["env"] = os.environ
 
             res["uname"]= subprocess.Popen("uname -mnprs", stdout=subprocess.PIPE, shell=True).stdout.read().decode().strip()
+            res["hostname"]= subprocess.Popen("hostname", stdout=subprocess.PIPE, shell=True).stdout.read().decode().strip()
 
             if "darwin" in res["uname"].lower():
                 res["os_type"] = "darwin"
