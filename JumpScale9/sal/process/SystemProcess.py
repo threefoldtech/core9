@@ -136,10 +136,12 @@ class SystemProcess:
             else:
                 # This is not UNIX, most likely Win32. read() seems to work
                 def readout(stream):
-                    return stream.read()
+                    return stream.read().decode()
         
         if timeout <= 0:
             out, err = p.communicate()
+            out=out.decode()
+            err=err.decode()
 
         else:  # timeout set
             start = time.time()

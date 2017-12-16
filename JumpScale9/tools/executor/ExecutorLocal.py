@@ -29,8 +29,11 @@ class ExecutorLocal(ExecutorBase):
         """
         is dict of all relevant param's on system
         """
-        if self._stateOnSystem is None:
-            homedir=os.environ["HOMEDIR"]
+        if self._stateOnSystem is None:            
+            if "HOMEDIR" in os.environ:
+                homedir=os.environ["HOMEDIR"]
+            else:
+                homedir=os.environ["HOME"]
             cfgdir="%s/js9host/cfg"%homedir
             res={}
             
@@ -50,6 +53,8 @@ class ExecutorLocal(ExecutorBase):
 
             if "darwin" in res["uname"].lower():
                 res["os_type"] = "darwin"
+            elif "linux" in res["uname"].lower():
+                res["os_type"] = "ubuntu"  #dirty hack, will need to do something better, but keep fast
             else:
                 print("need to fix for other types (check executorlocal")
                 from IPython import embed;embed(colors='Linux')
@@ -62,6 +67,11 @@ class ExecutorLocal(ExecutorBase):
                 res["bashprofile"]=""
 
             res["path_jscfg"]=cfgdir
+
+            if os.path.exists("/root/.iscontainer"):
+                res["iscontainer"]=True
+            else:
+                res["iscontainer"]=False
 
             self._stateOnSystem=res
 
