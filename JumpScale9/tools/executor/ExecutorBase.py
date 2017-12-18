@@ -112,14 +112,12 @@ class ExecutorBase:
         if path == "/env.sh":
             raise RuntimeError("SS")
 
-        def check():
-            rc, _, _ = self.execute('test -e %s' %
-                                    path, die=False, showout=False)
-            if rc > 0:
-                return False
-            else:
-                return True
-        return self.cache.get("exists:%s" % path, check)
+        rc, _, _ = self.execute('test -e %s' %
+                                path, die=False, showout=False, hide=True)
+        if rc > 0:
+            return False
+        else:
+            return True
 
     def configSave(self):
         """
