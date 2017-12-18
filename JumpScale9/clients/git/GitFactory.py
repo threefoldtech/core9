@@ -365,10 +365,10 @@ class GitFactory:
                         j.sal.fs.getParent(dest), j.sal.fs.getParent(dest), extra, url, dest)
             else:
                 if branch is not None:
-                    cmd = "mkdir -p %s;cd %s;git clone %s -b %s %s %s" % (
+                    cmd = "mkdir -p %s;cd %s;git -c http.sslVerify=false clone %s -b %s %s %s" % (
                         j.sal.fs.getParent(dest), j.sal.fs.getParent(dest), extra, branch, url, dest)
                 else:
-                    cmd = "mkdir -p %s;cd %s;git clone %s  %s %s" % (
+                    cmd = "mkdir -p %s;cd %s;git -c http.sslVerify=false clone %s  %s %s" % (
                         j.sal.fs.getParent(dest), j.sal.fs.getParent(dest), extra, url, dest)
 
             self.logger.info(cmd)
