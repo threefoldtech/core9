@@ -24,6 +24,9 @@ class ExecutorLocal(ExecutorBase):
             self._logger = j.logger.get("executor.localhost")
         return self._logger
 
+    def exists(self, path):
+        return j.sal.fs.exists(path)
+
     @property
     def stateOnSystem(self):
         """

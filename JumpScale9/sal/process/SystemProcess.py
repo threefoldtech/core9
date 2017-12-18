@@ -70,7 +70,8 @@ class SystemProcess:
                     ok=[], captureout=True, die=True, async=False,env=None):
 
         command = j.data.text.strip(command)
-
+        print("exec:%s"%command) #JUST TEMP TO MAKE SURE ALL GOES WELL
+        # raise RuntimeError()
         if "\n" in command:
             path = j.sal.fs.getTmpFilePath()
             self.logger.debug("execbash:\n'''%s\n%s'''\n" % (path, command))
@@ -95,7 +96,8 @@ class SystemProcess:
             env=os.environ
 
 
-        p = Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=self.isUnix,
+        p = Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                  close_fds=self.isUnix,
                   shell=useShell, env=env, universal_newlines=False, cwd=cwd, bufsize=0, executable="/bin/bash")
 
 
@@ -154,8 +156,9 @@ class SystemProcess:
             while p.poll() is None:
                 #means process is still running
 
-                time.sleep(0.1)
+                time.sleep(0.01)
                 now = time.time()
+                # print("wait")
 
                 if now > end:
                     if self.isUnix:
@@ -188,6 +191,9 @@ class SystemProcess:
             j.sal.process.logger.debug('system.process.run stdout:\n%s' % out)
         if err!="":
             j.sal.process.logger.debug('system.process.run stderr:\n%s' % err)
+
+        if die and rc!=0:
+            raise RuntimeError("Could not execute:%s\nstdout:%s\nerror:\n%s"%(rc,out,err))
 
         return (rc, out, err)
 

@@ -24,6 +24,7 @@ class ExecutorBase:
         self.CURDIR = ""
         self._logger = None
         self.reset()
+        self._dirpaths_init=False
 
     def reset(self):
         self._iscontainer = None
@@ -109,15 +110,7 @@ class ExecutorBase:
         return self._prefab
 
     def exists(self, path):
-        if path == "/env.sh":
-            raise RuntimeError("SS")
-
-        rc, _, _ = self.execute('test -e %s' %
-                                path, die=False, showout=False, hide=True)
-        if rc > 0:
-            return False
-        else:
-            return True
+        raise NotImplemented()
 
     def configSave(self):
         """
@@ -278,6 +271,7 @@ class ExecutorBase:
             res["env"] = envdict
 
             self._stateOnSystem = res
+        return self._stateOnSystem 
 
     def enableDebug(self):
         self.state.configSetInDictBool("system", "debug", True)
@@ -441,13 +435,11 @@ class ExecutorBase:
 
     @property
     def dir_paths(self):
-        if self.exists(self.state.configJSPath):
-            if not self.state.configGet('dirs', {}):
-                self.reset()
-            return self.state.configGet('dirs')
-        else:
-            dir_config = self._getDirPathConfig()
-            return pytoml.loads(dir_config)
+        if not self._dirpaths_init:
+            if not self.exists(self.state.configJSPath) or self.state.configGet('dirs', {})=={}:
+                self.initEnv()
+            self._dirpaths_init = True
+        return self.state.configGet('dirs')
 
     @property
     def platformtype(self):

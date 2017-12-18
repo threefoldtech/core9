@@ -41,7 +41,9 @@ class MyMenu():
                         shortcut=None, arguments=["FormSelectCodeDirs"], keywords=None)
         self.m1.addItem(text='Edit Nodes', onSelect=self.editNodes,
                         shortcut=None, arguments=[], keywords=None)
-        self.m1.addItem(text='Edit JS9 Configfile', onSelect=self.editConfigFile,
+        self.m1.addItem(text='Edit JS9 ME Configfile', onSelect=self.editConfigFile,
+                        shortcut=None, arguments=[], keywords=None)
+        self.m1.addItem(text='Edit JS9 Core Configfile', onSelect=self.editConfigFileJS,
                         shortcut=None, arguments=[], keywords=None)
         self.m1.addItem(text='Select Active Nodes', onSelect=self.go2form,
                         shortcut=None, arguments=["FormSelectNodes"], keywords=None)
@@ -60,8 +62,13 @@ class MyMenu():
 
     def editConfigFile(self):
         j.tools.prefab.local.apps.microeditor.install()
-        j.sal.process.executeInteractive("micro %s" % j.core.state.configPath)
+        j.sal.process.executeInteractive("micro %s" % j.core.state.configMePath)
         j.core.state.load()
+
+    def editConfigFileJS(self):
+        j.tools.prefab.local.apps.microeditor.install()
+        j.sal.process.executeInteractive("micro %s" % j.core.state.configJSPath)
+        j.core.state.load()        
 
     def onCleanExit(self):
         npyscreen.notify_wait("Goodbye!")

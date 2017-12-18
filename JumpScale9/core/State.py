@@ -29,8 +29,11 @@ class State():
     def load(self, reset=False):
         if reset:
             self.executor.reset()
-        self.configJSPath = self.executor.stateOnSystem["path_jscfg"] + \
-            "/jumpscale9.toml"
+
+        if self.executor.stateOnSystem==None:
+            raise RuntimeError("cannot load state because state on system in executor == None")
+
+        self.configJSPath = self.executor.stateOnSystem["path_jscfg"] + "/jumpscale9.toml"
         self.configStatePath = self.executor.stateOnSystem["path_jscfg"] + "/state.toml"
         self.configMePath = self.executor.stateOnSystem["path_jscfg"] + "/me.toml"
         self._configState = self.executor.stateOnSystem["cfg_state"]
