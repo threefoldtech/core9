@@ -62,9 +62,29 @@ class Jumpscale9():
 
 j = Jumpscale9()
 
+def profileStart():
+    import cProfile
+    pr = cProfile.Profile()
+    pr.enable()
+    return pr
+
+def profileStop(pr):
+    pr.disable()
+    import io, pstats
+    s = io.StringIO()
+    sortby = 'cumulative'
+    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+    ps.print_stats()
+    print(s.getvalue())
+        
+
+j._profileStart=profileStart
+j._profileStop=profileStop
+
 
 class Empty():
     pass
+
 
 j.dirs = Empty()
 j.dirs.TMPDIR = "/tmp"
@@ -94,6 +114,9 @@ j.data.kvs = StoreFactory()
 from .data.time.Time import Time_
 j.data.time = Time_()
 
+from .data.queue.MemQueue import MemQueueFactory
+j.data.memqueue = MemQueueFactory()
+
 from .data.cache.Cache import Cache
 j.data.cache = Cache()
 
@@ -106,8 +129,8 @@ j.core.platformtype = PlatformTypes()
 from .clients.redis.RedisFactory import RedisFactory
 j.clients.redis = RedisFactory()
 
-j.core.state = j.tools.executorLocal.state
 
+j.core.state = j.tools.executorLocal.state
 
 if not j.core.state._configJS:
     j.tools.executorLocal.initEnv()

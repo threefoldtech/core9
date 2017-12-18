@@ -110,14 +110,12 @@ class ErrorConditionObject(BaseException):
 
     def printTraceback(self):
         if pygmentsObj:
-            formatter = pygments.formatters.Terminal256Formatter(
-                style=pygments.styles.get_style_by_name("vim"))
-            lexer = pygments.lexers.get_lexer_by_name(
-                "pytb", stripall=True)  # pytb
+            formatter = pygments.formatters.Terminal256Formatter(style=pygments.styles.get_style_by_name("vim"))
+            lexer = pygments.lexers.get_lexer_by_name("pytb", stripall=True)  # pytb
             tb_colored = pygments.highlight(self.traceback, lexer, formatter)
-            sys.stdout.write(tb_colored)
+            sys.stderr.write(tb_colored)
         else:
-            print(self.traceback)
+            traceback.print_tb(self.traceback, file=sys.stderr)
 
     @property
     def key(self):
@@ -126,10 +124,10 @@ class ErrorConditionObject(BaseException):
         """
         if self.category != "":
             C = "%s_%s_%s_%s_%s_%s" % (self.category, self.level,
-                                             self.funcname, self.funcfilename, self.appname, self.type)
+                                       self.funcname, self.funcfilename, self.appname, self.type)
         else:
             C = "%s_%s_%s_%s_%s_%s" % (self.errormessage,
-                                             self.level, self.funcname, self.funcfilename, self.appname, self.type)
+                                       self.level, self.funcname, self.funcfilename, self.appname, self.type)
         self.uniquekey = j.data.hash.md5_string(C)
         return self.uniquekey
 
@@ -195,7 +193,7 @@ class ErrorConditionObject(BaseException):
             self.__dict__ = res
 
     def toJson(self):
-        self.key # make sure uniquekey is filled
+        self.key  # make sure uniquekey is filled
         data = self.__dict__.copy()
         data.pop('tb', None)
         return j.data.serializer.json.dumps(data)
