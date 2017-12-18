@@ -46,7 +46,7 @@ class GitFactory:
 
         port = None
         if ssh:
-            login="ssh"
+            login = "ssh"
             try:
                 port = int(url.split(":")[1].split("/")[0])
                 url = url.replace(":%s/" % (port), ":")
@@ -73,9 +73,6 @@ class GitFactory:
                 "Url is invalid. Must be in the form of 'http(s)://hostname/account/repo' or 'git@hostname:account/repo'\nnow:\n%s" % url)
 
         protocol, repository_host, repository_account, repository_name = match.groups()
-
-        # print("git match: proto:%s repohost:%s repoaccount:%s reponame:%s" %
-        #       (protocol, repository_host, repository_account, repository_name))
 
         if protocol.startswith("git") and ssh is False:
             protocol = "https://"
@@ -118,9 +115,6 @@ class GitFactory:
             }
         if repository_name.endswith(".git"):
             repository_name = repository_name[:-4]
-
-        print("git match: proto:%s repohost:%s repoaccount:%s reponame:%s \n url:%s port:%s" %
-              (protocol, repository_host, repository_account, repository_name, repository_url, port))
 
         return protocol, repository_host, repository_account, repository_name, repository_url, port
 

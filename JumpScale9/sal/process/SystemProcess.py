@@ -70,8 +70,6 @@ class SystemProcess:
                     ok=[], captureout=True, die=True, async=False,env=None):
 
         command = j.data.text.strip(command)
-        print("exec:%s"%command) #JUST TEMP TO MAKE SURE ALL GOES WELL
-        # raise RuntimeError()
         if "\n" in command:
             path = j.sal.fs.getTmpFilePath()
             self.logger.debug("execbash:\n'''%s\n%s'''\n" % (path, command))
@@ -111,7 +109,7 @@ class SystemProcess:
         err=""
 
         if async:
-            return p        
+            return p
 
         captureOutput=True
 
@@ -142,7 +140,7 @@ class SystemProcess:
                 # This is not UNIX, most likely Win32. read() seems to work
                 def readout(stream):
                     return stream.read().decode()
-        
+
         if timeout <= 0:
             out, err = p.communicate()
             out=out.decode()
@@ -151,7 +149,7 @@ class SystemProcess:
         else:  # timeout set
             start = time.time()
             end = start + timeout
-            now = start 
+            now = start
 
             while p.poll() is None:
                 #means process is still running
@@ -175,7 +173,7 @@ class SystemProcess:
                         time.sleep(0.1)
                         if p.poll():
                             p.terminate()
-                    
+
                     self.logger.warning("process killed because of timeout")
                     return (-2, out, err)
 
@@ -274,7 +272,7 @@ class SystemProcess:
 
     #     serr = os.fdopen(p.stderr.fileno(), 'r', encoding='UTF-8')
     #     sout = os.fdopen(p.stdout.fileno(), 'r', encoding='UTF-8')
-        
+
     #     inp = j.data.memqueue.get()
 
     #     outReader = StreamReader(sout, inp, 'O')
@@ -703,7 +701,7 @@ class SystemProcess:
                 win32process.TerminateProcess(handle, 0)
             except BaseException:
                 raise
-    
+
     def psfind(self, name):
         rc, out, err = self.execute("ps ax | grep %s" % name, showout=False)
         for line in out.split("\n"):
