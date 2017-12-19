@@ -67,24 +67,23 @@ else:
 
     j = Jumpscale9()
 
-def profileStart():
-    import cProfile
-    pr = cProfile.Profile()
-    pr.enable()
-    return pr
+    def profileStart():
+        import cProfile
+        pr = cProfile.Profile()
+        pr.enable()
+        return pr
 
-def profileStop(pr):
-    pr.disable()
-    import io, pstats
-    s = io.StringIO()
-    sortby = 'cumulative'
-    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
-    ps.print_stats()
-    print(s.getvalue())
-        
+    def profileStop(pr):
+        pr.disable()
+        import io, pstats
+        s = io.StringIO()
+        sortby = 'cumulative'
+        ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+        ps.print_stats()
+        print(s.getvalue())
 
-j._profileStart=profileStart
-j._profileStop=profileStop
+    j._profileStart = profileStart
+    j._profileStop = profileStop
 
 
     class Empty():
