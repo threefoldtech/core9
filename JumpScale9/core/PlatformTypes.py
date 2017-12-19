@@ -261,7 +261,7 @@ class PlatformType():
     @property
     def isVirtualBox(self):
         '''Check whether the system supports VirtualBox'''
-        return self.executor.stateOnSystem["vboxdrv"]
+        return self.executor.stateOnSystem.get('vboxdrv', False)
 
     # @property
     # def isHyperV(self):
