@@ -160,6 +160,8 @@ class GitClient:
 
         for diff in self.repo.index.diff(None):
             # TODO: does not work, did not show my changes !!! *1
+            if diff.a_blob==None:
+                continue
             path = diff.a_blob.path
             if checkignore(ignore, path):
                 continue
