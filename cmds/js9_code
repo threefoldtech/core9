@@ -199,6 +199,11 @@ def jscode(action, name, url, message, branch, accounts, update, force=False, de
             j.clients.git.pullGitRepo(url=client.remoteUrl)
 
         if action == "push":
+            if branch == 'master':
+                answer = j.tools.console.askYesNo('You are pushing changes to %s intto MASTER. Are you sure you want to continue?' % reponame, default=False)
+                if not answer:
+                    print ("skipping pushing %s" % path)
+                    continue
             print(("push git repo:%s" % path))
             client.push()
 
