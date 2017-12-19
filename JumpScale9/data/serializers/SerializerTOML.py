@@ -15,7 +15,7 @@ class SerializerTOML(SerializerBase):
             s = s.decode('utf-8')
         return pytoml.loads(s)
 
-    def addToToml(tomltemplate,key,val,overwrite=False):
+    def set_value(self,tomltemplate,key,val,overwrite=False):
         """
         start from a toml template
         only works for dicts in root for now

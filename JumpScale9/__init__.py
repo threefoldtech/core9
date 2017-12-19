@@ -67,6 +67,25 @@ else:
 
     j = Jumpscale9()
 
+def profileStart():
+    import cProfile
+    pr = cProfile.Profile()
+    pr.enable()
+    return pr
+
+def profileStop(pr):
+    pr.disable()
+    import io, pstats
+    s = io.StringIO()
+    sortby = 'cumulative'
+    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+    ps.print_stats()
+    print(s.getvalue())
+        
+
+j._profileStart=profileStart
+j._profileStop=profileStop
+
 
     class Empty():
         pass
@@ -102,6 +121,9 @@ else:
     from .data.cache.Cache import Cache
     j.data.cache = Cache()
 
+    from .data.queue.MemQueue import MemQueueFactory
+    j.data.memqueue = MemQueueFactory()
+
     from .tools.executor.ExecutorLocal import ExecutorLocal
     j.tools.executorLocal = ExecutorLocal()  # needed in platformtypes
 
@@ -112,7 +134,6 @@ else:
     j.clients.redis = RedisFactory()
 
     j.core.state = j.tools.executorLocal.state
-
 
     if not j.core.state._configJS:
         j.tools.executorLocal.initEnv()

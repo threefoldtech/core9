@@ -3,16 +3,14 @@ syntax = "proto3";
 package blockchain;
 
 //ask for a specific action
-message Message {
-    string guid = 1; //each message gets a unique guid
-    string domain = 2;//unique domain in which the messages live in    
-    string pguid = 3; //permanent guid over time for the object, set at first time
-    string previous = 4; // link to previous unique address (to the previous guid)
-    string data = 5; //the payload
-    unint32 date =6;//for last change
-    string author =7 ; //guid of author is in domain 'system.person'
-    string signature = 8; //signature of data done by private key of author (8 bytes)
-    string signature_previous = 9; //signature of previous message data done by private key of author (8 bytes)
+message Object {
+    unint32 id = 1; //each message gets a unique guid
+    unint32 domain = 2;//unique domain in which the messages live in e.g. user.system, group.system
+    string data = 3; //the payload
+    unint32 date =4;//for last change
+    unint32 author =5 ; //unique id of the author
+    string signature = 6; //signature of data done by private key of author (8 bytes)
+    string signature_previous = 7; //signature of previous message data done by private key of author (8 bytes)
     
     enum Compression {
       NONE = 0;
@@ -20,12 +18,7 @@ message Message {
       SNAPPY = 2;
     }
 
-
-    Compression compression_type = 9;
-
-    uint32 expiration = 10; //after that date the data is no longer usable/valid
-
-    string tags = 11; //to link metadata to the message, will be used to index
+    Compression compression_type = 8;
       
   }
 
@@ -77,7 +70,7 @@ message Domain {
 }
 
 message DomainPointer {
-  string guid = 1;
+  int32 id = 1;
   string name = 2;
 }
 
