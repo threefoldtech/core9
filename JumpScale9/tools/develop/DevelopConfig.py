@@ -41,8 +41,6 @@ class MyMenu():
                         shortcut=None, arguments=["FormSelectCodeDirs"], keywords=None)
         self.m1.addItem(text='Edit Nodes', onSelect=self.editNodes,
                         shortcut=None, arguments=[], keywords=None)
-        self.m1.addItem(text='Edit JS9 ME Configfile', onSelect=self.editConfigFile,
-                        shortcut=None, arguments=[], keywords=None)
         self.m1.addItem(text='Edit JS9 Core Configfile', onSelect=self.editConfigFileJS,
                         shortcut=None, arguments=[], keywords=None)
         self.m1.addItem(text='Select Active Nodes', onSelect=self.go2form,
@@ -59,11 +57,6 @@ class MyMenu():
         j.tools.prefab.local.apps.microeditor.install()
         j.sal.process.executeInteractive("micro %s" % j.tools.develop.nodes.configpath)
         j.tools.develop.nodes.load()
-
-    def editConfigFile(self):
-        j.tools.prefab.local.apps.microeditor.install()
-        j.sal.process.executeInteractive("micro %s" % j.core.state.configMePath)
-        j.core.state.load()
 
     def editConfigFileJS(self):
         j.tools.prefab.local.apps.microeditor.install()
@@ -97,10 +90,13 @@ class MainForm(npyscreen.FormWithMenus, MyMenu):
             npyscreen.TitleText, name="Your login name:")
         self.email = self.add_widget(npyscreen.TitleText, name="Your email:")
         self.fullname = self.add_widget(npyscreen.TitleText, name="Full name:")
+        self.myconfig_url = self.add_widget(npyscreen.TitleText, name="My Config git URL:")
 
         self.loginname.value = j.core.state.configMe["me"].get("loginname", "")
         self.email.value = j.core.state.configMe["me"].get("email", "")
         self.fullname.value = j.core.state.configMe["me"].get("fullname", "")
+
+        self.myconfig_url.value = j.core.state.configMe["me"].get("fullname", "")
 
         # keyname = j.core.state.configMe["ssh"].get("sshkeyname", "")
 
@@ -143,6 +139,7 @@ class MainForm(npyscreen.FormWithMenus, MyMenu):
         j.core.state.configMe["me"]["fullname"] = self.fullname.value
         if len(self.sshkeyname.value) == 1:
             j.core.state.configMe["ssh"]["sshkeyname"] = self.keynames[self.sshkeyname.value[0]]
+        
         j.core.state.configSave()
 
 

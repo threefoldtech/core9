@@ -29,28 +29,29 @@ def _repo_info(name, accounts):
 
 
 def _init_action():
-    if "me" not in j.core.state.configMe:
-        raise RuntimeError("did not find me in j.core.state.configMe")
+    # if "me" not in j.core.state.configMe:
+    #     raise RuntimeError("did not find me in j.core.state.configMe")
 
-    def check():
-        notok = False
-        for item in ["fullname", "loginname", "email"]:
-            if item not in j.core.state.configMe["me"]:
-                print("did not find %s in j.core.state.configMe"%item)
-                return True
-            if j.core.state.configMe["me"][item].strip() == "":
-                print("did not find %s, was empty: in j.core.state.configMe"%item)
-                return True
+    # def check():
+    #     notok = False
+    #     for item in ["fullname", "loginname", "email"]:
+    #         if item not in j.core.state.configMe["me"]:
+    #             print("did not find %s in j.core.state.configMe"%item)
+    #             return True
+    #         if j.core.state.configMe["me"][item].strip() == "":
+    #             print("did not find %s, was empty: in j.core.state.configMe"%item)
+    #             return True
 
-    while check():
-        j.sal.process.executeInteractive("js9_config")
-        j.core.state.load(reset=True)
+    # while check():
+    #     j.sal.process.executeInteractive("js9_config")
+    #     j.core.state.load(reset=True)
 
-    os.system('git config --global user.name "%s"' %
-              j.core.state.configMe["me"]["loginname"])
-    os.system('git config --global user.email "%s"' %
-              j.core.state.configMe["me"]["email"])
-
+    # os.system('git config --global user.name "%s"' %
+    #           j.core.state.configMe["me"]["loginname"])
+    # os.system('git config --global user.email "%s"' %
+    #           j.core.state.configMe["me"]["email"])
+    pass
+    #TODO: *1 kristof, need to fix
 
 _init_action()
 

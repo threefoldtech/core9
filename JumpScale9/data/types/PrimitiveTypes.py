@@ -23,7 +23,7 @@ class String:
 
     def toString(self, v):
         if self.check(v):
-            return str(v)
+            return "'%s'"%str(v)
         else:
             raise ValueError("Could not convert to string:%s" % v)
 
@@ -36,9 +36,67 @@ class String:
 
     def clean(self, value):
         """
-        used to change the value to a predefined standard for this type
+        will do a strip
         """
-        return value
+        return value.strip()
+
+    def toml_value_get(self,value,key=""):
+        """
+        will translate to what we need in toml
+        """
+        if key=="":
+            return "'%s'"%(self.clean(value))
+        else:
+            return "%s = '%s'"%(key,self.clean(value))
+
+
+class StringMultiLine(String):
+    def __init__(self):
+    
+        self.NAME = 'stringmultiline'
+        self.BASETYPE = 'stringmultiline'
+    
+
+    def check(self, value):
+        '''Check whether provided value is a string'''
+        return isinstance(value, str) and "\n" in value    
+
+    def clean(self, value):
+        """
+        will do a strip on multiline
+        """
+        return j.data.text.strip(value)
+
+    def toString(self, v):
+        if self.check(v):
+            v=self.clean(v)
+            out0=""
+            out0+="'''\n"
+            for item in val.split("\n"):
+                out0+="%s\n"%item
+            out0=out0.rstrip()
+            out+="%s\n'''\n"%out0
+
+            return out
+        else:
+            raise ValueError("Could not convert to string:%s" % v)    
+
+    def toml_value_get(self,value,key):
+        """
+        will translate to what we need in toml
+        """
+        if key=="":
+            return self.toString(value)
+        else:
+            value=self.clean(value)
+            out0=""
+            #multiline
+            out0+="%s = '''\n"%key
+            for item in value.split("\n"):
+                out0+="    %s\n"%item
+            out0=out0.rstrip()
+            out="%s\n    '''"%out0
+            return out
 
 
 class Bytes:
@@ -76,6 +134,8 @@ class Bytes:
         """
         return value
 
+    def toml_value_get(self,value,key):
+        raise NotImplemented()
 
 class Boolean:
 
@@ -120,7 +180,31 @@ class Boolean:
         """
         used to change the value to a predefined standard for this type
         """
+        if value in ["1",1,True]:
+            value=True
+        elif j.data.types.string.check(value) and value.strip().lower() in ["true","yes","y"]:
+            value=True
+        else:
+            value=False
         return value
+
+    def toml_value_get(self,value,key):
+        value=self.clean(value)
+        if key=="":
+            if value==True:
+                value="true"
+            else:
+                value="false"
+            return value
+        else:
+            
+            if value:
+                out="%s = true"%(key)
+            else:
+                out="%s = false"%(key)
+
+            return out
+
 
 
 class Integer:
@@ -154,7 +238,16 @@ class Integer:
         """
         used to change the value to a predefined standard for this type
         """
-        return value
+        return int(value)
+
+    def toml_value_get(self,value,key=""):
+        """
+        will translate to what we need in toml
+        """
+        if key=="":
+            return "%s"%(self.clean(value))
+        else:
+            return "%s = %s"%(key,self.clean(value))
 
 
 class Float:
@@ -192,4 +285,14 @@ class Float:
         """
         used to change the value to a predefined standard for this type
         """
-        return value
+        return float(value)
+
+    def toml_value_get(self,value,key=""):
+        """
+        will translate to what we need in toml
+        """
+        if key=="":
+            return "%s"%(self.clean(value))
+        else:
+            return "%s = %s"%(key,self.clean(value))
+    

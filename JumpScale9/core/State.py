@@ -35,10 +35,8 @@ class State():
 
         self.configJSPath = self.executor.stateOnSystem["path_jscfg"] + "/jumpscale9.toml"
         self.configStatePath = self.executor.stateOnSystem["path_jscfg"] + "/state.toml"
-        self.configMePath = self.executor.stateOnSystem["path_jscfg"] + "/me.toml"
         self._configState = self.executor.stateOnSystem["cfg_state"]
         self._configJS = self.executor.stateOnSystem["cfg_js9"]
-        self.configMe = self.executor.stateOnSystem["cfg_me"]
 
     @property
     def cfgPath(self):
@@ -222,8 +220,6 @@ class State():
 
     def configSave(self, config=None, path=""):
         """
-        if in container write: /hostcfg/me.toml
-        if in host write: ~/js9host/cfg/me.toml
         """
         if self.readonly:
             raise j.exceptions.Input(
@@ -235,46 +231,8 @@ class State():
             return
         data = pytoml.dumps(self._configJS)
         self.executor.file_write(self.configJSPath, data)
-        data = pytoml.dumps(self.configMe)
-        self.executor.file_write(self.configMePath, data)
         data = pytoml.dumps(self._configState)
         self.executor.file_write(self.configStatePath, data)
-
-    def clientConfigGet(self, category, instance):
-        """
-        @PARAm category e.g. openvcloud
-        @PARAM instance e.g. gig1
-        """
-        return ClientConfig(category, instance)
-
-    def clientConfigSet(self, category, instance, data):
-        """
-        Attach client config data to the category and instance
-
-        @param category: name of the client category
-        @param instance: instance name of the client
-        @param data: dictionnary of data attached to the category and instance
-        """
-        if not isinstance(data, dict):
-            raise ValueError('data should be a dict, not %s' % type(data))
-        cfg = ClientConfig(category, instance)
-        cfg.data = data
-        cfg.save()
-
-    def clientConfigList(self, category):
-        """
-        List all client configuration stored for category
-        @param category: name of the client category
-
-        @return:  list of ClientConfig object
-        """
-        prefix = "client_%s" % category
-        out = []
-        for key, val in self._configJS.items():
-            if key.startswith(prefix):
-                instance = key[len(prefix) + 1:]
-                out.append(ClientConfig(category, instance))
-        return out
 
     def reset(self):
         self._configJS = {}

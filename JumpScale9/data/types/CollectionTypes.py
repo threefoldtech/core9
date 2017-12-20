@@ -101,12 +101,65 @@ class List:
             v = j.data.text.getList(v, ttype)
         return v
 
+    def list_check_1type(self,llist,die=True):
+        if len(llist)==0:
+            return True
+        ttype=j.data.types.type_detect(llist[0])
+        for item in llist:
+            res=ttype.check(item)
+            if res ==False:
+                if die:
+                    raise RuntimeError("List is not of 1 type.")
+                else:
+                    return False
+        return True                
+
     def fromString(self, v, ttype="str"):
         v = self.clean(v, ttype)
         if self.check(v):
             return v
         else:
             raise ValueError("List not properly formatted.")
+
+    def clean(self,val,toml=False,sort=False):
+        if len(val)==0:
+            return val
+        ttype=j.data.types.type_detect(val[0])
+        res=[]
+        for item in val:
+            if not toml:
+                item=ttype.clean(item)
+            else:
+                item=ttype.toml_value_get(item)
+            if item not in res:
+                res.append(item)
+        res.sort()
+        return res          
+
+    
+    def toml_value_get(self,val,key="",clean=True,sort=True):
+        """
+        will translate to what we need in toml
+        """
+        if key=="":
+            raise RuntimeError("not implemented")
+        else:
+            if clean:
+                val=self.clean(val,toml=True,sort=sort)
+            out=""
+            if len (str(val))>30:
+                #multiline
+                out+="%s = [\n"%key
+                for item in val:
+                    out+="    %s,\n"%item
+                out+="]\n\n"
+            else:
+                out+="%s = ["%key
+                for item in val:
+                    out+=" %s,"%item                    
+                out=out.rstrip(",")
+                out+=" ]\n"  
+        return out          
 
     toString = fromString
 

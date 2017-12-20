@@ -19,7 +19,7 @@ class Types:
         self.float = Float()
         self.string = String()
         self.bytes = Bytes()
-        self.multiline = String()
+        self.multiline = StringMultiLine()
         self.set = Set()
         self.ipaddr = IPAddress()
         self.iprange = IPRange()
@@ -30,7 +30,18 @@ class Types:
         self.json = JSON()
         self.email = Email()
         self.date = Date()
+        self.types_list=[self.bool,self.dict,self.list,self.bytes,self.guid,self.float,self.int,self.multiline,self.string]
         self.__jslocation__ = "j.data.types"
+
+    def type_detect(self,val):
+        """
+        check for most common types
+        """
+        for ttype in self.types_list:
+            if ttype.check(val):
+                return ttype
+        raise RuntimeError("did not detect val for :%s"%val)
+
 
     def getTypeClass(self, ttype):
         """
