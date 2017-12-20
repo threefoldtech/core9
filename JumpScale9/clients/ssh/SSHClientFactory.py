@@ -288,7 +288,7 @@ class SSHClientFactory:
         keys = [line.split()
                 for line in out.splitlines() if len(line.split()) == 3]
         if key_included:
-            return list(map(lambda key: key[2:0:-1], keys))
+            return list(map(lambda key: [key[2], ' '.join(key[0:2])], keys))
         else:
             return list(map(lambda key: key[2], keys))
 
