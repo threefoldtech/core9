@@ -165,8 +165,53 @@ class SerializerTOML(SerializerBase):
             error=1
         assert 1
 
-        print (self.fancydumps(ddictout))
+        ddictmerge={}
+        ddictmerge["list1"]=[]
+        for i in range(20):
+            ddictmerge["list1"].append("this is a test %s"%i)
+        ddictout,errors=self.merge(ddicttest,ddictmerge,listunique=True)
 
-        from IPython import embed;embed(colors='Linux')
+
+        yyaml=self.fancydumps(ddictout)
+        print (yyaml)
+
+        compare={'bbool': True,
+            'bbool2': True,
+            'bbool3': False,
+            'list1': ['this is a test 0',
+            'this is a test 1',
+            'this is a test 10',
+            'this is a test 11',
+            'this is a test 12',
+            'this is a test 13',
+            'this is a test 14',
+            'this is a test 15',
+            'this is a test 16',
+            'this is a test 17',
+            'this is a test 18',
+            'this is a test 19',
+            'this is a test 2',
+            'this is a test 3',
+            'this is a test 4',
+            'this is a test 5',
+            'this is a test 6',
+            'this is a test 7',
+            'this is a test 8',
+            'this is a test 9'],
+            'list2': [1, 2, 3],
+            'list3': ['a', 'b', 'c'],
+            'list4': ['ab'],
+            'list5': ['a', 'b', 'c', 'd'],
+            'multiline': '    these are multiple lines\n    next line\n    ',
+            'name': 'something',
+            'nr': 88,
+            'nr2': 0,
+            'nr3': 1,
+            'nr4': 34.4,
+            'nr5': 34.4}
+
+        res=self.loads(yyaml)
+
+        assert res==compare
 
 
