@@ -82,7 +82,8 @@ setup(
         'watchdog',
         'msgpack-python',
         'colorlog',
-        'npyscreen'
+        'npyscreen',
+        "pyyaml"
     ],
     cmdclass={
         'install': install,
