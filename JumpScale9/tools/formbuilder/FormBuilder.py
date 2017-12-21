@@ -71,7 +71,7 @@ class BaseConfig(npyscreen.NPSAppManaged):
             ttype=j.data.types.type_detect(val)
             if ttype.NAME in ["string","integer","float"]:
                 w = self.widgets[key]
-                if self.widget_types[key]=="singlechoice":
+                if self.widget_types[key]=="multichoice":
                     result[key]=w.values[w.value[0]] #get value from the choice
                 else:
                     result[key]=w.value
@@ -108,10 +108,10 @@ class BaseConfig(npyscreen.NPSAppManaged):
             self.widget_types[name]="val"
         self.widget_add(name,widget)
 
-    def widget_add_singlechoice(self,name,choices,description=""): 
+    def widget_add_multichoice(self,name,choices,description=""): 
         if description=="":
             description=name
-        self.widget_types[name]="singlechoice"
+        self.widget_types[name]="multichoice"
         description=j.data.text.pad(description,20)
         widget = self.form.add_widget(npyscreen.TitleSelectOne, name=description, values=choices)
         #check if there is pre-filled value if yes pre-select it
@@ -183,7 +183,7 @@ class FormBuilderFactory:
                 keynames = [j.sal.fs.getBaseName(item)[:-4] for item in j.sal.fs.listFilesInDir(sshpath, filter="*.pub")]
                 if len(keynames)==0:
                     raise RuntimeError("load ssh-agent")
-                self.widget_add_singlechoice("ssh_key_name",keynames)
+                self.widget_add_multichoice("ssh_key_name",keynames)
 
             def form_pre_save(self):
                 result={}

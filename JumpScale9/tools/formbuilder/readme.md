@@ -26,7 +26,7 @@ class MyConfig(BaseConfig):
         keynames = [j.sal.fs.getBaseName(item)[:-4] for item in j.sal.fs.listFilesInDir(sshpath, filter="*.pub")]
         if len(keynames)==0:
             raise RuntimeError("load ssh-agent")
-        self.widget_add_singlechoice("ssh_key_name",keynames)
+        self.widget_add_multichoice("ssh_key_name",keynames)
 
     def form_pre_save(self):
         result={}
