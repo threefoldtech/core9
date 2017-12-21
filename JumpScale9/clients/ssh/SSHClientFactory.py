@@ -262,9 +262,9 @@ class SSHClientFactory:
         @param keyname: name of key loaded to agent to get content from 
         """
         self.ssh_agent_check()
-        for item in j.clients.ssh.ssh_keys_list_from_agent():
-            if item.endswith(keyname):
-                return j.sal.fs.readFile(item + ".pub")
+        for name, pubkey in j.clients.ssh.ssh_keys_list_from_agent(True):
+            if name.endswith(keyname):
+                return pubkey
         if die:
             raise RuntimeError(
                 "Did not find key with name:%s, check its loaded in ssh-agent with ssh-add -l" %
@@ -288,7 +288,7 @@ class SSHClientFactory:
         keys = [line.split()
                 for line in out.splitlines() if len(line.split()) == 3]
         if key_included:
-            return list(map(lambda key: key[2:0:-1], keys))
+            return list(map(lambda key: [key[2], ' '.join(key[0:2])], keys))
         else:
             return list(map(lambda key: key[2], keys))
 
