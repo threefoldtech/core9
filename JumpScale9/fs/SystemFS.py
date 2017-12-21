@@ -66,14 +66,14 @@ class SystemFS:
         @param destination: string (Destination path the file should be moved to )
         """
         self.logger.debug('Move file from %s to %s' % (source, destin))
-        self.move(source, destin)
+        self._move(source, destin)
 
     def renameFile(self, filePath, new_name):
         """
         OBSOLETE
         """
         self.logger.debug("WARNING: renameFIle should not be used")
-        return self.move(filePath, new_name)
+        return self._move(filePath, new_name)
 
     @path_check(path={"exists", "required", "dir"})
     def removeIrrelevantFiles(self, path, followSymlinks=True):
@@ -308,7 +308,7 @@ class SystemFS:
         @param destin: string (Destination path where the directory should be moved into)
         """
         self.logger.debug('Moving directory from %s to %s' % (source, destin))
-        self.move(source, destin)
+        self._move(source, destin)
         self.logger.debug(
             'Directory is successfully moved from %s to %s' % (source, destin))
 
@@ -819,8 +819,7 @@ class SystemFS:
                 result.append(file)
         return result
 
-    @path_check(source={"exists", "required"}, destin={"exists", "required"})
-    def move(self, source, destin):
+    def _move(self, source, destin):
         """Main Move function
         @param source: string (If the specified source is a File....Calls moveFile function)
         (If the specified source is a Directory....Calls moveDir function)
