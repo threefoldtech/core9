@@ -40,7 +40,7 @@ class String:
         """
         return value.strip()
 
-    def toml_value_get(self,value,key=""):
+    def toml_string_get(self,value,key=""):
         """
         will translate to what we need in toml
         """
@@ -81,7 +81,7 @@ class StringMultiLine(String):
         else:
             raise ValueError("Could not convert to string:%s" % v)    
 
-    def toml_value_get(self,value,key):
+    def toml_string_get(self,value,key):
         """
         will translate to what we need in toml
         """
@@ -134,7 +134,7 @@ class Bytes:
         """
         return value
 
-    def toml_value_get(self,value,key):
+    def toml_string_get(self,value,key):
         raise NotImplemented()
 
 class Boolean:
@@ -188,7 +188,7 @@ class Boolean:
             value=False
         return value
 
-    def toml_value_get(self,value,key):
+    def toml_string_get(self,value,key):
         value=self.clean(value)
         if key=="":
             if value==True:
@@ -240,7 +240,7 @@ class Integer:
         """
         return int(value)
 
-    def toml_value_get(self,value,key=""):
+    def toml_string_get(self,value,key=""):
         """
         will translate to what we need in toml
         """
@@ -287,7 +287,7 @@ class Float:
         """
         return float(value)
 
-    def toml_value_get(self,value,key=""):
+    def toml_string_get(self,value,key=""):
         """
         will translate to what we need in toml
         """

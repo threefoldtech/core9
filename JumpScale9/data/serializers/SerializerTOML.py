@@ -74,9 +74,9 @@ class SerializerTOML(SerializerBase):
 
             #get some vertical spaces between groups which are not equal
             if "." in key:
-                prefix,restkey.split(".",1)
+                prefix,key.split(".",1)
             elif "_" in key:
-                prefix,restkey.split("_",1)
+                prefix,key.split("_",1)
             else:
                 prefix=key[0:2]
             if prefix!=lastprefix:
@@ -85,7 +85,7 @@ class SerializerTOML(SerializerBase):
 
             ttype=j.data.types.type_detect(val)
 
-            out+="%s\n"%(ttype.toml_value_get(val,key=key))
+            out+="%s\n"%(ttype.toml_string_get(val,key=key))
 
             # else:
             #     raise RuntimeError("error in fancydumps for %s in %s"%(key,obj))
@@ -116,14 +116,14 @@ class SerializerTOML(SerializerBase):
         """
         if j.data.types.string.check(tomlsource):
             try:
-                dictsource = self.load(tomlsource)
+                dictsource = self.loads(tomlsource)
             except Exception:
                 raise RuntimeError("toml file source is not properly formatted.")
         else:
             dictsource = tomlsource
         if j.data.types.string.check(tomlupdate):
             try:
-                dictupdate = self.load(tomlupdate)
+                dictupdate = self.loads(tomlupdate)
             except Exception:
                 raise RuntimeError("toml file source is not properly formatted.")
         else:

@@ -114,8 +114,11 @@ class List:
                     return False
         return True                
 
-    def fromString(self, v, ttype="str"):
-        v = self.clean(v, ttype)
+    def fromString(self, v):
+        if "\n" in v:
+            v=v.split("\n")
+        v=[item for item in v if item.strip()!=""]
+        v = self.clean(v)
         if self.check(v):
             return v
         else:
@@ -130,22 +133,40 @@ class List:
             if not toml:
                 item=ttype.clean(item)
             else:
-                item=ttype.toml_value_get(item)
+                item=ttype.toml_string_get(item)
             if item not in res:
                 res.append(item)
         res.sort()
         return res          
 
-    
-    def toml_value_get(self,val,key="",clean=True,sort=True):
+    def toString(self,val,clean=True,sort=False):
         """
         will translate to what we need in toml
         """
-        if key=="":
-            raise RuntimeError("not implemented")
+        if clean:
+            val=self.clean(val,toml=False,sort=sort)
+        if len (str(val))>30:
+            #multiline
+            out=""
+            for item in val:
+                out+="%s,\n"%item
+            out+="\n"
         else:
-            if clean:
-                val=self.clean(val,toml=True,sort=sort)
+            out=""
+            for item in val:
+                out+=" %s,"%item                    
+            out=out.strip().strip(",").strip()
+        return out 
+    
+    def toml_string_get(self,val,key="",clean=True,sort=True):
+        """
+        will translate to what we need in toml
+        """
+        if clean:
+            val=self.clean(val,toml=True,sort=sort)
+        if key=="":
+            raise NotImplemented()
+        else:
             out=""
             if len (str(val))>30:
                 #multiline
@@ -159,10 +180,18 @@ class List:
                     out+=" %s,"%item                    
                 out=out.rstrip(",")
                 out+=" ]\n"  
-        return out          
+        return out    
 
-    toString = fromString
+    def toml_value_get(self,val,key=""):
+        """
+        will from toml string to value
+        """
+        if key=="":
+            raise NotImplemented()
+        else:
+            return j.data.serializer.toml.loads(val)
 
+     
 
 class Set:
 
