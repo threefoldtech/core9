@@ -5,145 +5,116 @@ fullname = ""
 email = ""
 login_name = ""
 ssh_key_name = ""
-git_config_url = ""
 """
 
-import npyscreen
-class BaseConfig(npyscreen.NPSAppManaged):
+BaseConfig=j.tools.formbuilder.baseclass_get()
 
-    def __init__(self,name,template,config={}):
-        self.name=name
-        self.template=j.data.serializer.toml.loads(template)
-        self.config=config
-        self.widgets={}
-        self.done=[] #which keys are already processed
-        npyscreen.NPSApp.__init__(self)
-        self.run()
+class MyConfig(BaseConfig):
 
-    def main(self):
-        self.form  = npyscreen.Form(name = "Configuration Manager:%s"%self.name,)
-        
-        self.form_add_items_pre()
-
-        self.config,errors=j.data.serializer.toml.merge(self.template, self.config,listunique=True)        
-
-        for key,val in self.config.items():
-
-            ttype=j.data.types.type_detect(val)
-            if ttype.NAME in ["string","integer","float"]:
-                print("add widget:%s"%key)
-                key1=j.data.text.pad(key,20)
-                widget = self.form.add(npyscreen.TitleText, name = "%s :"%key1,)
-                widget.value = self.config[key]
-                self.widget_add(key,widget)
-
-
-        self.form_add_items_post()
-
-        # t  = F.add(npyscreen.TitleText, name = "Text:",)
-        # fn = F.add(npyscreen.TitleFilename, name = "Filename:")
-        # fn2 = F.add(npyscreen.TitleFilenameCombo, name="Filename2:")
-        # dt = F.add(npyscreen.TitleDateCombo, name = "Date:")
-        # s  = F.add(npyscreen.TitleSlider, out_of=12, name = "Slider")
-        # ml = F.add(npyscreen.MultiLineEdit,
-        #        value = """try typing here!\nMutiline text, press ^R to reformat.\n""",
-        #        max_height=5, rely=9)
-        # ms = F.add(npyscreen.TitleSelectOne, max_height=4, value = [1,], name="Pick One",
-        #         values = ["Option1","Option2","Option3"], scroll_exit=True)
-        # ms2= F.add(npyscreen.TitleMultiSelect, max_height =-2, value = [1,], name="Pick Several",
-        #         values = ["Option1","Option2","Option3"], scroll_exit=True)
-
-        # This lets the user interact with the Form.
-        self.form.edit()
-        self.form.exit_editing()
-        self.setNextForm(None)
-        
-        result=self.form_pre_save()
-        self.config,errors=j.data.serializer.toml.merge(self.config, result,listunique=True)  
-
-        for key,val in self.config.items():
-
-            if key in result:
-                continue
-
-            ttype=j.data.types.type_detect(val)
-            if ttype.NAME in ["string","integer","float"]:
-                w = self.widgets[key]
-                result[key]=w.value
-
-        self.config,errors=j.data.serializer.toml.merge(self.config, result,listunique=True)
-        print(self.config)
-
-    def widget_add(self,name,widget):
-        self.widgets[name]=widget
-
-    def form_add_items_pre(self):
-        pass
-
-    def form_add_items_post(self):
-        pass
-
-class MainConfig(BaseConfig):
+    def init(self):
+        self.auto_disable.append("ssh_key_name") #makes sure that this property is not auto populated, not needed when in form_add_items_pre
 
     def form_add_items_post(self):
         #SSHKEYS
         sshpath = "%s/.ssh" % (j.dirs.HOMEDIR)
+        # keynames = [j.sal.fs.getBaseName(item) for item in j.clients.ssh.ssh_keys_list_from_agent()] #load all ssh keys loaded in mem
         keynames = [j.sal.fs.getBaseName(item)[:-4] for item in j.sal.fs.listFilesInDir(sshpath, filter="*.pub")]
-        widget = self.form.add_widget(npyscreen.TitleSelectOne, name="YOUR SSH KEY:", values=keynames)
-        self.widget_add("ssh_key_name",widget)
+        if len(keynames)==0:
+            raise RuntimeError("load ssh-agent")
+        self.widget_add_singlechoice("ssh_key_name",keynames)
 
-    def form_pre_save(self):
-        """
-        result is what needs to be updated
-        """
-        result={}
-        w=self.widgets["ssh_key_name"]
-        if len(w.value)==1:
-            item=w.value[0]
-            result["ssh_key_name"]=w.values[item]
-        return result
 
 
 class SecretConfigFactory:
 
     def __init__(self):
         self.__jslocation__ = "j.tools.secretconfig"
-        config=MainConfig(name="test",template=TEMPLATE,config={}).config
-        from IPython import embed;embed(colors='Linux')
+        self.path=""
 
-    def configure(self, url):
-        """
-        e.g. the url is e.g. ssh://git@docs.grid.tf:7022/myusername/myconfig.git
-        is also stored in the config file in [myconfig] section as giturl & sshkeyname
+
+    def configrepo_find(self):
+        if self.path=="":
+            res=j.clients.git.getGitReposListLocal()
+            for key,path in res.items():
+                checkpath="%s/.jsconfig"%path
+                if key.startswith("config_"):
+                    if j.sal.fs.exists(checkpath):
+                        self.path=path
+                        return self.path
+            raise RuntimeError("Cannot find path for configuration repo, please checkout right git repo & run 'js9_secret init' in that repo ")
+        return self.path
+
+    @property
+    def _configure_class(self):
+        return MyConfig
+
+    @property
+    def _configure_template(self):
+        return TEMPLATE
+
+    def _js_location_get(self,location):
+        return eval(location)
+
+    def configure(self, location="myconfig", instance="main",configure=False,updatedict={},write=True):
+        self.configrepo_find()
+        if location.startswith("j."):
+            category=location[2:]
+        else:
+            category=location
+        category=category.replace(".","_")
+        category=category.lower().strip()
+        cdir=self.path+"/%s"%category
+        j.sal.fs.createDir(cdir)
+        cfile="%s/%s.toml"%(cdir,instance)
+        location=location.strip(".")
+        if category=="myconfig":
+            location="self"
+
+        l=self._js_location_get(location)
+
+        if not j.sal.fs.exists(cfile):
+            config = {}
+            configure=True
+            write=True
+        else:
+            content=j.sal.fs.fileGetContents(cfile)
+            config=j.data.serializer.toml.loads(content,secure=True)
         
-        will checkout your configuration which is encrypted
+        #merge found config into template
+        config,error=j.data.serializer.toml.merge(l._configure_template,config,listunique=True)
+        if updatedict!={}:
+            config,error=j.data.serializer.toml.merge(config,updatedict,listunique=True)
         
-        """
+        if configure:
+            myconfig=l._configure_class(name=cfile, config=config,template=l._configure_template)
+            myconfig.run()
+            config=myconfig.config
 
-        sc= SecretConfig(secret,sshkeyname=sshkeyname,giturl=giturl)
-        sc.start()
+        if write:
+            #at this point we have the config & can write
+            j.sal.fs.writeFile(cfile,j.data.serializer.toml.fancydumps(config,secure=True))
 
-    def config_object_baseclass_get(self):
-        """
-        returns base class for creating a config object with
-        """
-        return BaseConfig
-
-
-class SecretConfig:
-
-    def __init__(self, secret, url):
-        self.url = url
-
-    def start(self):
-
-        self.init()
+        return config
 
     def init(self):
-        self.path=j.clients.git.pullGitRepo(url=self.url)
+        curdir=j.sal.fs.getcwd()
+        gitdir="%s/.git"%curdir
+        if not j.sal.fs.exists(gitdir):
+            raise RuntimeError("am not in root of git dir")
+        self.path=curdir
+        j.sal.fs.touch(".jsconfig")
+        self.run(configure=True)
 
-            
+    def get(self,location,instance="main"):
+        config = self.configure(location=location, instance=instance,configure=False,updatedict={},write=False)
 
+        configtoml=j.data.serializer.toml.fancydumps(config,secure=True)
+        configtoml2=j.data.serializer.toml.loads(configtoml,secure=True)
+
+        return configtoml2
 
 
         
+
+
+

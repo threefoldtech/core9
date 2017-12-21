@@ -5,7 +5,14 @@ class BaseConfig(npyscreen.NPSAppManaged):
 
     def __init__(self,name,template,config={}):
         self.name=name
-        self.template=j.data.serializer.toml.loads(template)
+        if j.data.types.string.check(template):
+            self.template=j.data.serializer.toml.loads(template)
+        elif j.data.types.dict.check(template):
+            self.template=template
+        else:
+            raise RuntimeError("template needs to be dict or toml example")
+        if not j.data.types.dict.check(config):
+            raise RuntimeError("config needs to be dict")
         self.config=config
         self.widgets={}
         self.widget_types={}
@@ -13,7 +20,6 @@ class BaseConfig(npyscreen.NPSAppManaged):
         self.done=[] #which keys are already processed
         npyscreen.NPSApp.__init__(self)
         self.init()
-        self.run()
 
     def main(self):
         self.form  = npyscreen.Form(name = "Configuration Manager:%s"%self.name,)
@@ -123,6 +129,9 @@ class BaseConfig(npyscreen.NPSAppManaged):
     def form_pre_save(self):
         return {}
 
+    def init(self):
+        pass
+
     @property
     def yaml(self):
         return j.data.serializer.toml.fancydumps(self.config)
@@ -155,7 +164,10 @@ class FormBuilderFactory:
         login_name = ""
         ssh_key_name = ""
         mylist = [ ]
+        will_be_encr_ = ""
         """
+
+        #everything which ends on _ will be encrypted (only works for strings at this point)
 
         BaseConfig=self.baseclass_get()
 
@@ -188,6 +200,7 @@ class FormBuilderFactory:
             config["mylist"].append("this is an item in the list: %s"%i)
 
         c=MyConfig(name="test",template=TEMPLATE,config=config)
+        c.run()
 
         assert c.config["email"]=="someemail@rrr.com" #don't change it during test
 

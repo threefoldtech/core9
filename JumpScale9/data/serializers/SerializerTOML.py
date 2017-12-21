@@ -57,7 +57,10 @@ list5 = "d,a,a,b,c"
 
 class SerializerTOML(SerializerBase):
 
-    def fancydumps(self,obj):
+    def fancydumps(self,obj,secure=False):
+        """
+        if secure then will look for key's ending with _ and will use your secret key to encrypt (see nacl client)
+        """
 
         if not j.data.types.dict.check(obj):
             raise j.exceptions.Input("need to be dict")
@@ -84,6 +87,8 @@ class SerializerTOML(SerializerBase):
                 lastprefix=prefix
 
             ttype=j.data.types.type_detect(val)
+            if secure and key.endswith("_") and ttype.BASETYPE == "string":
+                val = j.data.nacl.default.encryptSymmetric(val,hex=True,salt=val)
 
             out+="%s\n"%(ttype.toml_string_get(val,key=key))
 
@@ -96,10 +101,18 @@ class SerializerTOML(SerializerBase):
     def dumps(self, obj):
         return pytoml.dumps(obj, sort_keys=True)
 
-    def loads(self, s):
+    def loads(self, s,secure=False):
         if isinstance(s, bytes):
             s = s.decode('utf-8')
-        return pytoml.loads(s)
+        val = pytoml.loads(s)
+        if secure and j.data.types.dict.check(val):
+            res={}
+            for key,item in val.items():
+                if key.endswith("_"):
+                    res[key]=j.data.nacl.default.decryptSymmetric(item,hex=True).decode()
+            val=res
+        return val
+
 
     def merge(self,tomlsource, tomlupdate,keys_replace={},add_non_exist=False,die=True,errors=[],listunique=False,listsort=True,liststrip=True):
         """
