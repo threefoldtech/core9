@@ -33,6 +33,7 @@ class GitFactory:
             (repository_host, repository_type, repository_account, repository_name, repository_url, port)
         """
 
+        url=url.strip()
         if ssh == "auto" or ssh == "first":
             ssh = j.clients.ssh.ssh_agent_available()
         elif ssh or ssh is False:
@@ -169,7 +170,7 @@ class GitFactory:
         Remark:
             url can be empty, then the git params will be fetched out of the git configuration at that path
         """
-
+        url=url.strip()
         if url == "":
             if dest is None:
                 raise RuntimeError("dest cannot be None (url is also '')")
@@ -415,6 +416,7 @@ class GitFactory:
         - https://github.com/Jumpscale/jumpscale_core9/tree/master/lib/JumpScale/tools/docgenerator/macros
 
         """
+        url=url.strip()
         repository_host, repository_type, repository_account, repository_name, repository_url, port = self.rewriteGitRepoUrl(
             url)
         url_end = ""
@@ -472,6 +474,7 @@ class GitFactory:
         - https://github.com/Jumpscale/jumpscale_core9/tree/master/lib/JumpScale/tools/docgenerator/macros
 
         """
+        url=url.strip()
         repository_host, repository_type, repository_account, repository_name, repository_url, branch, gitpath, relpath, port = j.clients.git.parseUrl(
             url)
         rpath = j.sal.fs.joinPaths(gitpath, relpath)
