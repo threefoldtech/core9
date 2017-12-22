@@ -1,19 +1,20 @@
 from JumpScale9 import j
 
+
 class SerializerDict:
 
-    def _unique_list(self,items,sort=False,strip=False):
-        res=[]
+    def _unique_list(self, items, sort=False, strip=False):
+        res = []
         for item in items:
             if strip and j.data.types.string.check(item):
-                item=item.strip()
+                item = item.strip()
             if item not in res:
                 res.append(item)
         if sort:
             res.sort()
         return res
 
-    def set_value(self,dictsource,key,val,add_non_exist=False,die=True,errors=[],listunique=False,listsort=True,liststrip=True):
+    def set_value(self, dictsource, key, val, add_non_exist=False, die=True, errors=[], listunique=False, listsort=True, liststrip=True):
         """
         start from a dict template (we only go 1 level deep)
 
@@ -24,54 +25,49 @@ class SerializerDict:
         in errors there will be key's which are not found in dictsource
 
         """
-        print ("add to ddict:%s:%s"%(key,val))
-
         if key not in dictsource.keys():
             if add_non_exist:
-                dictsource[key]=val   
-                return dictsource,errors             
+                dictsource[key] = val
+                return dictsource, errors
             else:
                 if die:
-                    raise j.exceptions.Input("dictsource does not have key:%s, can insert value"%key)
+                    raise j.exceptions.Input("dictsource does not have key:%s, can insert value" % key)
                 else:
                     errors.append(key)
 
-
         if j.data.types.list.check(dictsource[key]):
-            #check is list & set the types accordingly
+            # check is list & set the types accordingly
             if j.data.types.string.check(val):
                 if "," in val:
-                    val = [item.replace("'","").strip() for item in val.split(",")]
+                    val = [item.replace("'", "").strip() for item in val.split(",")]
                 else:
-                    val=[val]
+                    val = [val]
             elif j.data.types.int.check(val) or j.data.types.float.check(val):
-                val=[val]
+                val = [val]
 
             if listunique:
-                dictsource[key]=self._unique_list(val,sort=listsort,strip=liststrip)
-
+                dictsource[key] = self._unique_list(val, sort=listsort, strip=liststrip)
 
         elif j.data.types.bool.check(dictsource[key]):
-            if str(val).lower() in ['true',"1","y","yes"]:
-                val=True
+            if str(val).lower() in ['true', "1", "y", "yes"]:
+                val = True
             else:
-                val=False
-            dictsource[key]=val
+                val = False
+            dictsource[key] = val
         elif j.data.types.int.check(dictsource[key]):
-            if  j.data.types.string.check(val) and val.strip()=="":
-                val=0
-            dictsource[key]=int(val)
+            if j.data.types.string.check(val) and val.strip() == "":
+                val = 0
+            dictsource[key] = int(val)
         elif j.data.types.float.check(dictsource[key]):
-            dictsource[key]=float(val)
+            dictsource[key] = float(val)
         elif j.data.types.string.check(dictsource[key]):
-            dictsource[key]=j.data.text.strip(str(val))
+            dictsource[key] = j.data.text.strip(str(val))
         else:
-            raise RuntimeError("could not find type of:%s"%dictsource[key])
-            
+            raise RuntimeError("could not find type of:%s" % dictsource[key])
 
-        return dictsource,errors
+        return dictsource, errors
 
-    def merge(self,dictsource, dictupdate,keys_replace={},add_non_exist=False,die=True,errors=[],listunique=False,listsort=True,liststrip=True):
+    def merge(self, dictsource, dictupdate, keys_replace={}, add_non_exist=False, die=True, errors=[], listunique=False, listsort=True, liststrip=True):
         """
         the values of the dictupdate will be applied on dictsource (can be a template)
 
@@ -85,14 +81,13 @@ class SerializerDict:
         if not j.data.types.dict.check(dictsource) or not j.data.types.dict.check(dictupdate):
             raise j.exceptions.Input("dictsource and dictupdate need to be dicts")
 
-        keys=[item for item in dictupdate.keys()]
+        keys = [item for item in dictupdate.keys()]
         keys.sort()
 
         for key in keys:
-            val= dictupdate[key]
-            if key in keys_replace.keys():                    
-                key=keys_replace[key]
-            dictsource,errors = self.set_value(dictsource, key, val,add_non_exist=add_non_exist,die=die,\
-                errors=errors,listunique=listunique,listsort=listsort,liststrip=liststrip)
-        return dictsource,errors
-    
+            val = dictupdate[key]
+            if key in keys_replace.keys():
+                key = keys_replace[key]
+            dictsource, errors = self.set_value(dictsource, key, val, add_non_exist=add_non_exist, die=die,
+                                                errors=errors, listunique=listunique, listsort=listsort, liststrip=liststrip)
+        return dictsource, errors
