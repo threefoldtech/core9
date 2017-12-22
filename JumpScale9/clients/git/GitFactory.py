@@ -394,7 +394,7 @@ class GitFactory:
         # branch
         cmd = 'cd %s;git rev-parse --abbrev-ref HEAD' % path
         try:
-            rc, out, err = self.execute(cmd, showout=False, outputStderr=False)
+            rc, out, err = self.execute(cmd, showout=False)
             if rc == 0:
                 branch = out.strip()
             else:  # if we can't retrieve current branch, use master as default

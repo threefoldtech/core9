@@ -327,7 +327,7 @@ class SSHClientFactory:
             _, out, err = j.sal.process.execute("ssh-agent -a %s" % socketpath,
                                        die=False,
                                        showout=False,
-                                       outputStderr=False)
+)
             if err:
                 raise RuntimeError(
                     "Could not start ssh-agent, \nstdout:%s\nstderr:%s\n" % (out, err))
@@ -378,7 +378,7 @@ class SSHClientFactory:
             return_code, out, err =j.sal.process.execute("ssh-keygen -t rsa -f %s -N \"\"" % path,
                                                  die=False,
                                                  showout=False,
-                                                 outputStderr=False)
+)
             if return_code != 0:
                 raise RuntimeError(
                     "Could not add key to the ssh-agent, \nstdout:%s\nstderr:%s\n" % (out, err))
@@ -399,7 +399,6 @@ class SSHClientFactory:
             self._init_ssh_env()
         return_code, out, _ = j.sal.process.execute("ssh-add -l",
                                            showout=False,
-                                           outputStderr=False,
                                            die=False)
         if 'The agent has no identities.' in out:
             return True
@@ -413,7 +412,7 @@ class SSHClientFactory:
         Kill all agents if more than one is found
         :param socketpath: socketpath
         """
-        _, out, _ = j.sal.process.execute("ps aux|grep ssh-agent", showout=False, outputStderr=False)
+        _, out, _ = j.sal.process.execute("ps aux|grep ssh-agent", showout=False)
         res = [item for item in out.split("\n") if item.find("grep ssh-agent") == -1]
         res = [item for item in res if item.strip() != ""]
         res = [item for item in res if item[-2:] != "-l"]
@@ -429,7 +428,7 @@ class SSHClientFactory:
 
             cmd = "killall ssh-agent"
             # self.logger.info(cmd)
-            j.sal.process.execute(cmd, showout=False, outputStderr=False, die=False)
+            j.sal.process.execute(cmd, showout=False, die=False)
             # remove previous socketpath
             j.sal.fs.remove(socketpath)
             j.sal.fs.remove(j.sal.fs.joinPaths('/tmp', "ssh-agent-pid"))

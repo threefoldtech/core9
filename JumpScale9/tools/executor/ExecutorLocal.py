@@ -85,22 +85,18 @@ class ExecutorLocal(ExecutorBase):
     def executeRaw(self, cmd, die=True, showout=False):
         return self.execute(cmd, die=die, showout=showout)
 
-    def execute(self, cmds, die=True, checkok=None, showout=False, outputStderr=False, timeout=1000, env={}, hide=False):
+    def execute(self, cmds, die=True, checkok=None, showout=False, timeout=1000, env={}, hide=False):
         if env:
             self.env.update(env)
         # if self.debug:
         #     print("EXECUTOR:%s" % cmds)
-
-        if outputStderr is None:
-            outputStderr = showout
 
         if checkok is None:
             checkok = self.checkok
 
         cmds2 = self._transformCmds(cmds, die=die, checkok=checkok, env=env)
 
-        rc, out, err = j.sal.process.execute(cmds2, die=die, showout=showout,
-                                             outputStderr=outputStderr, timeout=timeout)
+        rc, out, err = j.sal.process.execute(cmds2, die=die, showout=showout, timeout=timeout)
 
         if checkok:
             out = self.docheckok(cmds, out)

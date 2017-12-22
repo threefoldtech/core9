@@ -29,6 +29,9 @@ class JSBaseClassSecret():
             raise RuntimeError("need to be dict")
         return j.tools.secretconfig.configure(location=self.__jslocation__,instance=self.instance,updatedict=val,configure=False)
     
+    @property
+    def _path(self):
+        return j.sal.fs.getDirName(os.path.abspath(__file__)).rstrip("/")    
 
 class MyConfig(BaseConfig):
 

@@ -66,7 +66,7 @@ class SystemProcess:
 
         return exitcode
 
-    def execute(self, command, showout=True, outputStderr=True, useShell=True, log=True, cwd=None, timeout=0, errors=[],
+    def execute(self, command, showout=True, useShell=True, log=True, cwd=None, timeout=600, errors=[],
                     ok=[], captureout=True, die=True, async=False,env=None):
 
         command = j.data.text.strip(command)
@@ -132,6 +132,8 @@ class SystemProcess:
                         line = p._translate_newlines(line)
                     # Add data to cache
                     data.append(line)
+                    if showout:
+                        print(line,end="")
 
                 # Fold cache and return
                 return ''.join(data)
@@ -139,9 +141,11 @@ class SystemProcess:
             else:
                 # This is not UNIX, most likely Win32. read() seems to work
                 def readout(stream):
-                    return stream.read().decode()
+                    line= stream.read().decode()
+                    if showout:
+                        print(line)                    
 
-        if timeout <= 0:
+        if timeout < 0:
             out, err = p.communicate()
             out=out.decode()
             err=err.decode()
@@ -158,7 +162,7 @@ class SystemProcess:
                 now = time.time()
                 # print("wait")
 
-                if now > end:
+                if timeout!=0 and now > end:
                     if self.isUnix:
                         # Soft and hard kill on Unix
                         try:
@@ -191,175 +195,21 @@ class SystemProcess:
             j.sal.process.logger.debug('system.process.run stderr:\n%s' % err)
 
         if die and rc!=0:
-            raise RuntimeError("Could not execute:%s\nstdout:%s\nerror:\n%s"%(rc,out,err))
+            msg="\nCould not execute:"
+            if command.find("\n") ==-1 and len(command)<40:
+                msg+=" '%s'"%command
+            else:
+                command="\n".join(command.split(";"))
+                msg+= j.data.text.indent(command).rstrip()+"\n\n" 
+            if out.strip()!="":
+                msg+="stdout:\n"
+                msg+= j.data.text.indent(out).rstrip()+"\n\n" 
+            if err.strip()!="":
+                msg+="stderr:\n"
+                msg+= j.data.text.indent(err).rstrip()+"\n\n"              
+            raise RuntimeError(msg)
 
         return (rc, out, err)
-
-    # def execute_threaded(self, command, showout=True, outputStderr=True, useShell=True, log=True, cwd=None, timeout=0, errors=[],
-    #             ok=[], captureout=True, die=True, async=False):
-    #     """
-    #     @param errors is array of statements if found then exit as error
-    #     return rc,out,err
-    #     """
-
-    #     # raise RuntimeError("stop")
-
-    #     command = j.data.text.strip(command)
-
-    #     if "\n" in command:
-    #         path = j.sal.fs.getTmpFilePath()
-    #         self.logger.debug("execbash:\n'''%s\n%s'''\n" % (path, command))
-    #         if die:
-    #             command = "set -ex\n%s" % command
-    #         j.sal.fs.writeFile(path, command + "\n")
-    #         command = "bash %s" % path
-    #     else:
-    #         # self.logger.info("exec:%s" % command)
-    #         path = None
-
-    #     os.environ["PYTHONUNBUFFERED"] = "1"
-    #     ON_POSIX = 'posix' in sys.builtin_module_names
-
-    #     popenargs = {}
-    #     if hasattr(subprocess, "_mswindows"):
-    #         mswindows = subprocess._mswindows
-    #     else:
-    #         mswindows = subprocess.mswindows
-
-    #     # if not mswindows:
-    #     #     # Reset all signals before calling execlp but after forking. This
-    #     #     # fixes Python issue 1652 (http://bugs.python.org/issue1652) and
-    #     #     # jumpscale ticket 189
-    #     #     def reset_signals():
-    #     #         '''Reset all signals to SIG_DFL'''
-    #     #         for i in range(1, signal.NSIG):
-    #     #             if signal.getsignal(i) != signal.SIG_DFL:
-    #     #                 try:
-    #     #                     signal.signal(i, signal.SIG_DFL)
-    #     #                 except OSError:
-    #     #                     # Skip, can't set this signal
-    #     #                     pass
-    #     #     popenargs["preexec_fn"]=reset_signals
-
-    #     p = Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=ON_POSIX,
-    #               shell=useShell, env=os.environ, universal_newlines=False, cwd=cwd, bufsize=0, executable="/bin/bash",
-    #               **popenargs)
-
-    #     if async:
-    #         return p
-
-    #     class StreamReader():
-
-    #         def __init__(self, stream, queue, flag):
-    #             super(StreamReader, self).__init__()
-    #             self.stream = stream
-    #             self.queue = queue
-    #             self.flag = flag
-    #             self._stopped = False
-    #             # self.setDaemon(True)
-
-    #         def run(self):
-    #             while not self.stream.closed and not self._stopped:
-    #                 buf = self.stream.readline()
-    #                 if len(buf) > 0:
-    #                     self.queue.put((self.flag, buf))
-    #                 else:
-    #                     break
-    #             self.stream.close()
-    #             self.queue.put(('T', self.flag))
-
-    #     import codecs
-
-    #     serr = os.fdopen(p.stderr.fileno(), 'r', encoding='UTF-8')
-    #     sout = os.fdopen(p.stdout.fileno(), 'r', encoding='UTF-8')
-
-    #     inp = j.data.memqueue.get()
-
-    #     outReader = StreamReader(sout, inp, 'O')
-    #     errReader = StreamReader(serr, inp, 'E')
-
-    #     # outReader.start()
-    #     # errReader.start()
-
-    #     start = time.time()
-
-    #     err = ""
-    #     out = ""
-    #     rc = 1000
-
-    #     out_eof = False
-    #     err_eof = False
-
-    #     while not out_eof or not err_eof:
-    #         # App still working
-    #         try:
-    #             chan, line = inp.get(block=True, timeout=1.0)
-    #             if chan == 'T':
-    #                 if line == 'O':
-    #                     out_eof = True
-    #                 elif line == 'E':
-    #                     err_eof = True
-    #                 continue
-
-    #             if ok != []:
-    #                 for item in ok:
-    #                     if line.find(item) != -1:
-    #                         rc = 0
-    #                         break
-    #             if errors != []:
-    #                 for item in errors:
-    #                     if line.find(item) != -1:
-    #                         rc = 997
-    #                         break
-    #                 if rc == 997 or rc == 0:
-    #                     break
-
-    #             if chan == 'O':
-    #                 if showout:
-    #                     try:
-    #                         print((line.strip()))
-    #                     except BaseException:
-    #                         pass
-    #                 if captureout:
-    #                     out += line
-    #             elif chan == 'E':
-    #                 if outputStderr:
-    #                     print(("E:%s" % line.strip()))
-    #                 if captureout:
-    #                     err += line
-
-    #         except queue.Empty:
-    #             pass
-    #         if timeout > 0:
-    #             if time.time() > start + timeout:
-    #                 print("TIMEOUT")
-    #                 rc = 999
-    #                 p.kill()
-    #                 break
-
-    #     if path is not None:
-    #         j.sal.fs.remove(path)
-
-    #     if rc != 999:
-    #         outReader.join()
-    #         errReader.join()
-    #         p.wait()
-    #     if rc == 1000:
-    #         rc = p.returncode
-
-    #     if rc == 999 and die:
-    #         raise TimeoutError("\nOUT:\n%s\nSTDERR:\n%s\nERROR: Cannot execute (TIMEOUT):'%s'\nreturncode (%s)" %
-    #                            (out, err, command, rc))
-
-    #     if rc > 0 and die:
-    #         if err:
-    #             raise RuntimeError(
-    #                 "Could not execute cmd:\n'%s'\nerr:\n%s" % (command, err))
-    #         else:
-    #             raise RuntimeError(
-    #                 "Could not execute cmd:\n'%s'\nout:\n%s" % (command, out))
-
-    #     return rc, out, err
 
 
 
@@ -519,7 +369,6 @@ class SystemProcess:
             remote=None,
             sshport=22,
             showout=True,
-            outputStderr=True,
             sshkey="",
             timeout=600,
             executor=None):
@@ -557,7 +406,7 @@ class SystemProcess:
         else:
             rc, res, err = self.execute(
                 "bash %s" %
-                tmppathdest, die=die, showout=showout, outputStderr=outputStderr, timeout=timeout)
+                tmppathdest, die=die, showout=showout, timeout=timeout)
         return rc, res, err
 
     def executeInteractive(self, command, die=True):
@@ -667,7 +516,7 @@ class SystemProcess:
         """
         rc, out, err = self.execute(
             "which %s" %
-            cmdname, die=False, showout=False, outputStderr=False)
+            cmdname, die=False, showout=False)
         if rc == 0:
             return True
         else:
