@@ -3,5 +3,5 @@ set -e
 set -x
 
 export JS9MODE=TESTING
-pytest -v /opt/code/github/jumpscale/core9/JumpScale9/
+pytest -v /opt/code/github/jumpscale/core9/tests/unittests/
 unset JS9MODE
