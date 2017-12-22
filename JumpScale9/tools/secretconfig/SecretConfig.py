@@ -14,18 +14,8 @@ FormBuilderBase = j.tools.formbuilder.baseclass_get()
 class JSBaseClassSecret():
 
     def __init__(self):
-        self.__jslocation__ = None
         self.instance = None
         self._TEMPLATE = TEMPLATE
-
-    @property
-    def _location(self):
-        # make sure __jslocation__ always exists and raise if not
-        # cause we can set a default value
-        if not hasattr(self, '__jslocation__') or \
-                self.__jslocation__ is None or self.__jslocation__ == '':
-            raise RuntimeError("__jslocation__ attribute doesn't exist or is not set.")
-        return self.__jslocation__
 
     @property
     def _instance(self):
@@ -47,13 +37,13 @@ class JSBaseClassSecret():
 
     @property
     def config(self):
-        return j.tools.secretconfig.get(location=self._location, instance=self._instance)
+        return j.tools.secretconfig.get(location=self.__jslocation__, instance=self._instance)
 
     @config.setter
     def config(self, val):
         if j.data.types.dict.check(val) is False:
             raise TypeError("need to be dict")
-        return j.tools.secretconfig.config_update(location=self._location, instance=self._instance, updatedict=val)
+        return j.tools.secretconfig.config_update(location=self.__jslocation__, instance=self._instance, updatedict=val)
 
 
 class MyConfig(FormBuilderBase):
