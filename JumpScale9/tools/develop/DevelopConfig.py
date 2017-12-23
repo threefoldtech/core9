@@ -117,22 +117,6 @@ class MainForm(npyscreen.FormWithMenus, MyMenu):
 
         self.keynames = keynames
 
-        # from IPython import embed
-        # embed(colors='Linux')
-        # else:
-        #     self.sshkeyname = self.add_widget(
-        #         npyscreen.TitleText, name="YOUR SSH KEY:", value=keyname)
-
-        # from IPython import embed;embed(colors='Linux')
-
-        # self.sshkeypath = self.add_widget(npyscreen.TitleFilenameCombo, name="Your SSH Key Path:",must_exist=True)
-        # keyname=j.core.state.configGetFromDict("ssh","sshkeyname","")
-        # if keyname.strip()=="":
-        #     keypath="%s/.ssh/??????"%j.dirs.HOMEDIR
-        # else:
-        #     keypath="%s/.ssh/%s"%(j.dirs.HOMEDIR,keyname)
-        # self.sshkeypath.value=keypath
-
     def afterEditing(self):
         j.core.state.configMe["me"]["loginname"] = self.loginname.value
         j.core.state.configMe["me"]["email"] = self.email.value

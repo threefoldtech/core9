@@ -280,7 +280,7 @@ class SSHClientFactory:
             self._init_ssh_env()
         self.start_ssh_agent()
         cmd = "ssh-add -L"
-        return_code, out, err = j.sal.process.execute(cmd, False, False, die=False)
+        return_code, out, err = j.sal.process.execute(cmd, showout=False, die=False,timeout=1)
         if return_code:
             if return_code == 1 and out.find("The agent has no identities") != -1:
                 return []
@@ -327,7 +327,7 @@ class SSHClientFactory:
             _, out, err = j.sal.process.execute("ssh-agent -a %s" % socketpath,
                                        die=False,
                                        showout=False,
-)
+                                       timeout=20)
             if err:
                 raise RuntimeError(
                     "Could not start ssh-agent, \nstdout:%s\nstderr:%s\n" % (out, err))

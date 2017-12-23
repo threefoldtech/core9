@@ -1,5 +1,5 @@
 from JumpScale9 import j
-
+import copy
 
 class SerializerDict:
 
@@ -67,9 +67,10 @@ class SerializerDict:
 
         return dictsource, errors
 
-    def merge(self, dictsource, dictupdate, keys_replace={}, add_non_exist=False, die=True, errors=[], listunique=False, listsort=True, liststrip=True):
+    def merge(self, dictsource={}, dictupdate={}, keys_replace={}, add_non_exist=False, die=True, errors=[], listunique=False, listsort=True, liststrip=True):
         """
         the values of the dictupdate will be applied on dictsource (can be a template)
+
 
         @param add_non_exist, if False then will die if there is a value in the dictupdate which is not in the dictsource
         @param keys_replace, key = key to replace with value in the dictsource (which will be the result)
@@ -78,11 +79,13 @@ class SerializerDict:
         @return dictsource,errors
 
         """
-        if not j.data.types.dict.check(dictsource) or not j.data.types.dict.check(dictupdate):
+        if not j.data.types.dict.check(dictsource) or not j.data.types.dict.check(dictupdate) :
             raise j.exceptions.Input("dictsource and dictupdate need to be dicts")
 
         keys = [item for item in dictupdate.keys()]
         keys.sort()
+
+        dictsource = copy.copy(dictsource) #otherwise template gets changed
 
         for key in keys:
             val = dictupdate[key]

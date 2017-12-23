@@ -104,7 +104,10 @@ class SerializerTOML(SerializerBase):
     def loads(self, s,secure=False):
         if isinstance(s, bytes):
             s = s.decode('utf-8')
-        val = pytoml.loads(s)
+        try:
+            val = pytoml.loads(s)
+        except Exception as e:
+            raise RuntimeError("Toml deserialization failed for:\n%s.\nMsg:%s"%(j.data.text.indent(s),str(e)))
         if secure and j.data.types.dict.check(val):
             res={}
             for key,item in val.items():

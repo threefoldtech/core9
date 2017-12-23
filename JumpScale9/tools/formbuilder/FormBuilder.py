@@ -3,7 +3,7 @@ from js9 import j
 import npyscreen
 
 
-class BaseConfig(npyscreen.NPSAppManaged):
+class FormBuilderBaseClass(npyscreen.NPSAppManaged):
 
     def __init__(self, name, template, config={}):
         self.name = name
@@ -121,6 +121,20 @@ class BaseConfig(npyscreen.NPSAppManaged):
                 widget.value = choices.index(self.config[name])
         self.widget_add(name, widget)
 
+    def widget_add_boolean(self, name, description="",default=True):
+        if description == "":
+            description = name
+        self.widget_types[name] = "bool"
+        print("widget_add_bool")
+        from IPython import embed;embed(colors='Linux')
+        description = j.data.text.pad(description, 20)
+        widget = self.form.add_widget(npyscreen.TitleSelectOne, name=description, values=choices)
+        # check if there is pre-filled value if yes pre-select it
+        if self.config[name] != "":
+            if self.config[name] in choices:
+                widget.value = choices.index(self.config[name])
+        self.widget_add(name, widget)        
+
     def form_add_items_pre(self):
         pass
 
@@ -153,9 +167,9 @@ class FormBuilderFactory:
         """
         returns base class for creating a config object with
         """
-        return BaseConfig
+        return FormBuilderBaseClass
 
-    def test_interactive(self):
+    def test_interactive(self): #js9 'j.tools.formbuilder.test_interactive()'
 
         TEMPLATE = """
         fullname = ""

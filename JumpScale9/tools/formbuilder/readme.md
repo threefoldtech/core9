@@ -12,7 +12,7 @@ ssh_key_name = ""
 mylist = [ ]
 """
 
-BaseConfig=self.baseclass_get()
+BaseConfig=j.tools.formbuilder.baseclass_get()
 
 class MyConfig(BaseConfig):
 
