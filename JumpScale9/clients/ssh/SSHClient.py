@@ -7,7 +7,7 @@ import time
 import paramiko
 from js9 import j
 from paramiko.ssh_exception import (AuthenticationException,
-                                    BadHostKeyException, SSHException)
+                                    BadHostKeyException, SSHException,BadAuthenticationType)
 
 
 class StreamReader(threading.Thread):
@@ -153,10 +153,26 @@ class SSHClient:
             if j.clients.ssh.SSHKeyGetPathFromAgent(self.key_filename, die=False) is not None and not self.passphrase:
                 j.clients.ssh.ssh_keys_load(self.key_filename)
 
+        if self.passwd:
+            self.allow_agent = False
+            self.look_for_keys = False
+
         start = j.data.time.getTimeEpoch()
-        while start + self.timeout > j.data.time.getTimeEpoch():
+        #the following 2 variables are used for handling the exception of bad authentication type that happens
+        #when trying to connect to the machine before it was actually created
+        bad_auth_type_exist = True
+        bad_auth_type_holder = None
+        while start + self.timeout > j.data.time.getTimeEpoch() and bad_auth_type_exist:
             try:
                 self.logger.info("connect to:%s" % self.addr)
+                self.logger.debug("connect with port :%s" % self.port)
+                self.logger.debug("connect with username :%s" % self.login)
+                self.logger.debug("connect with password :%s" % self.passwd)
+                self.logger.debug("connect with pkey :%s" % self.pkey)
+                self.logger.debug("connect with allow_agent :%s" % self.allow_agent)
+                self.logger.debug("connect with look_for_keys :%s" % self.look_for_keys)
+                self.logger.debug("Timeout is : %s " % self.timeout)
+
                 self._client.connect(
                     self.addr,
                     int(self.port),
@@ -168,8 +184,13 @@ class SSHClient:
                     timeout=2.0,
                     banner_timeout=3.0)
                 self.logger.info("connection ok")
+                bad_auth_type_exist = False
                 return self._client
 
+            except BadAuthenticationType as e:
+                self.logger.error("Bad Authentication Type : %s" % str(e))
+                bad_auth_type_exist = True
+                bad_auth_type_holder = e
             except (BadHostKeyException, AuthenticationException) as e:
                 self.logger.error(
                     "Authentification error. Aborting connection : %s" % str(e))
@@ -190,6 +211,9 @@ class SSHClient:
                 msg = "Could not connect to ssh on %s@%s:%s. Error was: %s" % (
                     self.login, self.addr, self.port, e)
                 raise j.exceptions.RuntimeError(msg)
+
+        if bad_auth_type_exist and bad_auth_type_holder is not None:
+            raise j.exceptions.RuntimeError(str(bad_auth_type_holder))
 
         if self._client is None:
             raise j.exceptions.RuntimeError(
@@ -340,7 +364,7 @@ class SSHClient:
     def prefab(self):
         if not self.usesproxy and self._prefab is None:
             executor = j.tools.executor.getSSHBased(
-                self.addr, self.port, self.login, self.passwd)
+                addr=self.addr, port=self.port, timeout=self.timeout)
             self._prefab = executor.prefab
         if self.usesproxy:
             ex = j.tools.executor.getSSHViaProxy(self.host)
