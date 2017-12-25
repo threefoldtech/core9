@@ -83,6 +83,7 @@ class SSHClient:
         self._client = None
         self._prefab = None
         self.usesproxy = usesproxy
+        self.ssh_authorized = dict()
 
     def _test_local_agent(self):
         """
@@ -401,16 +402,37 @@ class SSHClient:
 
         if remoteothers==True: then other keys will be removed
         """
+        if keyname in self.ssh_authorized:
+            return
 
+        self.logger.debug("adding key to remote machine...")
+        self.logger.debug("authorizing key : %s" % keyname)
         key = j.clients.ssh.SSHKeyGetFromAgentPub(keyname)
+        self.logger.debug("loading sshkey: %s" % key)
         ftp = self.client.open_sftp()
 
-        f = ftp.open("/home/%s/authorized_keys" % self.login, mode='rw')
-        f.write(key)
-        f.close()
+        authorized_key_file_exist = False
+        while not authorized_key_file_exist:
+            f = ftp.open("/home/%s/authorized_keys" % self.login, mode='rw')
+            f.write(key)
+            f.close()
+
+            f = ftp.open("/home/%s/authorized_keys" % self.login, mode='r')
+            x = f.read()
+            if not x:
+                authorized_key_file_exist = False
+            else:
+                authorized_key_file_exist = True
 
         cmd = "echo '%s' | sudo -S bash -c 'mkdir -p /root/.ssh;mv /home/%s/authorized_keys  /root/.ssh/authorized_keys; chmod 644 /root/.ssh/authorized_keys;chown root:root /root/.ssh/authorized_keys'" % (
             self.passwd, self.login)
-        self.execute(cmd)
+        rc, out, err = self.execute(cmd)
 
+        err = err.replace("[sudo] password for cloudscalers:", "").strip()
+        if err:
+            self.logger.error("Couldn't add sshkey to Remote Machine %s : " % err)
+            raise RuntimeError(err)
+
+        self.logger.debug("done adding key to remote machine.")
+        self.ssh_authorized[keyname] = True
         j.clients.ssh.remove_item_from_known_hosts(self.addr)

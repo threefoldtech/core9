@@ -225,7 +225,6 @@ class SSHClientFactory:
             self._init_ssh_env()
 
         self.start_ssh_agent()
-
         if j.sal.fs.isDir(path):
             keysinfs = self._list_not_loaded_keys(path)
             res = j.tools.console.askChoiceMultiple(
@@ -263,6 +262,7 @@ class SSHClientFactory:
         """
         self.ssh_agent_check()
         for item in j.clients.ssh.ssh_keys_list_from_agent():
+            self.logger.debug("items of sshagent : %s" % item)
             if item.endswith(keyname):
                 return j.sal.fs.readFile(item + ".pub")
         if die:
