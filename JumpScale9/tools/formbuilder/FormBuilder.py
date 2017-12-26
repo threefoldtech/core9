@@ -24,7 +24,10 @@ class FormBuilderBaseClass(npyscreen.NPSAppManaged):
         self.init()
 
     def main(self):
+        # npyscreen.Form.DEFAULT_LINES=200
         self.form = npyscreen.Form(name="Configuration Manager:%s" % self.name,)
+        self.form.DEFAULT_LINES=100
+        # from IPython import embed;embed(colors='Linux')
 
         self.config, errors = j.data.serializer.toml.merge(self.template, self.config, listunique=True)
 
@@ -38,8 +41,10 @@ class FormBuilderBaseClass(npyscreen.NPSAppManaged):
             ttype = j.data.types.type_detect(val)
             if ttype.NAME in ["string", "integer", "float", "list"]:
                 self.widget_add_val(key)
+            elif ttype.NAME in ["bool","boolean"]:
+                self.widget_add_boolean(key)
             else:
-                raise NotImplemented()
+                raise RuntimeError("did not implement %s"%ttype)
 
         self.form_add_items_post()
 
@@ -66,21 +71,26 @@ class FormBuilderBaseClass(npyscreen.NPSAppManaged):
         self.config, errors = j.data.serializer.toml.merge(self.config, result, listunique=True)
 
         for key, val in self.config.items():
+            # print("%s %s:%s"%(ttype, key, val))
 
             if key in result:
+                # print("SKIP")
                 continue
 
             ttype = j.data.types.type_detect(val)
-            if ttype.NAME in ["string", "integer", "float"]:
+            
+            if ttype.NAME in ["string", "integer", "float", "boolean"]:
                 w = self.widgets[key]
                 if self.widget_types[key] == "multichoice":
                     result[key] = w.values[w.value[0]]  # get value from the choice
+                elif self.widget_types[key] == "bool":
+                    result[key] = w.value.lower() in ["1",True,"true","yes","y"]
+                    # print("bool:%s:%s"%(key,result[key]))
                 else:
                     result[key] = w.value
             elif ttype.NAME == "list":
                 w = self.widgets[key]
                 result[key] = ttype.fromString(w.value)
-
         self.config, errors = j.data.serializer.toml.merge(self.config, result, listunique=True)
 
     def widget_add(self, name, widget):
@@ -91,6 +101,7 @@ class FormBuilderBaseClass(npyscreen.NPSAppManaged):
         """
         @param description if empty will be same as name
         """
+        print("**widget add:%s"%name)
         if description == "":
             description = name
         description = j.data.text.pad(description, 20)
@@ -101,11 +112,11 @@ class FormBuilderBaseClass(npyscreen.NPSAppManaged):
             val = ttype.toString(val)
             self.form.add(npyscreen.TitleText, name="%s" % description, editable=False)
             widget = self.form.add(npyscreen.MultiLineEdit, name=name, max_height=6, editable=True, value=val)
-            widget.value = val
+            widget.value = str(val)
             self.widget_types[name] = "list"
         else:
             widget = self.form.add(npyscreen.TitleText, name="%s :" % description,)
-            widget.value = val
+            widget.value = str(val)
             self.widget_types[name] = "val"
         self.widget_add(name, widget)
 
@@ -123,17 +134,10 @@ class FormBuilderBaseClass(npyscreen.NPSAppManaged):
 
     def widget_add_boolean(self, name, description="",default=True):
         if description == "":
-            description = name
+            description = name        
+        # self.widget_add_multichoice(name=name,choices=["yes","no"],description=description)
+        widget = self.widget_add_val(name=name,description=description)
         self.widget_types[name] = "bool"
-        print("widget_add_bool")
-        from IPython import embed;embed(colors='Linux')
-        description = j.data.text.pad(description, 20)
-        widget = self.form.add_widget(npyscreen.TitleSelectOne, name=description, values=choices)
-        # check if there is pre-filled value if yes pre-select it
-        if self.config[name] != "":
-            if self.config[name] in choices:
-                widget.value = choices.index(self.config[name])
-        self.widget_add(name, widget)        
 
     def form_add_items_pre(self):
         pass

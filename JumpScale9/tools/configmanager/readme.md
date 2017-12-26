@@ -4,7 +4,7 @@
 
 ## How to enable a jumpscale module to have a secret config management
 
-- Make you module inherits from the secret config base class, available at `j.tools.secretconfig.base_class_secret_config`.
+- Make you module inherits from the secret config base class, available at `j.tools.configmanager.base_class_config`.
 - Make sure to call the constructor of the base class. (`super().__ini__()`)
 - Define the template of your configuration. This template is a multi string representing a dictionary.  
 You need to specified a default value for each key. The type of the value will be automatically deducted. The type per key will be remember and checked when updating the config. If you tried to set a value with a wrong type, an exception will be raised.  
@@ -25,9 +25,9 @@ port = 0
 secret_ = ""
 """
 
-SecretConfigBase = j.tools.secretconfig.base_class_secret_config
+JSConfigBase = j.tools.configmanager.base_class_config
 
-class MyModuleFactory(SecretConfigBase):
+class MyModuleFactory(JSConfigBase):
 
     def __init__(self):
         # you need to call the constructor
@@ -36,14 +36,14 @@ class MyModuleFactory(SecretConfigBase):
         # define the jslocation like any other js module
         self.__jslocation__ = "j.client.mymodule"
         # set self.TEMPLATE to your defined TEMPLATE
-        # self.TEMPLATE is given by SecretConfigBase
+        # self.TEMPLATE is given by JSConfigBase
         self._TEMPLATE = CONFIG_TEMPLATE
     
     def get(self, instance='main'):
         """
         get an instance of your module
         """
-        # self.instance is give by SecretConfigBase
+        # self.instance is give by JSConfigBase
         # you need to set it for self.config to return the proper values
         self.instance = instance
         host = self.config.data['host']
