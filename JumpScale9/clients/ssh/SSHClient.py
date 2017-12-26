@@ -372,6 +372,14 @@ class SSHClient:
             self._prefab = j.tools.prefab.get(self)
         return self._prefab
 
+    def _get_prefab(self):
+        ssh_client = j.clients.ssh.get(addr=self.addr, port=self.port,
+            login=self.login, passwd=self.passwd, look_for_keys=False, timeout=300)
+        temp_executor = j.tools.executor.getFromSSHClient(sshclient=ssh_client)
+        temp_prefab = temp_executor.prefab
+        j.tools.executor.reset(temp_executor)
+        return temp_prefab
+
     def ssh_authorize(self, user, key):
         self.prefab.system.ssh.authorize(user, key)
 
@@ -408,21 +416,22 @@ class SSHClient:
         self.logger.debug("adding key to remote machine...")
         self.logger.debug("authorizing key : %s" % keyname)
         key = j.clients.ssh.SSHKeyGetFromAgentPub(keyname)
-        self.logger.debug("loading sshkey: %s" % key)
         ftp = self.client.open_sftp()
 
-        authorized_key_file_exist = False
-        while not authorized_key_file_exist:
-            f = ftp.open("/home/%s/authorized_keys" % self.login, mode='rw')
-            f.write(key)
-            f.close()
+        #making sure the authorized_keys file exist
+        prefab = self._get_prefab()
 
-            f = ftp.open("/home/%s/authorized_keys" % self.login, mode='r')
-            x = f.read()
-            if not x:
-                authorized_key_file_exist = False
-            else:
-                authorized_key_file_exist = True
+        prefab.core.dir_ensure("/home/%s" % self.login)
+        if prefab.core.file_exists("/home/%s/authorized_keys" % self.login):
+            cmd = "touch /home/%s/authorized_keys" % self.login
+            rc, out, err = self.execute(cmd)
+            if err:
+                self.logger.error("Couldn't create authorized_keys file")
+                raise RuntimeError(err)
+
+        f = ftp.open("/home/%s/authorized_keys" % self.login, mode='rw')
+        f.write(key)
+        f.close()
 
         cmd = "echo '%s' | sudo -S bash -c 'mkdir -p /root/.ssh;mv /home/%s/authorized_keys  /root/.ssh/authorized_keys; chmod 644 /root/.ssh/authorized_keys;chown root:root /root/.ssh/authorized_keys'" % (
             self.passwd, self.login)
