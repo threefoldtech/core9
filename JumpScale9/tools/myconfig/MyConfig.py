@@ -30,13 +30,13 @@ class MyConfigUI(FormBuilderBaseClass):
         self.widget_add_multichoice("ssh_key_name", keynames)
 
 
-SecretConfigBase = j.tools.secretconfig.base_class_secret_config
-class MyConfig(SecretConfigBase):
+JSConfigBase = j.tools.configmanager.base_class_config
+class MyConfig(JSConfigBase):
     """
     """
     def __init__(self):
         self.__jslocation__ = "j.tools.myconfig" 
-        SecretConfigBase.__init__(self)
-        self._config = j.tools.secretconfig._get_for_obj(self,instance="main",data={},template=TEMPLATE,ui=MyConfigUI)
+        JSConfigBase.__init__(self)
+        self._config = j.tools.configmanager._get_for_obj(self,instance="main",data={},template=TEMPLATE,ui=MyConfigUI)
         
 

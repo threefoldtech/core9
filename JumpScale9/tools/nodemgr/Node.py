@@ -1,11 +1,39 @@
 from js9 import j
 
-SecretConfigBase = j.tools.secretconfig.base_class_secret_configs
+TEMPLATE = """
+addr = ""
+port = 22
+clienttype = ""
+active = false
+selected = false
+category = ""
+description = ""
+secretconfig_ = ""
+"""
 
-class Node(SecretConfigBase):
+FormBuilderBaseClass=j.tools.formbuilder.baseclass_get()
 
-    def __init__(self,config):
-        self.config=config
+class MyConfigUI(FormBuilderBaseClass):
+
+    def init(self):
+        self.auto_disable.append("clienttype")  # makes sure that this property is not auto populated, not needed when in form_add_items_pre
+        self.auto_disable.append("enabled")
+        self.auto_disable.append("selected")
+
+    def form_add_items_post(self):
+        self.widget_add_multichoice("clienttype", ["ovh","packetnet","ovc","physical","docker","container","zos"])
+        self.widget_add_boolean("enabled",default=False)
+        self.widget_add_boolean("selected",default=True)
+
+
+JSConfigBase = j.tools.configmanager.base_class_config
+
+class Node(JSConfigBase):
+
+    def __init__(self,instance,data={},parent=None):
+        JSConfigBase.__init__(self,instance=instance,data=data,parent=parent)
+        self._config = j.tools.configmanager._get_for_obj(self,instance=instance,data=data,template=TEMPLATE,ui=MyConfigUI)
+                
         
     @property
     def addr(self):
