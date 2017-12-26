@@ -24,8 +24,8 @@ class JSBaseClassConfigs():
         return self.items[instance]
 
 
-    def reset(self,instance):
-        raise RuntimeError("#TODO:*1 implement")
+    def reset(self):
+        j.tools.configmanager.delete(location=self.__jslocation__, instance="*")
 
     def list(self):
         return j.tools.configmanager.list(location=self.__jslocation__)

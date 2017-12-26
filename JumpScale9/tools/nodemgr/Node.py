@@ -2,6 +2,7 @@ from js9 import j
 
 TEMPLATE = """
 addr = ""
+name = ""
 port = 22
 clienttype = ""
 active = false
@@ -17,13 +18,13 @@ class MyConfigUI(FormBuilderBaseClass):
 
     def init(self):
         self.auto_disable.append("clienttype")  # makes sure that this property is not auto populated, not needed when in form_add_items_pre
-        self.auto_disable.append("enabled")
+        self.auto_disable.append("active")
         self.auto_disable.append("selected")
 
-    def form_add_items_post(self):
-        self.widget_add_multichoice("clienttype", ["ovh","packetnet","ovc","physical","docker","container","zos"])
-        self.widget_add_boolean("enabled",default=False)
+    def form_add_items_post(self):        
+        self.widget_add_boolean("active",default=False)
         self.widget_add_boolean("selected",default=True)
+        self.widget_add_multichoice("clienttype", ["ovh","packetnet","ovc","physical","docker","container","zos"])
 
 
 JSConfigBase = j.tools.configmanager.base_class_config
@@ -37,15 +38,15 @@ class Node(JSConfigBase):
         
     @property
     def addr(self):
-        self.config.data["address"]
+        return self.config.data["addr"]
 
     @addr.setter
     def addr(self,val):
-        self.config.data["address"]=val
+        self.config.data["addr"]=val
 
     @property
     def port(self):
-        self.config.data["port"]
+        return self.config.data["port"]
 
     @port.setter
     def port(self,val):
@@ -53,7 +54,7 @@ class Node(JSConfigBase):
 
     @property
     def active(self):
-        self.config.data["active"]
+        return self.config.data["active"]
 
     @active.setter
     def active(self,val):
@@ -61,7 +62,7 @@ class Node(JSConfigBase):
 
     @property
     def clienttype(self):
-        self.config.data["clienttype"]
+        return self.config.data["clienttype"]
 
     @clienttype.setter
     def clienttype(self,val):
@@ -70,7 +71,7 @@ class Node(JSConfigBase):
 
     @property
     def category(self):
-        self.config.data["category"]
+        return self.config.data["category"]
 
     @category.setter
     def category(self,val):
@@ -78,7 +79,7 @@ class Node(JSConfigBase):
 
     @property
     def name(self):
-        self.config.data["name"]
+        return self.config.data["name"]
 
     @name.setter
     def name(self,val):
@@ -86,7 +87,7 @@ class Node(JSConfigBase):
 
     @property
     def description(self):
-        self.config.data["description"]
+        return self.config.data["description"]
 
     @description.setter
     def description(self,val):
@@ -94,14 +95,14 @@ class Node(JSConfigBase):
 
     @property
     def selected(self):
-        self.config.data["selected"]
+        return self.config.data["selected"]
 
     @selected.setter
     def selected(self,val):
         self.config.data["selected"]=val   
         
 
-    def test(self):
+    def isconnected(self):
         if self.connected is None:
             # lets test tcp on 22 if not then 9022 which are our defaults
             test = j.sal.nettools.tcpPortConnectionTest(
@@ -164,8 +165,8 @@ class Node(JSConfigBase):
 
     def __str__(self):
         if self.selected == True:
-            return "%-14s %-25s:%-4s [%s] *" % (self.name, self.addr, self.port, self.cat)
+            return "%-14s %-25s:%-4s [%s] *" % (self.name, self.addr, self.port, self.category)
         else:
-            return "%-14s %-25s:%-4s [%s]" % (self.name, self.addr, self.port, self.cat)
+            return "%-14s %-25s:%-4s [%s]" % (self.name, self.addr, self.port, self.category)
 
     __repr__ = __str__

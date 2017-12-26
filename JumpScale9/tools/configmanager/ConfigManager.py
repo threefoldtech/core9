@@ -64,7 +64,7 @@ class ConfigFactory():
         """
         Will display a npyscreen form to edit the configuration
         """
-        sc = self.config_get_for_location(location=location,instance=instance)
+        sc = self.get_for_location(location=location,instance=instance)
         sc.configure()
         sc.save()
         return sc
@@ -74,7 +74,7 @@ class ConfigFactory():
         update the configuration by giving a dictionnary. The configuration will
         be updated with the value of updatedict
         """
-        sc = self.get(location=location,instance=instance)
+        sc = self.get_for_location(location=location,instance=instance)
         sc.data = updatedict
         sc.save()
         return sc
@@ -97,7 +97,7 @@ class ConfigFactory():
 
         return self._cache[key]
 
-    def config_get_for_location(self,location="",instance="main",data={}):
+    def get_for_location(self,location="",instance="main",data={}):
         if location=="" or  location==None:
             if j.sal.fs.getcwd().startswith(self.path_configrepo):
                 #means we are in subdir of current config  repo, so we can be in location
@@ -109,11 +109,9 @@ class ConfigFactory():
         if obj._single_item:
             return obj.config
         else:
-            print("multiple objects")
-            from IPython import embed;embed(colors='Linux')
+            return obj.get(instance=instance).config
 
-
-    def config_get(self, location, template={},instance="main", data = {},ui=None):
+    def get(self, location, template={},instance="main", data = {},ui=None):
         """
         return a secret config
         """
@@ -151,7 +149,7 @@ class ConfigFactory():
     #     sc.save()
     #     return sc
 
-    def config_list(self, location):
+    def list(self, location):
         """
         list all the existing instance name for a location
 
@@ -163,7 +161,7 @@ class ConfigFactory():
         if not j.sal.fs.exists(root):
             return instances
 
-        jsclient_object = eval(location)
+        # jsclient_object = eval(location)
 
         for cfg_path in j.sal.fs.listFilesInDir(root):
             cfg_name = j.sal.fs.getBaseName(cfg_path)
@@ -187,7 +185,7 @@ class ConfigFactory():
 
     def init(self,path="",data={}):
 
-        if self._findConfigDirParent(path)!=None:
+        if self._findConfigDirParent(path,die=False)!=None:
             return 
         gitdir = "%s/.git" % path
         if not j.sal.fs.exists(gitdir) or not j.sal.fs.isDir(gitdir):
@@ -280,6 +278,7 @@ class ConfigFactory():
     def _test_myconfig_multiitem(self):
 
         MYCONFIG = """
+        name = ""
         addr = "192.168.1.1"
         port = 22
         clienttype = "ovh"
@@ -293,6 +292,7 @@ class ConfigFactory():
 
         for i in range(10):
             data["addr"]= "192.168.1.%s"%i
+            data["name"]= "test%s"%i
             obj=j.tools.nodemgr.get("test%s"%i,data=data)
 
         #empty mem
@@ -303,14 +303,14 @@ class ConfigFactory():
         assert obj.config._data["addr"]=="192.168.1.5"
         assert obj.config.data["addr"]=="192.168.1.5"
         assert obj.config._data["secretconfig_"]!="my secret config" #needs to be encrypted
+        assert obj.config.data["secretconfig_"]=="my secret config"
 
         tdir = "/tmp/tests/secretconfig/j.tools.nodemgr"
         assert len(j.sal.fs.listFilesInDir(tdir))==10
 
-        j.tools.nodemgr.reset()
-        assert len(j.sal.fs.listFilesInDir(tdir))==0
+        i=j.tools.nodemgr.get("test1")
+        assert i.name=="test1"
 
+        # j.tools.nodemgr.reset()
+        # assert len(j.sal.fs.listFilesInDir(tdir))==0
 
-
-
-        # from IPython import embed;embed(colors='Linux')

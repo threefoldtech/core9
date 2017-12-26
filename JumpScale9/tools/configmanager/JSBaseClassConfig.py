@@ -7,8 +7,9 @@ class JSBaseClassConfig():
     def __init__(self,instance="main",data={},parent=None):
         self._single_item = True
         self._config=None
+        X=self.__jslocation__
         if parent!=None:
-            self.__jslocation__=parent.__jslocation__
+            X=parent.__jslocation__
         #self._config = j.tools.configmanager._get_for_obj(self,instance=instance,data=data,template=TEMPLATE,ui=MyConfigUI)
 
 

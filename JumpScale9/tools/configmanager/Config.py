@@ -12,7 +12,8 @@ class Config():
         self.location = location
         self.instance = instance
         self._template = template
-        self._data = data
+        self._data = {}
+        self.data=data
         self.ui = ui
         if self.instance==None:
             raise RuntimeError("cannot be None")
@@ -93,6 +94,7 @@ class Config():
                 raise RuntimeError("Cannot find key:%s in template for %s" % (key, self))
 
             ttype = j.data.types.type_detect(self.template[key])
+            # print("set data:%s %s"%(ttype,key))
             if key.endswith("_"):
                 if ttype.BASETYPE == "string":
                     if item != '':
