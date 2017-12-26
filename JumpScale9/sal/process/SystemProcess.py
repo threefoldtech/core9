@@ -826,11 +826,11 @@ class SystemProcess:
     def killProcessByName(self, name, sig=None):
         pids = self.getProcessPid(name)
         for pid in pids:
-            kill(pid, sig)
+            self.kill(pid, sig)
 
     def killProcessByPort(self, port):
         for pid in self.getPidsByPort(port):
-            kill(pid)
+            self.kill(pid)
 
     def getProcessByPort(self, port):
         """
