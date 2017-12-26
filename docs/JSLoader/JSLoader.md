@@ -13,7 +13,7 @@ j.secondary_namespace.module...
 To add new module to be loaded by the JSLoader:
 * create your module
 * add \_\_jslocation__ field to your factory like ```self.__jslocation__ = "j.clients.newclient"``` 
-* add your new module to JumpScale configuerations:
+* add your new module to JumpScale configurations:
   you can do this manually by adding your new module to jumpscale9.toml file located in ```<host_dir>/cfg/jumpscale9.toml``` in plugins section
   **or**  you can do this using js9 like this
     ```python
