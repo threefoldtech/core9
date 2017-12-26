@@ -98,6 +98,11 @@ class ConfigFactory():
         return self._cache[key]
 
     def get_for_location(self,location="",instance="main",data={}):
+        """
+        will look for jumpscale module on defined location
+        and generate the config instance from there
+        @RETURN config
+        """
         if location=="" or  location==None:
             if j.sal.fs.getcwd().startswith(self.path_configrepo):
                 #means we are in subdir of current config  repo, so we can be in location
