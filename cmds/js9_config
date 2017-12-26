@@ -8,7 +8,7 @@ def cli():
 
 @click.command()
 def init():
-    j.tools.configmanager.init()
+    j.tools.configmanager.init(j.sal.fs.getcwd())
 
 @click.command()
 def test():
