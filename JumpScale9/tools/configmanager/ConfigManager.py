@@ -204,6 +204,9 @@ class ConfigFactory():
         return path
 
     def test(self):
+        """
+        js9 'j.tools.configmanager.test()'
+        """
 
         tdir = "/tmp/tests/secretconfig"
         j.sal.fs.remove(tdir)
