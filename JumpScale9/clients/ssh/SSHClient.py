@@ -403,24 +403,23 @@ class SSHClient:
 
     def SSHAuthorizeKey(
             self,
-            keyname):
+            sshkey_name,
+            sshkey_path):
         """
         this required ssh-agent to be loaded !!!
-        the keyname is the name of the key as loaded in ssh-agent
+        the sshkey_name is the name of the key as loaded in ssh-agent
 
         if remoteothers==True: then other keys will be removed
         """
-        if keyname in self.ssh_authorized:
+        j.clients.ssh.load_ssh_key(sshkey_path, True)
+        key = j.clients.ssh.SSHKeyGetFromAgentPub(sshkey_name)
+
+        if key in self.ssh_authorized:
             return
+        self.logger.info("found key: %s" % key)
 
-        self.logger.debug("adding key to remote machine...")
-        self.logger.debug("authorizing key : %s" % keyname)
-        key = j.clients.ssh.SSHKeyGetFromAgentPub(keyname)
         ftp = self.client.open_sftp()
-
-        #making sure the authorized_keys file exist
         prefab = self._get_prefab()
-
         prefab.core.dir_ensure("/home/%s" % self.login)
         if prefab.core.file_exists("/home/%s/authorized_keys" % self.login):
             cmd = "touch /home/%s/authorized_keys" % self.login
@@ -443,5 +442,5 @@ class SSHClient:
             raise RuntimeError(err)
 
         self.logger.debug("done adding key to remote machine.")
-        self.ssh_authorized[keyname] = True
+        self.ssh_authorized[key] = True
         j.clients.ssh.remove_item_from_known_hosts(self.addr)
