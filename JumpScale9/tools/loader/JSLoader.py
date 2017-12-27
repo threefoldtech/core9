@@ -316,6 +316,8 @@ class JSLoader():
         for line in C.split("\n"):
             if line.startswith("class "):
                 classname = line.replace("class ", "").split(":")[0].split("(", 1)[0].strip()
+                if classname == "JSBaseClassConfig":
+                    break
             if line.find("self.__jslocation__") != -1 and locfound==False:
                 if classname is None:
                     raise RuntimeError(
