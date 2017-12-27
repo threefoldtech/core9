@@ -154,7 +154,10 @@ class SystemProcess:
             start = time.time()
             end = start + timeout
             now = start
-
+            
+            # if command already finished then read stdout, stderr
+            out = readout(p.stdout)
+            err = readout(p.stderr)
             while p.poll() is None:
                 #means process is still running
 
@@ -182,8 +185,8 @@ class SystemProcess:
                     return (-2, out, err)
 
                 # Read out process streams, but don't block
-                out = readout(p.stdout)
-                err = readout(p.stderr)
+                out += readout(p.stdout)
+                err += readout(p.stderr)
 
         rc = -1 if p.returncode < 0 else p.returncode
 
