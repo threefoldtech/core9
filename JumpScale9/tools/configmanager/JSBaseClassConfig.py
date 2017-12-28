@@ -2,16 +2,16 @@ from js9 import j
 # import os
 # import copy
 
+
 class JSBaseClassConfig():
 
-    def __init__(self,instance="main",data={},parent=None):
+    def __init__(self, instance="main", data={}, parent=None):
         self._single_item = True
-        self._config=None
-        s=self
-        if parent!=None:
-            s.__jslocation__=parent.__jslocation__
+        self._config = None
+        s = self
+        if parent is not None:
+            s.__jslocation__ = parent.__jslocation__
         #self._config = j.tools.configmanager._get_for_obj(self,instance=instance,data=data,template=TEMPLATE,ui=MyConfigUI)
-
 
     def reload(self):
         self._config.load()
@@ -21,13 +21,13 @@ class JSBaseClassConfig():
 
     @property
     def config(self):
-        if self._config==None:
+        if self._config is None:
             raise RuntimeError("could not find config obj on secret base class, make sure has been properly initialized check MyConfig.py in core for example.")
         return self._config
 
     @config.setter
-    def config(self,val):
-        self._config=val
+    def config(self, val):
+        self._config = val
 
     @property
     def instance(self):

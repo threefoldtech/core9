@@ -5,7 +5,7 @@ from js9 import j
 
 class Config():
 
-    def __init__(self, instance="main",location=None,template={},ui=None,data={}):
+    def __init__(self, instance="main", location=None, template={}, ui=None, data={}):
         """
         jsclient_object is e.g. j.clients.packet.net
         """
@@ -13,18 +13,18 @@ class Config():
         self.instance = instance
         self._template = template
         self._data = {}
-        self.data=data
+        self.data = data
         self.ui = ui
-        if self.instance==None:
+        if self.instance is None:
             raise RuntimeError("cannot be None")
         self.load()
 
-    def instance_set(self,instance):
+    def instance_set(self, instance):
         """
         will change instance name & delete data
         """
-        self.instance=instance
-        self._data={}
+        self.instance = instance
+        self._data = {}
 
         self.load()
 
@@ -53,7 +53,7 @@ class Config():
         self.configure()
    
     def configure(self):
-        if self.ui==None:
+        if self.ui is None:
             raise RuntimeError("cannot call configure UI because not defined yet, is None")
         myconfig = self.ui(name=self.path, config=self.data, template=self.template)
         myconfig.run()
@@ -69,13 +69,13 @@ class Config():
         if self._template is None or self._template == '':
             raise RuntimeError("self._template has to be set")
         if j.data.types.string.check(self._template):
-            self._template=j.data.serializer.toml.loads(self._template)
+            self._template = j.data.serializer.toml.loads(self._template)
         return self._template
 
     @property
     def data(self):
         res = {}
-        if self._data=={}:
+        if self._data == {}:
             self.load()
         for key, item in self._data.items():
             ttype = j.data.types.type_detect(self.template[key])
@@ -106,7 +106,6 @@ class Config():
                 if ttype.BASETYPE == "string":
                     if item != '':
                         item = j.data.nacl.default.encryptSymmetric(item, hex=True, salt=item)
-                    
             self._data[key] = item
 
     @property

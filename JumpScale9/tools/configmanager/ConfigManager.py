@@ -6,7 +6,7 @@ from .JSBaseClassConfigs import JSBaseClassConfigs
 from .Config import Config
 
 
-class ConfigFactory():
+class ConfigFactory:
 
     def __init__(self):
         self.__jslocation__ = "j.tools.configmanager"
@@ -14,8 +14,17 @@ class ConfigFactory():
         self._cache = {}
         self.interactive = True
 
-    def reset(self):
-        self._cache = {}
+    def reset(self, location=None, instance=None):
+        if location and not instance:
+            for key in self._cache:
+                if key.startswith('%_' % location):
+                    self._cache.pop(key)
+        elif location and instance:
+            key = "%s_%s" % (location, instance)
+            if key in self._cache:
+                self._cache.pop(key)
+        else:
+            self._cache = {}
 
     def _findConfigDirParent(self, path, die=True):
         if path == "":
