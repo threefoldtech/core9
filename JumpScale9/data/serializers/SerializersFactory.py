@@ -21,11 +21,7 @@ except Exception as e:
     # print("could not load serializer: SerializerUJson")
     SerializerUJson = SerializerBase
 
-try:
-    from JumpScale9.data.serializers.SerializerYAML import SerializerYAML
-except Exception as e:
-    # print("could not load serializer: SerializerYAML")
-    SerializerYAML = SerializerBase
+from JumpScale9.data.serializers.SerializerYAML import SerializerYAML
 
 try:
     from JumpScale9.data.serializers.SerializerBlosc import SerializerBlosc
@@ -57,11 +53,7 @@ except Exception as e:
     # print("could not load serializer: SerializerSnappy")
     SerializerSnappy = SerializerBase
 
-try:
-    from JumpScale9.data.serializers.SerializerTOML import SerializerTOML
-except Exception as e:
-    # print("could not load serializer: SerializerTOML")
-    SerializerTOML = SerializerBase
+from JumpScale9.data.serializers.SerializerTOML import SerializerTOML
 
 
 class SerializersFactory:
