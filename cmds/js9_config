@@ -2,6 +2,7 @@
 from js9 import j
 import click
 
+
 @click.group()
 def cli():
     pass
@@ -10,21 +11,48 @@ def cli():
 def init():
     j.tools.configmanager.init(j.sal.fs.getcwd())
 
+
 @click.command()
 def test():
-    j.tools.configmanager.test()    
+    j.tools.configmanager.test()
+
+
+@click.command()
+@click.option('--location', '-l', help='location in jumpscale e.g. j.clients.packetnet (j.clients can be ommitted) if not passed, will reset all')
+@click.option('--instance', '-i', help='name of the instance, instance=main. to set, must also set location')
+def reset(location=None, instance=None):
+    if instance and not location:
+        raise RuntimeError("to specify which instance to reset, you must also specify the location")
+    
+    j.tools.configmanager.reset(location=location, instance=instance)
+
+    path = j.tools.configmanager.path_configrepo
+    if location:
+        path = j.sal.fs.joinPaths(path, location)
+    if instance:
+        path = j.sal.fs.joinPaths(path, '%s.toml' % instance)
+    if not location:
+        configs = j.sal.fs.listDirsInDir(path)
+        for config in configs:
+            if not j.sal.fs.getBaseName(config).startswith('.'):
+                j.sal.fs.removeDirTree(config)
+    else:
+        j.sal.fs.remove(path)
+        
 
 @click.command()
 @click.option('--location', '-l', help='location in jumpscale e.g. j.clients.packetnet (j.clients can be ommitted)')
 @click.option('--instance', '-i', help='name of the instance, instance=main')
-def configure(location,instance="main"):
-    if instance==None:
-        instance="main"
-    j.tools.configmanager.configure(location=location,instance=instance)
+def configure(location, instance="main"):
+    if instance is None:
+        instance = "main"
+    j.tools.configmanager.configure(location=location, instance=instance)
+
 
 cli.add_command(configure)
 cli.add_command(init)
 cli.add_command(test)
+cli.add_command(reset)
 
 if __name__ == '__main__':
     cli()
