@@ -2,29 +2,40 @@
 from js9 import j
 import click
 
+
 @click.group()
 def cli():
     pass
+
 
 @click.command()
 def init():
     j.tools.configmanager.init(j.sal.fs.getcwd())
 
+
 @click.command()
 def test():
-    j.tools.configmanager.test()    
+    j.tools.configmanager.test()
+
+
+@click.command()
+def reset():
+    j.tools.configmanager.reset()
+
 
 @click.command()
 @click.option('--location', '-l', help='location in jumpscale e.g. j.clients.packetnet (j.clients can be ommitted)')
 @click.option('--instance', '-i', help='name of the instance, instance=main')
-def configure(location,instance="main"):
-    if instance==None:
-        instance="main"
-    j.tools.configmanager.configure(location=location,instance=instance)
+def configure(location, instance="main"):
+    if instance is None:
+        instance = "main"
+    j.tools.configmanager.configure(location=location, instance=instance)
+
 
 cli.add_command(configure)
 cli.add_command(init)
 cli.add_command(test)
+cli.add_command(reset)
 
 if __name__ == '__main__':
     cli()
