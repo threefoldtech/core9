@@ -12,7 +12,6 @@ class ConfigFactory():
         self.__jslocation__ = "j.tools.configmanager"
         self._path = ""
         self._cache = {}
-        self.interactive = True
 
     def reset(self):
         self._cache = {}

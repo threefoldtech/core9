@@ -38,19 +38,12 @@ class Config():
 
         if not j.sal.fs.exists(self.path):
             self._data, error = j.data.serializer.toml.merge(tomlsource=self.template, tomlupdate=self._data, listunique=True)
-            if j.tools.configmanager.interactive:
-                self.interactive()                
-                self.save()
+            self.save()
         else:
             content = j.sal.fs.fileGetContents(self.path)
             data = j.data.serializer.toml.loads(content)
             # merge found data into template
             self._data, error = j.data.serializer.toml.merge(tomlsource=self.template, tomlupdate=data, listunique=True)
-
-    def interactive(self):
-        print("Did not find config file:%s"%self.location)        
-        self.instance=j.tools.console.askString("specify name for instance", defaultparam=self.instance)
-        self.configure()
 
     def configure(self):
         if self.ui==None:
