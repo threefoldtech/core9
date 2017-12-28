@@ -8,7 +8,9 @@ login_name = ""
 ssh_key_name = ""
 """
 
-FormBuilderBaseClass=j.tools.formbuilder.baseclass_get()
+FormBuilderBaseClass = j.tools.formbuilder.baseclass_get()
+
+
 class MyConfigUI(FormBuilderBaseClass):
     """
     This class let the user tune the form displayed during configuration.
@@ -16,9 +18,10 @@ class MyConfigUI(FormBuilderBaseClass):
     this class allow to enhance the form with custom inputs.
     """
 
-    def __init__(self,**kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # makes sure that this property is not auto populated, not needed when in form_add_items_pre
+        # makes sure that this property is not auto populated, not needed when
+        # in form_add_items_pre
         self.auto_disable.append("ssh_key_name")
 
     def form_add_items_post(self):
@@ -31,12 +34,13 @@ class MyConfigUI(FormBuilderBaseClass):
 
 
 JSConfigBase = j.tools.configmanager.base_class_config
+
+
 class MyConfig(JSConfigBase):
     """
     """
-    def __init__(self):
-        self.__jslocation__ = "j.tools.myconfig" 
-        JSConfigBase.__init__(self)
-        self._config = j.tools.configmanager._get_for_obj(self,instance="main",data={},template=TEMPLATE,ui=MyConfigUI)
-        
 
+    def __init__(self):
+        self.__jslocation__ = "j.tools.myconfig"
+        JSConfigBase.__init__(self)
+        self._config = j.tools.configmanager._get_for_obj(self, instance="main", data={}, template=TEMPLATE, ui=MyConfigUI)

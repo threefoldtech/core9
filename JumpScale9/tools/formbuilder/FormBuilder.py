@@ -26,10 +26,11 @@ class FormBuilderBaseClass(npyscreen.NPSAppManaged):
     def main(self):
         # npyscreen.Form.DEFAULT_LINES=200
         self.form = npyscreen.Form(name="Configuration Manager:%s" % self.name,)
-        self.form.DEFAULT_LINES=100
+        self.form.DEFAULT_LINES = 100
         # from IPython import embed;embed(colors='Linux')
 
-        self.config, errors = j.data.serializer.toml.merge(self.template, self.config, listunique=True)
+        self.config, errors = j.data.serializer.toml.merge(
+            self.template, self.config, listunique=True)
 
         self.form_add_items_pre()
 
@@ -41,10 +42,10 @@ class FormBuilderBaseClass(npyscreen.NPSAppManaged):
             ttype = j.data.types.type_detect(val)
             if ttype.NAME in ["string", "integer", "float", "list"]:
                 self.widget_add_val(key)
-            elif ttype.NAME in ["bool","boolean"]:
+            elif ttype.NAME in ["bool", "boolean"]:
                 self.widget_add_boolean(key)
             else:
-                raise RuntimeError("did not implement %s"%ttype)
+                raise RuntimeError("did not implement %s" % ttype)
 
         self.form_add_items_post()
 
@@ -71,21 +72,19 @@ class FormBuilderBaseClass(npyscreen.NPSAppManaged):
         self.config, errors = j.data.serializer.toml.merge(self.config, result, listunique=True)
 
         for key, val in self.config.items():
-            # print("%s %s:%s"%(ttype, key, val))
 
             if key in result:
-                # print("SKIP")
                 continue
 
             ttype = j.data.types.type_detect(val)
-            
+
             if ttype.NAME in ["string", "integer", "float", "boolean"]:
                 w = self.widgets[key]
                 if self.widget_types[key] == "multichoice":
-                    result[key] = w.values[w.value[0]]  # get value from the choice
+                    # get value from the choice
+                    result[key] = w.values[w.value[0]]
                 elif self.widget_types[key] == "bool":
-                    result[key] = w.value.lower() in ["1",True,"true","yes","y"]
-                    # print("bool:%s:%s"%(key,result[key]))
+                    result[key] = w.value.lower() in ["1", True, "true", "yes", "y"]
                 else:
                     result[key] = w.value
             elif ttype.NAME == "list":
@@ -101,7 +100,6 @@ class FormBuilderBaseClass(npyscreen.NPSAppManaged):
         """
         @param description if empty will be same as name
         """
-        print("**widget add:%s"%name)
         if description == "":
             description = name
         description = j.data.text.pad(description, 20)
@@ -132,11 +130,11 @@ class FormBuilderBaseClass(npyscreen.NPSAppManaged):
                 widget.value = choices.index(self.config[name])
         self.widget_add(name, widget)
 
-    def widget_add_boolean(self, name, description="",default=True):
+    def widget_add_boolean(self, name, description="", default=True):
         if description == "":
-            description = name        
+            description = name
         # self.widget_add_multichoice(name=name,choices=["yes","no"],description=description)
-        widget = self.widget_add_val(name=name,description=description)
+        widget = self.widget_add_val(name=name, description=description)
         self.widget_types[name] = "bool"
 
     def form_add_items_pre(self):
@@ -173,7 +171,7 @@ class FormBuilderFactory:
         """
         return FormBuilderBaseClass
 
-    def test_interactive(self): #js9 'j.tools.formbuilder.test_interactive()'
+    def test_interactive(self):  # js9 'j.tools.formbuilder.test_interactive()'
 
         TEMPLATE = """
         fullname = ""
@@ -184,19 +182,24 @@ class FormBuilderFactory:
         will_be_encr_ = ""
         """
 
-        # everything which ends on _ will be encrypted (only works for strings at this point)
+        # everything which ends on _ will be encrypted (only works for strings
+        # at this point)
 
         BaseConfig = self.baseclass_get()
 
         class MyConfig(BaseConfig):
 
             def init(self):
-                self.auto_disable.append("ssh_key_name")  # makes sure that this property is not auto populated, not needed when in form_add_items_pre
+                # makes sure that this property is not auto populated, not
+                # needed when in form_add_items_pre
+                self.auto_disable.append("ssh_key_name")
 
             def form_add_items_post(self):
                 # SSHKEYS
                 sshpath = "%s/.ssh" % (j.dirs.HOMEDIR)
-                # keynames = [j.sal.fs.getBaseName(item) for item in j.clients.ssh.ssh_keys_list_from_agent()] #load all ssh keys loaded in mem
+                # keynames = [j.sal.fs.getBaseName(item) for item in
+                # j.clients.ssh.ssh_keys_list_from_agent()] #load all ssh keys
+                # loaded in mem
                 keynames = [j.sal.fs.getBaseName(item)[:-4] for item in j.sal.fs.listFilesInDir(sshpath, filter="*.pub")]
                 if len(keynames) == 0:
                     raise RuntimeError("load ssh-agent")
@@ -207,7 +210,8 @@ class FormBuilderFactory:
                 # can overrule some result, will not do here
                 return result
 
-        # will create empty config file properly constructed starting from the template
+        # will create empty config file properly constructed starting from the
+        # template
         config, errors = j.data.serializer.toml.merge(TEMPLATE, {})
 
         # don't start from an empty config
@@ -219,6 +223,7 @@ class FormBuilderFactory:
         c = MyConfig(name="test", template=TEMPLATE, config=config)
         c.run()
 
-        assert c.config["email"] == "someemail@rrr.com"  # don't change it during test
+        # don't change it during test
+        assert c.config["email"] == "someemail@rrr.com"
 
         print(c.yaml)
