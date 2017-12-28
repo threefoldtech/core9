@@ -360,7 +360,7 @@ class SSHClientFactory:
             self._init_ssh_env()
 
 
-    def load_ssh_key(self, path="", create_keys=False):
+    def load_ssh_key(self, path="", create_keys=False, die=True):
         """
         load ssh key in ssh-agent, if no ssh-agent is found, new ssh-agent will be started
         :path: path of ssh key to be loaded, it'll default to ~/.ssh/id_rsa if not provided
@@ -369,6 +369,8 @@ class SSHClientFactory:
         path = path or j.sal.fs.joinPaths(j.dirs.HOMEDIR, ".ssh", "id_rsa")
         path_found = j.sal.fs.exists(path)
         if not path_found and not create_keys:
+            if not die:
+                return
             raise RuntimeError("key %s is not found" % path)
 
         self.start_ssh_agent()
