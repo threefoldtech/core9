@@ -17,7 +17,6 @@ def _post_install(libname, libpath):
     # remove leftovers
     for item in j.sal.fs.find("/usr/local/bin/",fileregex="js9*"):
          j.sal.fs.remove("/usr/local/bin/%s"%item)
-    j.sal.fs.remove(j.sal.fs.joinPaths(j.dirs.HOMEDIR,".jumpscale9.toml"))
 
     j.tools.executorLocal.initEnv()
     j.tools.jsloader.generate()
@@ -52,7 +51,7 @@ except ImportError:
 
 setup(
     name='JumpScale9',
-    version='9.2.0',
+    version='9.3.0',
     description='Automation framework for cloud workloads',
     long_description=long_description,
     url='https://github.com/Jumpscale/core9',
@@ -83,7 +82,8 @@ setup(
         'watchdog',
         'msgpack-python',
         'colorlog',
-        'npyscreen'
+        'npyscreen',
+        "pyyaml"
     ],
     cmdclass={
         'install': install,

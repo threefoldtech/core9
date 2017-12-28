@@ -25,6 +25,17 @@ class ExecutorSSH(ExecutorBase):
             self._logger = j.logger.get("executor.%s" % self.sshclient.addr)
         return self._logger
 
+    def exists(self, path):
+        if path == "/env.sh":
+            raise RuntimeError("SS")
+
+        rc, _, _ = self.execute('test -e %s' %
+                                path, die=False, showout=False, hide=True)
+        if rc > 0:
+            return False
+        else:
+            return True    
+
     # def pushkey(self, user='root'):
     #     self.logger.debug("pushkey from agent with name:%s" % self.key_filename)
     #     key = self.pubkey or j.clients.ssh.SSHKeyGetFromAgentPub(self.key_filename)

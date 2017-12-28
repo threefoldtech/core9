@@ -24,6 +24,7 @@ class ExecutorBase:
         self.CURDIR = ""
         self._logger = None
         self.reset()
+        self._dirpaths_init=False
 
     def reset(self):
         self._iscontainer = None
@@ -109,17 +110,7 @@ class ExecutorBase:
         return self._prefab
 
     def exists(self, path):
-        if path == "/env.sh":
-            raise RuntimeError("SS")
-
-        def check():
-            rc, _, _ = self.execute('test -e %s' %
-                                    path, die=False, showout=False)
-            if rc > 0:
-                return False
-            else:
-                return True
-        return self.cache.get("exists:%s" % path, check)
+        raise NotImplemented()
 
     def configSave(self):
         """
@@ -181,10 +172,6 @@ class ExecutorBase:
             apk -v > /dev/null 2>&1 && echo 'OS_TYPE="alpine"'
             brew -v > /dev/null 2>&1 && echo 'OS_TYPE="darwin"'
             cat /etc/os-release | grep "VERSION_ID"
-
-            echo "CFG_ME = --TEXT--"
-            cat $PATH_JSCFG/me.toml 2>/dev/null || echo ""
-            echo --TEXT--
 
             echo "CFG_JS9 = --TEXT--"
             cat $PATH_JSCFG/jumpscale9.toml 2>/dev/null || echo ""
@@ -257,15 +244,6 @@ class ExecutorBase:
             else:
                 res["cfg_state"] = {}
 
-            if res["cfg_me"].strip() != "":
-                try:
-                    res["cfg_me"] = pytoml.loads(res["cfg_me"])
-                except Exception as e:
-                    raise RuntimeError(
-                        "Could not load me config file (pytoml error)\n%s\n" % res["cfg_me"])
-            else:
-                res["cfg_me"] = {}
-
             envdict = {}
             for line in res["env"].split("\n"):
                 line = line.replace("declare -x", "")
@@ -280,8 +258,7 @@ class ExecutorBase:
             res["env"] = envdict
 
             self._stateOnSystem = res
-
-        return self._stateOnSystem
+        return self._stateOnSystem 
 
     def enableDebug(self):
         self.state.configSetInDictBool("system", "debug", True)
@@ -381,6 +358,12 @@ class ExecutorBase:
         port = 6379
         addr = "localhost"
 
+        [myconfig]
+        #giturl = "ssh://git@docs.agitsystem.com:7022/myusername/myconfig.git"
+        giturl = ""
+        sshkeyname = ""
+
+
         '''
 
         TSYSTEM = j.data.text.strip(TSYSTEM)
@@ -403,27 +386,6 @@ class ExecutorBase:
         else:
             self.state.configUpdate(TT, False)  # will not overwrite
 
-        # check if there is a cfg_me if not put defaults
-        if self.stateOnSystem["cfg_me"] == {}:
-
-            TME = '''
-            [email]
-            server = ""
-
-            [me]
-            fullname = ""
-            loginname = ""
-            email = ""
-
-            [ssh]
-            sshkeyname = "idonotexist"
-
-            '''
-
-            TME = j.data.text.strip(TME)
-            # load the defaults
-            self.state.configMe = pytoml.loads(TME)
-
         self.state.configSave()
         if self.type == "local":
             j.core.state = self._state
@@ -445,13 +407,11 @@ class ExecutorBase:
 
     @property
     def dir_paths(self):
-        if self.exists(self.state.configJSPath):
-            if not self.state.configGet('dirs', {}):
-                self.reset()
-            return self.state.configGet('dirs')
-        else:
-            dir_config = self._getDirPathConfig()
-            return pytoml.loads(dir_config)
+        if not self._dirpaths_init:
+            if not self.exists(self.state.configJSPath) or self.state.configGet('dirs', {})=={}:
+                self.initEnv()
+            self._dirpaths_init = True
+        return self.state.configGet('dirs')
 
     @property
     def platformtype(self):

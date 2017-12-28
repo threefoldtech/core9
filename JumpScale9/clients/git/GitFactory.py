@@ -33,6 +33,7 @@ class GitFactory:
             (repository_host, repository_type, repository_account, repository_name, repository_url, port)
         """
 
+        url=url.strip()
         if ssh == "auto" or ssh == "first":
             ssh = j.clients.ssh.ssh_agent_available()
         elif ssh or ssh is False:
@@ -46,7 +47,7 @@ class GitFactory:
 
         port = None
         if ssh:
-            login="ssh"
+            login = "ssh"
             try:
                 port = int(url.split(":")[1].split("/")[0])
                 url = url.replace(":%s/" % (port), ":")
@@ -73,9 +74,6 @@ class GitFactory:
                 "Url is invalid. Must be in the form of 'http(s)://hostname/account/repo' or 'git@hostname:account/repo'\nnow:\n%s" % url)
 
         protocol, repository_host, repository_account, repository_name = match.groups()
-
-        # print("git match: proto:%s repohost:%s repoaccount:%s reponame:%s" %
-        #       (protocol, repository_host, repository_account, repository_name))
 
         if protocol.startswith("git") and ssh is False:
             protocol = "https://"
@@ -118,9 +116,6 @@ class GitFactory:
             }
         if repository_name.endswith(".git"):
             repository_name = repository_name[:-4]
-
-        print("git match: proto:%s repohost:%s repoaccount:%s reponame:%s \n url:%s port:%s" %
-              (protocol, repository_host, repository_account, repository_name, repository_url, port))
 
         return protocol, repository_host, repository_account, repository_name, repository_url, port
 
@@ -175,7 +170,7 @@ class GitFactory:
         Remark:
             url can be empty, then the git params will be fetched out of the git configuration at that path
         """
-
+        url=url.strip()
         if url == "":
             if dest is None:
                 raise RuntimeError("dest cannot be None (url is also '')")
@@ -371,10 +366,10 @@ class GitFactory:
                         j.sal.fs.getParent(dest), j.sal.fs.getParent(dest), extra, url, dest)
             else:
                 if branch is not None:
-                    cmd = "mkdir -p %s;cd %s;git clone %s -b %s %s %s" % (
+                    cmd = "mkdir -p %s;cd %s;git -c http.sslVerify=false clone %s -b %s %s %s" % (
                         j.sal.fs.getParent(dest), j.sal.fs.getParent(dest), extra, branch, url, dest)
                 else:
-                    cmd = "mkdir -p %s;cd %s;git clone %s  %s %s" % (
+                    cmd = "mkdir -p %s;cd %s;git -c http.sslVerify=false clone %s  %s %s" % (
                         j.sal.fs.getParent(dest), j.sal.fs.getParent(dest), extra, url, dest)
 
             self.logger.info(cmd)
@@ -400,7 +395,7 @@ class GitFactory:
         # branch
         cmd = 'cd %s;git rev-parse --abbrev-ref HEAD' % path
         try:
-            rc, out, err = self.execute(cmd, showout=False, outputStderr=False)
+            rc, out, err = self.execute(cmd, showout=False)
             if rc == 0:
                 branch = out.strip()
             else:  # if we can't retrieve current branch, use master as default
@@ -421,6 +416,7 @@ class GitFactory:
         - https://github.com/Jumpscale/jumpscale_core9/tree/master/lib/JumpScale/tools/docgenerator/macros
 
         """
+        url=url.strip()
         repository_host, repository_type, repository_account, repository_name, repository_url, port = self.rewriteGitRepoUrl(
             url)
         url_end = ""
@@ -478,6 +474,7 @@ class GitFactory:
         - https://github.com/Jumpscale/jumpscale_core9/tree/master/lib/JumpScale/tools/docgenerator/macros
 
         """
+        url=url.strip()
         repository_host, repository_type, repository_account, repository_name, repository_url, branch, gitpath, relpath, port = j.clients.git.parseUrl(
             url)
         rpath = j.sal.fs.joinPaths(gitpath, relpath)

@@ -2,7 +2,7 @@ from JumpScale9 import j
 from .ExecutorBase import ExecutorBase
 import subprocess
 import os
-
+import pytoml
 
 class ExecutorLocal(ExecutorBase):
 
@@ -24,25 +24,79 @@ class ExecutorLocal(ExecutorBase):
             self._logger = j.logger.get("executor.localhost")
         return self._logger
 
+    def exists(self, path):
+        return j.sal.fs.exists(path)
+
+    @property
+    def stateOnSystem(self):
+        """
+        is dict of all relevant param's on system
+        """
+        if self._stateOnSystem is None:            
+            if "HOMEDIR" in os.environ.keys():
+                homedir=os.environ["HOMEDIR"]
+            else:
+                homedir=os.environ["HOME"]
+            cfgdir="%s/js9host/cfg"%homedir
+            res={}
+            
+            def load(name):
+                path="%s/%s.toml"%(cfgdir,name)
+                if os.path.exists(path):
+                    return pytoml.loads(j.sal.fs.fileGetContents(path))
+                else:
+                    return {}
+
+            res["cfg_js9"]=load("jumpscale9")
+            res["cfg_state"]=load("state")
+            res["cfg_me"]=load("me")
+            res["env"] = os.environ
+
+            res["uname"]= subprocess.Popen("uname -mnprs", stdout=subprocess.PIPE, shell=True).stdout.read().decode().strip()
+            res["hostname"]= subprocess.Popen("hostname", stdout=subprocess.PIPE, shell=True).stdout.read().decode().strip()
+
+            if "darwin" in res["uname"].lower():
+                res["os_type"] = "darwin"
+            elif "linux" in res["uname"].lower():
+                res["os_type"] = "ubuntu"  #dirty hack, will need to do something better, but keep fast
+            else:
+                print("need to fix for other types (check executorlocal")
+                from IPython import embed;embed(colors='Linux')
+
+
+            path=path="%s/.profile_js"%(homedir)
+            if os.path.exists(path):
+                res["bashprofile"]=j.sal.fs.fileGetContents(path)
+            else:
+                res["bashprofile"]=""
+
+            res["path_jscfg"]=cfgdir
+
+            if os.path.exists("/root/.iscontainer"):
+                res["iscontainer"]=True
+            else:
+                res["iscontainer"]=False
+
+            self._stateOnSystem=res
+
+        return self._stateOnSystem
+        
+
     def executeRaw(self, cmd, die=True, showout=False):
         return self.execute(cmd, die=die, showout=showout)
 
-    def execute(self, cmds, die=True, checkok=None, showout=False, outputStderr=False, timeout=1000, env={}, hide=False):
+    def execute(self, cmds, die=True, checkok=None, showout=False, timeout=1000, env={}, hide=False):
         if env:
             self.env.update(env)
         # if self.debug:
         #     print("EXECUTOR:%s" % cmds)
-
-        if outputStderr is None:
-            outputStderr = showout
 
         if checkok is None:
             checkok = self.checkok
 
         cmds2 = self._transformCmds(cmds, die=die, checkok=checkok, env=env)
 
-        rc, out, err = j.sal.process.execute(cmds2, die=die, showout=showout,
-                                             outputStderr=outputStderr, timeout=timeout)
+        rc, out, err = j.sal.process.execute(cmds2, die=die, showout=showout, timeout=timeout)
 
         if checkok:
             out = self.docheckok(cmds, out)

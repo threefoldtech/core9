@@ -33,6 +33,11 @@ class Text:
     def toolStripNonAsciFromText(self, text):
         return "".join([char for char in str(text) if ((ord(char) > 31 and ord(char) < 127) or ord(char) == 10)])
 
+    def pad(self,text,length):
+        while len(text)<length:
+            text+=" "
+        return text
+
     def stripItems(self, line, items=["PATH", "\"", " ", "'", ":", "${PATH}", "=", ","]):
         def checknow(line, items):
             found = False
