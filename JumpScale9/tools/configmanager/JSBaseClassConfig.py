@@ -13,6 +13,8 @@ class JSBaseClassConfig():
         self.logger = j.logger.get(self.__jslocation__)        
         if ui==None:
             self.ui = j.tools.formbuilder.baseclass_get() #is the default class
+        else:
+            self.ui=ui
         if template==None:
             raise RuntimeError("template needs to be specified, needs to be yaml or dict")
         self._config = j.tools.configmanager._get_for_obj(self,instance=instance,data=data,template=template,ui=self.ui)

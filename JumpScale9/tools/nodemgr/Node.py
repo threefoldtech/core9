@@ -32,10 +32,7 @@ JSConfigBase = j.tools.configmanager.base_class_config
 class Node(JSConfigBase):
 
     def __init__(self,instance,data={},parent=None):
-        JSConfigBase.__init__(self,instance=instance,data=data,parent=parent)
-        self._config = j.tools.configmanager._get_for_obj(self,instance=instance,data=data,template=TEMPLATE)
-        self.ui = MyConfigUI
-                
+        JSConfigBase.__init__(self,instance=instance,data=data,parent=parent,template=TEMPLATE,ui=MyConfigUI)        
         
     @property
     def addr(self):
