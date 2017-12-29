@@ -40,7 +40,7 @@ class FormBuilderBaseClass(npyscreen.NPSAppManaged):
                 continue
 
             ttype = j.data.types.type_detect(val)
-            if ttype.NAME in ["string", "integer", "float", "list"]:
+            if ttype.NAME in ["string", "integer", "float", "list","guid"]:
                 self.widget_add_val(key)
             elif ttype.NAME in ["bool", "boolean"]:
                 self.widget_add_boolean(key)
@@ -64,17 +64,21 @@ class FormBuilderBaseClass(npyscreen.NPSAppManaged):
 
         # This lets the user interact with the Form.
         self.form.edit()
-        self.form.exit_editing()
-        self.setNextForm(None)
 
         # integrate custom results
-        result = self.form_pre_save()
-        self.config, errors = j.data.serializer.toml.merge(self.config, result, listunique=True)
+        rc=1
+        while rc>0:
+            self.process_results()
+            rc = self.form_pre_save()
+            if rc>0:                
+                self.form.edit()
 
+        self.form.exit_editing()
+        self.setNextForm(None)
+        
+    def process_results(self):
+        result={}
         for key, val in self.config.items():
-
-            if key in result:
-                continue
 
             ttype = j.data.types.type_detect(val)
 
@@ -91,7 +95,7 @@ class FormBuilderBaseClass(npyscreen.NPSAppManaged):
                 w = self.widgets[key]
                 result[key] = ttype.fromString(w.value)
         self.config, errors = j.data.serializer.toml.merge(self.config, result, listunique=True)
-
+        
     def widget_add(self, name, widget):
         if name not in self.widgets:
             self.widgets[name] = widget
@@ -144,7 +148,14 @@ class FormBuilderBaseClass(npyscreen.NPSAppManaged):
         pass
 
     def form_pre_save(self):
-        return {}
+        """
+        do your logic to test the inputs, if not return 1
+        otherwise 0
+
+        the data to check is on self.config.data
+
+        """
+        return 0
 
     def init(self):
         pass

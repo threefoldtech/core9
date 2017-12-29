@@ -33,7 +33,8 @@ class Node(JSConfigBase):
 
     def __init__(self,instance,data={},parent=None):
         JSConfigBase.__init__(self,instance=instance,data=data,parent=parent)
-        self._config = j.tools.configmanager._get_for_obj(self,instance=instance,data=data,template=TEMPLATE,ui=MyConfigUI)
+        self._config = j.tools.configmanager._get_for_obj(self,instance=instance,data=data,template=TEMPLATE)
+        self.ui = MyConfigUI
                 
         
     @property

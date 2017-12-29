@@ -76,46 +76,46 @@ class ConfigFactory:
         """
         Will display a npyscreen form to edit the configuration
         """
-        sc = self.get_for_location(location=location, instance=instance)
-        sc.configure()
-        sc.save()
-        return sc
+        js9obj = self.js9_obj_get(location=location, instance=instance)
+        js9obj.configure()
+        js9obj.config.save()
+        return js9obj
 
     def update(self, location, instance="main", updatedict={}):
         """
         update the configuration by giving a dictionnary. The configuration will
         be updated with the value of updatedict
         """
-        sc = self.get_for_location(location=location, instance=instance)
+        js9obj = self.js9_obj_get(location=location, instance=instance)
+        sc=js9obj.config
         sc.data = updatedict
         sc.save()
         return sc
 
-    def _get_for_obj(self, factoryclassobj, template, ui=None, instance="main", data={}):
+    def _get_for_obj(self, jsobj, template, ui=None, instance="main", data={}):
         """
         return a secret config
         """
-        if not hasattr(factoryclassobj, '__jslocation__') or factoryclassobj.__jslocation__ is None or factoryclassobj.__jslocation__ is "":
+        if not hasattr(jsobj, '__jslocation__') or jsobj.__jslocation__ is None or jsobj.__jslocation__ is "":
             raise RuntimeError(
-                "__jslocation__ has not been set on class %s" % factoryclassobj.__class__)
-        location = factoryclassobj.__jslocation__
+                "__jslocation__ has not been set on class %s" % jsobj.__class__)
+        location = jsobj.__jslocation__
         key = "%s_%s" % (location, instance)
 
-        if ui == None:
-            ui = j.tools.formbuilder.baseclass_get()
+        if ui!=None:
+            jsobj.ui=ui
 
         if key not in self._cache:
             sc = Config(instance=instance, location=location,
-                        template=template, ui=ui, data=data)
+                        template=template, data=data)
             self._cache[key] = sc
 
         return self._cache[key]
 
-    def get_for_location(self, location="", instance="main", data={}):
+    def js9_obj_get(self, location="", instance="main", data={}):
         """
-        will look for jumpscale module on defined location
-        and generate the config instance from there
-        @RETURN config
+        will look for jumpscale module on defined location & return this object
+        and generate the object which has a .config on the object
         """
         if location == "" or location == None:
             if j.sal.fs.getcwd().startswith(self.path_configrepo):
@@ -128,24 +128,24 @@ class ConfigFactory:
 
         obj = eval(location)
         if obj._single_item:
-            return obj.config
+            return obj
         else:
-            return obj.get(instance=instance).config
+            return obj.get(instance=instance)
 
-    def get(self, location, template={}, instance="main", data={}, ui=None):
-        """
-        return a secret config
-        """
-        if location == "":
-            raise RuntimeError("location cannot be empty")
-        if instance == "" or instance == None:
-            raise RuntimeError("instance cannot be empty")
-        key = "%s_%s" % (location, instance)
-        if key not in self._cache:
-            sc = Config(instance=instance, location=location,
-                        template=template, ui=ui, data=data)
-            self._cache[key] = sc
-        return self._cache[key]
+    # def get(self, location, template={}, instance="main", data={}, ui=None):
+    #     """
+    #     return a secret config
+    #     """
+    #     if location == "":
+    #         raise RuntimeError("location cannot be empty")
+    #     if instance == "" or instance == None:
+    #         raise RuntimeError("instance cannot be empty")
+    #     key = "%s_%s" % (location, instance)
+    #     if key not in self._cache:
+    #         sc = Config(instance=instance, location=location,
+    #                     template=template, ui=ui, data=data)
+    #         self._cache[key] = sc
+    #     return self._cache[key]
 
     # should use config_update
     # def set(self, location, instance, config=None):
