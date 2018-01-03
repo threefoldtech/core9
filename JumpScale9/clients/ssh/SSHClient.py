@@ -164,7 +164,6 @@ class SSHClient:
                 self.logger.debug("connect with allow_agent :%s" % self.allow_agent)
                 self.logger.debug("connect with look_for_keys :%s" % self.look_for_keys)
                 self.logger.debug("Timeout is : %s " % self.timeout)
-
                 self._client.connect(
                     self.addr,
                     int(self.port),
@@ -176,7 +175,6 @@ class SSHClient:
                     timeout=2.0,
                     banner_timeout=3.0)
                 self.logger.info("connection ok")
-                bad_auth_type_exist = False
                 return self._client
 
             except (BadHostKeyException, AuthenticationException) as e:
