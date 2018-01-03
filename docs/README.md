@@ -9,6 +9,7 @@
 
 - GitHub repositories:
 
+  - [Bash tools](https://github.com/Jumpscale/bash)
   - [JumpScale Core](https://github.com/Jumpscale/core9)
   - [JumpScale Lib](https://github.com/Jumpscale/lib9)
   - [JumpScale Prefab](https://github.com/Jumpscale/prefab9)
