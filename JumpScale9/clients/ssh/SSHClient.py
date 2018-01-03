@@ -7,7 +7,7 @@ import time
 import paramiko
 from js9 import j
 from paramiko.ssh_exception import (AuthenticationException,
-                                    BadHostKeyException, SSHException,BadAuthenticationType)
+                                    BadHostKeyException, SSHException)
 
 
 class StreamReader(threading.Thread):
@@ -83,7 +83,6 @@ class SSHClient:
         self._client = None
         self._prefab = None
         self.usesproxy = usesproxy
-        self.ssh_authorized = dict()
 
     def _test_local_agent(self):
         """
@@ -154,16 +153,8 @@ class SSHClient:
             if j.clients.ssh.SSHKeyGetPathFromAgent(self.key_filename, die=False) is not None and not self.passphrase:
                 j.clients.ssh.ssh_keys_load(self.key_filename)
 
-        if self.passwd:
-            self.allow_agent = False
-            self.look_for_keys = False
-
         start = j.data.time.getTimeEpoch()
-        #the following 2 variables are used for handling the exception of bad authentication type that happens
-        #when trying to connect to the machine before it was actually created
-        bad_auth_type_exist = True
-        bad_auth_type_holder = None
-        while start + self.timeout > j.data.time.getTimeEpoch() and bad_auth_type_exist:
+        while start + self.timeout > j.data.time.getTimeEpoch():
             try:
                 self.logger.info("connect to:%s" % self.addr)
                 self.logger.debug("connect with port :%s" % self.port)
@@ -188,10 +179,6 @@ class SSHClient:
                 bad_auth_type_exist = False
                 return self._client
 
-            except BadAuthenticationType as e:
-                self.logger.error("Bad Authentication Type : %s" % str(e))
-                bad_auth_type_exist = True
-                bad_auth_type_holder = e
             except (BadHostKeyException, AuthenticationException) as e:
                 self.logger.error(
                     "Authentification error. Aborting connection : %s" % str(e))
@@ -212,9 +199,6 @@ class SSHClient:
                 msg = "Could not connect to ssh on %s@%s:%s. Error was: %s" % (
                     self.login, self.addr, self.port, e)
                 raise j.exceptions.RuntimeError(msg)
-
-        if bad_auth_type_exist and bad_auth_type_holder is not None:
-            raise j.exceptions.RuntimeError(str(bad_auth_type_holder))
 
         if self._client is None:
             raise j.exceptions.RuntimeError(
@@ -372,14 +356,6 @@ class SSHClient:
             self._prefab = j.tools.prefab.get(self)
         return self._prefab
 
-    def _get_prefab(self):
-        ssh_client = j.clients.ssh.get(addr=self.addr, port=self.port,
-            login=self.login, passwd=self.passwd, look_for_keys=False, timeout=300)
-        temp_executor = j.tools.executor.getFromSSHClient(sshclient=ssh_client)
-        temp_prefab = temp_executor.prefab
-        j.tools.executor.reset(temp_executor)
-        return temp_prefab
-
     def ssh_authorize(self, user, key):
         self.prefab.system.ssh.authorize(user, key)
 
@@ -413,20 +389,7 @@ class SSHClient:
         """
         j.clients.ssh.load_ssh_key(sshkey_path, True)
         key = j.clients.ssh.SSHKeyGetFromAgentPub(sshkey_name)
-
-        if key in self.ssh_authorized:
-            return
-        self.logger.info("found key: %s" % key)
-
         ftp = self.client.open_sftp()
-        prefab = self._get_prefab()
-        prefab.core.dir_ensure("/home/%s" % self.login)
-        if prefab.core.file_exists("/home/%s/authorized_keys" % self.login):
-            cmd = "touch /home/%s/authorized_keys" % self.login
-            rc, out, err = self.execute(cmd)
-            if err:
-                self.logger.error("Couldn't create authorized_keys file")
-                raise RuntimeError(err)
 
         f = ftp.open("/home/%s/authorized_keys" % self.login, mode='rw')
         f.write(key)
@@ -434,13 +397,6 @@ class SSHClient:
 
         cmd = "echo '%s' | sudo -S bash -c 'mkdir -p /root/.ssh;mv /home/%s/authorized_keys  /root/.ssh/authorized_keys; chmod 644 /root/.ssh/authorized_keys;chown root:root /root/.ssh/authorized_keys'" % (
             self.passwd, self.login)
-        rc, out, err = self.execute(cmd)
+        self.execute(cmd)
 
-        err = err.replace("[sudo] password for cloudscalers:", "").strip()
-        if err:
-            self.logger.error("Couldn't add sshkey to Remote Machine %s : " % err)
-            raise RuntimeError(err)
-
-        self.logger.debug("done adding key to remote machine.")
-        self.ssh_authorized[key] = True
         j.clients.ssh.remove_item_from_known_hosts(self.addr)
