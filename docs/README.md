@@ -3,7 +3,6 @@
 [JumpScale](http://www.jumpscale.com/) is an extensible and easy to use cloud automation solution, providing a huge library that supports executing a wide range of system operations. [JumpScale](http://www.jumpscale.com/) is the evolution of Pylabs which was the basic building block for cloud automation originally developed by [Q-Layer](http://incubaid.com/successes/Q-Layer/), and acquired by Sun Microsystems in 2009\. The current release of JumpScale is version 9.
 
 - [Why Using JumpScale](Introduction/WhyJumpScale.md)
-- [Solutions Built with JumpScale](Introduction/JumpScaleSolutions.md)
 - [Getting Your Feet Wet](GettingYourFeetWet/GettingYourFeetWet.md)
 
 ## More info
@@ -19,7 +18,7 @@
 
 ## Known issues
 
-- See bug list on GitHub: <https://github.com/Jumpscale/core9/issues>
+- See bug list on GitHub: <https://waffle.io/Jumpscale/home>
 
 ## Help us improve JumpScale
 
