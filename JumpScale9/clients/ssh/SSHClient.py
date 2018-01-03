@@ -7,7 +7,7 @@ import time
 import paramiko
 from js9 import j
 from paramiko.ssh_exception import (AuthenticationException,
-                                    BadHostKeyException, SSHException)
+                                    BadHostKeyException, SSHException, BadAuthenticationType)
 
 
 class StreamReader(threading.Thread):
@@ -129,6 +129,9 @@ class SSHClient:
                 "Could not connect to %s:%s" % (self.addr, self.port))
         return self.client.get_transport()
 
+    def connect(self):
+        return self._connect()
+
     def _connect(self):
         with self._lock:
             self.logger.info("Test sync ssh connection to %s:%s:%s" %
@@ -176,7 +179,8 @@ class SSHClient:
                     banner_timeout=3.0)
                 self.logger.info("connection ok")
                 return self._client
-
+            except BadAuthenticationType as e:
+                raise e
             except (BadHostKeyException, AuthenticationException) as e:
                 self.logger.error(
                     "Authentification error. Aborting connection : %s" % str(e))
@@ -387,6 +391,7 @@ class SSHClient:
         """
         j.clients.ssh.load_ssh_key(sshkey_path, True)
         key = j.clients.ssh.SSHKeyGetFromAgentPub(sshkey_name)
+
         ftp = self.client.open_sftp()
 
         f = ftp.open("/home/%s/authorized_keys" % self.login, mode='rw')
