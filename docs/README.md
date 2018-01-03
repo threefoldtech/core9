@@ -11,7 +11,10 @@
 - GitHub repositories:
 
   - [JumpScale Core](https://github.com/Jumpscale/core9)
+  - [JumpScale Lib](https://github.com/Jumpscale/lib9)
+  - [JumpScale Prefab](https://github.com/Jumpscale/prefab9)
   - [AtYourService](https://github.com/Jumpscale/ays9)
+  - [JumpScale Portal](https://github.com/Jumpscale/portal9)
 
 
 ## Known issues
