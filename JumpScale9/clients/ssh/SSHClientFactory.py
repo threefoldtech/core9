@@ -225,6 +225,7 @@ class SSHClientFactory:
             self._init_ssh_env()
 
         self.start_ssh_agent()
+
         if j.sal.fs.isDir(path):
             keysinfs = self._list_not_loaded_keys(path)
             res = j.tools.console.askChoiceMultiple(
