@@ -379,14 +379,14 @@ class SSHClient:
         """
 
         key = j.clients.ssh.SSHKeyGetFromAgentPub(keyname)
-        ftp = self.client.open_sftp()
 
-        f = ftp.open("/home/%s/authorized_keys" % self.login, mode='rw')
-        f.write(key)
-        f.close()
+        rc, _, _ = self.execute("echo '%s' | sudo -S bash -c 'test -e /root/.ssh'" % self.passwd, die=False)
+        mkdir_cmd = ''
+        if rc > 0:
+            mkdir_cmd = 'mkdir -p /root/.ssh;'
 
-        cmd = "echo '%s' | sudo -S bash -c 'mkdir -p /root/.ssh;mv /home/%s/authorized_keys  /root/.ssh/authorized_keys; chmod 644 /root/.ssh/authorized_keys;chown root:root /root/.ssh/authorized_keys'" % (
-            self.passwd, self.login)
-        self.execute(cmd)
+        cmd = '''echo '%s' | sudo -S bash -c "%s echo '\n%s' >> /root/.ssh/authorized_keys; chmod 644 /root/.ssh/authorized_keys;chown root:root /root/.ssh/authorized_keys"''' % (
+            self.passwd, mkdir_cmd, key)
+        self.execute(cmd, showout=False)
 
         j.clients.ssh.remove_item_from_known_hosts(self.addr)
