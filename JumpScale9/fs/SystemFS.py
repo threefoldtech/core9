@@ -1426,7 +1426,7 @@ class SystemFS:
         for root, dirs, files in os.walk(startDir):
             for name in files:
                 if fnmatch.fnmatch(name, fileregex):
-                    result.append(os.path.join(root, fileregex))
+                    result.append(os.path.join(root, name))
         return result
 
     def grep(self, fileregex, lineregex):
