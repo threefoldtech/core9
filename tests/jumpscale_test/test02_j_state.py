@@ -17,10 +17,10 @@ class TestJSTATE(TestcasesBase):
     
     @classmethod
     def update_config(cls, data):
-        old_data = dict(cls.config_file_content)
-        new_data = old_data.update(data)
+        content = dict(cls.config_file_content)
+        content.update(data)
         with open(cls.config_path, 'wb') as f:
-            pytoml.dump(new_data, f)
+            pytoml.dump(content, f)
 
 
     @classmethod
