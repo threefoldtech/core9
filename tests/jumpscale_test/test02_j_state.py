@@ -1,25 +1,25 @@
 from js9 import j
 from testcases_base import TestcasesBase
-import os, random, pytoml
+import os, random, pytoml, unittest
 
 class TestJSTATE(TestcasesBase):
 
     @classmethod
     def get_config(cls):
-        with open(cls.config_path, 'rb') as f:
+        with open(cls.config_path, 'r') as f:
             content = pytoml.load(f)
         return content
 
     @classmethod
     def reset_config(cls):
-        with open(cls.config_path, 'wb') as f:
+        with open(cls.config_path, 'w') as f:
             pytoml.dump(cls.config_file_content, f)
     
     @classmethod
     def update_config(cls, data):
         content = dict(cls.config_file_content)
         content.update(data)
-        with open(cls.config_path, 'wb') as f:
+        with open(cls.config_path, 'w') as f:
             pytoml.dump(content, f)
 
 
@@ -98,3 +98,7 @@ class TestJSTATE(TestcasesBase):
 
     def test011_config_update(self):
         pass
+
+
+if __name__ == '__main__':
+    unittest.main()
