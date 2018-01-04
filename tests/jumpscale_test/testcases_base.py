@@ -1,4 +1,5 @@
-import time, signal
+import time, signal, logging
+from datetime import timedelta
 from unittest import TestCase
 from nose.tools import TimeExpired
 
@@ -6,6 +7,7 @@ from nose.tools import TimeExpired
 class TestcasesBase(TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.lg = self.log()
 
     def setUp(self):
         self._testID = self._testMethodName
@@ -19,4 +21,13 @@ class TestcasesBase(TestCase):
 
     def tearDown(self):
         pass
+
+    def log(self):
+        logger = logging.getLogger('JumpScale')
+        if not logger.handlers:
+            fileHandler = logging.FileHandler('test_suite.log', mode='w')
+            formatter = logging.Formatter('%(asctime)s - %(name)s - [%(levelname)s] - %(message)s')
+            fileHandler.setFormatter(formatter)
+            logger.addHandler(fileHandler)
+        return logger
 
