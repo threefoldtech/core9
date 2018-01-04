@@ -49,16 +49,26 @@ class ConfigFactory:
     def path_configrepo(self):
         """
         if path is not set, it will look under CODEDIRS for any pre-configured js9_config repo
+        if there are more than one, will try to use one in root of cwd. If not in one, will raise a RuntimeError
         """
         if not self._path:
-            path = j.sal.fs.find(j.dirs.CODEDIR, '.jsconfig')
-            if path:
-                path = path[0]
-                self._path = j.sal.fs.getParent(path)
-                j.logger.logging.info("found jsconfig dir in: %s" % self._path)
-                return self._path
-            else:
+            paths = j.sal.fs.find(j.dirs.CODEDIR, '.jsconfig')
+            paths = [j.sal.fs.getParent(path) for path in paths]
+            if not paths:
                 raise RuntimeError("Cannot find path for configuration repo, please checkout right git repo & run 'js9_config init' in that repo ")
+            if len(paths) > 1:
+                j.logger.logging.warning("found configuration dirs in multiple locations: {}".format(paths))
+                path = self._findConfigDirParent(path=j.sal.fs.getcwd(), die=False)
+                if not path:
+                    raise RuntimeError("multipule configuration repos were found in {} but not currently in root of one".format(paths, j.sal.fs.getcwd()))
+                res = j.clients.git.getGitReposListLocal()
+                for _, path in res.items():
+                    checkpath = "%s/.jsconfig" % path
+                    if j.sal.fs.exists(checkpath):
+                        self._path = path
+            else:
+                self._path = paths[0]
+            j.logger.logging.info("found jsconfig dir in: %s" % self._path)
         return self._path
 
     @property
@@ -204,11 +214,11 @@ class ConfigFactory:
 
     def init(self, path="", data={}):
 
-        if self._findConfigDirParent(path, die=False) != None:
+        if self._findConfigDirParent(path, die=False) is not None:
             return
         gitdir = "%s/.git" % path
         if not j.sal.fs.exists(gitdir) or not j.sal.fs.isDir(gitdir):
-            raise RuntimeError("am not in root of git dir")
+            raise RuntimeError("path {} is not in root of a git repo".format(path))
 
         j.sal.fs.touch("%s/.jsconfig" % path)
 
