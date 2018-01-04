@@ -53,20 +53,20 @@ class TestJSTATE(TestcasesBase):
         self.assertDictEqual(js_config, self.config_file_content)
 
     def test002_config_get(self):
-        self.lg('Get value of an existing key')
+        # self.lg('Get value of an existing key')
         value = self.client.configGet('key_1')
         self.assertEqual(value, 'value_1')
 
-        self.lg('Get value of a non existing key')
+        # self.lg('Get value of a non existing key')
         with self.assertRaises(j.exceptions.Input) as e:
             self.client.configGet('new_key')
         
-        self.lg('Get value of a non existing key with default value and set is false')
+        # self.lg('Get value of a non existing key with default value and set is false')
         value = self.client.configGet('new_key', defval='new_value')
         self.assertEqual(value, 'new_value')
         self.assertFalse(self.client.config.get('fake_key'))
 
-        self.lg('Get value of non existing key with default value and set is true')
+        # self.lg('Get value of non existing key with default value and set is true')
         value = self.client.configGet('new_key', defval='new_value', set=True)
         self.assertEqual(value, 'new_value')
         self.assertEqual(self.client.config.get('new_key'), 'new_value')
