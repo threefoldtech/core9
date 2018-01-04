@@ -1418,19 +1418,16 @@ class SystemFS:
     @path_check(startDir={"required", "exists", "dir"})
     def find(self, startDir, fileregex):
         """Search for files or folders matching a given pattern
-        this is a very weard function, don't use is better to use the list functions
-        make sure you do changedir to the starting dir first
         example: find("*.pyc")
         @param fileregex: The regex pattern to match
         @type fileregex: string
         """
-        pwd = self.getcwd()
-        try:
-            self.changeDir(startDir)
-            import glob
-            return glob.glob(fileregex)
-        finally:
-            self.changeDir(pwd)
+        result = []
+        for root, dirs, files in os.walk(startDir):
+            for name in files:
+                if fnmatch.fnmatch(name, fileregex):
+                    result.append(os.path.join(root, fileregex))
+        return result
 
     def grep(self, fileregex, lineregex):
         """Search for lines matching a given regex in all files matching a regex
