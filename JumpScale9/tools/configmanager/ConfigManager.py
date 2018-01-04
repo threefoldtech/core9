@@ -47,21 +47,18 @@ class ConfigFactory:
 
     @property
     def path_configrepo(self):
+        """
+        if path is not set, it will look under CODEDIRS for any pre-configured js9_config repo
+        """
         if not self._path:
-            self._path = self._findConfigDirParent(path="", die=False)
-            if self._path == None:
-                res = j.clients.git.getGitReposListLocal()
-                for key, path in res.items():
-                    checkpath = "%s/.jsconfig" % path
-                    if key.startswith("config_"):
-                        if j.sal.fs.exists(checkpath):
-                            self._path = path
-                            j.logger.logging.info("found jsconfig dir in: %s" % self._path)
-                            return self._path
-            else:
+            path = j.sal.fs.find(j.dirs.CODEDIR, '.jsconfig')
+            if path:
+                path = path[0]
+                self._path = j.sal.fs.getParent(path)
+                j.logger.logging.info("found jsconfig dir in: %s" % self._path)
                 return self._path
-            raise RuntimeError(
-                "Cannot find path for configuration repo, please checkout right git repo & run 'js9_config init' in that repo ")
+            else:
+                raise RuntimeError("Cannot find path for configuration repo, please checkout right git repo & run 'js9_config init' in that repo ")
         return self._path
 
     @property
@@ -87,7 +84,7 @@ class ConfigFactory:
         be updated with the value of updatedict
         """
         js9obj = self.js9_obj_get(location=location, instance=instance)
-        sc=js9obj.config
+        sc = js9obj.config
         sc.data = updatedict
         sc.save()
         return sc
@@ -102,8 +99,8 @@ class ConfigFactory:
         location = jsobj.__jslocation__
         key = "%s_%s" % (location, instance)
 
-        if ui!=None:
-            jsobj.ui=ui
+        if ui is not None:
+            jsobj.ui = ui
 
         if key not in self._cache:
             sc = Config(instance=instance, location=location,
@@ -117,7 +114,7 @@ class ConfigFactory:
         will look for jumpscale module on defined location & return this object
         and generate the object which has a .config on the object
         """
-        if location == "" or location == None:
+        if not location:
             if j.sal.fs.getcwd().startswith(self.path_configrepo):
                 # means we are in subdir of current config  repo, so we can be
                 # in location
