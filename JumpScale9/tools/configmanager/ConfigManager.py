@@ -137,7 +137,7 @@ class ConfigFactory:
         if obj._single_item:
             return obj
         else:
-            return obj.get(instance=instance)
+            return obj.get(instance=instance, data=data)
 
     # def get(self, location, template={}, instance="main", data={}, ui=None):
     #     """
