@@ -34,7 +34,13 @@ class JSBaseClassConfigs():
         return self.items[instance]
 
     def reset(self):
+        self.items = {}
         j.tools.configmanager.delete(location=self.__jslocation__, instance="*")
+
+    def delete(self, instance):
+        if instance in self.items:
+            del self.items[instance]
+        j.tools.configmanager.delete(location=self.__jslocation__, instance=instance)
 
     def list(self):
         return j.tools.configmanager.list(location=self.__jslocation__)
