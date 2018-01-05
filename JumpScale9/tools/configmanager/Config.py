@@ -16,6 +16,7 @@ class Config():
         self.loaded = False
         self.data = data
         self.path = j.sal.fs.joinPaths(j.tools.configmanager.path_configrepo, self.location, self.instance + '.toml')
+        j.sal.fs.createDir(j.sal.fs.getParent(self.path))
         if self.instance is None:
             raise RuntimeError("instance cannot be None")
         self._nacl = None
@@ -52,8 +53,6 @@ class Config():
 
         if reset:
             self._data = {}
-
-        j.sal.fs.createDir(j.sal.fs.getParent(self.path))
 
         if not j.sal.fs.exists(self.path):
             self._data, error = j.data.serializer.toml.merge(tomlsource=self.template, tomlupdate=self._data, listunique=True)
