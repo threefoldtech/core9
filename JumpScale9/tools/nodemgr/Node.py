@@ -32,6 +32,7 @@ JSConfigBase = j.tools.configmanager.base_class_config
 class Node(JSConfigBase):
 
     def __init__(self,instance,data={},parent=None):
+        self._connected=None
         JSConfigBase.__init__(self,instance=instance,data=data,parent=parent,template=TEMPLATE,ui=MyConfigUI)        
         
     @property
@@ -66,7 +67,6 @@ class Node(JSConfigBase):
     def clienttype(self,val):
         self.config.data["clienttype"]=val
 
-
     @property
     def category(self):
         return self.config.data["category"]
@@ -99,9 +99,9 @@ class Node(JSConfigBase):
     def selected(self,val):
         self.config.data["selected"]=val   
         
-
+    @property
     def isconnected(self):
-        if self.connected is None:
+        if self._connected is None:
             # lets test tcp on 22 if not then 9022 which are our defaults
             test = j.sal.nettools.tcpPortConnectionTest(
                 self.addr, self.port, 3)
@@ -114,29 +114,37 @@ class Node(JSConfigBase):
                     if test:
                         self.port = 9022
             if test is False:
-                raise j.exceptions.RuntimeError(
-                    "Cannot connect to %s:%s" % (self.addr, self.port))
-
+                self._connected = False
+            else:
+                self._connected = True
+                self.active = True
             self._sshclient = None
-            self._ftpclient = None
-
-            self.connected = True
+            self._ftpclient = None            
+        return self._connected
 
     @property
     def ftpclient(self):
-        self.test()
-        if self._ftpclient is None:
-            print("ftpclient")
-            self._ftpclient = self.executor.sshclient.getSFTP()
-        return self._ftpclient
+        if self.isconnected:
+            if self._ftpclient is None:
+                print("ftpclient")
+                self._ftpclient = self.executor.sshclient.getSFTP()
+            return self._ftpclient
+        else:
+            raise RuntimeError("node %s cannot be reached, cannot get ftpclient.")
 
     @property
     def executor(self):
-        return j.tools.executor.get("%s:%s" % (self.addr, self.port))
+        if self.isconnected:
+            return j.tools.executor.get("%s:%s" % (self.addr, self.port))
+        else:
+            raise RuntimeError("node %s cannot be reached, cannot get executor.")
 
     @property
     def prefab(self):
-        return j.tools.prefab.get(executor=self.executor)
+        if self.isconnected:
+            return j.tools.prefab.get(executor=self.executor)
+        else:
+            raise RuntimeError("node %s cannot be reached, cannot get prefab.")
 
     def clean(self):
         cmd = """

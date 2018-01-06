@@ -13,7 +13,7 @@ class DevelopToolsFactory:
     def __init__(self):
         self.__jslocation__ = "j.tools.develop"
         self.__imports__ = "watchdog"
-        self._nodes = None
+        self.nodes = j.tools.nodemgr
         self._codedirs = None
 
     def run(self):
@@ -54,13 +54,6 @@ class DevelopToolsFactory:
         if self._codedirs is None:
             self._codedirs = CodeDirs()
         return self._codedirs
-
-    @property
-    def nodes(self):
-        if self._nodes is None:
-            self._nodes = Nodes()
-        return self._nodes
-
 
     def help(self):
 
