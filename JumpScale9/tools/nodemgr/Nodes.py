@@ -12,86 +12,110 @@ class Nodes(JSConfigBase):
         self.__jslocation__ = "j.tools.nodemgr"
         JSConfigBase.__init__(self, Node)
         self._tree = None
+        res = self.getall()
+        for item in res:
+            self._add2tree(item)
 
     @property
     def tree(self):
-        if self._tree==None:
+        if self._tree is None:
             self._tree = j.data.treemanager.get()
         return self._tree
 
-    def nodesGet(self):
-        res = []
-        print("nodes get")
-        from IPython import embed;embed(colors='Linux')
-        return res
+    def set(self, name, addr, port=22, cat="", description="", selected=False, active=True, clienttype="", secretconfig=""):
 
-    def nodeGet(self, name, die=True):
-        res = self.nodesGet()
-        res = [item for item in res if item.name == name]
-        if len(res) == 0:
-            if die is False:
-                return None
-            raise j.exceptions.Input("did not find node: %s" % (name))
-        if len(res) > 1:
-            raise j.exceptions.Input("found more than 1 node: %s" % (name))
-        return res[0]
-
-    def nodeExists(self, name):
-        res = self.nodesGet()
-        res = [item for item in res if item.name == name]
-        if len(res) == 0:
-            return False
-        if len(res) > 1:
-            raise j.exceptions.Input("found more than 1 node: %s" % (name))
-        return True
-
-    def nodeSet(self, name, addr, port=22, cat="", description="", selected=False,active=True):
-
-        print("nodeset")
-        data={}
-        data["addr"]=addr
-        data["name"]=name
-        data["port"]=port
-        data["active"]=active
-        data["selected"]=selected
-        data["category"]=cat
-        data["description"]=description
-        n=j.tools.nodemgr.get(instance=name,data=data)
+        data = {}
+        data["addr"] = addr
+        data["name"] = name
+        data["port"] = port
+        data["active"] = active
+        data["selected"] = selected
+        data["clienttype"] = clienttype
+        data["secretconfig_"] = secretconfig
+        data["category"] = cat
+        data["description"] = description
+        n = self.get(instance=name, data=data, create=True)
         n.config.save()
-        
-        if self.nodeExists(name):
-            tpath = self.tree.findByName(name).path
-            self.tree.items.pop(tpath)
 
-        if cat == "":
-            path = "all.%s" % name
+        print("nodeset:%s" % n)
+
+        if self.exists(name):
+            treeitem = self.tree.findByName(name, die=False)
+            if treeitem != None:
+                tpath = treeitem.path
+                self.tree.items.pop(tpath)
+
+        self._add2tree(n)
+
+    def _add2tree(self, n):
+
+        if n.category == "":
+            path = "all.%s" % n.name
         else:
-            path = "%s.%s" % (cat, name)
-        self.tree.set(path=path, data="%s|%s" % (addr, port),
-                      description=description, cat=cat, selected=selected)
+            path = "%s.%s" % (n.category, n.name)
 
-
-        node = self.nodeGet(name)
-
-        return node
-
-    def save(self):
-        j.sal.fs.writeFile(self.configpath, str(self))
+        self.tree.set(path=path, data="%s|%s|%s" % (n.name, n.addr, n.port),
+                      description=n.description, cat=n.category, selected=n.selected)
 
     def test(self):
+        """
+        js9 'j.tools.nodemgr.test()'
+        """
+
+        self.delete(prefix="myhost")
+
+        startnr = len(self.getall())
+        assert self.count() == startnr
+
+        assert self.exists("myhost1") is False
 
         for i in range(10):
-            self.nodeSet("myhost%s"%i,"127.0.0.%s"%i,22,cat="testcat")
-        
-        assert self.nodeExists("myhost1") == True
+            self.set("myhost%s" % i, "127.0.0.%s" % i, 22, cat="testcat")
 
-        assert len(self.nodesGet())==10
+        assert self.exists("myhost1") == True
+
+        assert len(self.getall()) == 10 + startnr
 
         for i in range(5):
-            self.nodeSet("myhostcat2_%s"%i,"127.0.0.%s"%i,22,cat="cat2")
+            self.set("myhostcat2_%s" % i, "127.0.0.%s" % i, 22, cat="cat2")
 
-        from IPython import embed;embed(colors='Linux')
+        n = self.get("myhost9")
+        d2 = {'active': True,
+              'addr': '127.0.0.9',
+              'category': 'testcat',
+              'clienttype': '',
+              'description': '',
+              'name': 'myhost9',
+              'port': 22,
+              'secretconfig_': '',
+              'selected': False}
 
+        assert n.config.data == d2
+        j.data.serializer.toml.fancydumps(
+            n.config.data) == j.data.serializer.toml.fancydumps(d2)
+
+        print(self)
+
+        n.selected = True
+        assert n.selected == n.config.data["selected"]
+        n.selected = False
+        n.config.data["selected"] = False
+        assert n.selected == n.config.data["selected"]
+        assert n.selected == False
+        assert n.config.data["selected"] == False
+        n.selected = True
+        assert n.config.data["selected"] == True
+
+        # TODO: *3 need more tests
+
+        assert len(self.list(prefix="myhost")) == 15 + startnr
+
+        # # cleanup
+        # self.delete(prefix="myhost")
+
+        # assert len(self.getall()) == startnr
+
+        print("TEST for nodes ok")
 
     def __repr__(self):
         return self.__str__()
@@ -99,6 +123,6 @@ class Nodes(JSConfigBase):
     def __str__(self):
         # return ("%s"%self.tree)
         out = ""
-        for item in self.nodesGet():
+        for item in self.getall():
             out += str(item) + "\n"
         return out

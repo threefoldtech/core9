@@ -1,12 +1,12 @@
 from js9 import j
 
 from .CodeDirs import CodeDirs
-from .Nodes import Nodes
 from .MyFileSystemEventHandler import MyFileSystemEventHandler
 from watchdog.observers import Observer
 
 import time
 import pytoml
+
 
 class DevelopToolsFactory:
 
@@ -24,30 +24,7 @@ class DevelopToolsFactory:
 
     @property
     def iscontainer(self):
-        return j.sal.fs.exists("%s/.iscontainer"%j.dirs.HOMEDIR)
-
-
-    # def dockerconfig(self):
-    #     if self.iscontainer:
-    #         if not j.sal.fs.exists("/hostcfg/me.toml"):
-    #             j.tools.executorLocal.initEnv()
-    #         cfg=pytoml.loads(j.sal.fs.readFile("/hostcfg/me.toml"))
-    #         j.core.state.configSet("me",cfg["me"])
-    #         j.core.state.configSet("email",cfg["email"])    
-    #     else:
-    #         cpath=j.dirs.HOMEDIR+"/.cfg/me.toml"
-    #         if  j.sal.fs.exists(j.dirs.HOMEDIR+"/.cfg"):
-    #             if not j.sal.fs.exists(cpath):  
-    #                 cfgnew={}
-    #                 cfgnew["email"]=j.core.state.config["email"]
-    #                 cfgnew["me"]=j.core.state.config["me"]
-    #                 txt=pytoml.dumps(cfgnew,True)                    
-    #                 j.sal.fs.writeFile(cpath,txt)
-    #             keyname=j.core.state.config["ssh"]["sshkeyname"]
-    #             spath=j.dirs.HOMEDIR+"/.ssh/%s.pub"%keyname
-    #             dpath=j.dirs.HOMEDIR+"/.cfg/ssh_%s.pub"%keyname.lower()
-    #             if j.sal.fs.exists(spath):
-    #                 j.sal.fs.copyFile(spath,dpath)
+        return j.sal.fs.exists("%s/.iscontainer" % j.dirs.HOMEDIR)
 
     @property
     def codedirs(self):
@@ -62,9 +39,6 @@ class DevelopToolsFactory:
         """
         print(H)
 
-
-
-
     # def resetState(self):
     #     j.actions.setRunId("developtools")
     #     j.actions.reset()
@@ -76,15 +50,16 @@ class DevelopToolsFactory:
 
 
         """
-        if  self.nodes.nodesGet()==[]:
-            print ("NOTHING TO DO, THERE ARE NO NODES DEFINED PLEASE USE  j.tools.develop.run()")
+        if self.nodes.getall() == []:
+            print(
+                "NOTHING TO DO, THERE ARE NO NODES DEFINED PLEASE USE  j.tools.develop.run()")
             return
-        did=False
-        for node in self.nodes.nodesGet():
+        did = False
+        for node in self.nodes.getall():
             if node.selected:
                 node.sync()
-                did=True
-        if did==False:
+                did = True
+        if did == False:
             print("nodes are defined but not selected, please use j.tools.develop.run()")
 
     def monitor(self):
@@ -93,10 +68,10 @@ class DevelopToolsFactory:
         """
 
         self.sync()
-        
+
         event_handler = MyFileSystemEventHandler()
         observer = Observer()
-        codepaths=j.tools.develop.codedirs.getActiveCodeDirs()
+        codepaths = j.tools.develop.codedirs.getActiveCodeDirs()
         for source in codepaths:
             print("monitor:%s" % source)
             observer.schedule(event_handler, source.path, recursive=True)
@@ -107,22 +82,17 @@ class DevelopToolsFactory:
         except KeyboardInterrupt:
             pass
 
-
-
     def test_executor(self):
-        for node in self.nodes.nodesGet():
+        for node in self.nodes.getall():
             if node.selected:
                 node.test_executor()
 
     def clean(self):
-        for node in self.nodes.nodesGet():
+        for node in self.nodes.getall():
             if node.selected:
                 node.clean()
-                
 
     def test_js9_quick(self):
         j.data.kvs.test()
         j.data.cache.test()
-
-    
-        
+        j.tools.nodemgr.test()

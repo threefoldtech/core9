@@ -12,93 +12,98 @@ description = ""
 secretconfig_ = ""
 """
 
-FormBuilderBaseClass=j.tools.formbuilder.baseclass_get()
+FormBuilderBaseClass = j.tools.formbuilder.baseclass_get()
+
 
 class MyConfigUI(FormBuilderBaseClass):
 
     def init(self):
-        self.auto_disable.append("clienttype")  # makes sure that this property is not auto populated, not needed when in form_add_items_pre
+        # makes sure that this property is not auto populated, not needed when in form_add_items_pre
+        self.auto_disable.append("clienttype")
         self.auto_disable.append("active")
         self.auto_disable.append("selected")
 
-    def form_add_items_post(self):        
-        self.widget_add_boolean("active",default=False)
-        self.widget_add_boolean("selected",default=True)
-        self.widget_add_multichoice("clienttype", ["ovh","packetnet","ovc","physical","docker","container","zos"])
+    def form_add_items_post(self):
+        self.widget_add_boolean("active", default=False)
+        self.widget_add_boolean("selected", default=True)
+        self.widget_add_multichoice("clienttype", [
+                                    "ovh", "packetnet", "ovc", "physical", "docker", "container", "zos"])
 
 
 JSConfigBase = j.tools.configmanager.base_class_config
 
+
 class Node(JSConfigBase):
 
-    def __init__(self,instance,data={},parent=None):
-        self._connected=None
-        JSConfigBase.__init__(self,instance=instance,data=data,parent=parent,template=TEMPLATE,ui=MyConfigUI)        
-        
+    def __init__(self, instance, data={}, parent=None):
+        self._connected = None
+        JSConfigBase.__init__(self, instance=instance, data=data,
+                              parent=parent, template=TEMPLATE, ui=MyConfigUI)
+
     @property
     def addr(self):
         return self.config.data["addr"]
 
     @addr.setter
-    def addr(self,val):
-        self.config.data["addr"]=val
+    def addr(self, val):
+        self.config._data["addr"] = val
 
     @property
     def port(self):
         return self.config.data["port"]
 
     @port.setter
-    def port(self,val):
-        self.config.data["port"]=val
+    def port(self, val):
+        self.config._data["port"] = val
 
     @property
     def active(self):
         return self.config.data["active"]
 
     @active.setter
-    def active(self,val):
-        self.config.data["active"]=val
+    def active(self, val):
+        self.config._data["active"] = val
 
     @property
     def clienttype(self):
         return self.config.data["clienttype"]
 
     @clienttype.setter
-    def clienttype(self,val):
-        self.config.data["clienttype"]=val
+    def clienttype(self, val):
+        self.config._data["clienttype"] = val
 
     @property
     def category(self):
         return self.config.data["category"]
 
     @category.setter
-    def category(self,val):
-        self.config.data["category"]=val
+    def category(self, val):
+        self.config._data["category"] = val
 
     @property
     def name(self):
         return self.config.data["name"]
 
     @name.setter
-    def name(self,val):
-        self.config.data["name"]=val        
+    def name(self, val):
+        self.config._data["name"] = val
 
     @property
     def description(self):
         return self.config.data["description"]
 
     @description.setter
-    def description(self,val):
-        self.config.data["description"]=val   
+    def description(self, val):
+        self.config._data["description"] = val
 
     @property
     def selected(self):
         return self.config.data["selected"]
 
     @selected.setter
-    def selected(self,val):
-        self.config.data["selected"]=val   
-        
+    def selected(self, val):
+        self.config._data["selected"] = val
+
     @property
     def isconnected(self):
         if self._connected is None:
@@ -119,7 +124,7 @@ class Node(JSConfigBase):
                 self._connected = True
                 self.active = True
             self._sshclient = None
-            self._ftpclient = None            
+            self._ftpclient = None
         return self._connected
 
     @property
@@ -130,14 +135,16 @@ class Node(JSConfigBase):
                 self._ftpclient = self.executor.sshclient.getSFTP()
             return self._ftpclient
         else:
-            raise RuntimeError("node %s cannot be reached, cannot get ftpclient.")
+            raise RuntimeError(
+                "node %s cannot be reached, cannot get ftpclient.")
 
     @property
     def executor(self):
         if self.isconnected:
             return j.tools.executor.get("%s:%s" % (self.addr, self.port))
         else:
-            raise RuntimeError("node %s cannot be reached, cannot get executor.")
+            raise RuntimeError(
+                "node %s cannot be reached, cannot get executor.")
 
     @property
     def prefab(self):
@@ -168,6 +175,9 @@ class Node(JSConfigBase):
 
     def saveToHostfile(self):
         j.tools.prefab.local.system.ns.hostfile_set(self.name, self.addr)
+
+    def save(self):
+        self.config.save()
 
     def __str__(self):
         if self.selected == True:

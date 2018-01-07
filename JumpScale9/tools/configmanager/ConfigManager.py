@@ -4,6 +4,22 @@ import copy
 from .JSBaseClassConfig import JSBaseClassConfig
 from .JSBaseClassConfigs import JSBaseClassConfigs
 from .Config import Config
+import sys
+installmessage = """
+
+**ERROR**: there is no config directory created
+
+create a git repository on github or any other git system.
+checkout this repository by doing
+
+'js9_code get --url='...your ssh git url ...'
+
+the go to this directory (to to that path & do)
+
+js9_config init
+
+
+"""
 
 
 class ConfigFactory:
@@ -55,12 +71,18 @@ class ConfigFactory:
             paths = j.sal.fs.find(j.dirs.CODEDIR, '.jsconfig')
             paths = [j.sal.fs.getParent(path) for path in paths]
             if not paths:
-                raise RuntimeError("Cannot find path for configuration repo, please checkout right git repo & run 'js9_config init' in that repo ")
+                print(installmessage)
+                print(
+                    "Cannot find path for configuration repo, please checkout right git repo & run 'js9_config init' in that repo ")
+                sys.exit(1)
             if len(paths) > 1:
-                j.logger.logging.warning("found configuration dirs in multiple locations: {}".format(paths))
-                path = self._findConfigDirParent(path=j.sal.fs.getcwd(), die=False)
+                j.logger.logging.warning(
+                    "found configuration dirs in multiple locations: {}".format(paths))
+                path = self._findConfigDirParent(
+                    path=j.sal.fs.getcwd(), die=False)
                 if not path:
-                    raise RuntimeError("multipule configuration repos were found in {} but not currently in root of one".format(paths, j.sal.fs.getcwd()))
+                    raise RuntimeError("multipule configuration repos were found in {} but not currently in root of one".format(
+                        paths, j.sal.fs.getcwd()))
                 res = j.clients.git.getGitReposListLocal()
                 for _, path in res.items():
                     checkpath = "%s/.jsconfig" % path
@@ -218,7 +240,8 @@ class ConfigFactory:
             return
         gitdir = "%s/.git" % path
         if not j.sal.fs.exists(gitdir) or not j.sal.fs.isDir(gitdir):
-            raise RuntimeError("path {} is not in root of a git repo".format(path))
+            raise RuntimeError(
+                "path {} is not in root of a git repo".format(path))
 
         j.sal.fs.touch("%s/.jsconfig" % path)
 
