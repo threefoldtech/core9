@@ -110,10 +110,10 @@ class Nodes(JSConfigBase):
 
         assert len(self.list(prefix="myhost")) == 15 + startnr
 
-        # # cleanup
-        # self.delete(prefix="myhost")
+        # cleanup
+        self.delete(prefix="myhost")
 
-        # assert len(self.getall()) == startnr
+        assert len(self.getall()) == startnr
 
         print("TEST for nodes ok")
 
