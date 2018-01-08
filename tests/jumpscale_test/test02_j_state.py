@@ -124,7 +124,7 @@ class TestJSTATE(TestcasesBase):
         self.assertEqual(self.get_config().get('key_1'), 'new_value_1')
 
         # self.lg('Set new key with new value and save equalt to false')
-        self.assertTrue(self.client.configSet('key_2', 'new_value_2'), save=False))
+        self.assertTrue(self.client.configSet('key_2', 'new_value_2', save=False))
         self.assertFalse(self.get_config().get('key_2'), 'value_2')
 
         # self.lg('Set existing key with the same value and save equalt to true')
@@ -132,7 +132,7 @@ class TestJSTATE(TestcasesBase):
         self.assertEqual(self.get_config().get('key_1'), 'new_value_1')
 
         # self.lg('Set new key with the same value and save equalt to false')
-        self.assertFalse(self.client.configSet('key_2', 'new_value_2'), save=False))
+        self.assertFalse(self.client.configSet('key_2', 'new_value_2', save=False))
         self.assertFalse(self.get_config().get('key_2'), 'value_2')
 
 
