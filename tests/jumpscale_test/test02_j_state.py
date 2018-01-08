@@ -1,6 +1,6 @@
 from js9 import j
 from testcases_base import TestcasesBase
-import os, random, pytoml, unittest
+import os, random, pytoml, unittest, uuid
 
 class TestJSTATE(TestcasesBase):
 
@@ -34,6 +34,8 @@ class TestJSTATE(TestcasesBase):
         pass
 
     def setUp(self):
+        super(TestJSTATE).setUp()
+        #self.lg('Add test configration (setUp)')
         test_config = {
             'key_1':'value_1',
             'key_2':'value_2',
@@ -46,7 +48,9 @@ class TestJSTATE(TestcasesBase):
         self.client._configJS = self.update_config(test_config)
 
     def tearDown(self):
+        #self.lg('Remove test configration (tearDown)')
         self.reset_config()
+        super(TestJSTATE).tearDown()
 
     def test001_config_get(self):
         # self.lg('Get value of an existing key')
@@ -103,7 +107,34 @@ class TestJSTATE(TestcasesBase):
         self.assertTrue(isinstance(value, bool))
 
     def test004_config_set(self):
-        pass
+        # self.lg('Set new key, value with save equalt to true')
+        key = str(uuid.uuid4()).replace('-', '')[10]
+        value = str(uuid.uuid4()).replace('-', '')[10]
+        self.assertTrue(self.client.configSet(key, value))
+        self.assertEqual(self.get_config().get(key), value)
+
+        # self.lg('Set new key, value with save equalt to false')
+        key = str(uuid.uuid4()).replace('-', '')[10]
+        value = str(uuid.uuid4()).replace('-', '')[10]
+        self.assertTrue(self.client.configSet(key, value, save=False))
+        self.assertFalse(self.get_config().get(key))
+
+        # self.lg('Set existing key with new value and save equalt to true')
+        self.assertTrue(self.client.configSet('key_1', 'new_value_1'))
+        self.assertEqual(self.get_config().get('key_1'), 'new_value_1')
+
+        # self.lg('Set new key with new value and save equalt to false')
+        self.assertTrue(self.client.configSet('key_2', 'new_value_2'), save=False))
+        self.assertFalse(self.get_config().get('key_2'), 'value_2')
+
+        # self.lg('Set existing key with the same value and save equalt to true')
+        self.assertFalse(self.client.configSet('key_1', 'new_value_1'))
+        self.assertEqual(self.get_config().get('key_1'), 'new_value_1')
+
+        # self.lg('Set new key with the same value and save equalt to false')
+        self.assertFalse(self.client.configSet('key_2', 'new_value_2'), save=False))
+        self.assertFalse(self.get_config().get('key_2'), 'value_2')
+
 
     def test005_config_set_in_dict(self):
         pass
