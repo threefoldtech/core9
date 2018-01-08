@@ -139,18 +139,28 @@ class TestJSTATE(TestcasesBase):
         self.assertEqual(self.get_config()['dict_1']['d_key_1'], 'new_value')
 
     def test006_config_set_in_dict_bool(self):
+        # self.lg('Set new dict, key and value')
+        self.client.configSetInDictBool('new_dict_1', 'new_key', True)
+        self.client.configSetInDictBool('new_dict_2', 'new_key', False)
+        self.assertEqual(self.get_config()['new_dict_1']['new_key'], '1')
+        self.assertEqual(self.get_config()['new_dict_2']['new_key'], '0')
+
+        # self.lg('Set existing dict with new key and value')
+        self.client.configSetInDict('dict_1', 'new_key_1', True)
+        self.client.configSetInDict('dict_1', 'new_key_2', False)
+        self.assertEqual(self.get_config()['dict_1']['new_key_1'], '1')
+        self.assertEqual(self.get_config()['dict_1']['new_key_2'], '0')
+
+        # self.lg('Set existing key of dict with new value')
+        self.client.configSetInDict('dict_1', 'd_key_1', True)
+        self.client.configSetInDict('dict_1', 'd_key_2', False)
+        self.assertEqual(self.get_config()['dict_1']['d_key_1'], '1')
+        self.assertEqual(self.get_config()['dict_1']['d_key_2'], '0')
+
+    def test007_config_save(self):
         pass
 
-    def test007_config_path(self):
-        pass
-
-    def test008_config_me_path(self):
-        pass
-
-    def test009_config_save(self):
-        pass
-
-    def test010_config_update(self):
+    def test08_config_update(self):
         pass
 
 
