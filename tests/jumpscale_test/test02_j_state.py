@@ -146,14 +146,14 @@ class TestJSTATE(TestcasesBase):
         self.assertEqual(self.get_config()['new_dict_2']['new_key'], '0')
 
         # self.lg('Set existing dict with new key and value')
-        self.client.configSetInDict('dict_1', 'new_key_1', True)
-        self.client.configSetInDict('dict_1', 'new_key_2', False)
+        self.client.configSetInDictBool('dict_1', 'new_key_1', True)
+        self.client.configSetInDictBool('dict_1', 'new_key_2', False)
         self.assertEqual(self.get_config()['dict_1']['new_key_1'], '1')
         self.assertEqual(self.get_config()['dict_1']['new_key_2'], '0')
 
         # self.lg('Set existing key of dict with new value')
-        self.client.configSetInDict('dict_1', 'd_key_1', True)
-        self.client.configSetInDict('dict_1', 'd_key_2', False)
+        self.client.configSetInDictBool('dict_1', 'd_key_1', True)
+        self.client.configSetInDictBool('dict_1', 'd_key_2', False)
         self.assertEqual(self.get_config()['dict_1']['d_key_1'], '1')
         self.assertEqual(self.get_config()['dict_1']['d_key_2'], '0')
 
