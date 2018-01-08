@@ -759,12 +759,19 @@ class SystemFS:
         @param toReplace e.g. {name}
         @param replace with e.g. "jumpscale"
         """
+        if not toReplace:
+            raise RuntimeError("toReplace can't be empty")
+        if not replaceWith:
+            raise RuntimeError("replaceWith can't be Empty")
         paths = self.listFilesInDir(
             pathToSearchIn, recursive, filter, minmtime, maxmtime)
         for path in paths:
-            path2 = path.replace(toReplace, replaceWith)
-            if path2 != path:
-                self.renameFile(path, path2)
+            dir_name = self.getDirName(path)
+            file_name = self.getBaseName(path)
+            new_file_name = file_name.replace(toReplace, replaceWith)
+            if new_file_name != file_name:
+                new_path = self.joinPaths(dir_name, new_file_name)
+                self.renameFile(path, new_path)
 
     def replaceWordsInFiles(self, pathToSearchIn, templateengine, recursive=True,
                             filter=None, minmtime=None, maxmtime=None):
