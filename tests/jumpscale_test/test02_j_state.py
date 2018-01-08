@@ -26,7 +26,7 @@ class TestJSTATE(TestcasesBase):
     @classmethod
     def setUpClass(cls):
         cls.client = j.core.state
-        cls.config_path = '/etc/jumpscale9.toml'
+        cls.config_path = '/root/js9host/cfg/jumpscale9.toml'
         cls.config_file_content = cls.get_config()
 
     @classmethod
@@ -44,7 +44,6 @@ class TestJSTATE(TestcasesBase):
             }
         }
         self.client._configJS = self.update_config(test_config)
-        self.client.configSave()
 
     def tearDown(self):
         self.reset_config()
@@ -85,6 +84,7 @@ class TestJSTATE(TestcasesBase):
         value = self.client.configGetFromDict('new_dict', 'new_dict_key', default='new_dict_value')
         self.assertEqual(value, 'new_dict_value')
 
+    @unittest.skip('https://github.com/Jumpscale/core9/issues/157')
     def test003_config_get_form_dict_bool(self):
         # self.lg('Get the value of an existing key from existing dict')
         value = self.client.configGetFromDictBool('dict_1', 'd_key_2')
