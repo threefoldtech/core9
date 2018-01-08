@@ -124,10 +124,19 @@ class TestJSTATE(TestcasesBase):
         # self.lg('Set existing key with the same value')
         self.assertFalse(self.client.configSet('key_1', 'new_value_1'))
         self.assertEqual(self.get_config().get('key_1'), 'new_value_1')
-        
 
     def test005_config_set_in_dict(self):
-        pass
+        # self.lg('Set new dict, key and value')
+        self.client.configSetInDict('new_dict', 'new_key', 'new_value')
+        self.assertEqual(self.get_config()['new_dict']['new_key'], 'new_value')
+
+        # self.lg('Set existing dict with new key and value')
+        self.client.configSetInDict('dict_1', 'new_key', 'new_value')
+        self.assertEqual(self.get_config()['dict_1']['new_key'], 'new_value')
+
+        # self.lg('Set existing key of dict with new value')
+        self.client.configSetInDict('dict_1', 'd_key_1', 'new_value')
+        self.assertEqual(self.get_config()['dict_1']['d_key_1'], 'new_value')
 
     def test006_config_set_in_dict_bool(self):
         pass
