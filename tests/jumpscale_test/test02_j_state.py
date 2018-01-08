@@ -117,22 +117,14 @@ class TestJSTATE(TestcasesBase):
         self.assertTrue(self.client.configSet(key, value, save=False))
         self.assertFalse(self.get_config().get(key))
 
-        # self.lg('Set existing key with new value and save equalt to true')
+        # self.lg('Set existing key with new value')
         self.assertTrue(self.client.configSet('key_1', 'new_value_1'))
         self.assertEqual(self.get_config().get('key_1'), 'new_value_1')
 
-        # self.lg('Set existing key with new value and save equalt to false')
-        self.assertTrue(self.client.configSet('key_2', 'new_value_2', save=False))
-        self.assertEqual(self.get_config().get('key_2'), 'value_2')
-
-        # self.lg('Set existing key with the same value and save equalt to true')
+        # self.lg('Set existing key with the same value')
         self.assertFalse(self.client.configSet('key_1', 'new_value_1'))
         self.assertEqual(self.get_config().get('key_1'), 'new_value_1')
-
-        # self.lg('Set existing key with the same value and save equalt to false')
-        self.assertFalse(self.client.configSet('key_2', 'new_value_2', save=False))
-        self.assertEqual(self.get_config().get('key_2'), 'value_2')
-
+        
 
     def test005_config_set_in_dict(self):
         pass
