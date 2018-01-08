@@ -37,7 +37,7 @@ class TestJSTATE(TestcasesBase):
         test_config = {
             'key_1':'value_1',
             'key_2':'value_2',
-            'dict1':{
+            'dict_1':{
                 'd_key_1':'d_value_1',
                 'd_key_2':True,
                 'd_key_3':False
