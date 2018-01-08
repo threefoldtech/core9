@@ -34,7 +34,7 @@ class TestJSTATE(TestcasesBase):
         pass
 
     def setUp(self):
-        #self.lg('Add test configration (setUp)')
+        # Add test configration (setUp)
         test_config = {
             'key_1':'value_1',
             'key_2':'value_2',
@@ -47,118 +47,128 @@ class TestJSTATE(TestcasesBase):
         self.client._configJS = self.update_config(test_config)
 
     def tearDown(self):
-        #self.lg('Remove test configration (tearDown)')
+        # Remove test configration (tearDown)
         self.reset_config()
 
     def test001_config_get(self):
-        # self.lg('Get value of an existing key')
+        # Get value of an existing key
         value = self.client.configGet('key_1')
         self.assertEqual(value, 'value_1')
 
-        # self.lg('Get the value of a non-existing key')
+        # Get the value of a non-existing key
         with self.assertRaises(j.exceptions.Input) as e:
             self.client.configGet('new_key')
         
-        # self.lg('Get the value of a non-existing key with default value and set is false')
+        # Get the value of a non-existing key with default value and set is false
         value = self.client.configGet('new_key', defval='new_value')
         self.assertEqual(value, 'new_value')
 
         with self.assertRaises(j.exceptions.Input) as e:
             self.client.configGet('new_value')
 
-        # self.lg('Get the value of non existing key with default value and set is true')
+        # Get the value of non existing key with default value and set is true
         value = self.client.configGet('new_key', defval='new_value', set=True)
         self.assertEqual(value, 'new_value')
         self.assertEqual(self.client.configGet('new_key'), 'new_value')
     
     def test002_config_get_form_dict(self):
-        # self.lg('Get the value of an existing key from existing dict')
+        # Get the value of an existing key from existing dict
         value = self.client.configGetFromDict('dict_1', 'd_key_1')
         self.assertEqual(value, 'd_value_1')
 
-        # self.lg('Get the value of a non-existing key from non-existing dict')
+        # Get the value of a non-existing key from non-existing dict
         with self.assertRaises(RuntimeError) as e:
             self.client.configGetFromDict('new_dict', 'new_dict_key')
 
         self.assertEqual(self.client.configGet('new_dict'), {})
 
-        # self.lg('Get the value of an non-existing key from existing dict with default value')
+        # Get the value of an non-existing key from existing dict with default value
         value = self.client.configGetFromDict('new_dict', 'new_dict_key', default='new_dict_value')
         self.assertEqual(value, 'new_dict_value')
 
     @unittest.skip('https://github.com/Jumpscale/core9/issues/157')
     def test003_config_get_form_dict_bool(self):
-        # self.lg('Get the value of an existing key from existing dict')
+        # Get the value of an existing key from existing dict
         value = self.client.configGetFromDictBool('dict_1', 'd_key_2')
         self.assertEqual(value, 'd_value_1')
         self.assertTrue(isinstance(value, bool))
 
-        # self.lg('Get the value of a non-existing key from non-existing dict')
+        # Get the value of a non-existing key from non-existing dict
         with self.assertRaises(RuntimeError) as e:
             self.client.configGetFromDictBool('new_dict', 'new_dict_key')
 
         self.assertEqual(self.client.config.get('new_dict'), {})
 
-        # self.lg('Get the value of an non-existing key from existing dict with default value')
+        # Get the value of an non-existing key from existing dict with default value
         value = self.client.configGetFromDictBool('new_dict', 'new_dict_key', default=1)
         self.assertEqual(value, 'new_dict_value')
         self.assertTrue(isinstance(value, bool))
 
     def test004_config_set(self):
-        # self.lg('Set new key, value with save equalt to true')
+        # Set new key, value with save equalt to true
         key = str(uuid.uuid4()).replace('-', '')[10]
         value = str(uuid.uuid4()).replace('-', '')[10]
         self.assertTrue(self.client.configSet(key, value))
         self.assertEqual(self.get_config().get(key), value)
 
-        # self.lg('Set new key, value with save equalt to false')
+        # Set new key, value with save equalt to false
         key = str(uuid.uuid4()).replace('-', '')[10]
         value = str(uuid.uuid4()).replace('-', '')[10]
         self.assertTrue(self.client.configSet(key, value, save=False))
         self.assertFalse(self.get_config().get(key))
 
-        # self.lg('Set existing key with new value')
+        # Set existing key with new value
         self.assertTrue(self.client.configSet('key_1', 'new_value_1'))
         self.assertEqual(self.get_config().get('key_1'), 'new_value_1')
 
-        # self.lg('Set existing key with the same value')
+        # Set existing key with the same value
         self.assertFalse(self.client.configSet('key_1', 'new_value_1'))
         self.assertEqual(self.get_config().get('key_1'), 'new_value_1')
 
     def test005_config_set_in_dict(self):
-        # self.lg('Set new dict, key and value')
+        # Set new dict, key and value
         self.client.configSetInDict('new_dict', 'new_key', 'new_value')
         self.assertEqual(self.get_config()['new_dict']['new_key'], 'new_value')
 
-        # self.lg('Set existing dict with new key and value')
+        # Set existing dict with new key and value
         self.client.configSetInDict('dict_1', 'new_key', 'new_value')
         self.assertEqual(self.get_config()['dict_1']['new_key'], 'new_value')
 
-        # self.lg('Set existing key of dict with new value')
+        # Set existing key of dict with new value
         self.client.configSetInDict('dict_1', 'd_key_1', 'new_value')
         self.assertEqual(self.get_config()['dict_1']['d_key_1'], 'new_value')
 
     def test006_config_set_in_dict_bool(self):
-        # self.lg('Set new dict, key and value')
+        # Set new dict, key and value
         self.client.configSetInDictBool('new_dict_1', 'new_key', True)
         self.client.configSetInDictBool('new_dict_2', 'new_key', False)
         self.assertEqual(self.get_config()['new_dict_1']['new_key'], '1')
         self.assertEqual(self.get_config()['new_dict_2']['new_key'], '0')
 
-        # self.lg('Set existing dict with new key and value')
+        # Set existing dict with new key and value
         self.client.configSetInDictBool('dict_1', 'new_key_1', True)
         self.client.configSetInDictBool('dict_1', 'new_key_2', False)
         self.assertEqual(self.get_config()['dict_1']['new_key_1'], '1')
         self.assertEqual(self.get_config()['dict_1']['new_key_2'], '0')
 
-        # self.lg('Set existing key of dict with new value')
+        # Set existing key of dict with new value
         self.client.configSetInDictBool('dict_1', 'd_key_1', True)
         self.client.configSetInDictBool('dict_1', 'd_key_2', False)
         self.assertEqual(self.get_config()['dict_1']['d_key_1'], '1')
         self.assertEqual(self.get_config()['dict_1']['d_key_2'], '0')
 
     def test007_config_save(self):
-        pass
+        # Set new key without saving 
+        key = str(uuid.uuid4()).replace('-', '')[10]
+        value = str(uuid.uuid4()).replace('-', '')[10]
+        self.assertTrue(self.client.configSet(key, value, save=False))
+        self.assertFalse(self.get_config().get(key))
+
+        # Save config
+        self.client.configSave()
+
+        # check that new key, value were added to the config file
+        self.assertEqual(self.get_config().get(key), value)
 
     def test08_config_update(self):
         pass
