@@ -384,8 +384,8 @@ class SSHClient:
             sshkey_name,
             sshkey_path):
         """
-        this required ssh-agent to be loaded !!!
-        the sshkey_name is the name of the key as loaded in ssh-agent
+        the sshkey_name is the name of the sshkey as will be used in the agent
+        the sshkey_path is the path to the sshkey
 
         if remoteothers==True: then other keys will be removed
         """
