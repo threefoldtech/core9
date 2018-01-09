@@ -35,7 +35,7 @@ class TestJSTATE(TestcasesBase):
         super().tearDownClass()
 
     def setUp(self):
-        super().setUp(*args, **kwargs)
+        super().setUp()
         # Add test configration (setUp)
         test_config = {
             'key_1':'value_1',
