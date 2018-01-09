@@ -29,13 +29,23 @@ class JSBaseClassConfig:
 
     @property
     def config(self):
+        have_data = self._data != {}
+
         if self._config is None:
             self._config = j.tools.configmanager._get_for_obj(
                 self, instance=self._instance, data=self._data, template=self._template, ui=self._ui)
-            if self._config.load() > 0:
+
+            if have_data:
+                # this means this is a creation cause we already have the data
+                # so we save here and return
+                self._config.save()
+
+            elif self._config.load() > 0:
                 self.interactive()
+
             elif self.config_check() not in [None, "", 0]:
                 self.interactive()
+
         return self._config
 
     @config.setter

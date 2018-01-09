@@ -123,6 +123,7 @@ class RedisFactory:
         """
         if j.core.platformtype.myplatform.isMac:
             if not j.sal.process.checkInstalled("redis-server"):
+                # prefab.system.package.install('redis')
                 j.sal.process.execute("brew unlink redis", die=False)
                 j.sal.process.execute("brew install redis;brew link redis")
             if not j.sal.process.checkInstalled("redis-server"):

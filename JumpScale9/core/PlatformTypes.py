@@ -132,12 +132,7 @@ class PlatformType():
         if self._uname is None:
             _uname = self.executor.stateOnSystem["uname"]
             if _uname.find("warning: setlocale") != -1:
-                j.application._fixlocale = True
-                print("NEED TO FIX TERMINFO IN EXECUTOR, now only for local")
-                from IPython import embed
-                embed(colors='Linux')
-                os.environ["LC_ALL"] = 'C.UTF-8'
-                os.environ["TERMINFO"] = 'xterm-256colors'
+                raise RuntimeError("run js9 'j.tools.prefab.local.bash.locale_check()'")
             _uname = _uname.split("\n")[0]
             _tmp, self._hostname, _osversion, self._cpu, self._platform = _uname.split(
                 " ")
