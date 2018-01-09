@@ -54,7 +54,7 @@ class TarantoolDB():
         will start a local tarantool in console
         """
         self.start()
-        j.do.executeInteractive("tarantoolctl enter %s" % self.name)
+        j.sal.process.executeInteractive("tarantoolctl enter %s" % self.name)
 
         # FOR TEST PURPOSES (DEBUG ON CONSOLE)
         # rm 000*;rm -rf /Users/kristofdespiegeleer1/opt/var/data/tarantool/test;tarantoolctl start test; cat /Users/kristofdespiegeleer1/opt/var/data/tarantool/test/instance.log
@@ -72,9 +72,9 @@ class TarantoolDB():
 
         # IF WE USE THE FOLLOWING THEN HAVE SECURITY ISSUES BECAUSE WILL RUN AS TARANTOOL
         # j.sal.fs.chown(self.path,"tarantool")
-        # j.do.execute("tarantoolctl stop %s"%self.name)
-        # j.do.execute("tarantoolctl start %s"%self.name)
-        # j.do.executeInteractive("tarantoolctl enter %s"%self.name)
+        # j.sal.process.execute("tarantoolctl stop %s"%self.name)
+        # j.sal.process.execute("tarantoolctl start %s"%self.name)
+        # j.sal.process.executeInteractive("tarantoolctl enter %s"%self.name)
 
     def connect_shell(self):
         """

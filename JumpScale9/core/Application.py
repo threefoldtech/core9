@@ -22,7 +22,6 @@ class Application:
         self._systempid = None
 
         self.interactive = True
-        self._fixlocale = False
         self.__jslocation__ = "j.core.application"
 
     def reset(self):
@@ -54,21 +53,29 @@ class Application:
             raise j.exceptions.RuntimeError(
                 "Can't break into jsshell in production mode.")
 
-    def fixlocale(self):
-        return
-        rc, out, err = self.executor.execute("locale -a", showout=False)
-        out = [item for item in out.split(
-            "\n") if not item.startswith("locale:")]
-        if 'C.UTF-8' not in out:
-            raise j.exceptions.RuntimeError(
-                "Cannot find C.UTF-8 in locale -a, cannot continue.")
-        from IPython import embed
-        print("DEBUG NOW fix locale in application")
-        embed()
+    # def locale_init(self):
+    #     """
+    #     check with locale language variables to load
+    #     """
+    #     # if j.core.platformtype.myplatform.isMac:
+        #     os.environ['LC_ALL'] = 'en_US.UTF-8'
+        #     os.environ['LANG'] = 'en_US.UTF-8'
+        # else:
+        #     os.environ['LC_ALL'] = 'C.UTF-8'
+        #     os.environ['LANG'] = 'C.UTF-8'
+        
+        # rc, out, err = self.executor.execute("locale -a", showout=False)
+        # out = [item for item in out.split(
+        #     "\n") if not item.startswith("locale:")]
+        # if 'C.UTF-8' not in out:
+        #     raise j.exceptions.RuntimeError(
+        #         "Cannot find C.UTF-8 in locale -a, cannot continue.")
+        # from IPython import embed
+        # print("DEBUG NOW fix locale in application")
+        # embed()
 
     def init(self):
-        if self._fixlocale:
-            self.fixlocale()
+        pass
 
     @property
     def systempid(self):
@@ -147,41 +154,7 @@ class Application:
         if not self._calledexit:
             self.stop(stop=False)
 
-    def existAppInstanceHRD(self, name, instance, domain="jumpscale"):
-        """
-        returns hrd for specific appname & instance name (default domain=jumpscale or not used when inside a config git repo)
-        """
-        return False
-        # TODO: fix
-        if j.atyourservice.server.type != "c":
-            path = '%s/%s__%s__%s.hrd' % (j.dirs.getHrdDir(),
-                                          domain, name, instance)
-        else:
-            path = '%s/%s__%s.hrd' % (j.dirs.getHrdDir(), name, instance)
-        if not j.sal.fs.exists(path=path):
-            return False
-        return True
 
-    def getAppInstanceHRDs(self, name, domain="jumpscale"):
-        """
-        returns list of hrd instances for specified app
-        """
-        # TODO: fix
-        res = []
-        for instance in self.getAppHRDInstanceNames(name, domain):
-            res.append(self.getAppInstanceHRD(name, instance, domain))
-        return res
-
-    def getAppHRDInstanceNames(self, name, domain="jumpscale"):
-        """
-        returns hrd instance names for specific appname (default domain=jumpscale)
-        """
-        repos = []
-        for path in j.atyourservice.server.findAYSRepos(j.dirs.CODEDIR):
-            repos.append(j.atyourservice.server.get(path=path))
-        names = sorted([service.instance for aysrepo in repos for service in list(
-            aysrepo.services.values()) if service.templatename == name])
-        return names
 
     # def getCPUUsage(self):
     #     """
