@@ -2,7 +2,7 @@ import os, shutil
 from random import randint
 from testcases_base import TestcasesBase
 from js9 import j
-from parameterized import parameterized
+
 
 class TestJSALFS(TestcasesBase):
     def test001_changeDir(self):
@@ -17,6 +17,7 @@ class TestJSALFS(TestcasesBase):
             self.assertEqual(j.sal.fs.changeDir('/etc'), '/etc')
         else:
             self.assertEqual(j.sal.fs.changeDir('/root'), '/root')
+        os.chdir(current_dir)
 
     def test002_changeDir_longpath(self):
         """ JS-002
@@ -25,13 +26,15 @@ class TestJSALFS(TestcasesBase):
         #. Create a long path
         #. Change the current dir to this long path, should succeed
         """
+        current_dir = os.getcwd()
         long_path = '/root/test'
         for i in range(0, randint(1, 10)):
             long_path += '/test00%d' % i
 
         os.makedirs(long_path)
         self.assertEqual(j.sal.fs.changeDir(long_path), long_path)
-        shutil.rmtree(long_path)
+        shutil.rmtree('/root/test')
+        os.chdir(current_dir)
 
     def test003_changeDir_file(self):
         """ JS-003
@@ -57,7 +60,7 @@ class TestJSALFS(TestcasesBase):
             j.sal.fs.changeDir('/tmp/%d' % randint(1, 1000))
 
     def test005_changeFileNames(self):
-        """ JS-004
+        """ JS-005
 
         **Test Scenario:**
         #. Create new file
@@ -71,7 +74,7 @@ class TestJSALFS(TestcasesBase):
         self.assertTrue(os.path.isfile(new_file_name))
 
     def test005_changeFileNames_empty(self):
-        """ JS-004
+        """ JS-006
 
         **Test Scenario:**
         #. Change file name with empty input, should fail.
@@ -81,7 +84,7 @@ class TestJSALFS(TestcasesBase):
             j.sal.fs.changeFileNames('', '', current_dir)
 
     def test005_changeFileNames_sameDirName(self):
-        """ JS-004
+        """ JS-007
 
         **Test Scenario:**
         #. Create new file with the dir name
@@ -93,4 +96,3 @@ class TestJSALFS(TestcasesBase):
         os.mknod(file_name)
         j.sal.fs.changeFileNames(file_name, new_file_name, current_dir)
         self.assertTrue(os.path.isfile(new_file_name))
-        
