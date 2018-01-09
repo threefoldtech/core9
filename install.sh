@@ -45,4 +45,5 @@ pip3 install Cython
 pip3 install asyncssh
 pip3 install numpy
 pip3 install tarantool
+pip3 install PyNaCl --upgrade
 

@@ -1,4 +1,4 @@
-import time, signal, logging
+import time, signal, uuid, random, logging
 from datetime import timedelta
 from unittest import TestCase
 from nose.tools import TimeExpired
@@ -35,3 +35,6 @@ class TestcasesBase(TestCase):
 
         return logger
 
+    def random_sring(self):
+        data = str(uuid.uuid4()).replace('-','')
+        return data[:random.randint(1, len(data))]

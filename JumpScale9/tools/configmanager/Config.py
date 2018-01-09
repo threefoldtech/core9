@@ -13,10 +13,29 @@ class Config():
         self.instance = instance
         self._template = template
         self._data = {}
-        self.loaded=False
+        self.loaded = False
         self.data = data
+        self.path = j.sal.fs.joinPaths(j.tools.configmanager.path_configrepo, self.location, self.instance + '.toml')
+        j.sal.fs.createDir(j.sal.fs.getParent(self.path))
         if self.instance is None:
-            raise RuntimeError("cannot be None")
+            raise RuntimeError("instance cannot be None")
+        self._nacl = None
+
+    @property
+    def nacl(self):
+        if not self._nacl:
+            j.clients.ssh.ssh_agent_check()
+            keys = j.clients.ssh.ssh_keys_list_from_agent()
+            if not keys:
+                j.clients.ssh.ssh_keys_load()
+            keys = j.clients.ssh.ssh_keys_list_from_agent()
+            if len(keys) >= 1:
+                key = j.tools.console.askChoice([k for k in keys], descr="Please choose which key to pass to the NACL")
+                sshkeyname = j.sal.fs.getBaseName(key)
+            else:
+                raise RuntimeError("You need to configure at least one sshkey")
+            self._nacl = j.data.nacl.get(sshkeyname=sshkeyname)
+        return self._nacl
 
     def instance_set(self, instance):
         """
@@ -25,21 +44,15 @@ class Config():
         self.instance = instance
         self.load(reset=True)
 
-    def load(self,reset=False):
+    def load(self, reset=False):
         """
         @RETURN if 1 means did not find the toml file so is new
         """
-        if self.loaded and reset==False:
+        if self.loaded and reset is False:
             return 0
 
         if reset:
             self._data = {}
-
-        dirpath = j.tools.configmanager.path_configrepo + "/%s" % self.location
-
-        j.sal.fs.createDir(dirpath)
-
-        self.path = j.sal.fs.joinPaths(dirpath, self.instance + '.toml')
 
         if not j.sal.fs.exists(self.path):
             self._data, error = j.data.serializer.toml.merge(tomlsource=self.template, tomlupdate=self._data, listunique=True)
@@ -58,7 +71,7 @@ class Config():
     #     print("Did not find config file:%s"%self.location)
     #     self.instance=j.tools.console.askString("specify name for instance", defaultparam=self.instance)
     #     self.configure()
-   
+
     # def configure(self):
     #     if self.ui is None:
     #         raise RuntimeError("cannot call configure UI because not defined yet, is None")
@@ -89,7 +102,8 @@ class Config():
             if key.endswith("_"):
                 if ttype.BASETYPE == "string":
                     if item != '':
-                        res[key] = j.data.nacl.default.decryptSymmetric(item, hex=True).decode()
+                        res[key] = self.nacl.decryptSymmetric(
+                            item, hex=True).decode()
                     else:
                         res[key] = ''
                 else:
@@ -111,20 +125,19 @@ class Config():
             if key.endswith("_"):
                 if ttype.BASETYPE == "string":
                     if item != '':
-                        item = j.data.nacl.default.encryptSymmetric(item, hex=True, salt=item)
+                        item = self.nacl.encryptSymmetric(item, hex=True, salt=item)
             self._data[key] = item
 
-    def data_set(self,key,val,save=True):
-        if self.data[key]!=val:
+    def data_set(self, key, val, save=True):
+        if self.data[key] != val:
             ttype = j.data.types.type_detect(self.template[key])
             if key.endswith("_"):
                 if ttype.BASETYPE == "string":
                     if val != '':
-                        val = j.data.nacl.default.encryptSymmetric(val, hex=True, salt=val)
+                        val = self.nacl.encryptSymmetric(val, hex=True, salt=val)
             self._data[key] = val
             if save:
                 self.save()
-
 
     @property
     def yaml(self):
