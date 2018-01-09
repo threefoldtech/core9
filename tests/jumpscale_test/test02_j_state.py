@@ -25,15 +25,17 @@ class TestJSTATE(TestcasesBase):
 
     @classmethod
     def setUpClass(cls):
+        super().setUpClass()
         cls.client = j.core.state
         cls.config_path = '/root/js9host/cfg/jumpscale9.toml'
         cls.config_file_content = cls.get_config()
 
     @classmethod
     def tearDownClass(cls):
-        pass
+        super().tearDownClass()
 
     def setUp(self):
+        super().setUp(*args, **kwargs)
         # Add test configration (setUp)
         test_config = {
             'key_1':'value_1',
@@ -49,6 +51,7 @@ class TestJSTATE(TestcasesBase):
     def tearDown(self):
         # Remove test configration (tearDown)
         self.reset_config()
+        super().tearDown()
 
     def test001_config_get(self):
         """ JS-004
@@ -232,4 +235,3 @@ class TestJSTATE(TestcasesBase):
         ddict = {'key_1':'new_value_1'}
         self.client.configUpdate(ddict, overwrite=True)
         self.assertEqual(self.get_config()['key_1'], 'new_value_1')
-        
