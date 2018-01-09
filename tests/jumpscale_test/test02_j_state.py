@@ -51,6 +51,13 @@ class TestJSTATE(TestcasesBase):
         self.reset_config()
 
     def test001_config_get(self):
+        """ JS-004
+        **Test Scenario:**
+        #. Get value of an existing key.
+        #. Get the value of a non-existing key.
+        #. Get the value of a non-existing key with default value and set is false.
+        #. Get the value of non existing key with default value and set is true.
+        """
         # Get value of an existing key
         value = self.client.configGet('key_1')
         self.assertEqual(value, 'value_1')
@@ -72,6 +79,12 @@ class TestJSTATE(TestcasesBase):
         self.assertEqual(self.client.configGet('new_key'), 'new_value')
     
     def test002_config_get_form_dict(self):
+        """ JS-005
+        **Test Scenario:**
+        #. Get the value of an existing key from existing dict.
+        #. Get the value of a non-existing key from non-existing dict.
+        #. Get the value of an non-existing key from existing dict with default value.
+        """
         # Get the value of an existing key from existing dict
         value = self.client.configGetFromDict('dict_1', 'd_key_1')
         self.assertEqual(value, 'd_value_1')
@@ -88,6 +101,12 @@ class TestJSTATE(TestcasesBase):
 
     @unittest.skip('https://github.com/Jumpscale/core9/issues/157')
     def test003_config_get_form_dict_bool(self):
+        """ JS-005
+        **Test Scenario:**
+        #. Get the value of an existing key from existing dict.
+        #. Get the value of a non-existing key from non-existing dict.
+        #. Get the value of an non-existing key from existing dict with default value.
+        """
         # Get the value of an existing key from existing dict
         value = self.client.configGetFromDictBool('dict_1', 'd_key_2')
         self.assertEqual(value, 'd_value_1')
@@ -105,6 +124,13 @@ class TestJSTATE(TestcasesBase):
         self.assertTrue(isinstance(value, bool))
 
     def test004_config_set(self):
+        """ JS-006
+        **Test Scenario:**
+        #. Set new key, value with save equalt to true.
+        #. Set new key, value with save equalt to false.
+        #. Set existing key with new value.
+        #. Set existing key with the same value.
+        """
         # Set new key, value with save equalt to true
         key = str(uuid.uuid4()).replace('-', '')[10]
         value = str(uuid.uuid4()).replace('-', '')[10]
@@ -126,6 +152,12 @@ class TestJSTATE(TestcasesBase):
         self.assertEqual(self.get_config().get('key_1'), 'new_value_1')
 
     def test005_config_set_in_dict(self):
+        """ JS-007
+        **Test Scenario:**
+        #. Set new dict, key and value.
+        #. Set existing dict with new key and value.
+        #. Set existing key of dict with new value.
+        """
         # Set new dict, key and value
         self.client.configSetInDict('new_dict', 'new_key', 'new_value')
         self.assertEqual(self.get_config()['new_dict']['new_key'], 'new_value')
@@ -139,6 +171,12 @@ class TestJSTATE(TestcasesBase):
         self.assertEqual(self.get_config()['dict_1']['d_key_1'], 'new_value')
 
     def test006_config_set_in_dict_bool(self):
+        """ JS-008
+        **Test Scenario:**
+        #. Set new dict, key and value.
+        #. Set existing dict with new key and value.
+        #. Set existing key of dict with new value.
+        """
         # Set new dict, key and value
         self.client.configSetInDictBool('new_dict_1', 'new_key', True)
         self.client.configSetInDictBool('new_dict_2', 'new_key', False)
@@ -158,6 +196,12 @@ class TestJSTATE(TestcasesBase):
         self.assertEqual(self.get_config()['dict_1']['d_key_2'], '0')
 
     def test007_config_save(self):
+        """ JS-008
+        **Test Scenario:**
+        #. Set new key without saving.
+        #. Save config.
+        #. check that new key, value were added to the config file.
+        """
         # Set new key without saving 
         key = str(uuid.uuid4()).replace('-', '')[10]
         value = str(uuid.uuid4()).replace('-', '')[10]
@@ -170,9 +214,22 @@ class TestJSTATE(TestcasesBase):
         # check that new key, value were added to the config file
         self.assertEqual(self.get_config().get(key), value)
 
+    @unittest.skip('https://github.com/Jumpscale/core9/issues/159')
     def test08_config_update(self):
-        pass
+        """ JS-010
+        **Test Scenario:**
+        #. update config with new key.
+        #. Update existing key and overwrite.
+        """
+        # update config with new key
+        key = str(uuid.uuid4()).replace('-', '')[10]
+        value = str(uuid.uuid4()).replace('-', '')[10]
+        ddict = {key:value}
+        self.client.configUpdate(ddict)
+        self.assertEqual(self.get_config()[key], value)
 
-
-if __name__ == '__main__':
-    unittest.main()
+        # Update existing key and overwrite
+        ddict = {'key_1':'new_value_1'}
+        self.client.configUpdate(ddict, overwrite=True)
+        self.assertEqual(self.get_config()['key_1'], 'new_value_1')
+        
