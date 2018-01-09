@@ -12,7 +12,7 @@ class TestcasesBase(TestCase):
     def setUp(self):
         self._testID = self._testMethodName
         self._startTime = time.time()
-        self.lg.info('[*] Testcase [{}] is started'.format(self._testID))
+        self.lg.info('====== Testcase [{}] is started ======'.format(self._testID))
 
         def timeout_handler(signum, frame):
             raise TimeExpired('Timeout expired before end of test %s' % self._testID)
@@ -23,7 +23,7 @@ class TestcasesBase(TestCase):
     def tearDown(self):
         self._endTime = time.time()
         self._duration = int(self._endTime - self._startTime)
-        self.lg.info('[*] Testcase [{}] is ended, Duration: {} seconds'.format(self._testID, self._duration))
+        self.lg.info('Testcase [{}] is ended, Duration: {} seconds'.format(self._testID, self._duration))
 
     def logger(self):
         logger = logging.getLogger('JumpScale')
