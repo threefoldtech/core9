@@ -1,4 +1,4 @@
-import time, signal
+import time, signal, uuid, random
 from unittest import TestCase
 from nose.tools import TimeExpired
 
@@ -20,3 +20,6 @@ class TestcasesBase(TestCase):
     def tearDown(self):
         pass
 
+    def random_sring(self):
+        data = str(uuid.uuid4()).replace('-','')
+        return data[:random.randint(1, len(data))]
