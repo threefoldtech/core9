@@ -7,10 +7,10 @@ import unittest
 import string,uuid
 from pwd import getpwuid 
 
-class TestNICS(TestcasesBase):
+class TestUNIX(TestcasesBase):
 
     def test001_check_application_installed(self):
-        """ JS-000
+        """ JS-029
 
         **Test Scenario:**
         #. Check that nosetests app is installed,should return true. 
@@ -27,7 +27,7 @@ class TestNICS(TestcasesBase):
 
 
     def test002_crypt(self):
-        """ JS-000
+        """ JS-030
 
         **Test Scenario:**
         #. Crypt word with 2 Characters salt ,should return crypted word started with salt characters .
@@ -47,7 +47,7 @@ class TestNICS(TestcasesBase):
         self.assertIn(salt[0:2], encrypted_word)  
             
     def test003_check_user_exist(self):
-        """ JS-000
+        """ JS-031
 
         **Test Scenario:**
         #. Check that one of system users is exist, should succeed.
@@ -64,7 +64,7 @@ class TestNICS(TestcasesBase):
         self.assertFalse(j.sal.unix.unixUserExists(fake_user))
 
     def test004_check_group_exist(self):
-        """ JS-000
+        """ JS-032
 
         **Test Scenario:**
         #. Check that one of system groups is exist,should succeed.
@@ -81,7 +81,7 @@ class TestNICS(TestcasesBase):
         self.assertFalse(j.sal.unix.unixGroupExists(fake_group)) 
 
     def test05_create_new_group(self):
-        """ JS-000
+        """ JS-033
 
         **Test Scenario:**
         #. Create new group[G1] ,should succeed.
@@ -97,7 +97,7 @@ class TestNICS(TestcasesBase):
         self.assertTrue(j.sal.unix.unixGroupExists(group_name))
 
     def test06_add_user_to_group(self):
-        """ JS-000
+        """ JS-034
 
         **Test Scenario:**
 
@@ -131,7 +131,7 @@ class TestNICS(TestcasesBase):
             j.sal.unix.addUserToGroup(user_name, fake_group_name)
 
     def test07_change_file_owner(self):
-        """ JS-000
+        """ JS-035
 
         **Test Scenario:**
         #. Create new file[f1].
@@ -176,7 +176,7 @@ class TestNICS(TestcasesBase):
        
     @unittest.skip("https://github.com/Jumpscale/core9/issues/163")
     def test08_change_folder_owner_recursively(self):
-        """ JS-000
+        """ JS-036
 
         **Test Scenario:**
         #. Create new directory[D1] and create new file [F1]on it .
