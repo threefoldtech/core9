@@ -7,8 +7,9 @@ from JumpScale9Lib.sal.nic.UnixNetworkManager import NetworkingError
 
 class TestNICS(TestcasesBase):
 
+    @unittest.skip("https://github.com/Jumpscale/core9/issues/169")
     def test001_get_nic(self):
-        """ JS-000
+        """ JS-025
 
         **Test Scenario:**
         #. Get the nics from j.sal.nic[sal_nic]. 
@@ -26,8 +27,9 @@ class TestNICS(TestcasesBase):
         for nic in nics:
             self.assertIn(nic,nic_orgional)
 
+    @unittest.skip("https://github.com/Jumpscale/core9/issues/169")
     def test002_get_nic_ip(self):
-        """ JS-000
+        """ JS-026
 
         **Test Scenario:**
         #. Get Ip and mask [nic_ip_mask] of one device from nic.ipGet.
@@ -48,9 +50,9 @@ class TestNICS(TestcasesBase):
         self.lg.info("Compare between [nic_ip_mask] and [ifconfig_ip_mask],should be same .")
         self.assertEqual(nic_ip_mask , ifconfig_ip_mask)
 
-    @unittest.skip("NetworkingErr")
+    @unittest.skip("https://github.com/Jumpscale/core9/issues/153")
     def test003_set_nic_ip(self):
-        """ JS-000
+        """ JS-027
 
         **Test Scenario:**
         #. Set ip for one device with  nic.ipSet.
@@ -68,9 +70,8 @@ class TestNICS(TestcasesBase):
         self.lg.info("Get Ip for this device ,check tha device ip is updated")
         self.assertEqual(j.sal.nic.ipGet(device), new_ip)
 
-
     def test004_using_nonexist_device(self):
-        """ JS-000
+        """ JS-028
         **Test Scenario:**
         #. Get ip for nonexist device ,should fail.
         #. Set ip for nonexist device with nic.ipset,should fail .
