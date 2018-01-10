@@ -2,6 +2,7 @@ import os, shutil
 from random import randint
 from testcases_base import TestcasesBase
 from js9 import j
+from parameterized import parameterized
 
 
 class TestJSALFS(TestcasesBase):
@@ -102,3 +103,15 @@ class TestJSALFS(TestcasesBase):
         j.sal.fs.changeFileNames(file_name, new_file_name, current_dir)
         self.assertTrue(os.path.isfile(new_file_name))
         os.remove(new_file_name)
+
+    @parameterized.expand(['/test/xTremX','@3%6123', 'Запомните'])
+    def test008_checkDirParam(self, dir_name):
+        """ JS-037
+
+        **Test Scenario:**
+        #. checkDirParam with dir_name in [english word, special char, non-english]
+        """
+        data = j.sal.fs.checkDirParam(dir_name)
+        self.assertIn(dir_name, data)
+
+        
