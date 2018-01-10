@@ -55,7 +55,7 @@ class TestJCONFIG(TestcasesBase):
         super().tearDownClass()
 
     def test001_config_get(self):
-        """ JS-011
+        """ JS-016
         **Test Scenario:**
         #. Get value of an existing key.
         #. Get the value of a non-existing key.
@@ -83,7 +83,7 @@ class TestJCONFIG(TestcasesBase):
         self.assertEqual(self.client.configGet('new_key'), 'new_value')
     
     def test002_config_get_form_dict(self):
-        """ JS-012
+        """ JS-017
         **Test Scenario:**
         #. Get the value of an existing key from existing dict.
         #. Get the value of a non-existing key from non-existing dict.
@@ -105,7 +105,7 @@ class TestJCONFIG(TestcasesBase):
 
     @unittest.skip('https://github.com/Jumpscale/core9/issues/157')
     def test003_config_get_form_dict_bool(self):
-        """ JS-013
+        """ JS-018
         **Test Scenario:**
         #. Get the value of an existing key from existing dict.
         #. Get the value of a non-existing key from non-existing dict.
@@ -128,7 +128,7 @@ class TestJCONFIG(TestcasesBase):
         self.assertTrue(isinstance(value, bool))
 
     def test004_config_set(self):
-        """ JS-014
+        """ JS-019
         **Test Scenario:**
         #. Set new key, value with save equal to true.
         #. Set new key, value with save equal to false.
@@ -156,7 +156,7 @@ class TestJCONFIG(TestcasesBase):
         self.assertEqual(self.get_config().get('key_1'), 'new_value_1')
 
     def test005_config_set_in_dict(self):
-        """ JS-015
+        """ JS-020
         **Test Scenario:**
         #. Set new dict, key and value.
         #. Set existing dict with new key and value.
@@ -175,7 +175,7 @@ class TestJCONFIG(TestcasesBase):
         self.assertEqual(self.get_config()['dict_1']['d_key_1'], 'new_value')
 
     def test006_config_set_in_dict_bool(self):
-        """ JS-016
+        """ JS-021
         **Test Scenario:**
         #. Set new dict, key and value.
         #. Set existing dict with new key and value.
@@ -200,7 +200,7 @@ class TestJCONFIG(TestcasesBase):
         self.assertEqual(self.get_config()['dict_1']['d_key_2'], '0')
 
     def test007_config_save(self):
-        """ JS-017
+        """ JS-022
         **Test Scenario:**
         #. Set new key without saving.
         #. Save config.
@@ -220,7 +220,7 @@ class TestJCONFIG(TestcasesBase):
 
     @unittest.skip('https://github.com/Jumpscale/core9/issues/159')
     def test08_config_update(self):
-        """ JS-018
+        """ JS-023
         **Test Scenario:**
         #. update config with new key.
         #. Update existing key and overwrite.
@@ -238,7 +238,7 @@ class TestJCONFIG(TestcasesBase):
         self.assertEqual(self.get_config()['key_1'], 'new_value_1')
 
     def test009_state_reset(self):
-        """ JS-011
+        """ JS-024
         **Test Scenario:**
         #. Reset config.
         #. Check that config file is empty.

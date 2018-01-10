@@ -55,7 +55,7 @@ class TestJSTATE(TestcasesBase):
         super().tearDown()
 
     def test001_state_get(self):
-        """ JS-004
+        """ JS-008
         **Test Scenario:**
         #. Get value of an existing key.
         #. Get the value of a non-existing key.
@@ -83,7 +83,7 @@ class TestJSTATE(TestcasesBase):
         self.assertEqual(self.client.stateGet('new_key'), 'new_value')
 
     def test002_state_get_form_dict(self):
-        """ JS-005
+        """ JS-009
         **Test Scenario:**
         #. Get the value of an existing key from existing dict.
         #. Get the value of a non-existing key from non-existing dict.
@@ -105,7 +105,7 @@ class TestJSTATE(TestcasesBase):
 
     @unittest.skip('https://github.com/Jumpscale/core9/issues/157')
     def test003_state_get_form_dict_bool(self):
-        """ JS-006
+        """ JS-010
         **Test Scenario:**
         #. Get the value of an existing key from existing dict.
         #. Get the value of a non-existing key from non-existing dict.
@@ -128,7 +128,7 @@ class TestJSTATE(TestcasesBase):
         self.assertTrue(isinstance(value, bool))
 
     def test004_state_set(self):
-        """ JS-007
+        """ JS-011
         **Test Scenario:**
         #. Set new key, value with save equal to true.
         #. Set new key, value with save equal to false.
@@ -156,7 +156,7 @@ class TestJSTATE(TestcasesBase):
         self.assertEqual(self.get_state().get('key_1'), 'new_value_1')
 
     def test005_state_set_in_dict(self):
-        """ JS-008
+        """ JS-012
         **Test Scenario:**
         #. Set new dict, key and value.
         #. Set existing dict with new key and value.
@@ -175,7 +175,7 @@ class TestJSTATE(TestcasesBase):
         self.assertEqual(self.get_state()['dict_1']['d_key_1'], 'new_value')
 
     def test006_state_set_in_dict_bool(self):
-        """ JS-009
+        """ JS-013
         **Test Scenario:**
         #. Set new dict, key and value.
         #. Set existing dict with new key and value.
@@ -200,7 +200,7 @@ class TestJSTATE(TestcasesBase):
         self.assertEqual(self.get_state()['dict_1']['d_key_2'], '0')
 
     def test007_state_save(self):
-        """ JS-010
+        """ JS-014
         **Test Scenario:**
         #. Set new key without saving.
         #. Save state.
@@ -219,7 +219,7 @@ class TestJSTATE(TestcasesBase):
         self.assertEqual(self.get_state().get(key), value)
 
     def test008_state_reset(self):
-        """ JS-010
+        """ JS-015
         **Test Scenario:**
         #. Reset state.
         #. Check that state file is empty.
