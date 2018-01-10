@@ -760,9 +760,9 @@ class SystemFS:
         @param replace with e.g. "jumpscale"
         """
         if not toReplace:
-            raise RuntimeError("toReplace can't be empty")
+            raise ValueError("Can't change file names, toReplace can't be empty")
         if not replaceWith:
-            raise RuntimeError("replaceWith can't be Empty")
+            raise ValueError("Can't change file names, replaceWith can't be empty")
         paths = self.listFilesInDir(
             pathToSearchIn, recursive, filter, minmtime, maxmtime)
         for path in paths:
