@@ -37,15 +37,6 @@ class TestcasesBase(TestCase):
 
     def rand_str(self):
         return str(uuid.uuid4()).replace('-', '')[1:10]
-    
-    def logger(self):
-        logger = logging.getLogger('JumpScale')
-        if not logger.handlers:
-            fileHandler = logging.FileHandler('testsuite.log', mode='w')
-            formatter = logging.Formatter(' %(asctime)s - %(name)s - [%(levelname)s] - %(message)s')
-            fileHandler.setFormatter(formatter)
-            logger.addHandler(fileHandler)
-        return logger
       
     def random_sring(self):
         data = str(uuid.uuid4()).replace('-','')
