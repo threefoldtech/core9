@@ -205,7 +205,7 @@ class ConfigFactory:
             for item in j.sal.fs.listFilesInDir(path):
                 j.sal.fs.remove(item)
 
-    def init(self, path="", data={}):
+    def init(self, path="", data=None):
 
         if self._findConfigDirParent(path, die=False) != None:
             return
