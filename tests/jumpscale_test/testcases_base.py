@@ -36,9 +36,5 @@ class TestcasesBase(TestCase):
 
         return logger
 
-    def rand_str(self):
-        return str(uuid.uuid4()).replace('-', '')[1:10]
-
-    def random_sring(self):
-        data = str(uuid.uuid4()).replace('-','')
-        return data[:random.randint(1, len(data))]
+    def random_string(self, length=10):
+        return str(uuid.uuid4()).replace('-','')[:length]

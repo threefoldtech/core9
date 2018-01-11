@@ -78,7 +78,7 @@ class TestNICS(TestcasesBase):
 
         """
         self.lg.info("Get ip for nonexist device ,should fail.")
-        device= self.rand_str()
+        device= self.random_string()
         with self.assertRaises(NetworkingError):
             j.sal.nic.ipGet(device)
 

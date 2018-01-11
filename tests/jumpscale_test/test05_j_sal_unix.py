@@ -60,7 +60,7 @@ class TestUNIX(TestcasesBase):
         self.assertTrue(j.sal.unix.unixUserExists(random_user))
 
         self.lg.info("Check that fake user isn't exist, should succeed ")
-        fake_user = self.rand_str()
+        fake_user = self.random_string()
         self.assertFalse(j.sal.unix.unixUserExists(fake_user))
 
     def test004_check_group_exist(self):
@@ -77,7 +77,7 @@ class TestUNIX(TestcasesBase):
         self.assertTrue(j.sal.unix.unixGroupExists(random_group))
         
         self.lg.info("Check that fake group isn't exist, should succeed")
-        fake_group = self.rand_str()
+        fake_group = self.random_string()
         self.assertFalse(j.sal.unix.unixGroupExists(fake_group)) 
 
     def test05_create_new_group(self):
@@ -89,7 +89,7 @@ class TestUNIX(TestcasesBase):
 
         """
         self.lg.info("Create new group [G1] ,should succeed.")
-        group_name = self.rand_str()
+        group_name = self.random_string()
         j.sal.unix.addSystemGroup(group_name)
 
         self.lg.info("Check that [G1] exist, should succeed.")
@@ -111,7 +111,7 @@ class TestUNIX(TestcasesBase):
 
         """
         self.lg.info("Create new user [U1],should succeed .")
-        user_name = self.rand_str()
+        user_name = self.random_string()
         j.sal.unix.addSystemUser(user_name)
 
         self.lg.info("Add [U1] to one of existing groups [G1], should succeed.")
@@ -123,12 +123,12 @@ class TestUNIX(TestcasesBase):
         self.assertTrue(j.sal.unix.unixUserIsInGroup(user_name, random_group))
 
         self.lg.info("Add fake_user to one of existing groups [G1], should fail.")
-        fake_user_name= self.rand_str()
+        fake_user_name= self.random_string()
         with self.assertRaises(AssertionError):
             j.sal.unix.addUserToGroup(fake_user_name,random_group)
         
         self.lg.info("Add [U1] to fake_group, should fail .")
-        fake_group_name= self.rand_str()
+        fake_group_name= self.random_string()
         with self.assertRaises(AssertionError):
             j.sal.unix.addUserToGroup(user_name, fake_group_name)
 
@@ -146,11 +146,11 @@ class TestUNIX(TestcasesBase):
 
         """
         self.lg.info(" Create new file[f1].")
-        file_path = "/{}".format(self.rand_str())
+        file_path = "/{}".format(self.random_string())
         os.popen("touch {}".format(file_path))
 
         self.lg.info("Create  new user [U1], should succeed.")
-        user_name = self.rand_str()
+        user_name = self.random_string()
         j.sal.unix.addSystemUser(user_name)
 
         self.lg.info(" Change the owner of [f1] to [U1], should succeed.")
@@ -162,17 +162,17 @@ class TestUNIX(TestcasesBase):
         self.assertEqual(getpwuid(os.stat(file_path).st_uid).pw_name, user_name)
 
         self.lg.info("Change the [f1] owner to non-exist user, should fail")
-        fake_user_name = self.rand_str()
+        fake_user_name = self.random_string()
         with self.assertRaises(KeyError):
             j.sal.unix.chown(file_path , fake_user_name, random_group)
 
         self.lg.info(" Change the owner of non-exist file to [U1], should fail.")       
-        fake_file_path = "/{}".format(self.rand_str())
+        fake_file_path = "/{}".format(self.random_string())
         with self.assertRaises( FileNotFoundError):
             j.sal.unix.chown(fake_file_path , user_name, random_group)       
 
         self.lg.info(" Change the owner of  [f1] to [U1] with non-exist group, should fail")       
-        fake_group_name = self.rand_str()
+        fake_group_name = self.random_string()
         with self.assertRaises(KeyError):
             j.sal.unix.chown(file_path , user_name, fake_group_name)
        
@@ -189,12 +189,12 @@ class TestUNIX(TestcasesBase):
         #. Check that the owner of [D1] is updated to [U1], and [F1] owner too.
         """
         self.lg.info("Create new directory[D1] and create new file [F1]on it .")
-        dir_path = "/{}".format(self.rand_str())
-        file_path = "{}/{}".format(dir_path, self.rand_str())
+        dir_path = "/{}".format(self.random_string())
+        file_path = "{}/{}".format(dir_path, self.random_string())
         os.popen("touch {}".format(file_path))
 
         self.lg.info("Create  new user [U1], should succeed.")
-        user_name = self.rand_str()
+        user_name = self.random_string()
         j.sal.unix.addSystemUser(user_name)
 
         self.lg.info("Change the owner of [D1] to [U1], should succeed.")
