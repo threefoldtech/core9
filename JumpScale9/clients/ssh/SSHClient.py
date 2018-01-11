@@ -381,25 +381,22 @@ class SSHClient:
 
     def SSHAuthorizeKey(
             self,
-            sshkey_name,
-            sshkey_path):
+            keyname):
         """
         the sshkey_name is the name of the sshkey as will be used in the agent
         the sshkey_path is the path to the sshkey
 
         if remoteothers==True: then other keys will be removed
         """
-        j.clients.ssh.load_ssh_key(sshkey_path, True)
-        key = j.clients.ssh.SSHKeyGetFromAgentPub(sshkey_name)
+        key = j.clients.ssh.SSHKeyGetFromAgentPub(keyname)
+        
+        rc, _, _ = self.execute("echo '%s' | sudo -S bash -c 'test -e /root/.ssh'" % self.passwd, die=False)
+        mkdir_cmd = ''
+        if rc > 0:
+            mkdir_cmd = 'mkdir -p /root/.ssh;'
 
-        ftp = self.client.open_sftp()
-
-        f = ftp.open("/home/%s/authorized_keys" % self.login, mode='rw')
-        f.write(key)
-        f.close()
-
-        cmd = "echo '%s' | sudo -S bash -c 'mkdir -p /root/.ssh;mv /home/%s/authorized_keys  /root/.ssh/authorized_keys; chmod 644 /root/.ssh/authorized_keys;chown root:root /root/.ssh/authorized_keys'" % (
-            self.passwd, self.login)
-        self.execute(cmd)
+        cmd = '''echo '%s' | sudo -S bash -c "%s echo '\n%s' >> /root/.ssh/authorized_keys; chmod 644 /root/.ssh/authorized_keys;chown root:root /root/.ssh/authorized_keys"''' % (
+            self.passwd, mkdir_cmd, key)
+        self.execute(cmd, showout=False)
 
         j.clients.ssh.remove_item_from_known_hosts(self.addr)

@@ -4,6 +4,22 @@ import copy
 from .JSBaseClassConfig import JSBaseClassConfig
 from .JSBaseClassConfigs import JSBaseClassConfigs
 from .Config import Config
+import sys
+installmessage = """
+
+**ERROR**: there is no config directory created
+
+create a git repository on github or any other git system.
+checkout this repository by doing
+
+'js9_code get --url='...your ssh git url ...'
+
+the go to this directory (to to that path & do)
+
+js9_config init
+
+
+"""
 
 
 class ConfigFactory:
@@ -47,21 +63,34 @@ class ConfigFactory:
 
     @property
     def path_configrepo(self):
+        """
+        if path is not set, it will look under CODEDIRS for any pre-configured js9_config repo
+        if there are more than one, will try to use one in root of cwd. If not in one, will raise a RuntimeError
+        """
         if not self._path:
-            self._path = self._findConfigDirParent(path="", die=False)
-            if self._path == None:
+            paths = j.sal.fs.find(j.dirs.CODEDIR, '.jsconfig')
+            paths = [j.sal.fs.getParent(path) for path in paths]
+            if not paths:
+                print(installmessage)
+                print(
+                    "Cannot find path for configuration repo, please checkout right git repo & run 'js9_config init' in that repo ")
+                sys.exit(1)
+            if len(paths) > 1:
+                j.logger.logging.warning(
+                    "found configuration dirs in multiple locations: {}".format(paths))
+                path = self._findConfigDirParent(
+                    path=j.sal.fs.getcwd(), die=False)
+                if not path:
+                    raise RuntimeError("multipule configuration repos were found in {} but not currently in root of one".format(
+                        paths, j.sal.fs.getcwd()))
                 res = j.clients.git.getGitReposListLocal()
-                for key, path in res.items():
+                for _, path in res.items():
                     checkpath = "%s/.jsconfig" % path
-                    if key.startswith("config_"):
-                        if j.sal.fs.exists(checkpath):
-                            self._path = path
-                            j.logger.logging.info("found jsconfig dir in: %s" % self._path)
-                            return self._path
+                    if j.sal.fs.exists(checkpath):
+                        self._path = path
             else:
-                return self._path
-            raise RuntimeError(
-                "Cannot find path for configuration repo, please checkout right git repo & run 'js9_config init' in that repo ")
+                self._path = paths[0]
+            j.logger.logging.info("found jsconfig dir in: %s" % self._path)
         return self._path
 
     @property
@@ -76,48 +105,48 @@ class ConfigFactory:
         """
         Will display a npyscreen form to edit the configuration
         """
-        sc = self.get_for_location(location=location, instance=instance)
-        sc.configure()
-        sc.save()
-        return sc
+        js9obj = self.js9_obj_get(location=location, instance=instance)
+        js9obj.configure()
+        js9obj.config.save()
+        return js9obj
 
     def update(self, location, instance="main", updatedict={}):
         """
         update the configuration by giving a dictionnary. The configuration will
         be updated with the value of updatedict
         """
-        sc = self.get_for_location(location=location, instance=instance)
+        js9obj = self.js9_obj_get(location=location, instance=instance)
+        sc = js9obj.config
         sc.data = updatedict
         sc.save()
         return sc
 
-    def _get_for_obj(self, factoryclassobj, template, ui=None, instance="main", data={}):
+    def _get_for_obj(self, jsobj, template, ui=None, instance="main", data={}):
         """
         return a secret config
         """
-        if not hasattr(factoryclassobj, '__jslocation__') or factoryclassobj.__jslocation__ is None or factoryclassobj.__jslocation__ is "":
+        if not hasattr(jsobj, '__jslocation__') or jsobj.__jslocation__ is None or jsobj.__jslocation__ is "":
             raise RuntimeError(
-                "__jslocation__ has not been set on class %s" % factoryclassobj.__class__)
-        location = factoryclassobj.__jslocation__
+                "__jslocation__ has not been set on class %s" % jsobj.__class__)
+        location = jsobj.__jslocation__
         key = "%s_%s" % (location, instance)
 
-        if ui == None:
-            ui = j.tools.formbuilder.baseclass_get()
+        if ui is not None:
+            jsobj.ui = ui
 
         if key not in self._cache:
             sc = Config(instance=instance, location=location,
-                        template=template, ui=ui, data=data)
+                        template=template, data=data)
             self._cache[key] = sc
 
         return self._cache[key]
 
-    def get_for_location(self, location="", instance="main", data={}):
+    def js9_obj_get(self, location="", instance="main", data={}):
         """
-        will look for jumpscale module on defined location
-        and generate the config instance from there
-        @RETURN config
+        will look for jumpscale module on defined location & return this object
+        and generate the object which has a .config on the object
         """
-        if location == "" or location == None:
+        if not location:
             if j.sal.fs.getcwd().startswith(self.path_configrepo):
                 # means we are in subdir of current config  repo, so we can be
                 # in location
@@ -128,24 +157,24 @@ class ConfigFactory:
 
         obj = eval(location)
         if obj._single_item:
-            return obj.config
+            return obj
         else:
-            return obj.get(instance=instance).config
+            return obj.get(instance=instance, data=data)
 
-    def get(self, location, template={}, instance="main", data={}, ui=None):
-        """
-        return a secret config
-        """
-        if location == "":
-            raise RuntimeError("location cannot be empty")
-        if instance == "" or instance == None:
-            raise RuntimeError("instance cannot be empty")
-        key = "%s_%s" % (location, instance)
-        if key not in self._cache:
-            sc = Config(instance=instance, location=location,
-                        template=template, ui=ui, data=data)
-            self._cache[key] = sc
-        return self._cache[key]
+    # def get(self, location, template={}, instance="main", data={}, ui=None):
+    #     """
+    #     return a secret config
+    #     """
+    #     if location == "":
+    #         raise RuntimeError("location cannot be empty")
+    #     if instance == "" or instance == None:
+    #         raise RuntimeError("instance cannot be empty")
+    #     key = "%s_%s" % (location, instance)
+    #     if key not in self._cache:
+    #         sc = Config(instance=instance, location=location,
+    #                     template=template, ui=ui, data=data)
+    #         self._cache[key] = sc
+    #     return self._cache[key]
 
     # should use config_update
     # def set(self, location, instance, config=None):
@@ -205,13 +234,14 @@ class ConfigFactory:
             for item in j.sal.fs.listFilesInDir(path):
                 j.sal.fs.remove(item)
 
-    def init(self, path="", data={}):
+    def init(self, path="", data=None):
 
-        if self._findConfigDirParent(path, die=False) != None:
+        if self._findConfigDirParent(path, die=False) is not None:
             return
         gitdir = "%s/.git" % path
         if not j.sal.fs.exists(gitdir) or not j.sal.fs.isDir(gitdir):
-            raise RuntimeError("am not in root of git dir")
+            raise RuntimeError(
+                "path {} is not in root of a git repo".format(path))
 
         j.sal.fs.touch("%s/.jsconfig" % path)
 

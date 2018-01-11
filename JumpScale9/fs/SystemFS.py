@@ -759,12 +759,19 @@ class SystemFS:
         @param toReplace e.g. {name}
         @param replace with e.g. "jumpscale"
         """
+        if not toReplace:
+            raise ValueError("Can't change file names, toReplace can't be empty")
+        if not replaceWith:
+            raise ValueError("Can't change file names, replaceWith can't be empty")
         paths = self.listFilesInDir(
             pathToSearchIn, recursive, filter, minmtime, maxmtime)
         for path in paths:
-            path2 = path.replace(toReplace, replaceWith)
-            if path2 != path:
-                self.renameFile(path, path2)
+            dir_name = self.getDirName(path)
+            file_name = self.getBaseName(path)
+            new_file_name = file_name.replace(toReplace, replaceWith)
+            if new_file_name != file_name:
+                new_path = self.joinPaths(dir_name, new_file_name)
+                self.renameFile(path, new_path)
 
     def replaceWordsInFiles(self, pathToSearchIn, templateengine, recursive=True,
                             filter=None, minmtime=None, maxmtime=None):
@@ -927,12 +934,9 @@ class SystemFS:
     def checkDirParam(self, path):
         if(path.strip() == ""):
             raise TypeError("path parameter cannot be empty.")
-        path = path.replace("//", "/")
-        path = path.replace("\\\\", "/")
-        path = path.replace("\\", "/")
+        path = self.pathNormalize(path)
         if path[-1] != "/":
             path = path + "/"
-        path = path.replace("/", os.sep)
         return path
 
     @path_check(path={"required", "exists"})
@@ -1418,19 +1422,16 @@ class SystemFS:
     @path_check(startDir={"required", "exists", "dir"})
     def find(self, startDir, fileregex):
         """Search for files or folders matching a given pattern
-        this is a very weard function, don't use is better to use the list functions
-        make sure you do changedir to the starting dir first
         example: find("*.pyc")
         @param fileregex: The regex pattern to match
         @type fileregex: string
         """
-        pwd = self.getcwd()
-        try:
-            self.changeDir(startDir)
-            import glob
-            return glob.glob(fileregex)
-        finally:
-            self.changeDir(pwd)
+        result = []
+        for root, dirs, files in os.walk(startDir):
+            for name in files:
+                if fnmatch.fnmatch(name, fileregex):
+                    result.append(os.path.join(root, name))
+        return result
 
     def grep(self, fileregex, lineregex):
         """Search for lines matching a given regex in all files matching a regex

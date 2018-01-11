@@ -1,11 +1,13 @@
 #! /usr/bin/env python3
 from js9 import j
+j.tools.prefab.local.bash.locale_check()
 import click
 
 
 @click.group()
 def cli():
     pass
+
 
 @click.command()
 def init():
@@ -18,12 +20,12 @@ def test():
 
 
 @click.command()
-@click.option('--location', '-l', help='location in jumpscale e.g. j.clients.packetnet (j.clients can be ommitted) if not passed, will reset all')
-@click.option('--instance', '-i', help='name of the instance, instance=main. to set, must also set location')
-def reset(location=None, instance=None):
+@click.option('--location', '-l', default=None, help='location in jumpscale e.g. j.clients.packetnet (j.clients can be ommitted) if not passed, will reset all')
+@click.option('--instance', '-i', default=None, help='name of the instance, to set, must also set location')
+def reset(location, instance):
     if instance and not location:
         raise RuntimeError("to specify which instance to reset, you must also specify the location")
-    
+
     j.tools.configmanager.reset(location=location, instance=instance)
 
     path = j.tools.configmanager.path_configrepo
@@ -38,21 +40,31 @@ def reset(location=None, instance=None):
                 j.sal.fs.removeDirTree(config)
     else:
         j.sal.fs.remove(path)
-        
+
 
 @click.command()
-@click.option('--location', '-l', help='location in jumpscale e.g. j.clients.packetnet (j.clients can be ommitted)')
-@click.option('--instance', '-i', help='name of the instance, instance=main')
-def configure(location, instance="main"):
-    if instance is None:
-        instance = "main"
+@click.option('--location', '-l', default=None, help='location in jumpscale e.g. j.clients.packetnet (j.clients can be ommitted)')
+@click.option('--instance', '-i', default='main', help='name of the instance, default: main')
+def configure(location, instance):
     j.tools.configmanager.configure(location=location, instance=instance)
 
+
+@click.command()
+@click.option('--location', '-l', default=None, help='location in jumpscale e.g. j.clients.packetnet (j.clients can be ommitted)')
+@click.option('--instance', '-i', default=None, help='name of the instance, default: all, will remove all instance from the location')
+def delete(location, instance):
+    if not location:
+        raise RuntimeError("location needs to be specified")
+
+    if not instance:
+        instance = '*'
+    j.tools.configmanager.delete(location=location, instance=instance)
 
 cli.add_command(configure)
 cli.add_command(init)
 cli.add_command(test)
 cli.add_command(reset)
+cli.add_command(delete)
 
 if __name__ == '__main__':
     cli()

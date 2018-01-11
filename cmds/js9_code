@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 from js9 import *
+j.tools.prefab.local.bash.locale_check()
 import os
 os.environ["LC_ALL"] = 'en_US.UTF-8'
 
@@ -10,9 +11,11 @@ print(j.core.state.mascot)
 #!/usr/bin/env jspython
 import os
 import sys
+from js9 import j
+j.tools.prefab.local.bash.locale_check()
 import click
 
-# from js9 import j
+
 
 j.application.start("jscode")
 
