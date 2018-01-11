@@ -72,7 +72,7 @@ class TestJSALFS(TestcasesBase):
         #. Delete the file.
         """
         file_name = "newfile%d.txt" % randint(1, 10000)
-        new_file_name = self.random_sring()
+        new_file_name = self.random_string()
         os.mknod(file_name)
         current_dir = os.getcwd()
         j.sal.fs.changeFileNames(file_name, new_file_name, current_dir)
@@ -98,7 +98,7 @@ class TestJSALFS(TestcasesBase):
         """
         current_dir = os.getcwd()
         file_name = current_dir.split('/')[-1]
-        new_file_name = self.random_sring()
+        new_file_name = self.random_string()
         os.mknod(file_name)
         j.sal.fs.changeFileNames(file_name, new_file_name, current_dir)
         self.assertTrue(os.path.isfile(new_file_name))
