@@ -7,7 +7,7 @@ import time
 import paramiko
 from js9 import j
 from paramiko.ssh_exception import (AuthenticationException,
-                                    BadHostKeyException, SSHException)
+                                    BadHostKeyException, SSHException, BadAuthenticationType)
 
 
 class StreamReader(threading.Thread):
@@ -129,6 +129,9 @@ class SSHClient:
                 "Could not connect to %s:%s" % (self.addr, self.port))
         return self.client.get_transport()
 
+    def connect(self):
+        return self._connect()
+
     def _connect(self):
         with self._lock:
             self.logger.info("Test sync ssh connection to %s:%s:%s" %
@@ -157,6 +160,13 @@ class SSHClient:
         while start + self.timeout > j.data.time.getTimeEpoch():
             try:
                 self.logger.info("connect to:%s" % self.addr)
+                self.logger.debug("connect with port :%s" % self.port)
+                self.logger.debug("connect with username :%s" % self.login)
+                self.logger.debug("connect with password :%s" % self.passwd)
+                self.logger.debug("connect with pkey :%s" % self.pkey)
+                self.logger.debug("connect with allow_agent :%s" % self.allow_agent)
+                self.logger.debug("connect with look_for_keys :%s" % self.look_for_keys)
+                self.logger.debug("Timeout is : %s " % self.timeout)
                 self._client.connect(
                     self.addr,
                     int(self.port),
@@ -169,7 +179,8 @@ class SSHClient:
                     banner_timeout=3.0)
                 self.logger.info("connection ok")
                 return self._client
-
+            except BadAuthenticationType as e:
+                raise e
             except (BadHostKeyException, AuthenticationException) as e:
                 self.logger.error(
                     "Authentification error. Aborting connection : %s" % str(e))
@@ -340,7 +351,7 @@ class SSHClient:
     def prefab(self):
         if not self.usesproxy and self._prefab is None:
             executor = j.tools.executor.getSSHBased(
-                self.addr, self.port, self.login, self.passwd)
+                addr=self.addr, port=self.port, timeout=self.timeout)
             self._prefab = executor.prefab
         if self.usesproxy:
             ex = j.tools.executor.getSSHViaProxy(self.host)
@@ -372,14 +383,13 @@ class SSHClient:
             self,
             keyname):
         """
-        this required ssh-agent to be loaded !!!
-        the keyname is the name of the key as loaded in ssh-agent
+        the sshkey_name is the name of the sshkey as will be used in the agent
+        the sshkey_path is the path to the sshkey
 
         if remoteothers==True: then other keys will be removed
         """
-
         key = j.clients.ssh.SSHKeyGetFromAgentPub(keyname)
-
+        
         rc, _, _ = self.execute("echo '%s' | sudo -S bash -c 'test -e /root/.ssh'" % self.passwd, die=False)
         mkdir_cmd = ''
         if rc > 0:
