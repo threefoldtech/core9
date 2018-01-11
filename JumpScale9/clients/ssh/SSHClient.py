@@ -5,6 +5,7 @@ import threading
 import time
 
 import paramiko
+from io import StringIO
 from js9 import j
 from paramiko.ssh_exception import (AuthenticationException,
                                     BadHostKeyException, SSHException, BadAuthenticationType)
@@ -381,14 +382,19 @@ class SSHClient:
 
     def SSHAuthorizeKey(
             self,
-            keyname):
+            keyname=None, keydata=None):
         """
-        the sshkey_name is the name of the sshkey as will be used in the agent
-        the sshkey_path is the path to the sshkey
-
-        if remoteothers==True: then other keys will be removed
+        @keyname name of the key as loaded in ssh-agent if set keydata will be ignored(this requires ssh-agent to be loaded)
+        @keydata actual data of private key if set keyname will be ignored
         """
-        key = j.clients.ssh.SSHKeyGetFromAgentPub(keyname)
+        if keydata:
+            key_des = StringIO(keydata)
+            p = paramiko.RSAKey.from_private_key(key_des)
+            key = '%s ' % p.get_name() +  p.get_base64()
+        elif not keyname:
+            raise j.exceptions.Input("keyname and keydata can't be both empty")
+        else:
+            key = j.clients.ssh.SSHKeyGetFromAgentPub(keyname)
         
         rc, _, _ = self.execute("echo '%s' | sudo -S bash -c 'test -e /root/.ssh'" % self.passwd, die=False)
         mkdir_cmd = ''
