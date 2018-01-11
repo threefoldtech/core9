@@ -2,6 +2,7 @@ import os, shutil
 from random import randint
 from testcases_base import TestcasesBase
 from js9 import j
+from parameterized import parameterized
 
 
 class TestJSALFS(TestcasesBase):
@@ -42,6 +43,7 @@ class TestJSALFS(TestcasesBase):
         **Test Scenario:**
         #. Create a file
         #. Change the current dir to this file, should fail
+        #. Delete file.
         """
         file_name = "newfile%d.txt" % randint(1, 10000)
         os.mknod(file_name)
@@ -49,6 +51,8 @@ class TestJSALFS(TestcasesBase):
 
         with self.assertRaises(ValueError):
             j.sal.fs.changeDir(current_dir)
+
+        os.remove(file_name)
 
     def test004_changeDir_wrongDir(self):
         """ JS-004
@@ -63,8 +67,9 @@ class TestJSALFS(TestcasesBase):
         """ JS-005
 
         **Test Scenario:**
-        #. Create new file
+        #. Create new file.
         #. Change file name, should succeed.
+        #. Delete the file.
         """
         file_name = "newfile%d.txt" % randint(1, 10000)
         new_file_name = self.random_sring()
@@ -72,8 +77,9 @@ class TestJSALFS(TestcasesBase):
         current_dir = os.getcwd()
         j.sal.fs.changeFileNames(file_name, new_file_name, current_dir)
         self.assertTrue(os.path.isfile(new_file_name))
+        os.remove(new_file_name)
 
-    def test005_changeFileNames_empty(self):
+    def test006_changeFileNames_empty(self):
         """ JS-006
 
         **Test Scenario:**
@@ -83,7 +89,7 @@ class TestJSALFS(TestcasesBase):
         with self.assertRaises(ValueError):
             j.sal.fs.changeFileNames('', '', current_dir)
 
-    def test005_changeFileNames_sameDirName(self):
+    def test007_changeFileNames_sameDirName(self):
         """ JS-007
 
         **Test Scenario:**
@@ -96,3 +102,16 @@ class TestJSALFS(TestcasesBase):
         os.mknod(file_name)
         j.sal.fs.changeFileNames(file_name, new_file_name, current_dir)
         self.assertTrue(os.path.isfile(new_file_name))
+        os.remove(new_file_name)
+
+    @parameterized.expand(['/test/xTremX','@3%6123', 'Запомните'])
+    def test008_checkDirParam(self, dir_name):
+        """ JS-037
+
+        **Test Scenario:**
+        #. checkDirParam with dir_name in [english word, special char, non-english]
+        """
+        data = j.sal.fs.checkDirParam(dir_name)
+        self.assertIn(dir_name, data)
+
+        
