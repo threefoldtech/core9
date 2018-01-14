@@ -106,7 +106,7 @@ class ExecutorFactory:
         if j.data.types.string.check(executor):
             key = executor
         elif executor.type == 'ssh':
-            key = '%s:%s' % (executor.addr, executor.port)
+            key = '%s:%s' % (executor.sshclient.addr, executor.sshclient.port)
         else:
             raise j.exceptions.Input(message='executor type not recognize.')
         with self._lock:

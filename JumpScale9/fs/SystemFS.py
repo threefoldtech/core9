@@ -934,12 +934,9 @@ class SystemFS:
     def checkDirParam(self, path):
         if(path.strip() == ""):
             raise TypeError("path parameter cannot be empty.")
-        path = path.replace("//", "/")
-        path = path.replace("\\\\", "/")
-        path = path.replace("\\", "/")
+        path = self.pathNormalize(path)
         if path[-1] != "/":
             path = path + "/"
-        path = path.replace("/", os.sep)
         return path
 
     @path_check(path={"required", "exists"})

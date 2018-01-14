@@ -1,7 +1,9 @@
+
 import time, signal, uuid, random, logging
 from datetime import timedelta
 from unittest import TestCase
 from nose.tools import TimeExpired
+import uuid
 
 
 class TestcasesBase(TestCase):
@@ -13,7 +15,6 @@ class TestcasesBase(TestCase):
         self._testID = self._testMethodName
         self._startTime = time.time()
         self.lg.info('====== Testcase [{}] is started ======'.format(self._testID))
-
         def timeout_handler(signum, frame):
             raise TimeExpired('Timeout expired before end of test %s' % self._testID)
 
@@ -35,6 +36,5 @@ class TestcasesBase(TestCase):
 
         return logger
 
-    def random_sring(self):
-        data = str(uuid.uuid4()).replace('-','')
-        return data[:random.randint(1, len(data))]
+    def random_string(self, length=10):
+        return str(uuid.uuid4()).replace('-','')[:length]
