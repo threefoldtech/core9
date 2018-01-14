@@ -12,9 +12,8 @@ class Config():
         self.location = location
         self.instance = instance
         self._template = template
-        self._data = {}
+        self._data = data
         self.loaded = False
-        self.data = data
         self.path = j.sal.fs.joinPaths(j.tools.configmanager.path_configrepo, self.location, self.instance + '.toml')
         j.sal.fs.createDir(j.sal.fs.getParent(self.path))
         if self.instance is None:

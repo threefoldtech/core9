@@ -113,5 +113,3 @@ class TestJSALFS(TestcasesBase):
         """
         data = j.sal.fs.checkDirParam(dir_name)
         self.assertIn(dir_name, data)
-
-        
