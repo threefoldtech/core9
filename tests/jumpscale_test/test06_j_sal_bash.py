@@ -85,7 +85,7 @@ class TestPROFILEJS(TestcasesBase):
     def setUpClass(cls):
         super().setUpClass()
         bash = j.tools.bash.get()
-        cls.profilejs = bash.profileJS
+        cls.profileJS = bash.profileJS
 
     def test01_env_set(self):
         """ JS-042
@@ -102,10 +102,10 @@ class TestPROFILEJS(TestcasesBase):
 
         self.lg.info('Check that the environment variable in profilejs, should succeed')
         self.assertEqual(self.profileJS.envGet(key), value)
-        self.assertIn('{0}="{1}"\nexport {0}'format(key, value), str(self.profileJS))
+        self.assertIn('{0}="{1}"\nexport {0}'.format(key, value), str(self.profileJS))
 
         self.lg.info('Get the environment variable, should succeed')
-        self.assertEqual(self.profileJS.envGet(key))
+        self.assertEqual(self.profileJS.envGet(key), value)
 
     def test02_env_get(self):
         """ JS-043
