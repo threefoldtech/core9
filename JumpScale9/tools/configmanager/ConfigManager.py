@@ -104,6 +104,9 @@ class ConfigFactory:
     def configure(self, location="", instance="main", sshkey_path=None):
         """
         Will display a npyscreen form to edit the configuration
+        @param location: jslocation of module to configure for (eg: j.clients.openvcloud)
+        @param: instance: configuration instance
+        @param: sshkey_path: sshkey for NACL encryption/decryption
         """
         js9obj = self.js9_obj_get(location=location, instance=instance)
         js9obj.configure(sshkey_path=sshkey_path)
