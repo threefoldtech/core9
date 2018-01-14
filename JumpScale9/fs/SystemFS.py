@@ -498,6 +498,9 @@ class SystemFS:
         """
         @param permissions e.g. 0o660 (USE OCTAL !!!)
         """
+        if permissions > 511 or permissions < 0:
+            raise ValueError("can't perform chmod, %s is not a valid mode" % oct(permissions))
+           
         os.chmod(path, permissions)
         for root, dirs, files in os.walk(path):
             for ddir in dirs:
