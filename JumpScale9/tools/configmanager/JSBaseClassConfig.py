@@ -23,6 +23,15 @@ class JSBaseClassConfig:
         self._data = data
         self._parent = parent
         self._template = template
+        self._sshkey_path = None
+
+    @property
+    def sshkey_path(self):
+        return self._sshkey_path
+
+    @sshkey_path.setter
+    def sshkey_path(self, val):
+        self._sshkey_path = val
 
     def reset(self):
         self.config.instance_set(self.instance)
@@ -33,7 +42,7 @@ class JSBaseClassConfig:
 
         if self._config is None:
             self._config = j.tools.configmanager._get_for_obj(
-                self, instance=self._instance, data=self._data, template=self._template, ui=self._ui)
+                self, instance=self._instance, data=self._data, template=self._template, ui=self._ui, sshkey_path=self.sshkey_path)
 
             if have_data:
                 # this means this is a creation cause we already have the data
@@ -68,13 +77,13 @@ class JSBaseClassConfig:
         else:
             raise RuntimeError("configuration not found for :%s, please run 'js9_config configure -l %s " % (self.__jslocation__, self.__jslocation__))
 
-    def configure(self):
+    def configure(self, sshkey_path=None):
         """
         call the form build to represent this object
         """
-
         if self._ui is None:
             raise RuntimeError("cannot call configure UI because not defined yet, is None")
+        self.sshkey_path = sshkey_path if sshkey_path else self.sshkey_path
         myui = self._ui(name=self.config.path, config=self.config.data, template=self.config.template)
 
         while True:

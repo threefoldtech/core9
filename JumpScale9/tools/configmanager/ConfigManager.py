@@ -101,12 +101,12 @@ class ConfigFactory:
     def base_class_configs(self):
         return JSBaseClassConfigs
 
-    def configure(self, location="", instance="main"):
+    def configure(self, location="", instance="main", sshkey_path=None):
         """
         Will display a npyscreen form to edit the configuration
         """
         js9obj = self.js9_obj_get(location=location, instance=instance)
-        js9obj.configure()
+        js9obj.configure(sshkey_path=sshkey_path)
         js9obj.config.save()
         return js9obj
 
@@ -121,7 +121,7 @@ class ConfigFactory:
         sc.save()
         return sc
 
-    def _get_for_obj(self, jsobj, template, ui=None, instance="main", data={}):
+    def _get_for_obj(self, jsobj, template, ui=None, instance="main", data={}, sshkey_path=None):
         """
         return a secret config
         """
@@ -136,7 +136,7 @@ class ConfigFactory:
 
         if key not in self._cache:
             sc = Config(instance=instance, location=location,
-                        template=template, data=data)
+                        template=template, data=data, sshkey_path=sshkey_path)
             self._cache[key] = sc
 
         return self._cache[key]

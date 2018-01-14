@@ -5,7 +5,7 @@ from js9 import j
 
 class Config():
 
-    def __init__(self, instance="main", location=None, template={}, data={}):
+    def __init__(self, instance="main", location=None, template={}, data={}, sshkey_path=None):
         """
         jsclient_object is e.g. j.clients.packet.net
         """
@@ -19,20 +19,33 @@ class Config():
         if self.instance is None:
             raise RuntimeError("instance cannot be None")
         self._nacl = None
+        self._sshkey_path = sshkey_path
+
+    @property
+    def sshkey_path(self):
+        return self._sshkey_path
+
+    @sshkey_path.setter
+    def sshkey_path(self, val):
+        self._sshkey_path = val
 
     @property
     def nacl(self):
         if not self._nacl:
             j.clients.ssh.ssh_agent_check()
-            keys = j.clients.ssh.ssh_keys_list_from_agent()
-            if not keys:
-                j.clients.ssh.ssh_keys_load()
-            keys = j.clients.ssh.ssh_keys_list_from_agent()
-            if len(keys) >= 1:
-                key = j.tools.console.askChoice([k for k in keys], descr="Please choose which key to pass to the NACL")
-                sshkeyname = j.sal.fs.getBaseName(key)
+            if not self._sshkey_path:
+                keys = j.clients.ssh.ssh_keys_list_from_agent()
+                if not keys:
+                    j.clients.ssh.ssh_keys_load()
+                keys = j.clients.ssh.ssh_keys_list_from_agent()
+                if len(keys) >= 1:
+                    key = j.tools.console.askChoice([k for k in keys], descr="Please choose which key to pass to the NACL")
+                    sshkeyname = j.sal.fs.getBaseName(key)
+                else:
+                    raise RuntimeError("You need to configure at least one sshkey")
             else:
-                raise RuntimeError("You need to configure at least one sshkey")
+                j.clients.ssh.load_ssh_key(path=self._sshkey_path)
+                sshkeyname = j.sal.fs.getBaseName(self._sshkey_path)
             self._nacl = j.data.nacl.get(sshkeyname=sshkeyname)
         return self._nacl
 
