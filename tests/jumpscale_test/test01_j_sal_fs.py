@@ -6,6 +6,15 @@ from parameterized import parameterized
 
 
 class TestJSALFS(TestcasesBase):
+    def setUp(self):
+        super().setUp()
+        self.file_name = ''
+
+    def tearDown(self):
+        if self.file_name:
+            os.remove(self.file_name)
+        super().tearDown()
+
     def test001_changeDir(self):
         """ JS-001
 
@@ -47,7 +56,7 @@ class TestJSALFS(TestcasesBase):
         """
         file_name = "newfile%d.txt" % randint(1, 10000)
         os.mknod(file_name)
-        current_dir = os.getcwd() + file_name
+        current_dir = os.getcwd() + ' /' + file_name
 
         with self.assertRaises(ValueError):
             j.sal.fs.changeDir(current_dir)
@@ -71,13 +80,13 @@ class TestJSALFS(TestcasesBase):
         #. Change file name, should succeed.
         #. Delete the file.
         """
-        file_name = "newfile%d.txt" % randint(1, 10000)
+        self.file_name = self.random_string()
         new_file_name = self.random_string()
-        os.mknod(file_name)
+        os.mknod(self.file_name)
         current_dir = os.getcwd()
-        j.sal.fs.changeFileNames(file_name, new_file_name, current_dir)
+        j.sal.fs.changeFileNames(self.file_name, new_file_name, current_dir)
+        self.file_name = new_file_name
         self.assertTrue(os.path.isfile(new_file_name))
-        os.remove(new_file_name)
 
     def test006_changeFileNames_empty(self):
         """ JS-006
@@ -97,12 +106,12 @@ class TestJSALFS(TestcasesBase):
         #. Change file name, should succeed.
         """
         current_dir = os.getcwd()
-        file_name = current_dir.split('/')[-1]
+        self.file_name = current_dir.split('/')[-1]
         new_file_name = self.random_string()
-        os.mknod(file_name)
-        j.sal.fs.changeFileNames(file_name, new_file_name, current_dir)
+        os.mknod(self.file_name)
+        j.sal.fs.changeFileNames(self.file_name, new_file_name, current_dir)
+        self.file_name = new_file_name
         self.assertTrue(os.path.isfile(new_file_name))
-        os.remove(new_file_name)
 
     @parameterized.expand(['/test/xTremX','@3%6123', 'Запомните'])
     def test008_checkDirParam(self, dir_name):
@@ -113,3 +122,37 @@ class TestJSALFS(TestcasesBase):
         """
         data = j.sal.fs.checkDirParam(dir_name)
         self.assertIn(dir_name, data)
+
+    def test009_chmod(self):
+        """ JS-042
+
+        **Test Scenario:**
+        #. Create new file
+        #. change file mod to 777, should succeed.
+        #. change file mod to wrong value, should fail.
+        #. Delete file
+        """
+        self.file_name = self.random_string()
+        os.mknod(self.file_name)
+        current_dir = os.getcwd() + '/' + self.file_name
+        j.sal.fs.chmod(current_dir, 0o777)
+        st = os.stat(path=current_dir)
+        self.assertEqual(oct(st.st_mode)[-3:], '777')
+
+    def test009_chmod_wrong_value(self):
+        """ JS-043
+
+        **Test Scenario:**
+        #. Create new file
+        #. change file mod to 444444, should fail.
+        #. change file mod to wrong value, should fail.
+        #. Delete file
+        """
+        self.file_name = self.random_string()
+        os.mknod(self.file_name)
+        current_dir = os.getcwd() + '/' + self.file_name
+        st_old = os.stat(path=current_dir)
+        old_mod = oct(st_old.st_mode)[-3:]
+        j.sal.fs.chmod(current_dir, 0o4444)
+        st = os.stat(path=current_dir)
+        self.assertEqual(oct(st.st_mode)[-3:], old_mod)
