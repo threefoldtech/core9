@@ -225,12 +225,6 @@ class SystemFS:
             excl += "--exclude '*.bak' "
             excl += "--exclude '*__pycache__*' "
 
-            if self.isDir(src):
-                if dst[-1] != "/":
-                    dst += "/"
-                if src[-1] != "/":
-                    src += "/"
-
             dstpath = dst.split(':')[1] if ':' in dst else dst
             cmd = "rsync "
             if keepsymlinks:

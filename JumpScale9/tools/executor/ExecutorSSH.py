@@ -34,7 +34,7 @@ class ExecutorSSH(ExecutorBase):
         if rc > 0:
             return False
         else:
-            return True    
+            return True
 
     # def pushkey(self, user='root'):
     #     self.logger.debug("pushkey from agent with name:%s" % self.key_filename)
@@ -119,7 +119,7 @@ class ExecutorSSH(ExecutorBase):
         #     raise RuntimeError("JJ")
 
         if hide:
-            showout=False
+            showout = False
 
         cmds2 = self._transformCmds(cmds, die, checkok=checkok, env=env)
 
