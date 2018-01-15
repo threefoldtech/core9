@@ -144,7 +144,7 @@ class ConfigFactory:
 
         return self._cache[key]
 
-    def js9_obj_get(self, location="", instance="main", data={}):
+    def js9_obj_get(self, location="", instance="main", data={}, sshkey_path=None):
         """
         will look for jumpscale module on defined location & return this object
         and generate the object which has a .config on the object
@@ -159,10 +159,10 @@ class ConfigFactory:
                         "Cannot find location, are you in right directory? now in:%s" % j.sal.fs.getcwd())
 
         obj = eval(location)
-        if obj._single_item:
-            return obj
-        else:
-            return obj.get(instance=instance, data=data)
+        if not obj._single_item:
+            obj = obj.get(instance=instance, data=data)
+        obj.sshkey_path = sshkey_path
+        return obj
 
     # def get(self, location, template={}, instance="main", data={}, ui=None):
     #     """
