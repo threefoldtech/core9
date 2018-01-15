@@ -45,8 +45,9 @@ def reset(location, instance):
 @click.command()
 @click.option('--location', '-l', default=None, help='location in jumpscale e.g. j.clients.packetnet (j.clients can be ommitted)')
 @click.option('--instance', '-i', default='main', help='name of the instance, default: main')
-def configure(location, instance):
-    j.tools.configmanager.configure(location=location, instance=instance)
+@click.option('--sshkey', '-s', default=None, help='path of the sshkey to be used in NACL')
+def configure(location, instance, sshkey):
+    j.tools.configmanager.configure(location=location, instance=instance, sshkey_path=sshkey)
 
 
 @click.command()
@@ -59,6 +60,7 @@ def delete(location, instance):
     if not instance:
         instance = '*'
     j.tools.configmanager.delete(location=location, instance=instance)
+
 
 cli.add_command(configure)
 cli.add_command(init)
