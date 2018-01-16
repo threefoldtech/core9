@@ -225,12 +225,6 @@ class SystemFS:
             excl += "--exclude '*.bak' "
             excl += "--exclude '*__pycache__*' "
 
-            if self.isDir(src):
-                if dst[-1] != "/":
-                    dst += "/"
-                if src[-1] != "/":
-                    src += "/"
-
             dstpath = dst.split(':')[1] if ':' in dst else dst
             cmd = "rsync "
             if keepsymlinks:
@@ -498,6 +492,9 @@ class SystemFS:
         """
         @param permissions e.g. 0o660 (USE OCTAL !!!)
         """
+        if permissions > 511 or permissions < 0:
+            raise ValueError("can't perform chmod, %s is not a valid mode" % oct(permissions))
+           
         os.chmod(path, permissions)
         for root, dirs, files in os.walk(path):
             for ddir in dirs:
@@ -759,12 +756,19 @@ class SystemFS:
         @param toReplace e.g. {name}
         @param replace with e.g. "jumpscale"
         """
+        if not toReplace:
+            raise ValueError("Can't change file names, toReplace can't be empty")
+        if not replaceWith:
+            raise ValueError("Can't change file names, replaceWith can't be empty")
         paths = self.listFilesInDir(
             pathToSearchIn, recursive, filter, minmtime, maxmtime)
         for path in paths:
-            path2 = path.replace(toReplace, replaceWith)
-            if path2 != path:
-                self.renameFile(path, path2)
+            dir_name = self.getDirName(path)
+            file_name = self.getBaseName(path)
+            new_file_name = file_name.replace(toReplace, replaceWith)
+            if new_file_name != file_name:
+                new_path = self.joinPaths(dir_name, new_file_name)
+                self.renameFile(path, new_path)
 
     def replaceWordsInFiles(self, pathToSearchIn, templateengine, recursive=True,
                             filter=None, minmtime=None, maxmtime=None):
@@ -927,12 +931,9 @@ class SystemFS:
     def checkDirParam(self, path):
         if(path.strip() == ""):
             raise TypeError("path parameter cannot be empty.")
-        path = path.replace("//", "/")
-        path = path.replace("\\\\", "/")
-        path = path.replace("\\", "/")
+        path = self.pathNormalize(path)
         if path[-1] != "/":
             path = path + "/"
-        path = path.replace("/", os.sep)
         return path
 
     @path_check(path={"required", "exists"})

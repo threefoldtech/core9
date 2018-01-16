@@ -101,12 +101,15 @@ class ConfigFactory:
     def base_class_configs(self):
         return JSBaseClassConfigs
 
-    def configure(self, location="", instance="main"):
+    def configure(self, location="", instance="main", sshkey_path=None):
         """
         Will display a npyscreen form to edit the configuration
+        @param location: jslocation of module to configure for (eg: j.clients.openvcloud)
+        @param: instance: configuration instance
+        @param: sshkey_path: sshkey for NACL encryption/decryption
         """
         js9obj = self.js9_obj_get(location=location, instance=instance)
-        js9obj.configure()
+        js9obj.configure(sshkey_path=sshkey_path)
         js9obj.config.save()
         return js9obj
 
@@ -121,7 +124,7 @@ class ConfigFactory:
         sc.save()
         return sc
 
-    def _get_for_obj(self, jsobj, template, ui=None, instance="main", data={}):
+    def _get_for_obj(self, jsobj, template, ui=None, instance="main", data={}, sshkey_path=None):
         """
         return a secret config
         """
@@ -136,12 +139,12 @@ class ConfigFactory:
 
         if key not in self._cache:
             sc = Config(instance=instance, location=location,
-                        template=template, data=data)
+                        template=template, data=data, sshkey_path=sshkey_path)
             self._cache[key] = sc
 
         return self._cache[key]
 
-    def js9_obj_get(self, location="", instance="main", data={}):
+    def js9_obj_get(self, location="", instance="main", data={}, sshkey_path=None):
         """
         will look for jumpscale module on defined location & return this object
         and generate the object which has a .config on the object
@@ -156,10 +159,10 @@ class ConfigFactory:
                         "Cannot find location, are you in right directory? now in:%s" % j.sal.fs.getcwd())
 
         obj = eval(location)
-        if obj._single_item:
-            return obj
-        else:
-            return obj.get(instance=instance, data=data)
+        if not obj._single_item:
+            obj = obj.get(instance=instance, data=data)
+        obj.sshkey_path = sshkey_path
+        return obj
 
     # def get(self, location, template={}, instance="main", data={}, ui=None):
     #     """
@@ -234,7 +237,7 @@ class ConfigFactory:
             for item in j.sal.fs.listFilesInDir(path):
                 j.sal.fs.remove(item)
 
-    def init(self, path="", data={}):
+    def init(self, path="", data=None):
 
         if self._findConfigDirParent(path, die=False) is not None:
             return

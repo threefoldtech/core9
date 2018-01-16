@@ -197,11 +197,11 @@ class Profile:
         return true of locale is properly set
         '''
         if j.core.platformtype.myplatform.isMac:
-            a = self.bash.env['LC_ALL'] == 'en_US.UTF-8'
-            b = self.bash.env['LANG'] == 'en_US.UTF-8'
+            a = self.bash.env.get('LC_ALL') == 'en_US.UTF-8'
+            b = self.bash.env.get('LANG') == 'en_US.UTF-8'
         else:
-            a= self.bash.env['LC_ALL'] == 'C.UTF-8'
-            b= self.bash.env['LANG'] == 'C.UTF-8'
+            a = self.bash.env.get('LC_ALL') == 'C.UTF-8'
+            b = self.bash.env.get('LANG') == 'C.UTF-8'
         if (a and b) != True:
             print("WARNING: locale has been fixed, please do: `source ~/.profile_js`")
             self.locale_fix()
