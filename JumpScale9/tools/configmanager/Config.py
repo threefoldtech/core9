@@ -120,7 +120,7 @@ class Config():
             ttype = j.data.types.type_detect(self.template[key])
             if key.endswith("_"):
                 if ttype.BASETYPE == "string":
-                    if item != '':
+                    if item != '' and item != '""':
                         res[key] = self.nacl.decryptSymmetric(
                             item, hex=True).decode()
                     else:
@@ -144,7 +144,7 @@ class Config():
             ttype = j.data.types.type_detect(self.template[key])
             if key.endswith("_"):
                 if ttype.BASETYPE == "string":
-                    if item != '':
+                    if item != '' and item != '""':
                         item = self.nacl.encryptSymmetric(
                             item, hex=True, salt=item)
             self._data[key] = item
@@ -154,7 +154,7 @@ class Config():
             ttype = j.data.types.type_detect(self.template[key])
             if key.endswith("_"):
                 if ttype.BASETYPE == "string":
-                    if val != '':
+                    if val != '' and val != '""':
                         val = self.nacl.encryptSymmetric(
                             val, hex=True, salt=val)
             self._data[key] = val
