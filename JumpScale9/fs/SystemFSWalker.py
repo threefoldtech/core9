@@ -5,6 +5,7 @@ import os.path
 from JumpScale9 import j
 import fnmatch
 
+
 class SystemFSWalker:
 
     def __init__(self):
@@ -113,7 +114,7 @@ class SystemFSWalker:
         # print "ROOT OF WALKER:%s"%root
         # print "followlinks:%s"%followlinks
         j.sal.fswalker._walk(root, callback, arg, includeFolders, pathRegexIncludes, pathRegexExcludes,
-                              contentRegexIncludes, contentRegexExcludes, depths, followlinks=followlinks)
+                             contentRegexIncludes, contentRegexExcludes, depths, followlinks=followlinks)
 
         # #if recursive:
         # for dirpath, dirnames, filenames in os.walk(root,followlinks=followlinks):
@@ -151,7 +152,7 @@ class SystemFSWalker:
                         continue  # do not recurse go to next dir
                 # recurse
                 j.sal.fswalker._walk(path2, callback, arg, includeFolders, pathRegexIncludes, pathRegexExcludes,
-                                      contentRegexIncludes, contentRegexExcludes, depths, followlinks)
+                                     contentRegexIncludes, contentRegexExcludes, depths, followlinks)
 
             if j.sal.fs.isFile(path2, followlinks):
                 if j.data.regex.matchMultiple(
@@ -247,6 +248,7 @@ class SystemFSWalker:
                             callbackForMatchDir,
                             callbackForMatchFile,
                             findDirectorySymlinks=findDirectorySymlinks)
+
     @staticmethod
     def walkExtended(root, recurse=0, dirPattern='*', filePattern='*',
                      followSoftLinks=True, dirs=True, files=True):
@@ -272,9 +274,9 @@ class SystemFSWalker:
         * a file test.rtt
         * and ./folder1/subfolder/subsubfolder/small_test/test.rtt
         To find the first test you can use
-           j.sal.fs.walkExtended('/tmp/', dirPattern="*tmp*", filePattern="*.rtt")
+           j.sal.fswalker.walkExtended('/tmp/', dirPattern="*tmp*", filePattern="*.rtt")
         To find only the second one you could use
-           j.sal.fs.walkExtended('tmp', recurse=0, dirPattern="*small_test*", filePattern="*.rtt", dirs=False)
+           j.sal.fswalker.walkExtended('tmp', recurse=0, dirPattern="*small_test*", filePattern="*.rtt", dirs=False)
         """
         result = []
         try:
@@ -305,12 +307,12 @@ class SystemFSWalker:
                     if (fnmatch.fnmatch(name, dPat) and dirs):
                         result.append(fullname)
             if recurse:
-                result = result + j.sal.fs.walkExtended(root=fullname,
-                                                    recurse=recurse,
-                                                    dirPattern=dirPattern,
-                                                    filePattern=filePattern,
-                                                    followSoftLinks=followSoftLinks,
-                                                    dirs=dirs,
-                                                    files=files)
+                result = result + j.sal.fswalker.walkExtended(root=fullname,
+                                                              recurse=recurse,
+                                                              dirPattern=dirPattern,
+                                                              filePattern=filePattern,
+                                                              followSoftLinks=followSoftLinks,
+                                                              dirs=dirs,
+                                                              files=files)
 
         return result
