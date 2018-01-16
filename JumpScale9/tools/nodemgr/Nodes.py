@@ -22,7 +22,10 @@ class Nodes(JSConfigBase):
             self._tree = j.data.treemanager.get()
         return self._tree
 
-    def set(self, name, addr, port=22, cat="", description="", selected=False, active=True, clienttype="", secretconfig=""):
+    def set(self, name, addr, port=22, cat="", description="", selected=False, active=True, clienttype="", secretconfig="", pubconfig=""):
+
+        secretconfig = j.data.serializer.json.dumps(secretconfig)
+        pubconfig = j.data.serializer.json.dumps(pubconfig)
 
         data = {}
         data["addr"] = addr
@@ -32,6 +35,7 @@ class Nodes(JSConfigBase):
         data["selected"] = selected
         data["clienttype"] = clienttype
         data["secretconfig_"] = secretconfig
+        data["pubconfig"] = pubconfig
         data["category"] = cat
         data["description"] = description
         n = self.get(instance=name, data=data, create=True)

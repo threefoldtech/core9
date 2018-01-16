@@ -10,6 +10,7 @@ selected = false
 category = ""
 description = ""
 secretconfig_ = ""
+pubconfig = ""
 """
 
 FormBuilderBaseClass = j.tools.formbuilder.baseclass_get()
@@ -103,6 +104,28 @@ class Node(JSConfigBase):
     @selected.setter
     def selected(self, val):
         self.config._data["selected"] = val
+
+    @property
+    def secretconfig(self):
+        data = self.config.data["secretconfig_"]
+        data = j.data.serializer.json.loads(data)
+        return data
+
+    @secretconfig.setter
+    def secretconfig(self, data):
+        data = j.data.serializer.json.dumps(data)
+        self.config._data["secretconfig_"] = data
+
+    @property
+    def pubconfig(self):
+        data = self.config.data["pubconfig"]
+        data = j.data.serializer.json.loads(data)
+        return data
+
+    @pubconfig.setter
+    def pubconfig(self, data):
+        data = j.data.serializer.json.dumps(data)
+        self.config._data["pubconfig"] = data
 
     @property
     def isconnected(self):
