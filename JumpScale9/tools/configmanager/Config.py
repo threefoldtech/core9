@@ -9,12 +9,14 @@ class Config():
         """
         jsclient_object is e.g. j.clients.packet.net
         """
+        self._nacl = None
         self.location = location
         self.instance = instance
         self._template = template
         self._data = data
         self.loaded = False
-        self.path = j.sal.fs.joinPaths(j.tools.configmanager.path_configrepo, self.location, self.instance + '.toml')
+        self.path = j.sal.fs.joinPaths(
+            j.tools.configmanager.path_configrepo, self.location, self.instance + '.toml')
         j.sal.fs.createDir(j.sal.fs.getParent(self.path))
         if self.instance is None:
             raise RuntimeError("instance cannot be None")
@@ -39,10 +41,12 @@ class Config():
                     j.clients.ssh.ssh_keys_load()
                 keys = j.clients.ssh.ssh_keys_list_from_agent()
                 if len(keys) >= 1:
-                    key = j.tools.console.askChoice([k for k in keys], descr="Please choose which key to pass to the NACL")
+                    key = j.tools.console.askChoice(
+                        [k for k in keys], descr="Please choose which key to pass to the NACL")
                     sshkeyname = j.sal.fs.getBaseName(key)
                 else:
-                    raise RuntimeError("You need to configure at least one sshkey")
+                    raise RuntimeError(
+                        "You need to configure at least one sshkey")
             else:
                 j.clients.ssh.load_ssh_key(path=self._sshkey_path)
                 sshkeyname = j.sal.fs.getBaseName(self._sshkey_path)
@@ -67,7 +71,8 @@ class Config():
             self._data = {}
 
         if not j.sal.fs.exists(self.path):
-            self._data, error = j.data.serializer.toml.merge(tomlsource=self.template, tomlupdate=self._data, listunique=True)
+            self._data, error = j.data.serializer.toml.merge(
+                tomlsource=self.template, tomlupdate=self._data, listunique=True)
             # if j.tools.configmanager.interactive:
             #    self.interactive()
             # self.save()
@@ -76,7 +81,8 @@ class Config():
             content = j.sal.fs.fileGetContents(self.path)
             data = j.data.serializer.toml.loads(content)
             # merge found data into template
-            self._data, error = j.data.serializer.toml.merge(tomlsource=self.template, tomlupdate=data, listunique=True)
+            self._data, error = j.data.serializer.toml.merge(
+                tomlsource=self.template, tomlupdate=data, listunique=True)
             return 0
 
     # def interactive(self):
@@ -94,7 +100,8 @@ class Config():
 
     def save(self):
         # at this point we have the config & can write (self._data has the encrypted pieces)
-        j.sal.fs.writeFile(self.path, j.data.serializer.toml.fancydumps(self._data))
+        j.sal.fs.writeFile(
+            self.path, j.data.serializer.toml.fancydumps(self._data))
 
     @property
     def template(self):
@@ -113,7 +120,7 @@ class Config():
             ttype = j.data.types.type_detect(self.template[key])
             if key.endswith("_"):
                 if ttype.BASETYPE == "string":
-                    if item != '':
+                    if item != '' and item != '""':
                         res[key] = self.nacl.decryptSymmetric(
                             item, hex=True).decode()
                     else:
@@ -131,13 +138,15 @@ class Config():
 
         for key, item in value.items():
             if key not in self.template:
-                raise RuntimeError("Cannot find key:%s in template for %s" % (key, self))
+                raise RuntimeError(
+                    "Cannot find key:%s in template for %s" % (key, self))
 
             ttype = j.data.types.type_detect(self.template[key])
             if key.endswith("_"):
                 if ttype.BASETYPE == "string":
-                    if item != '':
-                        item = self.nacl.encryptSymmetric(item, hex=True, salt=item)
+                    if item != '' and item != '""':
+                        item = self.nacl.encryptSymmetric(
+                            item, hex=True, salt=item)
             self._data[key] = item
 
     def data_set(self, key, val, save=True):
@@ -145,8 +154,9 @@ class Config():
             ttype = j.data.types.type_detect(self.template[key])
             if key.endswith("_"):
                 if ttype.BASETYPE == "string":
-                    if val != '':
-                        val = self.nacl.encryptSymmetric(val, hex=True, salt=val)
+                    if val != '' and val != '""':
+                        val = self.nacl.encryptSymmetric(
+                            val, hex=True, salt=val)
             self._data[key] = val
             if save:
                 self.save()

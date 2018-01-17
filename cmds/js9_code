@@ -16,7 +16,6 @@ j.tools.prefab.local.bash.locale_check()
 import click
 
 
-
 j.application.start("jscode")
 
 ACTIONS = ('get', 'commit', 'push', 'update', 'status', 'list', 'init')
@@ -54,7 +53,8 @@ def _init_action():
     # os.system('git config --global user.email "%s"' %
     #           j.core.state.configMe["me"]["email"])
     pass
-    #TODO: *1 kristof, need to fix
+    # TODO: *1 kristof, need to fix
+
 
 _init_action()
 
@@ -76,11 +76,21 @@ def _search_repos(accounts, name, interactive=True):
     return _repos
 
 
-def _status_action():
-    print("\n\nSTATUS: account reponame                  " +
-          "branch added:modified:deleted   insyncwithremote?   localrev       remoterev")
+def _status_action(repos):
+    print("\n\n STATUS:")
+    print("{: ^20} {: ^20} {: ^20} {: ^20}".format('account', 'reponame', 'branch', 'added:modified:deleted'))
+    # print("\n\nSTATUS: account reponame                  " +
+    #       "branch added:modified:deleted   insyncwithremote?   localrev       remoterev")
     print("==============================================" +
-          "===========================================================================")
+          "====================================================")
+    for repo in repos:
+        _, account, name, branch, _, basedir = repo
+        git = j.clients.git.get(basedir=basedir)
+        mod = git.getModifiedFiles()
+        status = 'Y' if mod['N'] else 'N'
+        status += ':Y' if mod['M'] else ':N'
+        status += ':Y' if mod['D'] else ':N'
+        print("{: ^20} {: ^20} {: ^20} {: ^20}".format(account, name, branch, status))
 
 
 @click.command()
@@ -103,7 +113,6 @@ def jscode(action, name, url, message, branch, accounts, update, force=False, de
             "Cannot specify branch when asking status")
 
     if name is None:
-
         if action == 'init':
             _init_action()
 
@@ -119,12 +128,12 @@ def jscode(action, name, url, message, branch, accounts, update, force=False, de
         else:
             name, _accounts = _repo_info(name, accounts)
 
-    if action == 'status':
-        return _status_action()
-
     repos = _search_repos(accounts, name, interactive=not force)
-    if name != None and len(repos) != 1:
+    if name is not None and len(repos) != 1:
         raise RuntimeError("found 2 repo's for same name")
+
+    if action == 'status':
+        return _status_action(repos)
 
     if action == "list":
         for provider, account, reponame, branchExisting, client, path in repos:
