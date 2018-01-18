@@ -88,7 +88,7 @@ class TestPROFILEJS(TestcasesBase):
         cls.profileJS = bash.profileJS
 
     def test01_env_set(self):
-        """ JS-042
+        """ JS-044
 
         **Test Scenario:**
         #. Set new environment variables.
@@ -109,7 +109,7 @@ class TestPROFILEJS(TestcasesBase):
         self.assertEqual(self.profileJS.envGet(key), value)
 
     def test02_env_get(self):
-        """ JS-043
+        """ JS-045
 
         **Test Scenario:**
         #. Choose random environment variable.
@@ -120,7 +120,7 @@ class TestPROFILEJS(TestcasesBase):
         self.assertEqual(self.profileJS.envGet(random_key), self.profileJS.env[random_key])
 
     def test03_env_exists(self):
-        """ JS-044
+        """ JS-046
 
         **Test Scenario:**
         #. Choose random environment variable.
@@ -138,7 +138,7 @@ class TestPROFILEJS(TestcasesBase):
         self.assertFalse(self.profileJS.envExists(self.random_string()))
 
     def test04_env_delete(self):
-        """ JS-045
+        """ JS-047
 
         **Test Scenario:**
         #. Set new environment variable.
@@ -163,8 +163,8 @@ class TestPROFILEJS(TestcasesBase):
         with self.assertRaises(KeyError):
             self.profileJS.envDelete(self.random_string())
 
-    def test06_add_path(self):
-        """ JS-047
+    def test05_add_path(self):
+        """ JS-048
 
         **Test Scenario:**
         #. Add new path, should succeed.
@@ -177,8 +177,8 @@ class TestPROFILEJS(TestcasesBase):
         self.lg.info('Check that the new path is added to paths list, should succeed')
         self.assertIn(path, self.profileJS.paths)
 
-    def test07_delete_path(self):
-        """ JS-048
+    def test06_delete_path(self):
+        """ JS-049
 
         **Test Scenario:**
         #. Add new path, should succeed.
@@ -200,7 +200,7 @@ class TestPROFILEDEFAULT(TestcasesBase):
         cls.profileDefault = bash.profileDefault
 
     def test01_env_set(self):
-        """ JS-042
+        """ JS-050
 
         **Test Scenario:**
         #. Set new environment variables.
@@ -221,7 +221,7 @@ class TestPROFILEDEFAULT(TestcasesBase):
         self.assertEqual(self.profileDefault.envGet(key), value)
 
     def test02_env_get(self):
-        """ JS-043
+        """ JS-051
 
         **Test Scenario:**
         #. Choose random environment variable.
@@ -232,7 +232,7 @@ class TestPROFILEDEFAULT(TestcasesBase):
         self.assertEqual(self.profileDefault.envGet(random_key), self.profileDefault.env[random_key])
 
     def test03_env_exists(self):
-        """ JS-044
+        """ JS-052
 
         **Test Scenario:**
         #. Choose random environment variable.
@@ -250,7 +250,7 @@ class TestPROFILEDEFAULT(TestcasesBase):
         self.assertFalse(self.profileDefault.envExists(self.random_string()))
 
     def test04_env_delete(self):
-        """ JS-045
+        """ JS-053
 
         **Test Scenario:**
         #. Set new environment variable.
@@ -276,7 +276,7 @@ class TestPROFILEDEFAULT(TestcasesBase):
             self.profileDefault.envDelete(self.random_string())
 
     def test05_env_delete_all(self):
-        """ JS-046
+        """ JS-054
 
         **Test Scenario:**
         #. Set two new environment variable with the same name.
@@ -286,7 +286,7 @@ class TestPROFILEDEFAULT(TestcasesBase):
         pass
 
     def test06_add_path(self):
-        """ JS-047
+        """ JS-055
 
         **Test Scenario:**
         #. Add new path, should succeed.
@@ -300,7 +300,7 @@ class TestPROFILEDEFAULT(TestcasesBase):
         self.assertIn(path, self.profileDefault.paths)
 
     def test07_delete_path(self):
-        """ JS-048
+        """ JS-056
 
         **Test Scenario:**
         #. Add new path, should succeed.

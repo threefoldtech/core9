@@ -1,8 +1,13 @@
 #! /usr/bin/env python3
 from js9 import j
 
-j.logger.init('PRODUCTION', 0, ['j.sal.fs','j.application', "j.sal.process"])
 
-j.logger.set_level(0)
+try:
+    j.logger.init('PRODUCTION', 0, ['j.sal.fs','j.application', "j.sal.process"])
 
-j.tools.develop.run()
+    j.logger.set_level(0)
+
+    j.tools.develop.run()
+
+except KeyboardInterrupt:
+    pass
