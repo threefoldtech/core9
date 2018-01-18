@@ -10,6 +10,11 @@ class Cache:
         self.__jslocation__ = "j.data.cache"
         self._cache = {}
 
+    def redis_local_get(self,reset=False, expiration=30):
+        db=j.data.kvs.getRedisStore(namespace="cache")
+        return self.get(db=db,reset=reset,expiration=expiration)
+
+
     def get(self, id="main", db=None, reset=False, expiration=30):
         """
         @param id is a unique id for the cache

@@ -1,6 +1,7 @@
 from JumpScale9 import j
 import copy
 
+
 class SerializerDict:
 
     def _unique_list(self, items, sort=False, strip=False):
@@ -22,7 +23,7 @@ class SerializerDict:
 
         @return dict,errors=[]
 
-        in errors there will be key's which are not found in dictsource
+        in errors is list of list [[key,val],...]
 
         """
         if key not in dictsource.keys():
@@ -31,22 +32,28 @@ class SerializerDict:
                 return dictsource, errors
             else:
                 if die:
-                    raise j.exceptions.Input("dictsource does not have key:%s, can insert value" % key)
+                    raise j.exceptions.Input(
+                        "dictsource does not have key:%s, can insert value" % key)
                 else:
-                    errors.append(key)
+                    errors.append((key, val))
+                    return dictsource, errors
 
         if j.data.types.list.check(dictsource[key]):
             # check is list & set the types accordingly
             if j.data.types.string.check(val):
                 if "," in val:
-                    val = [item.replace("'", "").strip() for item in val.split(",")]
+                    val = [item.replace("'", "").strip()
+                           for item in val.split(",")]
                 else:
                     val = [val]
             elif j.data.types.int.check(val) or j.data.types.float.check(val):
                 val = [val]
 
             if listunique:
-                dictsource[key] = self._unique_list(val, sort=listsort, strip=liststrip)
+                dictsource[key] = self._unique_list(
+                    val, sort=listsort, strip=liststrip)
+            else:
+                dictsource[key] = val
 
         elif j.data.types.bool.check(dictsource[key]):
             if str(val).lower() in ['true', "1", "y", "yes"]:
@@ -79,13 +86,14 @@ class SerializerDict:
         @return dictsource,errors
 
         """
-        if not j.data.types.dict.check(dictsource) or not j.data.types.dict.check(dictupdate) :
-            raise j.exceptions.Input("dictsource and dictupdate need to be dicts")
+        if not j.data.types.dict.check(dictsource) or not j.data.types.dict.check(dictupdate):
+            raise j.exceptions.Input(
+                "dictsource and dictupdate need to be dicts")
 
         keys = [item for item in dictupdate.keys()]
         keys.sort()
 
-        dictsource = copy.copy(dictsource) #otherwise template gets changed
+        dictsource = copy.copy(dictsource)  # otherwise template gets changed
 
         for key in keys:
             val = dictupdate[key]

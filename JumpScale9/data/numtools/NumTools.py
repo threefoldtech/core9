@@ -7,7 +7,11 @@ class NumTools:
     def __init__(self):
         self.__jslocation__ = "j.tools.numtools"
         self.__imports__ = "numpy"
-        self.currencies = {}
+        self._currencies = {}
+
+    @property
+    def currencies(self):
+        return j.clients.currencylayer.cur2usd
 
     def _getYearFromMonthId(self, monthid, startyear=0):
         """
@@ -135,15 +139,6 @@ class NumTools:
                 result.append(item)
         return result
 
-    def _initCurrencies(self):
-        if self.currencies == {}:
-            path = j.sal.fs.joinPaths("cfg", "currencies.cfg")
-            if j.sal.fs.exists(path):
-                ini = j.tools.inifile.open(path)
-                if ini.checkSection("eur"):
-                    for cur in list(ini.getSectionAsDict("eur").keys()):
-                        self.currencies[cur] = ini.getFloatValue("eur", cur)
-
     def text2val(self, value):
         """
         value can be 10%,0.1,100,1m,1k  m=million
@@ -153,16 +148,22 @@ class NumTools:
         e.g.: 10EUR or 10 EUR (spaces are stripped)
         e.g.: 0.1mEUR or 0.1m EUR or 100k EUR or 100000 EUR
         """
-        if not j.data.types.string(value):
+        if not j.data.types.string.check(value):
             raise j.exceptions.RuntimeError("value needs to be string in text2val, here: %s" % value)
-        if value.lower().find("eur") != -1:
-            value = value.replace("eur", "").strip()
-        self._initCurrencies()
+        
         cur = 1.0
-        for cur2 in list(self.currencies.keys()):
-            if value.find(cur2) != -1:
-                value = value.replace(cur2, "").strip()
-                cur = self.currencies[cur2]
+        try:
+            #dirty trick to see if value can be float, if not will look for currencies
+            float(value)
+        except Exception as e:
+            value=value.lower()
+            for cur2 in list(self.currencies.keys()):
+                # print(cur2)
+                if value.find(cur2) != -1:
+                    # print("FOUND")
+                    value = value.lower().replace(cur2, "").strip()
+                    cur = 1/self.currencies[cur2]
+
         if value.find("k") != -1:
             value = float(value.replace("k", "").strip()) * 1000
         elif value.find("m") != -1:
@@ -171,3 +172,13 @@ class NumTools:
             value = float(value.replace("%", "").strip()) / 100
         value = float(value) * cur
         return value
+
+    def test(self):
+        """
+        js9 'j.tools.numtools.test()'
+        """
+        assert  self.text2val("10k")==10000.0
+
+        assert self.currencies["egp"]*10000000 == self.text2val("10 m egp")
+        assert self.currencies["egp"]*10000000 == self.text2val("10m egp")
+        assert self.currencies["egp"]*10000000 == self.text2val("10mEGP")

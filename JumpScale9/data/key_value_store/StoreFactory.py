@@ -123,39 +123,26 @@ class StoreFactory:
 
         print("test ok")
 
-    def getRedisCacheLocal(self):
-        """
-        example:
-        cache=j.data.kvs.getRedisCacheLocal()
-        serializer=j.data.serializer.json
-        db=j.data.kvs.getRedisStore(namespace="cache",serializers=[serializer],cache=cache)
+    # def getRedisCacheLocal(self):
+    #     """
+    #     example:
+    #     cache=j.data.kvs.getRedisCacheLocal()
+    #     serializer=j.data.serializer.json
+    #     db=j.data.kvs.getRedisStore(namespace="cache",serializers=[serializer],cache=cache)
 
-        """
-        # for now just local to test
-
-        # the std redis is not on tcp, so this will not work in all cases, had to modify
-
-        if self._redisCacheLocal is None:
-            cache = self.getRedisStore(
-                name='kvs-cache',
-                namespace='cache',
-                host='localhost',
-                port=6379,
-                db=0,
-                password='',
-                serializers=[]
-            )
-            try:
-                cache.set("test", "test")
-            except Exception as e:
-                cache = self.getRedisStore('kvs-cache', namespace='cache', host='localhost',
-                                           unixsocket='%s/redis.sock' % j.dirs.TMPDIR,
-                                           db=0, password='',
-                                           serializers=[])
-                cache.set("test", "test")
-            self._redisCacheLocal = cache
-
-        return self._redisCacheLocal
+    #     """
+        
+    #     if self._redisCacheLocal is None:
+    #         cache = self.getRedisStore(
+    #             name='kvs-cache',
+    #             redisclient = None,
+    #             namespace='cache',
+    #             password='',
+    #             serializers=[]
+    #         )
+    #         cache.set("test", "test")
+    #         self._redisCacheLocal = cache
+    #     return self._redisCacheLocal
 
     # def getFSStore(self, name, namespace='', baseDir=None, serializers=[], cache=None, changelog=None, masterdb=None):
     #     '''
@@ -203,11 +190,8 @@ class StoreFactory:
     def getRedisStore(
             self,
             name="core",
+            redisclient=None,
             namespace='db',
-            host='localhost',
-            port=None,
-            unixsocket=None,
-            db=0,
             password='',
             serializers=None,
             masterdb=None,
@@ -225,28 +209,15 @@ class StoreFactory:
         @return: key value store
         @rtype: MemoryKeyValueStore
         '''
-        if not port:
-            port = 6379
-            if j.core.state.configGetFromDict("redis", "port", ""):
-                port = j.core.state.configGetFromDict("redis", "port")
-        if not unixsocket:
-            unixsocket = None
-            if j.core.state.configGetFromDict("redis", "unixsocket", ""):
-                port = j.core.state.configGetFromDict("redis", "unixsocket")
-
         from JumpScale9.data.key_value_store.redis_store import RedisKeyValueStore
 
-        if j.clients.redis.get4core() is None:
-            j.clients.redis.start4core()
+        if redisclient==None:
+            redisclient=j.clients.redis.get4core()
 
         res = RedisKeyValueStore(
             name=name,
+            redisclient=redisclient,
             namespace=namespace,
-            host=host,
-            port=port,
-            unixsocket=unixsocket,
-            db=db,
-            password=password,
             serializers=serializers,
             masterdb=masterdb,
             changelog=changelog,

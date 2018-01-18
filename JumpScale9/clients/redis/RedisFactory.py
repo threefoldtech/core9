@@ -74,18 +74,24 @@ class RedisFactory:
         if that doesn't work then will look for std redis port
         if that does not work then will return None
         """
-        if "TMPDIR" in os.environ:
-            tmpdir = os.environ["TMPDIR"]
-        else:
-            tmpdir = "/tmp"
+        # if "TMPDIR" in os.environ:
+        #     tmpdir = os.environ["TMPDIR"]
+        # else:
+        #     tmpdir = "/tmp"
 
-        unix_socket_path = '%s/redis.sock' % tmpdir
+        # tmpdir= j.core.dirs.TMPDIR
+
+        unix_socket_path = '%s/redis.sock' % j.core.dirs.TMPDIR
 
         db = None
-        if os.path.exists(path=unix_socket_path) and j.sal.process.checkProcessRunning('redis-server'):
+        if os.path.exists(path=unix_socket_path):
             db = Redis(unix_socket_path=unix_socket_path)
-        elif self._tcpPortConnectionTest("localhost", 6379, timeout=None):
+        elif j.sal.nettools.tcpPortConnectionTest("localhost",6379):
             db = Redis()
+        else:
+            self.start4core()
+            db = Redis(unix_socket_path=unix_socket_path)
+
 
         # try:
         #     j.core.db.set("internal.last", 0)
@@ -95,20 +101,6 @@ class RedisFactory:
 
         return db
 
-    def _tcpPortConnectionTest(self, ipaddr, port, timeout=None):
-        conn = None
-        try:
-            conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            if timeout:
-                conn.settimeout(timeout)
-            try:
-                conn.connect((ipaddr, port))
-            except BaseException:
-                return False
-        finally:
-            if conn:
-                conn.close()
-        return True
 
     def kill(self):
         j.sal.process.execute("redis-cli -s %s/redis.sock shutdown" %
