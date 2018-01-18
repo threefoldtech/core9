@@ -15,13 +15,18 @@ class Config():
         self._template = template
         self._data = data
         self.loaded = False
-        self.path = j.sal.fs.joinPaths(
-            j.tools.configmanager.path_configrepo, self.location, self.instance + '.toml')
-        j.sal.fs.createDir(j.sal.fs.getParent(self.path))
+        self._path = None
         if self.instance is None:
             raise RuntimeError("instance cannot be None")
         self._nacl = None
         self._sshkey_path = sshkey_path
+
+    @property
+    def path(self):
+        if not self._path:
+            self._path = j.sal.fs.joinPaths(j.tools.configmanager.path_configrepo, self.location, self.instance + '.toml')
+            j.sal.fs.createDir(j.sal.fs.getParent(self._path))
+        return self._path
 
     @property
     def sshkey_path(self):

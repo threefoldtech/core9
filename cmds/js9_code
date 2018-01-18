@@ -81,8 +81,7 @@ def _status_action(repos):
     print("{: ^20} {: ^20} {: ^20} {: ^20}".format('account', 'reponame', 'branch', 'added:modified:deleted'))
     # print("\n\nSTATUS: account reponame                  " +
     #       "branch added:modified:deleted   insyncwithremote?   localrev       remoterev")
-    print("==============================================" +
-          "====================================================")
+    print("=" * 88)
     for repo in repos:
         _, account, name, branch, _, basedir = repo
         git = j.clients.git.get(basedir=basedir)
