@@ -65,12 +65,12 @@ class Config():
         self.instance = instance
         self.load(reset=True)
 
-    def load(self,reset=False):
+    def load(self, reset=False):
         """
         @RETURN if 1 means did not find the toml file so is new
         """
 
-        if reset or self._data == {}:            
+        if reset or self._data == {}:
 
             if not j.sal.fs.exists(self.path):
                 self._data, error = j.data.serializer.toml.merge(
@@ -120,8 +120,7 @@ class Config():
             if key.endswith("_"):
                 if ttype.BASETYPE == "string":
                     if item != '' and item != '""':
-                        res[key] = self.nacl.decryptSymmetric(
-                            item, hex=True).decode()
+                        res[key] = self.nacl.decryptSymmetric(item, hex=True).decode()
                     else:
                         res[key] = ''
                 else:
@@ -136,17 +135,16 @@ class Config():
             raise TypeError("value needs to be dict")
 
         for key, item in value.items():
-            self.data_set(key,item,save=False)
+            self.data_set(key, item, save=False)
 
         self.save()
-
 
     def data_set(self, key, val, save=True):
         if key not in self.template:
             raise RuntimeError(
                 "Cannot find key:%s in template for %s" % (key, self))
 
-        if self.data[key] != val:
+        if (key in self._data and self._data[key] != val) or key not in self._data:
             ttype = j.data.types.type_detect(self.template[key])
             if key.endswith("_"):
                 if ttype.BASETYPE == "string":
