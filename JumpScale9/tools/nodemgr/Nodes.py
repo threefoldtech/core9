@@ -41,8 +41,6 @@ class Nodes(JSConfigBase):
         n = self.get(instance=name, data=data, create=True)
         n.config.save()
 
-        print("nodeset:%s" % n)
-
         if self.exists(name):
             treeitem = self.tree.findByName(name, die=False)
             if treeitem != None:

@@ -2,17 +2,35 @@ from js9 import j
 import tarantool
 import os
 import sys
+from .TarantoolQueue import TarantoolQueue
 
+JSConfigClient = j.tools.configmanager.base_class_config
+
+TEMPLATE = """
+ip = "localhost"
+port = 3301
+login = "root"
+password_ = ""
+"""
 
 class Models():
     pass
 
 
-class TarantoolClient():
+class TarantoolClient(JSConfigClient):
 
-    def __init__(self, client):
-        self.db = client
-        self.call = client.call
+    
+    def __init__(self, instance, data={}, parent=None):
+        JSConfigClient.__init__(self, instance=instance,
+                                data=data, parent=parent, template=TEMPLATE)
+        c = self.config.data
+        ip = c['ip']
+        port = c['port']
+        login = c['login']
+        password = c['password_']
+        
+        self.db = tarantool.connect(ip, user=login, port=port, password=password)
+        self.call = self.db.call
         self.models = Models()
 
     @property

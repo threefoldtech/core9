@@ -280,7 +280,7 @@ class SSHClientFactory:
             self._init_ssh_env()
         self.start_ssh_agent()
         cmd = "ssh-add -L"
-        return_code, out, err = j.sal.process.execute(cmd, showout=False, die=False,timeout=1)
+        return_code, out, err = j.sal.process.execute(cmd, showout=False, die=False, timeout=1)
         if return_code:
             if return_code == 1 and out.find("The agent has no identities") != -1:
                 return []
@@ -325,9 +325,9 @@ class SSHClientFactory:
             # ssh-agent not loaded
             self.logger.info("load ssh agent")
             _, out, err = j.sal.process.execute("ssh-agent -a %s" % socketpath,
-                                       die=False,
-                                       showout=False,
-                                       timeout=20)
+                                                die=False,
+                                                showout=False,
+                                                timeout=20)
             if err:
                 raise RuntimeError(
                     "Could not start ssh-agent, \nstdout:%s\nstderr:%s\n" % (out, err))
@@ -359,7 +359,6 @@ class SSHClientFactory:
         if os.environ.get("SSH_AUTH_SOCK") != socketpath:
             self._init_ssh_env()
 
-
     def load_ssh_key(self, path="", create_keys=False):
         """
         load ssh key in ssh-agent, if no ssh-agent is found, new ssh-agent will be started
@@ -375,18 +374,15 @@ class SSHClientFactory:
 
         # create new key if path not found
         if not path_found and create_keys:
-            return_code, out, err =j.sal.process.execute("ssh-keygen -t rsa -f %s -N \"\"" % path,
-                                                 die=False,
-                                                 showout=False,
-)
+            return_code, out, err = j.sal.process.execute("ssh-keygen -t rsa -f %s -N \"\"" % path,
+                                                          die=False,
+                                                          showout=False,
+                                                          )
             if return_code != 0:
                 raise RuntimeError(
                     "Could not add key to the ssh-agent, \nstdout:%s\nstderr:%s\n" % (out, err))
 
         self._load_ssh_key(path)
-
-
-
 
     def ssh_agent_available(self):
         """
@@ -398,8 +394,8 @@ class SSHClientFactory:
         if "SSH_AUTH_SOCK" not in os.environ:
             self._init_ssh_env()
         return_code, out, _ = j.sal.process.execute("ssh-add -l",
-                                           showout=False,
-                                           die=False)
+                                                    showout=False,
+                                                    die=False)
         if 'The agent has no identities.' in out:
             return True
         if return_code != 0:
@@ -432,7 +428,6 @@ class SSHClientFactory:
             # remove previous socketpath
             j.sal.fs.remove(socketpath)
             j.sal.fs.remove(j.sal.fs.joinPaths('/tmp', "ssh-agent-pid"))
-
 
     def _list_not_loaded_keys(self, path):
         """

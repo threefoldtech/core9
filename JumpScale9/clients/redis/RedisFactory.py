@@ -1,13 +1,13 @@
 from JumpScale9 import j
 
-redisFound=False
+redisFound = False
 try:
     from .Redis import Redis
     from .RedisQueue import RedisQueue
     from redis._compat import nativestr
     # import itertools
     import socket
-    redisFound=True
+    redisFound = True
 except:
     pass
 import os
@@ -22,7 +22,7 @@ class RedisFactory:
 
     def __init__(self):
         self.clearCache()
-        self.redisFound=redisFound
+        self.redisFound = redisFound
         self.__jslocation__ = "j.clients.redis"
 
     def clearCache(self):
@@ -39,7 +39,7 @@ class RedisFactory:
             unixsocket=None,
             ardb_patch=False,
             **args):
-        if redisFound==False:
+        if redisFound == False:
             raise RuntimeError("redis libraries are not installed, please pip3 install them.")
         if unixsocket is None:
             key = "%s_%s" % (ipaddr, port)
@@ -74,41 +74,35 @@ class RedisFactory:
         if that doesn't work then will look for std redis port
         if that does not work then will return None
         """
-        if "TMPDIR" in os.environ:
-            tmpdir = os.environ["TMPDIR"]
-        else:
-            tmpdir = "/tmp"
 
-        unix_socket_path = '%s/redis.sock' % tmpdir
+        # can't use j.sal.nettools here, not loaded yet
+        def _tcpPortConnectionTest(ipaddr, port, timeout=None):
+            conn = None
+            try:
+                conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                if timeout:
+                    conn.settimeout(timeout)
+                try:
+                    conn.connect((ipaddr, port))
+                except BaseException:
+                    return False
+            finally:
+                if conn:
+                    conn.close()
+            return True
+
+        unix_socket_path = '%s/redis.sock' % j.core.dirs.TMPDIR
 
         db = None
-        if os.path.exists(path=unix_socket_path) and j.sal.process.checkProcessRunning('redis-server'):
+        if os.path.exists(path=unix_socket_path):
             db = Redis(unix_socket_path=unix_socket_path)
-        elif self._tcpPortConnectionTest("localhost", 6379, timeout=None):
+        elif _tcpPortConnectionTest("localhost", 6379):
             db = Redis()
-
-        # try:
-        #     j.core.db.set("internal.last", 0)
-        #     return True
-        # except:
-        #     db = None
+        else:
+            self.start4core()
+            db = Redis(unix_socket_path=unix_socket_path)
 
         return db
-
-    def _tcpPortConnectionTest(self, ipaddr, port, timeout=None):
-        conn = None
-        try:
-            conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            if timeout:
-                conn.settimeout(timeout)
-            try:
-                conn.connect((ipaddr, port))
-            except BaseException:
-                return False
-        finally:
-            if conn:
-                conn.close()
-        return True
 
     def kill(self):
         j.sal.process.execute("redis-cli -s %s/redis.sock shutdown" %

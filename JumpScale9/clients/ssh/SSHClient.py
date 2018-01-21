@@ -78,7 +78,7 @@ class SSHClient:
             self.passphrase = passphrase
 
         self.logger = j.logger.get(
-            "ssh sync client: %s(%s):" % (self.addr, self.port))
+            "ssh client: %s(%s):" % (self.addr, self.port))
 
         self._transport = None
         self._client = None
@@ -269,7 +269,7 @@ class SSHClient:
                 if chan == 'O':
                     if showout:
                         with self._lock:
-                            self.logger.info(line.rstrip())
+                            self.logger.debug(line.rstrip())
                     out.write(line)
                 elif chan == 'E':
                     if showout:
@@ -390,12 +390,12 @@ class SSHClient:
         if keydata:
             key_des = StringIO(keydata)
             p = paramiko.RSAKey.from_private_key(key_des)
-            key = '%s ' % p.get_name() +  p.get_base64()
+            key = '%s ' % p.get_name() + p.get_base64()
         elif not keyname:
             raise j.exceptions.Input("keyname and keydata can't be both empty")
         else:
             key = j.clients.ssh.SSHKeyGetFromAgentPub(keyname)
-        
+
         rc, _, _ = self.execute("echo '%s' | sudo -S bash -c 'test -e /root/.ssh'" % self.passwd, die=False)
         mkdir_cmd = ''
         if rc > 0:

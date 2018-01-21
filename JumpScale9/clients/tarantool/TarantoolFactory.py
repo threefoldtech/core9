@@ -3,15 +3,10 @@ import os
 from js9 import j
 from .TarantoolDB import TarantoolDB
 from .TarantoolClient import TarantoolClient
-# import itertools
 
+JSConfigFactory = j.tools.configmanager.base_class_configs
 
-# import sys
-# sys.path.append(".")
-# from tarantool_queue import *
-
-
-class TarantoolFactory:
+class TarantoolFactory(JSConfigFactory):
 
     """
     #server_start
@@ -29,57 +24,57 @@ class TarantoolFactory:
             self.cfgdir = "/usr/local/etc/tarantool/instances.enabled"
         else:
             self.cfgdir = "/etc/tarantool/instances.enabled"
-        self._tarantool = {}
         self._tarantoolq = {}
+        JSConfigFactory.__init__(self, TarantoolClient)
 
     def install(self):
         j.tools.prefab.local.db.tarantool.install()
 
-    def client_configure(self, name="main", ipaddr="localhost", port=3301, login="root", password="admin007"):
-        """
-        add a configuration for the tarantool instance 'name' into the jumpscale state config
+    # def client_configure(self, name="main", ipaddr="localhost", port=3301, login="root", password="admin007"):
+    #     """
+    #     add a configuration for the tarantool instance 'name' into the jumpscale state config
 
-        :param name: name of the tarantool instance to connect to
-        :name type: str
-        :param ipaddr: ip address of the tarantool instance
-        :type ipaddr: str
-        :param port: port of the tarantool instance
-        :type port: int
-        :param login: user use to connect to tarantool
-        :type login: str
-        :param password: password use to connect to tarantool
-        :type password: str
-        """
-        cfg = j.core.state.clientConfigGet("tarantool", name)
-        cfg.data["ipaddr"] = ipaddr
-        cfg.data["port"] = port
-        cfg.data["login"] = login
-        cfg.data["password"] = password
-        cfg.save()
+    #     :param name: name of the tarantool instance to connect to
+    #     :name type: str
+    #     :param ipaddr: ip address of the tarantool instance
+    #     :type ipaddr: str
+    #     :param port: port of the tarantool instance
+    #     :type port: int
+    #     :param login: user use to connect to tarantool
+    #     :type login: str
+    #     :param password: password use to connect to tarantool
+    #     :type password: str
+    #     """
+    #     cfg = j.core.state.clientConfigGet("tarantool", name)
+    #     cfg.data["ipaddr"] = ipaddr
+    #     cfg.data["port"] = port
+    #     cfg.data["login"] = login
+    #     cfg.data["password"] = password
+    #     cfg.save()
 
-    def client_get(self, name="main", fromcache=True):
-        """
-        Get a instance of a tarantool client for the instance `name`
+    # def client_get(self, name="main", fromcache=True):
+    #     """
+    #     Get a instance of a tarantool client for the instance `name`
 
-        :param name: name of the tarantool instance to connect to. Need to have been configured with client_configure
-        :name type: str
-        :param fromcache: if false don't try to re-use a client instance from the client cache
-        :type fromcache: bool
-        """
-        cfg = j.core.state.clientConfigGet("tarantool", instance=name)
+    #     :param name: name of the tarantool instance to connect to. Need to have been configured with client_configure
+    #     :name type: str
+    #     :param fromcache: if false don't try to re-use a client instance from the client cache
+    #     :type fromcache: bool
+    #     """
+    #     cfg = j.core.state.clientConfigGet("tarantool", instance=name)
 
-        # if client for this instance is not configured yet, we generate default config
-        if "ipaddr" not in cfg.data.keys():
-            self.client_configure(name=name)
-            cfg = j.core.state.clientConfigGet("tarantool", instance=name)
-        # return client instance from cache or create new one
-        cfg = cfg.data
-        key = "%s_%s" % (cfg["ipaddr"], cfg["port"])
-        if key not in self._tarantool or fromcache is False:
-            client = tarantool.connect(cfg["ipaddr"], user=cfg["login"], port=cfg["port"], password=cfg["password"])
-            self._tarantool[key] = TarantoolClient(client=client)
+    #     # if client for this instance is not configured yet, we generate default config
+    #     if "ipaddr" not in cfg.data.keys():
+    #         self.client_configure(name=name)
+    #         cfg = j.core.state.clientConfigGet("tarantool", instance=name)
+    #     # return client instance from cache or create new one
+    #     cfg = cfg.data
+    #     key = "%s_%s" % (cfg["ipaddr"], cfg["port"])
+    #     if key not in self._tarantool or fromcache is False:
+    #         client = tarantool.connect(cfg["ipaddr"], user=cfg["login"], port=cfg["port"], password=cfg["password"])
+    #         self._tarantool[key] = TarantoolClient(client=client)
 
-        return self._tarantool[key]
+    #     return self._tarantool[key]
 
     def server_get(self, name="main", path="$DATADIR/tarantool/$NAME", adminsecret="admin007", port=3301):
         """
