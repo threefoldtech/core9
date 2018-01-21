@@ -42,5 +42,4 @@ class MyConfig(JSConfigBase):
 
     def __init__(self):
         self.__jslocation__ = "j.tools.myconfig"
-        JSConfigBase.__init__(self)
-        self._config = j.tools.configmanager._get_for_obj(self, instance="main", data={}, template=TEMPLATE, ui=MyConfigUI)
+        JSConfigBase.__init__(self, instance="main", template=TEMPLATE,ui=MyConfigUI)        

@@ -73,6 +73,9 @@ class RedisFactory:
         will try to create redis connection to $tmpdir/redis.sock
         if that doesn't work then will look for std redis port
         if that does not work then will return None
+
+        j.clients.redis.get4core()
+
         """
         # if "TMPDIR" in os.environ:
         #     tmpdir = os.environ["TMPDIR"]
@@ -86,8 +89,8 @@ class RedisFactory:
         db = None
         if os.path.exists(path=unix_socket_path):
             db = Redis(unix_socket_path=unix_socket_path)
-        elif j.sal.nettools.tcpPortConnectionTest("localhost",6379):
-            db = Redis()
+        # elif j.sal.nettools.tcpPortConnectionTest("localhost",6379):
+        #     db = Redis()
         else:
             self.start4core()
             db = Redis(unix_socket_path=unix_socket_path)

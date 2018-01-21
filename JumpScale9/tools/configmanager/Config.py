@@ -5,7 +5,7 @@ from js9 import j
 
 class Config():
 
-    def __init__(self, instance="main", location=None, template={}, data={}, sshkey_path=None):
+    def __init__(self, instance="main", location=None, template={}, sshkey_path=None):
         """
         jsclient_object is e.g. j.clients.packet.net
         """
@@ -13,9 +13,9 @@ class Config():
         self.location = location
         self.instance = instance
         self._template = template
-        self._data = data
         self.loaded = False
         self._path = None
+        self._data = {}
         if self.instance is None:
             raise RuntimeError("instance cannot be None")
         self._nacl = None
@@ -65,30 +65,24 @@ class Config():
         self.instance = instance
         self.load(reset=True)
 
-    def load(self, reset=False):
+    def load(self,reset=False):
         """
         @RETURN if 1 means did not find the toml file so is new
         """
-        if self.loaded and reset is False:
-            return 0
 
-        if reset:
-            self._data = {}
+        if reset or self._data == {}:            
 
-        if not j.sal.fs.exists(self.path):
-            self._data, error = j.data.serializer.toml.merge(
-                tomlsource=self.template, tomlupdate=self._data, listunique=True)
-            # if j.tools.configmanager.interactive:
-            #    self.interactive()
-            # self.save()
-            return 1
-        else:
-            content = j.sal.fs.fileGetContents(self.path)
-            data = j.data.serializer.toml.loads(content)
-            # merge found data into template
-            self._data, error = j.data.serializer.toml.merge(
-                tomlsource=self.template, tomlupdate=data, listunique=True)
-            return 0
+            if not j.sal.fs.exists(self.path):
+                self._data, error = j.data.serializer.toml.merge(
+                    tomlsource=self.template, tomlupdate={}, listunique=True)
+                return 1
+            else:
+                content = j.sal.fs.fileGetContents(self.path)
+                data = j.data.serializer.toml.loads(content)
+                # merge found data into template
+                self._data, error = j.data.serializer.toml.merge(
+                    tomlsource=self.template, tomlupdate=data, listunique=True)
+                return 0
 
     # def interactive(self):
     #     print("Did not find config file:%s"%self.location)
@@ -142,19 +136,16 @@ class Config():
             raise TypeError("value needs to be dict")
 
         for key, item in value.items():
-            if key not in self.template:
-                raise RuntimeError(
-                    "Cannot find key:%s in template for %s" % (key, self))
+            self.data_set(key,item,save=False)
 
-            ttype = j.data.types.type_detect(self.template[key])
-            if key.endswith("_"):
-                if ttype.BASETYPE == "string":
-                    if item != '' and item != '""':
-                        item = self.nacl.encryptSymmetric(
-                            item, hex=True, salt=item)
-            self._data[key] = item
+        self.save()
+
 
     def data_set(self, key, val, save=True):
+        if key not in self.template:
+            raise RuntimeError(
+                "Cannot find key:%s in template for %s" % (key, self))
+
         if self.data[key] != val:
             ttype = j.data.types.type_detect(self.template[key])
             if key.endswith("_"):

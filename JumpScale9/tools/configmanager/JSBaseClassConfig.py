@@ -20,10 +20,17 @@ class JSBaseClassConfig:
                 "template needs to be specified, needs to be yaml or dict")
         self._config = None
         self._instance = instance
-        self._data = data
+        # self._data = data
         self._parent = parent
         self._template = template
         self._sshkey_path = None
+
+        if data!={}:
+            print("INITIAL DATA for :%s"%instance)
+            self._config = j.tools.configmanager._get_for_obj(
+                self, instance=self._instance, data=data, template=self._template, ui=self._ui, sshkey_path=self.sshkey_path)
+            self._config.save()
+
 
     @property
     def sshkey_path(self):
@@ -38,18 +45,12 @@ class JSBaseClassConfig:
 
     @property
     def config(self):
-        have_data = self._data != {}
 
         if self._config is None:
             self._config = j.tools.configmanager._get_for_obj(
-                self, instance=self._instance, data=self._data, template=self._template, ui=self._ui, sshkey_path=self.sshkey_path)
+                self, instance=self._instance, template=self._template, ui=self._ui, sshkey_path=self.sshkey_path)
 
-            if have_data:
-                # this means this is a creation cause we already have the data
-                # so we save here and return
-                self._config.save()
-
-            elif self._config.load() > 0:
+            if self._config.load() > 0:
                 self.interactive()
 
             elif self.config_check() not in [None, "", 0]:

@@ -49,6 +49,8 @@ class Nodes(JSConfigBase):
 
         self._add2tree(n)
 
+        return n
+
     def _add2tree(self, n):
 
         if n.category == "":
@@ -65,11 +67,18 @@ class Nodes(JSConfigBase):
         """
 
         self.delete(prefix="myhost")
+        print("DELETE DONE")
 
         startnr = len(self.getall())
         assert self.count() == startnr
 
         assert self.exists("myhost1") is False
+
+        i=9
+        
+        self.set("myhost%s" % i, "127.0.0.%s" % i, 22, cat="testcat")
+
+        # from IPython import embed;embed(colors='Linux')
 
         for i in range(10):
             self.set("myhost%s" % i, "127.0.0.%s" % i, 22, cat="testcat")
@@ -90,8 +99,10 @@ class Nodes(JSConfigBase):
               'name': 'myhost9',
               'port': 22,
               'secretconfig_': '',
+              'pubconfig': '""',
               'selected': False}
 
+        # from IPython import embed;embed(colors='Linux')
         assert n.config.data == d2
         j.data.serializer.toml.fancydumps(
             n.config.data) == j.data.serializer.toml.fancydumps(d2)
@@ -101,23 +112,27 @@ class Nodes(JSConfigBase):
         n.selected = True
         assert n.selected == n.config.data["selected"]
         n.selected = False
-        n.config.data["selected"] = False
+        n.config.data={"selected":False}
         assert n.selected == n.config.data["selected"]
         assert n.selected == False
         assert n.config.data["selected"] == False
         n.selected = True
         assert n.config.data["selected"] == True
 
-        # TODO: *3 need more tests
+        #now tests about updating data
+        d2["port"]=2222
+        n2=self.get(instance='myhost9', data=d2, create=True, die=True)
+        assert n2.config.data["port"]==2222
 
-        assert len(self.list(prefix="myhost")) == 15 + startnr
+        assert len(self.list(prefix="myhost")) == 15
+        assert len(self.list()) == 15 + startnr
 
         # cleanup
         self.delete(prefix="myhost")
 
         assert len(self.getall()) == startnr
 
-        print("TEST for nodes ok")
+        # print("TEST for nodes ok")
 
     def __repr__(self):
         return self.__str__()

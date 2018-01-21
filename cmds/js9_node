@@ -1,0 +1,91 @@
+#! /usr/bin/env python3
+from js9 import j
+j.tools.prefab.local.bash.locale_check()
+import click
+import sys
+from pprint import pprint as print
+
+@click.group()
+def cli():
+    pass
+
+
+def get_node(partofname=""):    
+    if partofname==None:
+        partofname=""
+    res=[]
+    for item in  j.tools.nodemgr.getall():
+        if item.name.find(partofname)!=-1:
+            res.append(item)
+    if len(res)!=1:
+        if len(res)==0:
+            print("* ERROR: could not find node with name:'%s'"%partofname)
+        else:
+            print("* ERROR: found too many nodes with name:'%s'"%partofname)
+        sys.exit(1)
+    return res[0]
+    
+
+get_help='name of the instance, can be part of name, will give error if no node or more than 1 found'
+
+@click.command()
+@click.option('--instance', '-i', default=None, help=get_help)
+def get( instance):
+    """
+    will get a node & then open a python shell where p(prefab) & n(node) are populated
+    """
+    node=get_node(instance)
+    p=node.prefab
+    n=node
+    print("use n or p in shell to get started.")
+    print("- n : node")
+    print("- p : prefab")
+    from IPython import embed;embed(colors='Linux')
+
+
+@click.command()
+@click.option('--instance', '-i', default=None, help=get_help)
+def ssh( instance):
+    """
+    will get a node & then ssh into it
+    """
+    node=get_node(instance)
+    node.ssh()
+
+@click.command()
+@click.option('--cat', '-c', default=None, help='category of node e.g. ovh')
+def list(cat):
+    for item in  j.tools.nodemgr.getall():
+        if cat!=None:
+            if item.config.data["category"]!=cat:
+                continue
+        print ("- %s\n"%item)
+    
+
+@click.command()
+@click.option('--instance', '-i', default=None, help=get_help)
+def delete( instance):
+    """
+    delete a node
+    """
+    node=get_node(instance)
+    from IPython import embed;embed(colors='Linux')
+
+@click.command()
+@click.option('--instance', '-i', default=None, help=get_help)
+def info( instance):
+    """
+    print detail of the node
+    """
+    node=get_node(instance)
+    print (node)
+    print (node.config.data)
+
+cli.add_command(get)
+cli.add_command(list)
+cli.add_command(ssh)
+cli.add_command(info)
+cli.add_command(delete)
+
+if __name__ == '__main__':
+    cli()

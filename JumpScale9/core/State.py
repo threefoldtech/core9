@@ -3,6 +3,42 @@ from JumpScale9 import j
 import sys
 import os
 
+mascot = '''
+                                                        .,,'
+                                                   'c.cool,..',,,,,,,.
+                                                  'dxocol:l:;,'......';:,.
+                                              .lodoclcccc,...............;:.
+                                                ':lc:;;;;;.................:;
+            JUMPSCALE                         :oc;'..................,'.....,;
+            ---------                        olc'.......'...........,. .,:'..:.
+                                            ,oc'......;,',..........od.   'c..'
+                                            ;o:......l,   ':........dWkkN. ,;..
+                                            .d;.....:K. ;   l'......:KMMM: ''.';'
+                                             :,.....cNWNMx  .o.......;OWNc,.....,c
+                                              c.....'kMMMX   l.........,,......;'c.
+                                             l........xNNx...,. 'coxk;',;;'....;xd.
+                                            .l..,...........';;;:dkkc::;;,.....'l'
+                                             o'x............lldo,.'o,cl:;'...;,;;
+                                           ..;dd'...........':'.,lkkk,.....,.l;l
+                                       .',,....'l'.co..;'..........'.....;d,;:
+                                    ';;..........;;o:c;,dl;oc,'......';;locc;
+                                 ,:;...................;;:',:'',,,,,'.      .,.
+                              .::.................................            'c
+                            .:,...................................           . .l
+                          .:,......................................          'l':
+                        .;,.......................................            .l.
+                     ';c:.........................................          ;:.';
+              ',;::::'...........................................            :d;l;.
+           'lolclll,,'..............................','..........            .dccco;
+          loooool:,'..............................'l'..........     '.       cocclll..
+        .lol:;'...................................::.,,'........    .o     .ldcccccccco:
+       ,lcc'.........,;...,;.    ................',c:,''........,.  .o   .;;xccccccccld:
+        .';ccc:;;,,'.  ...  ..''..             ;;'...............';.c'.''.  ;loolloooo;
+                                ..',,,,,,,''...:o,.................c           ....
+                                               .;l.................c.
+                                                 ;;;;,'..........,;,
+                                                    .':ldddoooddl
+'''
 
 class ClientConfig():
 
@@ -64,11 +100,13 @@ class State():
 
     @property
     def mascot(self):
-        mascotpath = "%s/.mascot.txt" % os.environ["HOME"]
-        if not j.sal.fs.exists(mascotpath):
-            print("env has not been installed properly (missing mascot which is just the test)\nPlease follow init instructions on https://github.com/Jumpscale/core9")
-            sys.exit(1)
-        return j.sal.fs.readFile(mascotpath)
+        return mascot
+        # mascotpath = "%s/.mascot.txt" % os.environ["HOME"]
+        # if not j.sal.fs.exists(mascotpath):
+        #     # print("env has not been installed properly (missing mascot which is just the test)\nPlease follow init instructions on https://github.com/Jumpscale/core9")
+        #     # sys.exit(1)
+
+        # return j.sal.fs.readFile(mascotpath)
 
     @property
     def db(self):

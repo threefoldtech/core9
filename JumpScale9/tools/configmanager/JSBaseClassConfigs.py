@@ -31,8 +31,15 @@ class JSBaseClassConfigs:
         @param instance: instance name to get. If an instance is already loaded in memory, return it
         @data data: dictionary of data use to configure the instance
         """
-        if not instance in self.items:
+        if instance in self.items:
+            # print("CONFIG:GET:INSTANCEEXISTS")
+            if data!={}:
+                self.items[instance].config.data=data
+                self.items[instance].config.save()
+                # print("SAVE")
+        else:
             if create:
+                # print("CONFIG:GET:CREATE")
                 self.items[instance] = self._child_class(
                     instance=instance, data=data, parent=self)
             else:
@@ -59,17 +66,20 @@ class JSBaseClassConfigs:
     def delete(self, instance="", prefix=""):
         if prefix != "":
             for item in self.list(prefix=prefix):
-                self.delete(item)
+                self.delete(instance=item)
             return
-        if instance in self.items:
-            del self.items[instance]
+        # if instance in self.items:
+        #     del self.items[instance]
         j.tools.configmanager.delete(
             location=self.__jslocation__, instance=instance)
+        self.items={}
+
 
     def count(self):
         return len(self.list())
 
     def list(self, prefix=""):
+        self.items={}#make sure anything in mem is gone
         res = []
         for item in j.tools.configmanager.list(location=self.__jslocation__):
             if prefix != "":

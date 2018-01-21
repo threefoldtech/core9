@@ -27,20 +27,20 @@ class ConfigFactory:
     def __init__(self):
         self.__jslocation__ = "j.tools.configmanager"
         self._path = ""
-        self._cache = {}
+        # self._cache = {}
         self.interactive = True
 
-    def reset(self, location=None, instance=None):
-        if location and not instance:
-            for key in self._cache:
-                if key.startswith('%_' % location):
-                    self._cache.pop(key)
-        elif location and instance:
-            key = "%s_%s" % (location, instance)
-            if key in self._cache:
-                self._cache.pop(key)
-        else:
-            self._cache = {}
+    # def reset(self, location=None, instance=None):
+    #     if location and not instance:
+    #         for key in self._cache:
+    #             if key.startswith('%_' % location):
+    #                 self._cache.pop(key)
+    #     elif location and instance:
+    #         key = "%s_%s" % (location, instance)
+    #         if key in self._cache:
+    #             self._cache.pop(key)
+    #     else:
+    #         self._cache = {}
 
     def _findConfigDirParent(self, path, die=True):
         if path == "":
@@ -137,12 +137,13 @@ class ConfigFactory:
         if ui is not None:
             jsobj.ui = ui
 
-        if key not in self._cache:
-            sc = Config(instance=instance, location=location,
-                        template=template, data=data, sshkey_path=sshkey_path)
-            self._cache[key] = sc
+        sc = Config(instance=instance, location=location,
+                    template=template, sshkey_path=sshkey_path)
 
-        return self._cache[key]
+        if data!={}:
+            sc.data=data
+
+        return sc
 
     def js9_obj_get(self, location="", instance="main", data={}, sshkey_path=None):
         """
