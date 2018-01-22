@@ -28,19 +28,6 @@ def reset(location, instance):
 
     j.tools.configmanager.reset(location=location, instance=instance)
 
-    path = j.tools.configmanager.path_configrepo
-    if location:
-        path = j.sal.fs.joinPaths(path, location)
-    if instance:
-        path = j.sal.fs.joinPaths(path, '%s.toml' % instance)
-    if not location:
-        configs = j.sal.fs.listDirsInDir(path)
-        for config in configs:
-            if not j.sal.fs.getBaseName(config).startswith('.'):
-                j.sal.fs.removeDirTree(config)
-    else:
-        j.sal.fs.remove(path)
-
 
 @click.command()
 @click.option('--location', '-l', default=None, help='location in jumpscale e.g. j.clients.packetnet (j.clients can be ommitted)')
