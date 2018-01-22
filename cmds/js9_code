@@ -128,7 +128,10 @@ def jscode(action, name, url, message, branch, accounts, update, force=False, de
             name, _accounts = _repo_info(name, accounts)
 
     repos = _search_repos(accounts, name, interactive=not force)
+    if name is not None and len(repos) == 0:    
+        print("did not find any repo")
     if name is not None and len(repos) != 1:
+        print(repos)
         raise RuntimeError("found 2 repo's for same name")
 
     if action == 'status':
