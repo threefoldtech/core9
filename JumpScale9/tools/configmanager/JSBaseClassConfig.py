@@ -25,12 +25,10 @@ class JSBaseClassConfig:
         self._template = template
         self._sshkey_path = None
 
-        if data!={}:
-            print("INITIAL DATA for :%s"%instance)
+        if data != {}:
             self._config = j.tools.configmanager._get_for_obj(
                 self, instance=self._instance, data=data, template=self._template, ui=self._ui, sshkey_path=self.sshkey_path)
             self._config.save()
-
 
     @property
     def sshkey_path(self):

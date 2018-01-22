@@ -33,8 +33,8 @@ class JSBaseClassConfigs:
         """
         if instance in self.items:
             # print("CONFIG:GET:INSTANCEEXISTS")
-            if data!={}:
-                self.items[instance].config.data=data
+            if data != {}:
+                self.items[instance].config.data = data
                 self.items[instance].config.save()
                 # print("SAVE")
         else:
@@ -72,14 +72,13 @@ class JSBaseClassConfigs:
         #     del self.items[instance]
         j.tools.configmanager.delete(
             location=self.__jslocation__, instance=instance)
-        self.items={}
-
+        self.items = {}
 
     def count(self):
         return len(self.list())
 
     def list(self, prefix=""):
-        self.items={}#make sure anything in mem is gone
+        self.items = {}  # make sure anything in mem is gone
         res = []
         for item in j.tools.configmanager.list(location=self.__jslocation__):
             if prefix != "":

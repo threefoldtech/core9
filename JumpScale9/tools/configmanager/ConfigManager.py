@@ -140,8 +140,8 @@ class ConfigFactory:
         sc = Config(instance=instance, location=location,
                     template=template, sshkey_path=sshkey_path)
 
-        if data!={}:
-            sc.data=data
+        if data != {}:
+            sc.data = data
 
         return sc
 

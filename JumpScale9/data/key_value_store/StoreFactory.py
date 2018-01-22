@@ -89,7 +89,7 @@ class StoreFactory:
         print(res)
 
         obj2 = [1, 2, 3, 4, 5]
-        db.set("mykey", obj2, acl=acl, expire=0, secret=secret2)
+        db.set("mykey", obj2, acl=acl, expire=10, secret=secret2)
 
         assert db.get("mykey", secret=secret) == obj2
 
@@ -98,7 +98,7 @@ class StoreFactory:
 
         # next should fail
         try:
-            db.set("mykey", obj2, acl=acl, expire=0, secret=secret)
+            db.set("mykey", obj2, acl=acl, expire=10, secret=secret)
         except Exception as e:
             if "because mode 'w' is not allowed" not in str(e):
                 raise j.exceptions.Input(
@@ -131,7 +131,7 @@ class StoreFactory:
     #     db=j.data.kvs.getRedisStore(namespace="cache",serializers=[serializer],cache=cache)
 
     #     """
-        
+
     #     if self._redisCacheLocal is None:
     #         cache = self.getRedisStore(
     #             name='kvs-cache',
@@ -190,8 +190,11 @@ class StoreFactory:
     def getRedisStore(
             self,
             name="core",
-            redisclient=None,
             namespace='db',
+            host='localhost',
+            port=None,
+            unixsocket=None,
+            db=0,
             password='',
             serializers=None,
             masterdb=None,
@@ -211,12 +214,25 @@ class StoreFactory:
         '''
         from JumpScale9.data.key_value_store.redis_store import RedisKeyValueStore
 
-        if redisclient==None:
-            redisclient=j.clients.redis.get4core()
+        if j.clients.redis.get4core() is None:
+            j.clients.redis.start4core()
+
+        if not port:
+            port = 6379
+            if j.core.state.configGetFromDict("redis", "port", ""):
+                port = j.core.state.configGetFromDict("redis", "port")
+        if not unixsocket:
+            unixsocket = None
+            if j.core.state.configGetFromDict("redis", "unixsocket", ""):
+                unixsocket = j.core.state.configGetFromDict("redis", "unixsocket")
 
         res = RedisKeyValueStore(
             name=name,
-            redisclient=redisclient,
+            host=host,
+            port=port,
+            unixsocket=unixsocket,
+            db=db,
+            password=password,
             namespace=namespace,
             serializers=serializers,
             masterdb=masterdb,
