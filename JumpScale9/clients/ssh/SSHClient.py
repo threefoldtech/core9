@@ -268,7 +268,7 @@ class SSHClient:
                 if chan == 'O':
                     if showout:
                         with self._lock:
-                            self.logger.info(line.rstrip())
+                            self.logger.debug(line.rstrip())
                     out.write(line)
                 elif chan == 'E':
                     if showout:
