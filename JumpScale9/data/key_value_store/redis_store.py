@@ -16,14 +16,18 @@ class RedisKeyValueStore(KeyValueStoreBase):
     def __init__(
             self,
             name,
-            redisclient,
-            namespace="db",            
+            namespace='db',
+            host='localhost',
+            port=6379,
+            unixsocket=None,
+            db=0,
+            password='',
             serializers=[],
             masterdb=None,
             cache=None,
             changelog=None):
 
-        self.redisclient = redisclient
+        self.redisclient = j.clients.redis.get(host, port, password=password, unixsocket=unixsocket)
 
         KeyValueStoreBase.__init__(self, namespace=namespace, name=name, serializers=serializers,
                                    masterdb=masterdb, cache=cache, changelog=changelog)

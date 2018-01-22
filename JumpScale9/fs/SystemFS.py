@@ -1424,7 +1424,7 @@ class SystemFS:
         @type fileregex: string
         """
         result = []
-        for root, dirs, files in os.walk(startDir):
+        for root, dirs, files in os.walk(startDir, followlinks=True):
             for name in files:
                 if fnmatch.fnmatch(name, fileregex):
                     result.append(os.path.join(root, name))
