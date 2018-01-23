@@ -237,15 +237,21 @@ class State():
 
     def configUpdate(self, ddict, overwrite=True):
         """
-        will walk over  2 levels deep of dict & update
+        will walk over 2 levels deep of the passed dict(dict of dict) & update it with the newely sent parameters
+        and overwrite the values of old parameters only if overwrite is set to True
+
+        keyword arguments:
+        ddict -- 2 level dict(dict of dict)
+        overwrtie -- set to true if you want to overwrite values of old keys
         """
         for key0, val0 in ddict.items():
+            if not j.data.types.dict.check(val0):
+                raise RuntimeError(
+                    "Value of first level key has to be another dict.")
+
             if key0 not in self._configJS:
                 self.configSet(key0, val0, save=False)
             else:
-                if not j.data.types.dict.check(val0):
-                    raise RuntimeError(
-                        "first level in config needs to be a dict ")
                 for key1, val1 in val0.items():
                     if key1 not in self._configJS[key0]:
                         self._configJS[key0][key1] = val1
