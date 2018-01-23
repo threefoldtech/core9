@@ -5,6 +5,7 @@ import os
 import inspect
 # import os.path
 from functools import wraps
+import re
 
 joinPaths = os.path.join
 exists=os.path.exists
