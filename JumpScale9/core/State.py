@@ -241,7 +241,7 @@ class State():
         and overwrite the values of old parameters only if overwrite is set to True
 
         keyword arguments:
-        ddict -- 2 level dict(dict of dict(
+        ddict -- 2 level dict(dict of dict)
         overwrtie -- set to true if you want to overwrite values of old keys
         """
         for key0, val0 in ddict.items():
