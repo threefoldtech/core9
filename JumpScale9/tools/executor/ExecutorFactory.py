@@ -3,6 +3,7 @@ from js9 import j
 from .ExecutorSSH import *
 from .ExecutorLocal import *
 from .ExecutorAsyncSSH import ExecutorAsyncSSH
+from .ExecutorSerial import ExecutorSerial
 import threading
 
 
@@ -48,6 +49,9 @@ class ExecutorFactory:
 
     def getLocal(self, jumpscale=False, debug=False, checkok=False):
         return ExecutorLocal(debug=debug, checkok=debug)
+
+    def getSerial(self, device, baudrate=9600, type="serial", parity="N", stopbits=1, bytesize=8, timeout=1):
+        return ExecutorSerial(device, baudrate=baudrate, type=type, parity=parity, stopbits=stopbits, bytesize=bytesize, timeout=timeout)
 
     def getSSHBased(self, addr="localhost", port=22, timeout=5, usecache=True):
         """

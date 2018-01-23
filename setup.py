@@ -83,7 +83,8 @@ setup(
         'msgpack-python',
         'colorlog',
         'npyscreen',
-        "pyyaml"
+        'pyyaml',
+        'pyserial>=3.4',
     ],
     cmdclass={
         'install': install,
