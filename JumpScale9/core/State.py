@@ -198,7 +198,7 @@ class State():
         return config[key][dkey]
 
     def configGetFromDictBool(self, key, dkey, default=None):
-        self._getFromDictBool(key=key, dkey=dkey, default=default, config=self._configJS)
+        return self._getFromDictBool(key=key, dkey=dkey, default=default, config=self._configJS)
 
     def stateGetFromDictBool(self, key, dkey, default=None):
         self._getFromDictBool(key=key, dkey=dkey, default=default, config=self._configState)
@@ -214,7 +214,7 @@ class State():
                 "Cannot find dkey:%s in state config for dict '%s'" % (dkey, key))
 
         val = config[key][dkey]
-        if val in [1, True] or val.strip().lower() in ["true", "1", "yes", "y"]:
+        if val in [1, True] or (isinstance(val, str) and val.strip().lower() in ["true", "1", "yes", "y"]):
             return True
         else:
             return False
