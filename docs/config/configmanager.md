@@ -23,4 +23,14 @@ where
  
  
  ### internals
-** TODO
+
+![Config manager chart](cfm.jpg?raw=true "config manager chart")
+
+### reset
+
+to reset config instance
+```
+js9_config reset -l j.clients.openvcloud -i test
+```
+note that if not instance name provided all instances for this client will be reset, you can also run `js9_config reset` without location or instance name to delete all configs
+

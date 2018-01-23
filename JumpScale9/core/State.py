@@ -198,7 +198,7 @@ class State():
         return config[key][dkey]
 
     def configGetFromDictBool(self, key, dkey, default=None):
-        self._getFromDictBool(key=key, dkey=dkey, default=default, config=self._configJS)
+        return self._getFromDictBool(key=key, dkey=dkey, default=default, config=self._configJS)
 
     def stateGetFromDictBool(self, key, dkey, default=None):
         self._getFromDictBool(key=key, dkey=dkey, default=default, config=self._configState)
@@ -214,7 +214,7 @@ class State():
                 "Cannot find dkey:%s in state config for dict '%s'" % (dkey, key))
 
         val = config[key][dkey]
-        if val in [1, True] or val.strip().lower() in ["true", "1", "yes", "y"]:
+        if val in [1, True] or (isinstance(val, str) and val.strip().lower() in ["true", "1", "yes", "y"]):
             return True
         else:
             return False
@@ -237,15 +237,21 @@ class State():
 
     def configUpdate(self, ddict, overwrite=True):
         """
-        will walk over  2 levels deep of dict & update
+        will walk over 2 levels deep of the passed dict(dict of dict) & update it with the newely sent parameters
+        and overwrite the values of old parameters only if overwrite is set to True
+
+        keyword arguments:
+        ddict -- 2 level dict(dict of dict)
+        overwrtie -- set to true if you want to overwrite values of old keys
         """
         for key0, val0 in ddict.items():
+            if not j.data.types.dict.check(val0):
+                raise RuntimeError(
+                    "Value of first level key has to be another dict.")
+
             if key0 not in self._configJS:
                 self.configSet(key0, val0, save=False)
             else:
-                if not j.data.types.dict.check(val0):
-                    raise RuntimeError(
-                        "first level in config needs to be a dict ")
                 for key1, val1 in val0.items():
                     if key1 not in self._configJS[key0]:
                         self._configJS[key0][key1] = val1

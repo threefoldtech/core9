@@ -203,11 +203,11 @@ class Node(JSConfigBase):
         self.config.save()
 
     def ssh(self):
-        cmd="ssh root@%s -p %s"%(self.addr,self.port)
+        cmd = "ssh root@%s -p %s" % (self.addr, self.port)
         j.sal.process.executeInteractive(cmd)
 
     def __str__(self):
-        if self.selected == True:
+        if self.selected is True:
             return "%-14s %-25s:%-4s [%s] *" % (self.name, self.addr, self.port, self.category)
         else:
             return "%-14s %-25s:%-4s [%s]" % (self.name, self.addr, self.port, self.category)
