@@ -74,8 +74,8 @@ class Nodes(JSConfigBase):
 
         assert self.exists("myhost1") is False
 
-        i=9
-        
+        i = 9
+
         self.set("myhost%s" % i, "127.0.0.%s" % i, 22, cat="testcat")
 
         # from IPython import embed;embed(colors='Linux')
@@ -112,17 +112,17 @@ class Nodes(JSConfigBase):
         n.selected = True
         assert n.selected == n.config.data["selected"]
         n.selected = False
-        n.config.data={"selected":False}
+        n.config.data = {"selected": False}
         assert n.selected == n.config.data["selected"]
         assert n.selected == False
         assert n.config.data["selected"] == False
         n.selected = True
         assert n.config.data["selected"] == True
 
-        #now tests about updating data
-        d2["port"]=2222
-        n2=self.get(instance='myhost9', data=d2, create=True, die=True)
-        assert n2.config.data["port"]==2222
+        # now tests about updating data
+        d2["port"] = 2222
+        n2 = self.get(instance='myhost9', data=d2, create=True, die=True)
+        assert n2.config.data["port"] == 2222
 
         assert len(self.list(prefix="myhost")) == 15
         assert len(self.list()) == 15 + startnr

@@ -56,7 +56,7 @@ class ConfigFactory:
                         j.sal.fs.removeDirTree(config)
         else:
             j.sal.fs.remove(path)
-    
+
     def _findConfigDirParent(self, path, die=True):
         if path == "":
             path = j.sal.fs.getcwd()
@@ -238,7 +238,7 @@ class ConfigFactory:
             if cfg_name in ('.git', '.jsconfig'):
                 continue
             # trim the extension
-            instance_name = cfg_name.split(os.path.extsep)[0]
+            instance_name, _ = os.path.splitext(cfg_name)
             instances.append(instance_name)
         return instances
 
