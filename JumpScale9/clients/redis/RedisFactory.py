@@ -89,8 +89,8 @@ class RedisFactory:
         db = None
         if os.path.exists(path=unix_socket_path):
             db = Redis(unix_socket_path=unix_socket_path)
-        elif j.sal.nettools.tcpPortConnectionTest("localhost", 6379):
-            db = Redis()
+        # elif j.sal.nettools.tcpPortConnectionTest("localhost", 6379):
+        #     db = Redis()
         else:
             self.start4core()
             db = Redis(unix_socket_path=unix_socket_path)
@@ -158,7 +158,7 @@ class RedisFactory:
             "redis-server --port 6379 --unixsocket %s/redis.sock --maxmemory 100000000 --daemonize yes" % tmpdir)
         limit_timeout = time.time() + timeout
         while time.time() < limit_timeout:
-            j.core.db = self.get4core()
+            j.core.db = Redis()
             if j.core.db:
                 break
             time.sleep(2)
