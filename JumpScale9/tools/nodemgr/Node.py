@@ -158,23 +158,21 @@ class Node(JSConfigBase):
                 self._ftpclient = self.executor.sshclient.getSFTP()
             return self._ftpclient
         else:
-            raise RuntimeError(
-                "node %s cannot be reached, cannot get ftpclient.")
+            raise RuntimeError("node %s cannot be reached, cannot get ftpclient." % self.instance)
 
     @property
     def executor(self):
         if self.isconnected:
             return j.tools.executor.get("%s:%s" % (self.addr, self.port))
         else:
-            raise RuntimeError(
-                "node %s cannot be reached, cannot get executor.")
+            raise RuntimeError("node %s cannot be reached, cannot get executor." % self.instance)
 
     @property
     def prefab(self):
         if self.isconnected:
             return j.tools.prefab.get(executor=self.executor)
         else:
-            raise RuntimeError("node %s cannot be reached, cannot get prefab.")
+            raise RuntimeError("node %s cannot be reached, cannot get prefab." % self.instance)
 
     def clean(self):
         cmd = """

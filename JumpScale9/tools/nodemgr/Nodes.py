@@ -38,18 +38,18 @@ class Nodes(JSConfigBase):
         data["pubconfig"] = pubconfig
         data["category"] = cat
         data["description"] = description
-        n = self.get(instance=name, data=data, create=True)
-        n.config.save()
+        node = self.get(instance=name, data=data, create=True)
+        node.config.save()
 
         if self.exists(name):
             treeitem = self.tree.findByName(name, die=False)
-            if treeitem != None:
+            if treeitem is not None:
                 tpath = treeitem.path
                 self.tree.items.pop(tpath)
 
-        self._add2tree(n)
+        self._add2tree(node)
 
-        return n
+        return node
 
     def _add2tree(self, n):
 
