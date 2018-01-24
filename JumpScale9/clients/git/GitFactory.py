@@ -285,6 +285,12 @@ class GitFactory:
         base, provider, account, repo, dest, url, port = self.getGitRepoArgs(
             url, dest, login, passwd, reset=reset, ssh=ssh, codeDir=codeDir, executor=executor)
 
+        # Add ssh host to the known_hosts file if not exists to skip authenticity prompt
+        if ssh:
+            cmd = "grep -q {host} ~/.ssh/known_hosts || ssh-keyscan  -p {port} {host} >> ~/.ssh/known_hosts"
+            cmd = cmd.format(host=base, port=port or 22)
+            self.execute(cmd, timeout=timeout, executor=executor)
+
         self.logger.info("%s:pull:%s ->%s" % (executor, url, dest))
 
         existsDir = j.sal.fs.exists(
