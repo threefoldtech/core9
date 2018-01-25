@@ -1,13 +1,13 @@
 from JumpScale9 import j
 
-redisFound=False
+redisFound = False
 try:
     from .Redis import Redis
     from .RedisQueue import RedisQueue
     from redis._compat import nativestr
     # import itertools
     import socket
-    redisFound=True
+    redisFound = True
 except:
     pass
 import os
@@ -22,7 +22,7 @@ class RedisFactory:
 
     def __init__(self):
         self.clearCache()
-        self.redisFound=redisFound
+        self.redisFound = redisFound
         self.__jslocation__ = "j.clients.redis"
 
     def clearCache(self):
@@ -39,7 +39,7 @@ class RedisFactory:
             unixsocket=None,
             ardb_patch=False,
             **args):
-        if redisFound==False:
+        if redisFound == False:
             raise RuntimeError("redis libraries are not installed, please pip3 install them.")
         if unixsocket is None:
             key = "%s_%s" % (ipaddr, port)
@@ -89,12 +89,11 @@ class RedisFactory:
         db = None
         if os.path.exists(path=unix_socket_path):
             db = Redis(unix_socket_path=unix_socket_path)
-        # elif j.sal.nettools.tcpPortConnectionTest("localhost",6379):
+        # elif j.sal.nettools.tcpPortConnectionTest("localhost", 6379):
         #     db = Redis()
         else:
             self.start4core()
             db = Redis(unix_socket_path=unix_socket_path)
-
 
         # try:
         #     j.core.db.set("internal.last", 0)
@@ -103,7 +102,6 @@ class RedisFactory:
         #     db = None
 
         return db
-
 
     def kill(self):
         j.sal.process.execute("redis-cli -s %s/redis.sock shutdown" %
@@ -160,7 +158,7 @@ class RedisFactory:
             "redis-server --port 6379 --unixsocket %s/redis.sock --maxmemory 100000000 --daemonize yes" % tmpdir)
         limit_timeout = time.time() + timeout
         while time.time() < limit_timeout:
-            j.core.db = self.get4core()
+            j.core.db = Redis()
             if j.core.db:
                 break
             time.sleep(2)

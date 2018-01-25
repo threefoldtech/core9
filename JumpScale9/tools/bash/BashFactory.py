@@ -251,7 +251,9 @@ class Bash:
 
     @property
     def env(self):
-        return self.executor.env
+        dest = dict(self.profileJS.env)
+        dest.update(self.executor.env)
+        return dest
 
     @property
     def home(self):
@@ -313,7 +315,12 @@ class Bash:
         self.profileJS.save(True)
 
     def envGet(self, key):
-        return self.profileJS.envGet(key)
+        dest = dict(self.profileJS.env)
+        dest.update(self.executor.env)
+        return dest[key]
 
     def envDelete(self, key):
-        return self.profileJS.envDelete(key)
+        if self.profileJS.envExists(key):
+            return self.profileJS.envDelete(key)
+        else:
+            del self.executor.env[key]

@@ -18,7 +18,6 @@ class JSBaseClassConfigs:
             raise TypeError("child_class need to be a class not %s" %
                             type(child_class))
 
-        self.items = {}
         self._single_item = single_item
         self._child_class = child_class
 
@@ -31,24 +30,13 @@ class JSBaseClassConfigs:
         @param instance: instance name to get. If an instance is already loaded in memory, return it
         @data data: dictionary of data use to configure the instance
         """
-        if instance in self.items:
-            # print("CONFIG:GET:INSTANCEEXISTS")
-            if data != {}:
-                self.items[instance].config.data = data
-                self.items[instance].config.save()
-                # print("SAVE")
-        else:
-            if create:
-                # print("CONFIG:GET:CREATE")
-                self.items[instance] = self._child_class(
-                    instance=instance, data=data, parent=self)
+        if not create and instance not in self.list():
+            if die:
+                raise RuntimeError("could not find instance:%s" % (instance))
             else:
-                if die:
-                    raise RuntimeError(
-                        "could not find instance:%s" % (instance))
-                else:
-                    return None
-        return self.items[instance]
+                return None
+
+        return self._child_class(instance=instance, data=data, parent=self)
 
     def exists(self, instance):
         return instance in self.list()
@@ -57,10 +45,8 @@ class JSBaseClassConfigs:
         return self.get(instance=instance, data=data, create=True)
 
     def reset(self):
-        self.items = {}
         j.tools.configmanager.delete(
             location=self.__jslocation__, instance="*")
-        self.items = {}
         self.getall()
 
     def delete(self, instance="", prefix=""):
@@ -68,17 +54,13 @@ class JSBaseClassConfigs:
             for item in self.list(prefix=prefix):
                 self.delete(instance=item)
             return
-        # if instance in self.items:
-        #     del self.items[instance]
         j.tools.configmanager.delete(
             location=self.__jslocation__, instance=instance)
-        self.items = {}
 
     def count(self):
         return len(self.list())
 
     def list(self, prefix=""):
-        self.items = {}  # make sure anything in mem is gone
         res = []
         for item in j.tools.configmanager.list(location=self.__jslocation__):
             if prefix != "":
