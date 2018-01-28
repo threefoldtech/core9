@@ -87,9 +87,8 @@ class ConfigFactory:
             paths = [j.sal.fs.getParent(path) for path in paths]
             if not paths:
                 print(installmessage)
-                print(
-                    "Cannot find path for configuration repo, please checkout right git repo & run 'js9_config init' in that repo ")
-                sys.exit(1)
+                raise RuntimeError("Cannot find path for configuration repo, please checkout right git repo "
+                      "& run 'js9_config init' in that repo ")
             if len(paths) > 1:
                 j.logger.logging.warning(
                     "found configuration dirs in multiple locations: {}".format(paths))
@@ -160,11 +159,13 @@ class ConfigFactory:
 
         return sc
 
-    def js9_obj_get(self, location="", instance="main", data={}, sshkey_path=None):
+    def js9_obj_get(self, location="", instance="main", data=None, sshkey_path=None):
         """
         will look for jumpscale module on defined location & return this object
         and generate the object which has a .config on the object
         """
+        if not data:
+            data = {}
         if not location:
             if j.sal.fs.getcwd().startswith(self.path_configrepo):
                 # means we are in subdir of current config  repo, so we can be
