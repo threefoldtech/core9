@@ -403,7 +403,7 @@ class SSHClientFactory:
         else:
             return True
 
-    def _clean_ssh_agents(self, socketpath):
+    def _clean_ssh_agents(self, socketpath, killall=False):
         """
         Kill all agents if more than one is found
         :param socketpath: socketpath
@@ -419,7 +419,8 @@ class SSHClientFactory:
             j.sal.fs.remove(socketpath)
             return
 
-        if len(res) > 1:
+        tokill = 1 if not killall else 0
+        if len(res) > tokill:
             self.logger.info("more than 1 ssh-agent, will kill all")
 
             cmd = "killall ssh-agent"
