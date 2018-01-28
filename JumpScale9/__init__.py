@@ -20,25 +20,20 @@ else:
             pass
 
 
-class Clients():
-    def __init__(self):
-        pass
-
-
-class Core():
-    def __init__(self):
-        self._db  = None
-    
-    @property
-    def db(self):
-        if not self._db:
-            self._db = j.clients.redis.get4core()
-        return self._db
-
-    class Core():
+    class Clients():
         def __init__(self):
             pass
 
+
+    class Core():
+        def __init__(self):
+            self._db  = None
+
+        @property
+        def db(self):
+            if not self._db:
+                self._db = j.clients.redis.get4core()
+            return self._db
 
     class Servers():
         def __init__(self):
@@ -184,9 +179,9 @@ class Core():
     from .tools.console.Console import Console
     j.tools.console = Console()
 
-from JumpScale9.errorhandling import JSExceptions
-j.exceptions = JSExceptions
-# j.events = j.core.events
+    from JumpScale9.errorhandling import JSExceptions
+    j.exceptions = JSExceptions
+    # j.events = j.core.events
 
     j.core.logger = j.logger
     logging_cfg = j.core.state.configGet('logging', {})
