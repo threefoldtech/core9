@@ -88,7 +88,7 @@ class ConfigFactory:
             if not paths:
                 print(installmessage)
                 raise RuntimeError("Cannot find path for configuration repo, please checkout right git repo "
-                      "& run 'js9_config init' in that repo ")
+                                   "& run 'js9_config init' in that repo ")
             if len(paths) > 1:
                 j.logger.logging.warning(
                     "found configuration dirs in multiple locations: {}".format(paths))
@@ -266,7 +266,7 @@ class ConfigFactory:
         j.sal.fs.touch("%s/.jsconfig" % path)
 
         self._path = path
-        if data == None:
+        if data is None:
             j.tools.myconfig.configure()
         else:
             j.tools.myconfig.config.data = data
@@ -287,7 +287,7 @@ class ConfigFactory:
         self._test_myconfig_singleitem()
         self._test_myconfig_multiitem()
 
-        # j.sal.fs.remove(tdir)
+        j.sal.fs.remove(tdir)
 
     def _test_myconfig_singleitem(self):
 
@@ -318,7 +318,7 @@ class ConfigFactory:
         self.delete("j.tools.myconfig")  # should remove all
         assert len(j.sal.fs.listFilesInDir(tdir)) == 0
 
-        j.tools.configmanager.reset()
+        # j.tools.configmanager.reset()
         j.tools.myconfig.reset()  # will remove data from mem
         assert j.tools.myconfig.config._data == {
             'email': '', 'fullname': '', 'login_name': '', 'ssh_key_name': ''}
@@ -333,18 +333,18 @@ class ConfigFactory:
         assert len(j.sal.fs.listFilesInDir(tdir)) == 1
 
         # clean the env
-        j.tools.configmanager.reset()
+        # j.tools.configmanager.reset()
         j.tools.myconfig.reset()
         j.tools.myconfig.config._data = {}
         assert j.data.serializer.toml.fancydumps(
             j.tools.myconfig.config.data) == j.data.serializer.toml.fancydumps(data)
 
         # clean the env
-        j.tools.configmanager.reset()
+        # j.tools.configmanager.reset()
         j.tools.myconfig.config.load()
         j.tools.myconfig.config.data = {"email": "someting@ree.com"}
         j.tools.myconfig.config.save()
-        j.tools.configmanager.reset()
+        # j.tools.configmanager.reset()
 
         assert j.tools.myconfig.config.data["email"] == "someting@ree.com"
 
@@ -374,7 +374,7 @@ class ConfigFactory:
             obj = j.tools.nodemgr.get("test%s" % i, data=data)
 
         # empty mem
-        j.tools.configmanager.reset()
+        # j.tools.configmanager.reset()
         j.tools.nodemgr.items = {}
 
         obj = j.tools.nodemgr.get("test5")

@@ -71,8 +71,8 @@ class Config():
         """
 
         if reset or self._data == {}:
-
             if not j.sal.fs.exists(self.path):
+                j.sal.fs.touch(self.path)
                 self._data, error = j.data.serializer.toml.merge(
                     tomlsource=self.template, tomlupdate={}, listunique=True)
                 return 1

@@ -49,7 +49,7 @@ class JSBaseClassConfig:
                 self, instance=self._instance, template=self._template, ui=self._ui, sshkey_path=self.sshkey_path)
 
             if self._config.load() > 0:
-                self.interactive()
+                print("configuring", self._instance)
 
             elif self.config_check() not in [None, "", 0]:
                 self.interactive()
