@@ -207,6 +207,19 @@ class SSHClientFactory:
         self.logger.debug("ssh key: %s is not loaded", key_name_path)
         return False
 
+    def ssh_key_unload(self, path):
+        """
+        unloads an ssh key from ssh agent
+        :param path: sshkey full path or name
+        """
+        # check if ssh agent is available
+        self.ssh_agent_available()
+        if not self.ssh_agent_check_key_is_loaded(path):
+            raise RuntimeError("can't unload sshkey %s, no such key loaded" % path)
+
+        cmd = "ssh-add -d %s" % path
+        j.sal.process.executeInteractive(cmd)
+
     def ssh_keys_load(self, path=None, duration=3600 * 24):
         """
         ensure ssh-agent has been started
