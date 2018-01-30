@@ -69,7 +69,6 @@ class Config():
         """
         @RETURN if 1 means did not find the toml file so is new
         """
-
         if reset or self._data == {}:
             if not j.sal.fs.exists(self.path):
                 j.sal.fs.touch(self.path)
@@ -83,6 +82,7 @@ class Config():
                 self._data, error = j.data.serializer.toml.merge(
                     tomlsource=self.template, tomlupdate=data, listunique=True)
                 return 0
+        return 0
 
     # def interactive(self):
     #     print("Did not find config file:%s"%self.location)

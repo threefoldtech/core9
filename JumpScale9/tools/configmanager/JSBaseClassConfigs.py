@@ -23,7 +23,7 @@ class JSBaseClassConfigs:
 
         # self.getall()
 
-    def get(self, instance="main", data={}, create=True, die=True):
+    def get(self, instance="main", data={}, create=True, die=True, sshkey_path=None):
         """
         Get an instance of the child_class set in the constructor
 
@@ -36,7 +36,9 @@ class JSBaseClassConfigs:
             else:
                 return None
 
-        return self._child_class(instance=instance, data=data, parent=self)
+        child = self._child_class(instance=instance, data=data, parent=self)
+        child.sshkey_path = sshkey_path
+        return child
 
     def exists(self, instance):
         return instance in self.list()

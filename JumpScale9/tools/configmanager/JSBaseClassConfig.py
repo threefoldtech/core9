@@ -24,11 +24,8 @@ class JSBaseClassConfig:
         self._parent = parent
         self._template = template
         self._sshkey_path = None
+        self._data = data
 
-        if data != {}:
-            self._config = j.tools.configmanager._get_for_obj(
-                self, instance=self._instance, data=data, template=self._template, ui=self._ui, sshkey_path=self.sshkey_path)
-            self._config.save()
 
     @property
     def sshkey_path(self):
@@ -45,8 +42,8 @@ class JSBaseClassConfig:
     def config(self):
 
         if self._config is None:
-            self._config = j.tools.configmanager._get_for_obj(
-                self, instance=self._instance, template=self._template, ui=self._ui, sshkey_path=self.sshkey_path)
+            self._config = j.tools.configmanager._get_for_obj(self, instance=self._instance, data=self._data,
+                                                              template=self._template, ui=self._ui, sshkey_path=self.sshkey_path)
 
             if self._config.load() > 0:
                 print("configuring", self._instance)
