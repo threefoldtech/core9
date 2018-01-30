@@ -176,8 +176,10 @@ class ConfigFactory:
                         "Cannot find location, are you in right directory? now in:%s" % j.sal.fs.getcwd())
 
         obj = eval(location)
-        if not obj._single_item:
-            obj = obj.get(instance=instance, data=data)
+        # If the client is a single item one (i.e itsyouonline), we will always use the default `main` instance
+        if obj._single_item:
+            instance = "main"
+        obj = obj.get(instance=instance, data=data, sshkey_path=sshkey_path)
         obj.sshkey_path = sshkey_path
         return obj
 
