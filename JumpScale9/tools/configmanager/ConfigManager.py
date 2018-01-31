@@ -247,14 +247,14 @@ class ConfigFactory:
 
     def delete(self, location, instance="*"):
         if instance != "*":
-            path = j.sal.fs.joinPaths(
-                j.tools.configmanager.path_configrepo, location, instance + '.toml')
-            j.sal.fs.remove(path)
+            path = j.sal.fs.joinPaths(j.tools.configmanager.path_configrepo, location, instance + '.toml')
+            if j.sal.fs.exists(path):
+                j.sal.fs.remove(path)
         else:
-            path = j.sal.fs.joinPaths(
-                j.tools.configmanager.path_configrepo, location)
-            for item in j.sal.fs.listFilesInDir(path):
-                j.sal.fs.remove(item)
+            path = j.sal.fs.joinPaths(j.tools.configmanager.path_configrepo, location)
+            if j.sal.fs.exists(path):
+                for item in j.sal.fs.listFilesInDir(path):
+                    j.sal.fs.remove(item)
 
     def init(self, path="", data=None):
 
