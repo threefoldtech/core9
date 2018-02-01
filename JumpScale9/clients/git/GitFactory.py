@@ -703,7 +703,7 @@ class GitFactory:
                                                top, accountfound, reponame)
                     if j.sal.fs.exists(path="%s/.git" % repodir):
                         repos[reponame] = repodir
-        if len(list(repos.keys())) == 0:
+        if len(list(repos.keys())) == 0 and errorIfNone:
             raise RuntimeError(
                 "Cannot find git repo '%s':'%s':'%s'" % (provider, account, name))
         return repos
