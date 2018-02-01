@@ -461,8 +461,13 @@ class GitFactory:
             path,
             port)
 
-    def getContentInfoFromURL(self, url):
+    def getContentInfoFromURL(self, url, pull=True):
         """
+        get content info of repo from url
+
+        @param url : git repo url
+        @param pull : (default True) if True and repo doesn't exist localy will pull this repo
+
         @return (giturl,gitpath,relativepath)
 
         example Input
@@ -476,7 +481,7 @@ class GitFactory:
         repository_host, repository_type, repository_account, repository_name, repository_url, branch, gitpath, relpath, port = j.clients.git.parseUrl(
             url)
         rpath = j.sal.fs.joinPaths(gitpath, relpath)
-        if not j.sal.fs.exists(rpath, followlinks=True):
+        if not j.sal.fs.exists(rpath, followlinks=True) and pull:
             j.clients.git.pullGitRepo(repository_url, branch=branch)
         if not j.sal.fs.exists(rpath, followlinks=True):
             raise j.exceptions.Input(message="Did not find path in git:%s" %
