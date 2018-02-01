@@ -126,7 +126,6 @@ class GitFactory:
             login=None,
             passwd=None,
             reset=False,
-            branch=None,
             ssh="auto",
             codeDir=None,
             executor=None):
@@ -154,13 +153,6 @@ class GitFactory:
             - login/passwd will be fetched from local git repo directory (if it exists and reset==False)
         - if at this point still no login/passwd then we will try to build url with anonymous
 
-
-        # Process for defining branch
-
-        - if branch arg: None
-            - check if git directory exists if yes take that branch
-            - default to 'master'
-        - if it exists, use the branch arg
 
         Returns:
             (repository_host, repository_type, repository_account, repository_name, dest, repository_url)
