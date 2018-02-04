@@ -272,7 +272,7 @@ class SSHClientFactory:
     def SSHKeyGetFromAgentPub(self, keyname, die=True):
         """
         Returns Content of public key that is loaded in the agent
-        @param keyname: name of key loaded to agent to get content from 
+        @param keyname: name of key loaded to agent to get content from
         """
         self.ssh_agent_check()
         for name, pubkey in j.clients.ssh.ssh_keys_list_from_agent(True):
@@ -293,8 +293,9 @@ class SSHClientFactory:
             self._init_ssh_env()
         self.start_ssh_agent()
         cmd = "ssh-add -L"
-        return_code, out, err = j.sal.process.execute(cmd, showout=False, die=False, timeout=1)
+        return_code, out, err = j.sal.process.execute(cmd, showout=False, die=False, timeout=3)
         if return_code:
+            import ipdb; ipdb.set_trace()
             if return_code == 1 and out.find("The agent has no identities") != -1:
                 return []
             raise RuntimeError("error during listing of keys :%s" % err)
