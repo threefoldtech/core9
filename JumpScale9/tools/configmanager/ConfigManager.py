@@ -115,14 +115,14 @@ class ConfigFactory:
     def base_class_configs(self):
         return JSBaseClassConfigs
 
-    def configure(self, location="", instance="main", sshkey_path=None):
+    def configure(self, location="", instance="main", data={}, sshkey_path=None):
         """
         Will display a npyscreen form to edit the configuration
         @param location: jslocation of module to configure for (eg: j.clients.openvcloud)
         @param: instance: configuration instance
         @param: sshkey_path: sshkey for NACL encryption/decryption
         """
-        js9obj = self.js9_obj_get(location=location, instance=instance)
+        js9obj = self.js9_obj_get(location=location, instance=instance, data=data)
         js9obj.configure(sshkey_path=sshkey_path)
         js9obj.config.save()
         return js9obj
@@ -247,14 +247,14 @@ class ConfigFactory:
 
     def delete(self, location, instance="*"):
         if instance != "*":
-            path = j.sal.fs.joinPaths(
-                j.tools.configmanager.path_configrepo, location, instance + '.toml')
-            j.sal.fs.remove(path)
+            path = j.sal.fs.joinPaths(j.tools.configmanager.path_configrepo, location, instance + '.toml')
+            if j.sal.fs.exists(path):
+                j.sal.fs.remove(path)
         else:
-            path = j.sal.fs.joinPaths(
-                j.tools.configmanager.path_configrepo, location)
-            for item in j.sal.fs.listFilesInDir(path):
-                j.sal.fs.remove(item)
+            path = j.sal.fs.joinPaths(j.tools.configmanager.path_configrepo, location)
+            if j.sal.fs.exists(path):
+                for item in j.sal.fs.listFilesInDir(path):
+                    j.sal.fs.remove(item)
 
     def init(self, path="", data=None):
 
