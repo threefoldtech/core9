@@ -295,7 +295,6 @@ class SSHClientFactory:
         cmd = "ssh-add -L"
         return_code, out, err = j.sal.process.execute(cmd, showout=False, die=False, timeout=3)
         if return_code:
-            import ipdb; ipdb.set_trace()
             if return_code == 1 and out.find("The agent has no identities") != -1:
                 return []
             raise RuntimeError("error during listing of keys :%s" % err)
