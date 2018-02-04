@@ -118,10 +118,6 @@ class SystemProcess:
                 # Store all intermediate data
                 data = list()
                 while True:
-                    # Check whether more data is available
-                    if not select.select([stream], [], [], 0)[0]:
-                        break
-
                     # Read out all available data
                     line = stream.read()
                     if not line:
@@ -143,7 +139,7 @@ class SystemProcess:
                 def readout(stream):
                     line= stream.read().decode()
                     if showout:
-                        print(line)                    
+                        print(line)
 
         if timeout < 0:
             out, err = p.communicate()
@@ -154,7 +150,7 @@ class SystemProcess:
             start = time.time()
             end = start + timeout
             now = start
-            
+
             # if command already finished then read stdout, stderr
             out = readout(p.stdout)
             err = readout(p.stderr)
@@ -203,13 +199,13 @@ class SystemProcess:
                 msg+=" '%s'"%command
             else:
                 command="\n".join(command.split(";"))
-                msg+= j.data.text.indent(command).rstrip()+"\n\n" 
+                msg+= j.data.text.indent(command).rstrip()+"\n\n"
             if out.strip()!="":
                 msg+="stdout:\n"
-                msg+= j.data.text.indent(out).rstrip()+"\n\n" 
+                msg+= j.data.text.indent(out).rstrip()+"\n\n"
             if err.strip()!="":
                 msg+="stderr:\n"
-                msg+= j.data.text.indent(err).rstrip()+"\n\n"              
+                msg+= j.data.text.indent(err).rstrip()+"\n\n"
             raise RuntimeError(msg)
 
         return (rc, out, err)
