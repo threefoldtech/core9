@@ -1,9 +1,8 @@
-import uuid
+import uuid, docker, os
 from io import BytesIO
 from tarfile import TarFile, TarInfo
 from js9 import j
 from .ExecutorBase import *
-import docker
 from docker.models.containers import Container
 
 class ExecutorDocker(ExecutorBase):
@@ -19,8 +18,6 @@ class ExecutorDocker(ExecutorBase):
         result = container.exec_run('bash -c "echo test"')
         if result.exit_code != 0:
             raise ValueError("Container does not have bash installed! Need bash for using prefab")
-        self.uuid = str(uuid.uuid4())
-        container.exec_run("mkdir /%s" % self.uuid)
         self.container = container
         self.type = "docker"
 
@@ -47,9 +44,8 @@ class ExecutorDocker(ExecutorBase):
         if path == "/env.sh":
             raise RuntimeError("SS")
 
-        rc, _, _ = self.execute('test -e %s' %
-                                path, die=False, showout=False, hide=True)
-        if rc > 0:
+        result = self.container.exec_run('bash -c "test -e %s"' % path)
+        if result.exit_code > 0:
             return False
         else:
             return True        
@@ -58,26 +54,59 @@ class ExecutorDocker(ExecutorBase):
     def id(self):
         return self.container.id
 
-    def executeRaw(self, cmd, die=True, showout=False):
-        cmdid = str(uuid.uuid4())
+    def file_read(self, path):
+        file_name = os.path.basename(path)
+        data, _ = self.container.get_archive(path)
         buf = BytesIO()
-        with TarFile('command', mode='w', fileobj=buf) as tarf:
+        for chunk in data:
+            buf.write(chunk)
+        buf.seek(0)
+        with TarFile(mode='r', fileobj=buf) as tarf:
+            for tari in tarf:
+                if tari.name == file_name:
+                    reader = tarf.extractfile(tari)
+                    return reader.read().decode("utf8")
+
+    def file_write(self, path, content, mode=None, owner=None, group=None, append=False,hide=False):
+        if append and self.exists(path):
+            content = self.file_read(path) + content
+        file_name = os.path.basename(path)
+        dir_name = os.path.dirname(path)
+        buf = BytesIO()
+        with TarFile("write_file", mode='w', fileobj=buf) as tarf:
             cmdf = BytesIO()
-            cmdf.write(cmd.encode('utf8'))
+            length = cmdf.write(content.encode('utf8'))
             cmdf.seek(0)
-            tarf.addfile(TarInfo(name=cmdid), cmdf)
-        self.container.put_archive("/%s" % self.uuid, buf.getvalue())
-        result = self.container.exec_run("bash /%s/%s 2> /%s/%s.stderr" % (self.uuid, cmdid, self.uuid, cmdid), stderr=False)
-        stderr = self.container.exec_run("cat /%s/%s.stderr" % (self.uuid, cmdid))
-        output = result.output.decode("utf8")
-        err_output = stderr.output.decode("utf8") if stderr.exit_code == 0 else ""
-        if result.exit_code != 0:
-            raise RuntimeError("Error in:\n%s\n***\n%s\n%s" % (cmd, output, err_output))
-        if showout:
-            self.logger.info(output)
-            if err_output:
-                self.logger.info(err_output)
-        return result.exit_code, output, err_output
+            tari = TarInfo(name=file_name)
+            tari.size = length
+            if not mode is None:
+                tari.mode = mode
+            if not owner is None:
+                tari.owner = owner
+            if not group is None:
+                tari.group = group
+            tarf.addfile(tari, cmdf)
+        self.container.put_archive(dir_name, buf.getvalue())
+
+    def executeRaw(self, cmd, die=True, showout=False):
+        cmd_file = j.sal.fs.joinPaths("/", str(uuid.uuid4()))
+        try:
+            self.file_write(cmd_file, cmd)
+            result = self.container.exec_run("bash %s 2> %s.stderr" % (cmd_file, cmd_file), stderr=False)
+            output = result.output.decode("utf8")
+            if self.exists("%s.stderr" % cmd_file):
+                err_output = self.file_read("%s.stderr" % cmd_file).decode('utf8')
+            else:
+                err_output = ""
+            if die and result.exit_code != 0:
+                raise RuntimeError("Error in:\n%s\n***\n%s\n%s" % (cmd, output, err_output))
+            if showout:
+                self.logger.info(output)
+                if err_output:
+                    self.logger.info(err_output)
+            return result.exit_code, output, err_output
+        finally:
+            self.container.exec_run('bash -c "rm %s; rm %s.stderr"' % (cmd_file, cmd_file))
 
     def execute(self, cmds, die=True, checkok=False, showout=True, timeout=0, env={}, asScript=False, hide=False):
         """
@@ -147,7 +176,8 @@ class ExecutorDocker(ExecutorBase):
         try:
             data, _ = self.container.get_archive(source)
             with open(tmptar, 'wb') as fileh:
-                fileh.write(data)
+                for chunk in data:
+                    fileh.write(chunk)
             j.sal.process.execute("tar -xvf %s" % tmptar, showout=False, cwd=tmpdir)
             j.sal.fs.copyDirTree(
                 tmpdir,
