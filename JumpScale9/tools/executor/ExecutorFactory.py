@@ -103,6 +103,10 @@ class ExecutorFactory:
 
             return self._executors_async[key]
 
+    def getLocalDocker(self, container_id_or_name):
+        from .ExecutorDocker import ExecutorDocker
+        return ExecutorDocker.from_local_container(container_id_or_name)
+
     def reset(self, executor):
         """
         reset remove the executor passed in argument from the cache.
