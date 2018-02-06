@@ -74,30 +74,31 @@ class ExecutorDocker(ExecutorBase):
         dir_name = os.path.dirname(path)
         buf = BytesIO()
         with TarFile("write_file", mode='w', fileobj=buf) as tarf:
-            cmdf = BytesIO()
-            length = cmdf.write(content.encode('utf8'))
-            cmdf.seek(0)
+            f = BytesIO()
+            length = f.write(content.encode('utf8'))
+            f.seek(0)
             tari = TarInfo(name=file_name)
             tari.size = length
             if not mode is None:
                 tari.mode = mode
             if not owner is None:
-                tari.owner = owner
+                tari.uname = owner
             if not group is None:
-                tari.group = group
-            tarf.addfile(tari, cmdf)
+                tari.gname = group
+            tarf.addfile(tari, f)
+        if not self.exists(dir_name):
+            result = self.container.exec_run("mkdir -p %s" % dir_name)
+            if result.exit_code != 0:
+                raise RuntimeError("Could not create path %s!\n%s" % (dir_name, result.output))
         self.container.put_archive(dir_name, buf.getvalue())
 
     def executeRaw(self, cmd, die=True, showout=False):
         cmd_file = j.sal.fs.joinPaths("/", str(uuid.uuid4()))
         try:
             self.file_write(cmd_file, cmd)
-            result = self.container.exec_run("bash %s 2> %s.stderr" % (cmd_file, cmd_file), stderr=False)
+            result = self.container.exec_run('bash -c "bash %s 2> %s.stderr"' % (cmd_file, cmd_file))
             output = result.output.decode("utf8")
-            if self.exists("%s.stderr" % cmd_file):
-                err_output = self.file_read("%s.stderr" % cmd_file).decode('utf8')
-            else:
-                err_output = ""
+            err_output = self.file_read("%s.stderr" % cmd_file)
             if die and result.exit_code != 0:
                 raise RuntimeError("Error in:\n%s\n***\n%s\n%s" % (cmd, output, err_output))
             if showout:
