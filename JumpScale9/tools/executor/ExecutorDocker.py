@@ -29,18 +29,37 @@ class ExecutorDocker(ExecutorBase):
         self._logger = j.logger.get("executordocker%s" % self.container.id)
 
     @classmethod
-    def from_local_container(cls, id_or_name):
+    def from_local_container(self, id_or_name):
+        """
+        Creates docker executor of provided docker id/name
+
+        @param id_or_name: id or name of docker container
+        @raise keyError: container with id/name was not found
+        @return: ExecutorDocker
+        """
         dockerd = docker.from_env()
         for con in dockerd.containers.list():
             if id_or_name in (con.id, con.name):
-                return cls(con)
+                return self(con)
         raise KeyError("Container with id or name '%s' not found!" % id_or_name)
 
     @property
     def logger(self):
+        """
+        Returns the logger
+
+        @return: logger
+        """
+
         return self._logger
 
     def exists(self, path):
+        """
+        Checks if path exists
+
+        @return: path exists bool
+        """
+
         if path == "/env.sh":
             raise RuntimeError("SS")
 
@@ -52,9 +71,22 @@ class ExecutorDocker(ExecutorBase):
 
     @property
     def id(self):
+        """
+        Returns docker id
+
+        @return: docker id
+        """
+
         return self.container.id
 
     def file_read(self, path):
+        """
+        Read a file in the container
+
+        @param path: path of the file on the container to read
+        @return: bytes (utf8) of content
+        """
+
         file_name = os.path.basename(path)
         data, _ = self.container.get_archive(path)
         buf = BytesIO()
@@ -67,7 +99,19 @@ class ExecutorDocker(ExecutorBase):
                     reader = tarf.extractfile(tari)
                     return reader.read().decode("utf8")
 
-    def file_write(self, path, content, mode=None, owner=None, group=None, append=False,hide=False):
+    def file_write(self, path, content, mode=None, owner=None, group=None, append=False, hide=False):
+        """
+        Writes a file to the container
+
+        @param path: path of the file
+        @param content: content to be put in the file
+        @param mode: file mode
+        @param owner: owner of the file
+        @param group: group of the file
+        @param append: append content to the file
+        @param hide: hide (debug) logs
+        @raise runtimeError: path for file couldn't be created
+        """
         if append and self.exists(path):
             content = self.file_read(path) + content
         file_name = os.path.basename(path)
@@ -93,6 +137,15 @@ class ExecutorDocker(ExecutorBase):
         self.container.put_archive(dir_name, buf.getvalue())
 
     def executeRaw(self, cmd, die=True, showout=False):
+        """
+        Raw execution of command in container
+
+        @param cmd: command to be executed
+        @param die: die on error
+        @param showout: enable logger
+        @return: exit code, output, error output
+        @raise runtimeError: output in stderr and die is True
+        """
         cmd_file = j.sal.fs.joinPaths("/", str(uuid.uuid4()))
         try:
             self.file_write(cmd_file, cmd)
@@ -111,8 +164,19 @@ class ExecutorDocker(ExecutorBase):
 
     def execute(self, cmds, die=True, checkok=False, showout=True, timeout=0, env={}, asScript=False, hide=False):
         """
-        return (rc,out,err)
+        Executes command in container
+
+        @param cmds: commands to be executed
+        @param die: die on error
+        @param checkok: feedback on success
+        @param showout: enable logger
+        @param timeout: timeout of execution (not implemented)
+        @param env: sets environment variables
+        @param asScript: execute as script
+        @param hide: hide (debug) logs
+        @return: exit code, output, error output
         """
+
         if hide:
             showout = False
 
@@ -137,6 +201,19 @@ class ExecutorDocker(ExecutorBase):
 
     def upload(self, source, dest, dest_prefix="", recursive=True, createdir=True,
                rsyncdelete=True, ignoredir=['.egg-info', '.dist-info', '__pycache__', ".git"], keepsymlinks=False):
+        """
+        Uploads file to container
+
+        @param source: file to be uploaded
+        @param dest: destination of file on container
+        @param dest_prefix: path prefix
+        @param recursive: upload source recursively
+        @param createdir: create dir if not exists
+        @param rsyncdelete: rsyncdelete
+        @param ignoredir: dirs ignored uploading
+        @param keepsymlinks: keep symbolic links
+        """
+
         if dest_prefix != "":
             dest = j.sal.fs.joinPaths(dest_prefix, dest)
         if dest[0] != "/":
@@ -167,6 +244,15 @@ class ExecutorDocker(ExecutorBase):
             j.sal.fs.removeDirTree(tmpdir)
 
     def download(self, source, dest, source_prefix="", recursive=True):
+        """
+        Downloads a file to container
+
+        @param source: file to be downloaded
+        @param dest: destination of file on locally
+        @param source_prefix: path prefix
+        @param recursive: download source recursively
+        """
+
         if source_prefix != "":
             source = j.sal.fs.joinPaths(source_prefix, source)
         if source[0] != "/":
