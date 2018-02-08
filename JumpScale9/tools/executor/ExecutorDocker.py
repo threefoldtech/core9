@@ -1,11 +1,16 @@
-import uuid, docker, os
+"Docker executor"
+import uuid
+import os
 from io import BytesIO
 from tarfile import TarFile, TarInfo
 from js9 import j
-from .ExecutorBase import *
+import docker
 from docker.models.containers import Container
+from .ExecutorBase import ExecutorBase
+
 
 class ExecutorDocker(ExecutorBase):
+    "Docker executor"
 
     def __init__(self, container, debug=False, checkok=True):
 
@@ -29,7 +34,7 @@ class ExecutorDocker(ExecutorBase):
         self._logger = j.logger.get("executordocker%s" % self.container.id)
 
     @classmethod
-    def from_local_container(self, id_or_name):
+    def from_local_container(cls, id_or_name):
         """
         Creates docker executor of provided docker id/name
 
@@ -40,7 +45,7 @@ class ExecutorDocker(ExecutorBase):
         dockerd = docker.from_env()
         for con in dockerd.containers.list():
             if id_or_name in (con.id, con.name):
-                return self(con)
+                return cls(con)
         raise KeyError("Container with id or name '%s' not found!" % id_or_name)
 
     @property
@@ -59,15 +64,11 @@ class ExecutorDocker(ExecutorBase):
 
         @return: path exists bool
         """
-
-        if path == "/env.sh":
-            raise RuntimeError("SS")
-
         result = self.container.exec_run('bash -c "test -e %s"' % path)
         if result.exit_code > 0:
             return False
         else:
-            return True        
+            return True
 
     @property
     def id(self):
@@ -99,7 +100,8 @@ class ExecutorDocker(ExecutorBase):
                     reader = tarf.extractfile(tari)
                     return reader.read().decode("utf8")
 
-    def file_write(self, path, content, mode=None, owner=None, group=None, append=False, hide=False):
+    def file_write(self, path, content, mode=None, owner=None, group=None, append=False,
+                   hide=False):
         """
         Writes a file to the container
 
@@ -149,7 +151,8 @@ class ExecutorDocker(ExecutorBase):
         cmd_file = j.sal.fs.joinPaths("/", str(uuid.uuid4()))
         try:
             self.file_write(cmd_file, cmd)
-            result = self.container.exec_run('bash -c "bash %s 2> %s.stderr"' % (cmd_file, cmd_file))
+            result = self.container.exec_run('bash -c "bash %s 2> %s.stderr"' % \
+                                             (cmd_file, cmd_file))
             output = result.output.decode("utf8")
             err_output = self.file_read("%s.stderr" % cmd_file)
             if die and result.exit_code != 0:
@@ -162,7 +165,8 @@ class ExecutorDocker(ExecutorBase):
         finally:
             self.container.exec_run('bash -c "rm %s; rm %s.stderr"' % (cmd_file, cmd_file))
 
-    def execute(self, cmds, die=True, checkok=False, showout=True, timeout=0, env={}, asScript=False, hide=False):
+    def execute(self, cmds, die=True, checkok=False, showout=True, timeout=0, env=None, # pylint: disable=R0913
+                asScript=False, hide=False): # pylint: disable=W0613
         """
         Executes command in container
 
@@ -180,16 +184,17 @@ class ExecutorDocker(ExecutorBase):
         if hide:
             showout = False
 
+        env = dict() if env is None else env
         cmds2 = self._transformCmds(cmds, die, checkok=checkok, env=env)
 
         # online command, we use prefab
         if showout:
-            self.logger.info("EXECUTE %s %s" % (self.id, cmds))
+            self.logger.info("EXECUTE %s %s", self.id, cmds)
         else:
             if not hide:
-                self.logger.debug("EXECUTE %s %s" % (self.id, cmds))
+                self.logger.debug("EXECUTE %s %s", self.id, cmds)
 
-        rc, out, err = self.executeRaw(cmds2, die=die, showout=showout)
+        exit_code, out, err = self.executeRaw(cmds2, die=die, showout=showout)
 
         if hide is False:
             self.logger.debug("EXECUTE OK")
@@ -197,10 +202,10 @@ class ExecutorDocker(ExecutorBase):
         if checkok and die:
             out = self.docheckok(cmds, out)
 
-        return rc, out, err
+        return exit_code, out, err
 
     def upload(self, source, dest, dest_prefix="", recursive=True, createdir=True,
-               rsyncdelete=True, ignoredir=['.egg-info', '.dist-info', '__pycache__', ".git"], keepsymlinks=False):
+               rsyncdelete=True, ignoredir=None, keepsymlinks=False):
         """
         Uploads file to container
 
@@ -213,6 +218,9 @@ class ExecutorDocker(ExecutorBase):
         @param ignoredir: dirs ignored uploading
         @param keepsymlinks: keep symbolic links
         """
+
+        if ignoredir is None:
+            ignoredir = ['.egg-info', '.dist-info', '__pycache__', ".git"]
 
         if dest_prefix != "":
             dest = j.sal.fs.joinPaths(dest_prefix, dest)
@@ -283,6 +291,6 @@ class ExecutorDocker(ExecutorBase):
             j.sal.fs.removeDirTree(tmpdir)
 
     def __repr__(self):
-        return ("Executor docker: %s" % self.id)
+        return "Executor docker: %s" % self.id
 
     __str__ = __repr__

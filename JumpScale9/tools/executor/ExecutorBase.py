@@ -121,7 +121,8 @@ class ExecutorBase:
         self.state.configSave()
 
     # interface to implement by child classes
-    def execute(self, cmds, die=True, checkok=None, showout=True, timeout=0, env={}):
+    def execute(self, cmds, die=True, checkok=False, showout=True, timeout=0, env=None, # pylint: disable=R0913
+                asScript=False, hide=False):
         raise NotImplementedError()
 
     def executeRaw(self, cmd, die=True, showout=False):
