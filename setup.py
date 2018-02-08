@@ -85,6 +85,7 @@ setup(
         'npyscreen',
         'pyyaml',
         'pyserial>=3.4',
+        'docker>=3'
     ],
     cmdclass={
         'install': install,
