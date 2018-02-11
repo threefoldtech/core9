@@ -42,14 +42,14 @@ class ConfigFactory:
     #     else:
     #         self._cache = {}
 
-    def reset(self, location=None, instance=None):
+    def reset(self, location=None, instance=None, force=False):
         path = self.path_configrepo
         if location:
             path = j.sal.fs.joinPaths(path, location)
         if instance:
             path = j.sal.fs.joinPaths(path, '%s.toml' % instance)
         if not location:
-            if j.tools.console.askYesNo("No location specified, Are you sure you want to delete all configs?", default=True):
+            if force or j.tools.console.askYesNo("No location specified, Are you sure you want to delete all configs?", default=True):
                 configs = j.sal.fs.listDirsInDir(path)
                 for config in configs:
                     if not j.sal.fs.getBaseName(config).startswith('.'):

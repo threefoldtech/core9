@@ -22,11 +22,12 @@ def test():
 @click.command()
 @click.option('--location', '-l', default=None, help='location in jumpscale e.g. j.clients.packetnet (j.clients can be ommitted) if not passed, will reset all')
 @click.option('--instance', '-i', default=None, help='name of the instance, to set, must also set location')
-def reset(location, instance):
+@click.option('--force', '-f', default=False, help='reset in non-interactive mode', is_flag=True)
+def reset(location, instance, force):
     if instance and not location:
         raise RuntimeError("to specify which instance to reset, you must also specify the location")
 
-    j.tools.configmanager.reset(location=location, instance=instance)
+    j.tools.configmanager.reset(location=location, instance=instance, force=force)
 
 
 @click.command()
