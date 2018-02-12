@@ -58,6 +58,21 @@ class SerializerYAML(SerializerBase):
             construct_mapping)
         return yaml.load(stream, OrderedLoader)
 
+    def ordered_dump(self, data, stream=None, Dumper=yaml.Dumper, **kwds):
+        """
+        dump a yaml stream with keeping the order
+        """
+        class OrderedDumper(Dumper):
+            pass
+
+        def _dict_representer(dumper, data):
+            return dumper.represent_mapping(
+                yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
+                data.items())
+
+        OrderedDumper.add_representer(OrderedDict, _dict_representer)
+        return yaml.dump(data, stream, OrderedDumper, **kwds)
+
     def test(self):
         ddict=j.data.serializer.toml.loads(testtoml)
         #TODO:*3 write some test
