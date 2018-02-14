@@ -150,7 +150,7 @@ class SystemFS:
 
     def copyDirTree(self, src, dst, keepsymlinks=False, deletefirst=False,
                     overwriteFiles=True, ignoredir=[".egg-info", ".dist-info"], ignorefiles=[".egg-info"], rsync=True,
-                    ssh=False, sshport=22, recursive=True, rsyncdelete=True, createdir=False, applyHrdOnDestPaths=None):
+                    ssh=False, sshport=22, recursive=True, rsyncdelete=True, createdir=False):
         """Recursively copy an entire directory tree rooted at src.
         The dst directory may already exist; if not,
         it will be created as well as missing parent directories
@@ -186,10 +186,7 @@ class SystemFS:
                 errors = []
                 for name in names:
                     # is only for the name
-                    if applyHrdOnDestPaths is not None:
-                        name2 = applyHrdOnDestPaths.applyOnContent(name)
-                    else:
-                        name2 = name
+                    name2 = name
 
                     srcname = self.joinPaths(src, name)
                     dstname = self.joinPaths(dst, name2)
@@ -211,7 +208,7 @@ class SystemFS:
                     elif self.isDir(srcname):
                         # print "1:%s %s"%(srcname,dstname)
                         self.copyDirTree(srcname, dstname, keepsymlinks, deletefirst,
-                                         overwriteFiles=overwriteFiles, applyHrdOnDestPaths=applyHrdOnDestPaths)
+                                         overwriteFiles=overwriteFiles)
                     else:
                         # print "2:%s %s"%(srcname,dstname)
                         self.copyFile(
