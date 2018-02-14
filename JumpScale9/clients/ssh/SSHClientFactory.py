@@ -337,11 +337,11 @@ class SSHClientFactory:
             j.sal.fs.createDir(j.sal.fs.getParent(socketpath))
             # ssh-agent not loaded
             self.logger.info("load ssh agent")
-            _, out, err = j.sal.process.execute("ssh-agent -a %s" % socketpath,
+            code, out, err = j.sal.process.execute("ssh-agent -a %s" % socketpath,
                                                 die=False,
                                                 showout=False,
                                                 timeout=20)
-            if err:
+            if code != 0:
                 raise RuntimeError(
                     "Could not start ssh-agent, \nstdout:%s\nstderr:%s\n" % (out, err))
             else:
