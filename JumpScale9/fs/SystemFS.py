@@ -193,6 +193,12 @@ class SystemFS:
 
                     srcname = self.joinPaths(src, name)
                     dstname = self.joinPaths(dst, name2)
+
+                    if self.isDir(srcname) and name in ignoredir:
+                        continue
+                    if self.isFile(srcname) and name in ignorefiles:
+                        continue
+
                     if deletefirst and self.exists(dstname):
                         if self.isDir(dstname, False):
                             self.removeDirTree(dstname)

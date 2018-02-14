@@ -183,10 +183,11 @@ else:
     j.exceptions = JSExceptions
     # j.events = j.core.events
 
+    import logging
     j.core.logger = j.logger
     logging_cfg = j.core.state.configGet('logging', {})
     if logging_cfg:
-        level = logging_cfg.get('level', 'DEBUG').upper()
+        level = logging_cfg.get('level', getattr(logging, 'DEBUG'))
         mode = logging_cfg.get('mode', 'DEV')
         filter_module = logging_cfg.get('filter', [])
         j.logger.init(mode, level, filter_module)
