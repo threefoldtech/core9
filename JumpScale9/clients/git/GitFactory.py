@@ -388,7 +388,11 @@ class GitFactory:
         return dest
 
     def getGitBranch(self, path):
-
+        """
+        get the branch name of the repo in the passed path
+        :param path:(String) repo url
+        :returns (String) Branch name
+        """
         # if we don't specify the branch, try to find the currently checkedout
         # branch
         cmd = 'cd %s;git rev-parse --abbrev-ref HEAD' % path
@@ -649,6 +653,12 @@ class GitFactory:
         return result
 
     def findGitPath(self, path):
+        """
+        given a path, check if this path or any of its parents is a git repo, return the first git repo
+        :param path: (String) path from where to start search
+        :returns (String) the first path which is a git repo
+        :raises Exception when no git path can be found
+        """
         while path != "":
             if j.sal.fs.exists(path=j.sal.fs.joinPaths(path, ".git")):
                 return path
