@@ -26,6 +26,9 @@ class RedisFactory:
         self.__jslocation__ = "j.clients.redis"
 
     def clearCache(self):
+        """
+        clear the cache formed by the functions get() and getQueue()
+        """
         self._redis = {}
         self._redisq = {}
         self._config = {}
@@ -39,6 +42,14 @@ class RedisFactory:
             unixsocket=None,
             ardb_patch=False,
             **args):
+        """
+        get an instance of redis client, store it in cache so we could easily retrieve it later
+
+        :param ipaddr: used to form the key when no unixsocket
+        :param port: used to form the key when no unixsocket
+        :param fromcache: if False, will create a new one instead of checking cache
+        :param unixsocket: path of unixsocket to be used while creating Redis
+        """
         if redisFound == False:
             raise RuntimeError("redis libraries are not installed, please pip3 install them.")
         if unixsocket is None:
@@ -60,6 +71,15 @@ class RedisFactory:
         client.response_callbacks['HDEL'] = lambda r: r and nativestr(r) == 'OK'
 
     def getQueue(self, ipaddr, port, name, namespace="queues", fromcache=True):
+        """
+        get an instance of redis queue, store it in cache so we can easily retrieve it later
+
+        :param ipaddr: used to form the key when no unixsocket
+        :param port: used to form the key when no unixsocket
+        :param name: name of the queue
+        :param namespace: value of namespace for the queue
+        :param fromcache: if False, will create a new one instead of checking cache
+        """
         if not fromcache:
             return RedisQueue(self.get(ipaddr, port, fromcache=False), name, namespace=namespace)
         key = "%s_%s_%s_%s" % (ipaddr, port, name, namespace)
@@ -104,6 +124,9 @@ class RedisFactory:
         return db
 
     def kill(self):
+        """
+        kill all running redis instances
+        """
         j.sal.process.execute("redis-cli -s %s/redis.sock shutdown" %
                               j.dirs.TMPDIR, die=False, showout=False)
         j.sal.process.execute("redis-cli shutdown", die=False, showout=False)
