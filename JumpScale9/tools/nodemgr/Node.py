@@ -189,8 +189,8 @@ class Node(JSConfigBase):
         ddirs = j.tools.develop.codedirs.getActiveCodeDirs()
         for ddir in ddirs:
             source = ddir.path
-            dest = "%s/%s/%s/%s" % (
-                self.prefab.executor.dir_paths["CODEDIR"], ddir.type, ddir.account, ddir.name)
+            dest = "%s/%s/%s" % (
+                self.prefab.executor.dir_paths["CODEDIR"], ddir.type, ddir.account)
             self.prefab.executor.upload(
                 source, dest, dest_prefix='', recursive=True, createdir=True)
 
