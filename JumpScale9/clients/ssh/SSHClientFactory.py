@@ -333,6 +333,13 @@ class SSHClientFactory:
         socketpath = self._get_ssh_socket_path()
         self._clean_ssh_agents(socketpath)
 
+        try:
+            rc, out, err = j.sal.process.execute("ssh-add -L")
+        except Exception as e:
+            self.logger.error(e)
+            if "Error connecting to agent: Connection refused" in e.__str__():
+                j.sal.process.execute("rm {}".format(socketpath))
+
         if not j.sal.fs.exists(socketpath):
             j.sal.fs.createDir(j.sal.fs.getParent(socketpath))
             # ssh-agent not loaded
