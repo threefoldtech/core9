@@ -9,8 +9,8 @@ import curses
 
 class ConfigUI(npyscreen.NPSAppManaged):
     def onStart(self):
-        self.addForm("MAIN", MainForm)
-        self.addForm("FormSelectCodeDirs", FormSelectCodeDirs,
+        # self.addForm("MAIN", MainForm)
+        self.addForm("MAIN", FormSelectCodeDirs,
                      name="Select Codedirs", color="IMPORTANT",)
         self.addForm("FormSelectNodes", FormSelectNodes,
                      name="Select Nodes", color="IMPORTANT",)
@@ -152,7 +152,7 @@ class FormSelectCodeDirs(npyscreen.FormWithMenus, MyMenu):
             treeItem = j.tools.develop.codedirs.tree.findOne(path=e.path)
             treeItem.selected = e.selected
         j.tools.develop.codedirs.save()
-        self.parentApp.change_form("MAIN")
+        self.parentApp.change_form("FormSelectNodes")
 
 
 class FormSelectNodes(npyscreen.FormWithMenus, MyMenu):
@@ -191,7 +191,7 @@ class FormSelectNodes(npyscreen.FormWithMenus, MyMenu):
                 if n.selected != treeItem.selected:
                     n.selected = treeItem.selected
                     n.save()
-        self.parentApp.change_form("MAIN")
+        self.parentApp.change_form(None)
 
 
 # class SyncCodeForm(npyscreen.FormWithMenus, MyMenu):
