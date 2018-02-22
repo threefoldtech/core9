@@ -337,7 +337,7 @@ class SSHClientFactory:
             rc, out, err = j.sal.process.execute("ssh-add -L")
         except Exception as e:
             self.logger.error(e)
-            if "Error connecting to agent: Connection refused" in e.__str__():
+            if "Error connecting to agent: Connection refused" in e.__str__() and j.sal.fs.exists(socketpath):
                 j.sal.process.execute("rm {}".format(socketpath))
 
         if not j.sal.fs.exists(socketpath):
