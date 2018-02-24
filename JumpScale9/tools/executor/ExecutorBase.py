@@ -404,7 +404,7 @@ class ExecutorBase:
             j.sal.fs.symlinkFilesInDir(
                 src, "/usr/local/bin", delete=True, includeDirs=False, makeExecutable=True)
 
-        print("initenv done on executor base")
+        self.logger.debug("initenv done on executor base")
 
     @property
     def dir_paths(self):
