@@ -26,14 +26,13 @@ class JSBaseClassConfig:
         self._sshkey_path = None
         self._data = data
 
-
     @property
     def sshkey_path(self):
-        return self._sshkey_path
+        return self.config._sshkey_path
 
     @sshkey_path.setter
     def sshkey_path(self, val):
-        self._sshkey_path = val
+        self.config._sshkey_path = val
 
     def reset(self):
         self.config.instance_set(self.instance)
