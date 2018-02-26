@@ -39,24 +39,23 @@ class SSHClient:
             self.pkey = paramiko.RSAKey.from_private_key_file(
                 self.key_filename, password=self.passphrase)
 
-        self._client = paramiko.SSHClient()
-        self._client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
         if self.key_filename:
             self.allow_agent = True
             self.look_for_keys = True
             if j.clients.ssh.SSHKeyGetPathFromAgent(self.key_filename, die=False) is not None and not self.passphrase:
                 j.clients.ssh.ssh_keys_load(self.key_filename)
 
+    def connect(self):
+
         self._client = PSSHClient(self.addr,
                                   user=self.login,
                                   password=self.passwd,
                                   port=self.port,
                                   pkey=self.key_filename,
-                                  num_retries=0,
-                                  retry_delay=0,
+                                  num_retries=self.timeout / 6,
+                                  retry_delay=1,
                                   allow_agent=self.allow_agent,
-                                  timeout=self.timeout)
+                                  timeout=5)
 
     # def connectViaProxy(self, host, username, port, identityfile, proxycommand=None):
     #     self.usesproxy = True
