@@ -56,8 +56,7 @@ class SSHClientFactory:
 
             if key in self.cache and usecache:
                 try:
-                    _ssh_transport = self.cache[key].transport
-                    usecache = not (not _ssh_transport or not _ssh_transport.is_active())
+                    usecache = not (self.cache[key]._client is None)
                 except j.exceptions.RuntimeError:
                     usecache = False
 
@@ -345,9 +344,9 @@ class SSHClientFactory:
             # ssh-agent not loaded
             self.logger.info("load ssh agent")
             code, out, err = j.sal.process.execute("ssh-agent -a %s" % socketpath,
-                                                die=False,
-                                                showout=False,
-                                                timeout=20)
+                                                   die=False,
+                                                   showout=False,
+                                                   timeout=20)
             if code != 0:
                 raise RuntimeError(
                     "Could not start ssh-agent, \nstdout:%s\nstderr:%s\n" % (out, err))

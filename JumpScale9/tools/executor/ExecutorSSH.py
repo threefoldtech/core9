@@ -173,7 +173,7 @@ class ExecutorSSH(ExecutorBase):
             1, 100000)
         j.sal.fs.writeFile(path, content)
         sftp = self.sshclient.getSFTP()
-        sftp.put(path, path)  # is now always on tmp
+        self.sshclient._client.copy_file(path, path)  # is now always on tmp
 
         cmd = "bash {}".format(path)
         rc, out, err = self.sshclient.execute(cmd, die=die, showout=showout)
@@ -182,7 +182,7 @@ class ExecutorSSH(ExecutorBase):
             out = self.docheckok(content, out)
 
         j.sal.fs.remove(path)
-        sftp.remove(path)
+        sftp.unlink(path)
 
         return rc, out, err
 
