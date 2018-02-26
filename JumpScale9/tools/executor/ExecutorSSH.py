@@ -29,8 +29,7 @@ class ExecutorSSH(ExecutorBase):
         if path == "/env.sh":
             raise RuntimeError("SS")
 
-        rc, _, _ = self.execute('test -e %s' %
-                                path, die=False, showout=False, hide=True)
+        rc, _, _ = self.execute('ls %s' % path, die=False, showout=False, hide=True)
         if rc > 0:
             return False
         else:
