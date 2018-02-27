@@ -11,13 +11,15 @@ def cli():
 
 @click.command()
 @click.option('--silent', '-s',  type=bool, is_flag=True, default=False, help='if silent will try to figure out configuration automatically, make sure 1 sshkey loaded in ssh-agent.')
-def init(silent):
+@click.option('--path', '-p',  help='path of the configuration repository you want to use')
+@click.option('--key', '-k', help='path to the ssh key you want to use')
+def init(silent, path, key):
     """
     js9_config init -s
     """
-    if silent == None:
+    if silent is None:
         silent = False
-    j.tools.configmanager.init(silent=silent)
+    j.tools.configmanager.init(silent=silent, configpath=path, keypath=key)
 
 
 @click.command()
