@@ -25,6 +25,10 @@ class JSBase:
             self._logger._parent = self
         return self._logger
 
+    @logger.setter
+    def logger(self, logger):
+        self._logger = logger
+
     def logger_enable(self):
         self._logger_force = True
         self._logger = None

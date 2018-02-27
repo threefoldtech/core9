@@ -11,6 +11,7 @@ class SSHClient(SSHClientBase):
     def __init__(self, instance, data={}, parent=None, interactive=False):
         SSHClientBase.__init__(self, instance=instance,
                                data=data, parent=parent, interactive=interactive)
+        self._logger = j.logger.get("ssh client: %s:%s(%s)" % (self.addr, self.port, self.login))
         self._client = None
         self._prefab = None
 
@@ -25,7 +26,7 @@ class SSHClient(SSHClientBase):
                                   retry_delay=0,
                                   allow_agent=self.allow_agent,
                                   timeout=self.timeout)
-        self.logger = j.logger.get("ssh client: %s:%s(%s)" % (self.addr, self.port, self.login))
+
         return self._client
 
     def execute(self, cmd, showout=True, die=True):
