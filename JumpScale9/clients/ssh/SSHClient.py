@@ -29,7 +29,7 @@ class SSHClient(SSHClientBase):
         return self._client
 
     def execute(self, cmd, showout=True, die=True):
-        channel, _, stdout, stderr, _ = self._client.run_command(cmd)
+        channel, _, stdout, stderr, _ = self.client.run_command(cmd)
 
         def _consume_stream(stream, printer):
             buffer = io.StringIO()
