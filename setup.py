@@ -87,6 +87,7 @@ setup(
         'pyserial>=3.4',
         'docker>=3',
         'fakeredis',
+        'parallel_ssh>=1.4.0',
     ],
     cmdclass={
         'install': install,
