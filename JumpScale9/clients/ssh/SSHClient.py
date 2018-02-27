@@ -59,7 +59,7 @@ class SSHClient(SSHClientBase):
                                   user=self.login,
                                   password=self.passwd,
                                   port=self.port,
-                                  pkey=self.key_filename,
+                                  pkey=self.sshkey.path,
                                   num_retries=self.timeout / 6,
                                   retry_delay=1,
                                   allow_agent=self.allow_agent,
