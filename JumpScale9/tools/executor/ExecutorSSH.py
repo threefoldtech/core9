@@ -103,7 +103,7 @@ class ExecutorSSH(ExecutorBase):
             path = "/tmp/prefab_%s.sh" % j.data.idgenerator.generateRandomInt(1, 100000)
         j.sal.fs.writeFile(path, content)
         self.logger.debug("upload %s to %s over sftp" % (path, path))
-        self.sshclient.sftp.put(path, path)  # is now always on tmp
+        self.sshclient.client.copy_file(path, path)  # is now always on tmp
 
         if sudo:
             passwd = self.sshclient.config.data['passwd_']
@@ -117,7 +117,7 @@ class ExecutorSSH(ExecutorBase):
             out = self._docheckok(content, out)
 
         j.sal.fs.remove(path)
-        self.sshclient.sftp.remove(path)
+        self.sshclient.sftp.unlink(path)
 
         return rc, out, err
 

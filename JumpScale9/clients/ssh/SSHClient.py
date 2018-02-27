@@ -17,11 +17,14 @@ class SSHClient(SSHClientBase):
 
     @property
     def client(self):
+        pkey = self.sshkey.path
+        if self.passwd:
+            pkey = None
         self._client = PSSHClient(self.addr,
                                   user=self.login,
                                   password=self.passwd,
                                   port=self.port,
-                                  pkey=self.sshkey.path,
+                                  pkey=pkey,
                                   num_retries=0,
                                   retry_delay=0,
                                   allow_agent=self.allow_agent,
@@ -54,12 +57,14 @@ class SSHClient(SSHClientBase):
         return rc, out.getvalue(), err.getvalue()
 
     def connect(self):
-
+        pkey = self.sshkey.path
+        if self.passwd:
+            pkey = None
         self._client = PSSHClient(self.addr,
                                   user=self.login,
                                   password=self.passwd,
                                   port=self.port,
-                                  pkey=self.sshkey.path,
+                                  pkey=pkey,
                                   num_retries=self.timeout / 6,
                                   retry_delay=1,
                                   allow_agent=self.allow_agent,
@@ -164,7 +169,7 @@ class SSHClient(SSHClientBase):
         return prefab
 
     def ssh_authorize(self, user, key):
-        self.prefab.system.ssh.authorize(user, key)
+        self.prefab.system.ssh.authorize(user=user, key=key)
 
     # def portforwardToLocal(self, remoteport, localport):
     #     self.portforwardKill(localport)
