@@ -52,10 +52,11 @@ The stdout and stderr variable contains the full buffer:
 
 """
 
-
-class StdDuplicate(object):
+JSBASE = j.application.jsbase_get_class()
+class StdDuplicate(object, JSBASE):
 
     def __init__(self, original):
+        JSBASE.__init__(self)
         self.redirect = original
         self.buffer = StringIO()
 
@@ -70,9 +71,10 @@ class StdDuplicate(object):
         return self.redirect
 
 
-class Process():
+class Process(JSBASE):
 
     def __init__(self, name="", method=None, timeout=0, args={}):
+        JSBASE.__init__(self)
         self.name = name
         self.method = method
         self.args = args
@@ -196,7 +198,7 @@ class Process():
                 self.outpipe = os.fdopen(wpipe, 'w')
 
                 # print("ARGS:%s" % args)
-                # j.core.processmanager.clearCaches()
+                # j.core.processmanager.cache_clears()
                 self._state = "running"
                 res = self.method(**self.args)
 
@@ -330,17 +332,17 @@ class Process():
     __str__ = __repr__
 
 
-class ProcessManagerFactory:
+class ProcessManagerFactory(JSBASE):
 
     def __init__(self):
         self.__jslocation__ = "j.sal.processmanager"
+        JSBASE.__init__(self)
         self._lastnr = 0
         self.processes = {}
         self.timeout = 5400
-        self.log = j.logger.get('processmanager')
         # self.log.addHandler(j.logger._LoggerFactory__fileRotateHandler('processmanager'))
 
-    def clearCaches(self):
+    def cache_clears(self):
         """
         call this in subprocess if you want to make sure that no sockets will be reused
         """
@@ -421,24 +423,24 @@ class ProcessManagerFactory:
                 # check if the process has a specific time out.
                 if p.timeout:
                     if time_diff.total_seconds() > p.timeout:
-                        self.log.warning("closing process %s, process timeout exceeded")
+                        self.logger.warning("closing process %s, process timeout exceeded")
                         p.close()
                         self.processes.pop(p.name)
                         cleared += 1
                 else:
                     # check if the process exceeded the default timeout.
                     if time_diff.total_seconds() > self.timeout:
-                        self.log.warning("closing process %s, default timeout exceeded")
+                        self.logger.warning("closing process %s, default timeout exceeded")
                         p.close()
                         self.processes.pop(p.name)
                         cleared += 1
 
         remaining = [item for item in self.processes.keys()]
         if remaining:
-            self.log.info('Remaining processes after clear')
+            self.logger.info('Remaining processes after clear')
         for key in remaining:
             status = self.processes[key].sync()
-            self.log.info('Remaining: process %s : %s' % (key, status))
+            self.logger.info('Remaining: process %s : %s' % (key, status))
         return cleared
 
     def testSync(self):

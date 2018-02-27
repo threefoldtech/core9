@@ -36,7 +36,6 @@ class RedisKeyValueStore(KeyValueStoreBase):
         self.inMem = False
         self.type = "redis"
 
-        self.logger = j.logger.get("j.data.kvs.redis")
 
     def _getKey(self, key):
         return '%s:%s' % (self.namespace, key)

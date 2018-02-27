@@ -3,6 +3,8 @@ from js9 import j
 
 from .MonitorTools import *
 
+JSBASE = j.application.jsbase_get_class()
+
 
 class NodeBase(MonitorTools):
 
@@ -14,6 +16,7 @@ class NodeBase(MonitorTools):
         - host
 
         """
+        MonitorTools.__init__(self)
         if j.tools.perftesttools.monitorNodeIp is None:
             raise j.exceptions.RuntimeError("please do j.tools.perftesttools.init() before calling this")
 
@@ -37,11 +40,11 @@ class NodeBase(MonitorTools):
 
         self.debug = False
 
-        print("ssh init %s" % self)
+        self.logger.debug("ssh init %s" % self)
         self.ssh = j.tools.prefab.get(j.tools.executor.get(ipaddr, sshport))
         if self.key and self.key != '':
             self.fabric.env["key"] = self.key
-        print("OK")
+        self.logger.debug("OK")
 
         self.role = role
 
@@ -49,7 +52,7 @@ class NodeBase(MonitorTools):
     def redis(self):
         if self._redis is not None:
             return self._redis
-        print("connect redis: %s:%s" % (j.tools.perftesttools.monitorNodeIp, 9999))
+        self.logger.debug("connect redis: %s:%s" % (j.tools.perftesttools.monitorNodeIp, 9999))
         self._redis = j.clients.redis.get(self.redis_host, self.redis_port)
 
     def setInfluxdb(self, host, port, login='root', password='root'):
@@ -82,7 +85,7 @@ class NodeBase(MonitorTools):
 
     def execute(self, cmd, env={}, dieOnError=True, report=True):
         if report:
-            print(cmd)
+            self.logger.debug(cmd)
 
         if not dieOnError:
             with warn_only():
@@ -93,7 +96,7 @@ class NodeBase(MonitorTools):
         return res
 
     def prepareTmux(self, session, screens=["default"], kill=True):
-        print("prepare tmux:%s %s %s" % (session, screens, kill))
+        self.logger.debug("prepare tmux:%s %s %s" % (session, screens, kill))
         if len(screens) < 1:
             raise j.exceptions.RuntimeError("there needs to be at least 1 screen specified")
         if kill:
@@ -104,7 +107,7 @@ class NodeBase(MonitorTools):
         screens.pop(0)
 
         for screen in screens:
-            print("init tmux screen:%s" % screen)
+            self.logger.debug("init tmux screen:%s" % screen)
             self.execute("tmux new-window -t '%s' -n '%s'" % (session, screen))
 
     def executeInScreen(self, screenname, cmd, env={}, session=""):
@@ -123,8 +126,7 @@ class NodeBase(MonitorTools):
         if session != "":
             windowcmd = "tmux select-window -t \"%s\";" % session
         cmd2 = "%stmux send-keys -t '%s' '%s\n'" % (windowcmd, screenname, cmd1)
-        # print cmd2
-        print("execute:'%s' on %s in screen:%s/%s" % (cmd1, self, session, screenname))
+        self.logger.debug("execute:'%s' on %s in screen:%s/%s" % (cmd1, self, session, screenname))
         self.execute(cmd2, report=False)
 
     def __str__(self):

@@ -3,10 +3,6 @@ from js9 import j
 
 
 try:
-    j.logger.init('PRODUCTION', 0, ['j.sal.fs','j.application', "j.sal.process"])
-
-    j.logger.set_level(0)
-
     j.tools.develop.run()
 
 except KeyboardInterrupt:

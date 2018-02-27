@@ -8,8 +8,10 @@ from .InfluxDumper import *
 
 import os
 
+JSBASE = j.application.jsbase_get_class()
 
-class PerfTestToolsFactory:
+
+class PerfTestToolsFactory(JSBASE):
     """
     j.tools.perftesttools.getNodeMonitor("localhost",22)
     make sure there is influxdb running on monitor node (root/root)
@@ -23,6 +25,7 @@ class PerfTestToolsFactory:
 
     def __init__(self):
         self.__jslocation__ = "j.tools.perftesttools"
+        JSBASE.__init__(self)
         self.__imports__ = "psutil"
         self.monitorNodeIp = None
         self.monitorNodeSSHPort = None
@@ -47,7 +50,7 @@ class PerfTestToolsFactory:
             j.sal.fs.writeFile(path, self.sshkey)
             j.sal.fs.chmod(path, 0o600)
 
-        j.sal.ssh.ssh_keys_load()
+        j.sal.ssh.sshkeys_load()
 
     def getNodeNAS(self, ipaddr, sshport=22, nrdisks=0, fstype="xfs", role='', debugdisk="", name=""):
         """

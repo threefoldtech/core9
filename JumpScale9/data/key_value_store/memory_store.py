@@ -4,7 +4,7 @@ from JumpScale9.data.key_value_store.store import KeyValueStoreBase
 
 import re
 
-from JumpScale9 import j
+from js9 import j
 
 
 class MemoryKeyValueStore(KeyValueStoreBase):
@@ -13,6 +13,7 @@ class MemoryKeyValueStore(KeyValueStoreBase):
         self.name = name
         self.namespace = namespace
         self.destroy()
+        KeyValueStoreBase.__init__(self, namespace=self.namespace, name=self.name)
 
     def destroy(self):
         self.db = dict()

@@ -1,4 +1,4 @@
-from JumpScale9 import j
+from js9 import j
 import pytoml
 # import toml
 
@@ -55,6 +55,8 @@ list5 = "d,a,a,b,c"
 
 
 class SerializerTOML(SerializerBase):
+    def __init__(self):
+        SerializerBase.__init__(self)
 
     def fancydumps(self, obj, secure=False):
         """
@@ -169,7 +171,7 @@ class SerializerTOML(SerializerBase):
         ddicttest = {'name': 'something', 'multiline': 'these are multiple lines\nnext line\n', 'nr': 87, 'nr2': 0, 'nr3': 1, 'nr4': 34.4, 'nr5': 34.4, 'bbool': True,
                      'bbool2': True, 'bbool3': False, 'list1': ['1', '2', '3', '4'], 'list2': [1, 2, 3], 'list3': ['a', 'b', 'c'], 'list4': ['ab'], 'list5': ['a', 'b', 'c', 'd']}
 
-        print(ddictout)
+        self.logger.debug(ddictout)
 
         assert ddictout == ddicttest
 
@@ -201,7 +203,7 @@ class SerializerTOML(SerializerBase):
         ddictout, errors = self.merge(ddicttest, ddictmerge, listunique=True)
 
         yyaml = self.fancydumps(ddictout)
-        print(yyaml)
+        self.logger.debug(yyaml)
 
         compare = {'bbool': True,
                    'bbool2': True,

@@ -5,6 +5,7 @@ import atexit
 import struct
 from collections import namedtuple
 import psutil
+from .JSBase import JSBase
 
 class Application:
 
@@ -17,12 +18,25 @@ class Application:
         self.state = "UNKNOWN"
         self.appname = 'UNKNOWN'
 
-        self._debug = j.core.state.configGetFromDict('system', 'debug')
+        self._debug = None
 
         self._systempid = None
 
         self.interactive = True
         self.__jslocation__ = "j.core.application"
+
+    def jsbase_get_class(self):
+        """
+
+        JSBASE = j.application.jsbase_get_class()
+
+        class myclass(JSBASE):
+
+            def __init__(self):
+                JSBASE.__init__(self)
+
+        """
+        return JSBase
 
     def reset(self):
         """
@@ -38,6 +52,8 @@ class Application:
 
     @property
     def debug(self):
+        if self._debug == None:
+            self._debug = j.core.state.configGetFromDictBool("system","debug",False)
         return self._debug
 
     @debug.setter
@@ -46,7 +62,7 @@ class Application:
 
     def break_into_jshell(self, msg="DEBUG NOW"):
         if self.debug is True:
-            print(msg)
+            self.logger.debug(msg)
             from IPython import embed
             embed()
         else:
@@ -71,7 +87,7 @@ class Application:
         #     raise j.exceptions.RuntimeError(
         #         "Cannot find C.UTF-8 in locale -a, cannot continue.")
         # from IPython import embed
-        # print("DEBUG NOW fix locale in application")
+        # self.logger.debug("DEBUG NOW fix locale in application")
         # embed()
 
     def init(self):
@@ -126,7 +142,7 @@ class Application:
         # Since we call os._exit, the exithandler of IPython is not called.
         # We need it to save command history, and to clean up temp files used by
         # IPython itself.
-        self.logger.info("Stopping Application %s" % self.appname)
+        # self.logger.debug("Stopping Application %s" % self.appname)
         try:
             __IPYTHON__.atexit_operations()
         except BaseException:

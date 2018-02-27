@@ -2,15 +2,17 @@ from js9 import j
 # import os
 # import copy
 
+JSBASE = j.application.jsbase_get_class()
 
-class JSBaseClassConfig:
 
-    def __init__(self, instance="main", data={}, parent=None, template=None, ui=None):
-        self._single_item = True
-        s = self
+class JSBaseClassConfig(JSBASE):
+
+    def __init__(self, instance="main", data={}, parent=None, template=None, ui=None, interactive=True):
         if parent is not None:
-            s.__jslocation__ = parent.__jslocation__
-        self.logger = j.logger.get(self.__jslocation__)
+            self.__jslocation__ = parent.__jslocation__
+        JSBASE.__init__(self)
+        self._single_item = True
+
         if ui is None:
             self._ui = j.tools.formbuilder.baseclass_get()  # is the default class
         else:
@@ -20,37 +22,29 @@ class JSBaseClassConfig:
                 "template needs to be specified, needs to be yaml or dict")
         self._config = None
         self._instance = instance
-        # self._data = data
         self._parent = parent
         self._template = template
-        self._sshkey_path = None
-        self._data = data
+        self.interactive = interactive and j.tools.configmanager.interactive
 
+        self._config = j.tools.configmanager._get_for_obj(
+            self, instance=self._instance, data=data, template=self._template, ui=self._ui)
+        
+        if self.config.new and data=={} and interactive:
+            self.configure()
 
     @property
-    def sshkey_path(self):
-        return self._sshkey_path
-
-    @sshkey_path.setter
-    def sshkey_path(self, val):
-        self._sshkey_path = val
+    def logger(self):
+        if self._logger is None:
+            self._logger = j.logger.get("%s.%s" % (self.__jslocation__, self._instance), force=self._logger_force)
+        return self._logger
 
     def reset(self):
         self.config.instance_set(self.instance)
 
     @property
     def config(self):
-
         if self._config is None:
-            self._config = j.tools.configmanager._get_for_obj(self, instance=self._instance, data=self._data,
-                                                              template=self._template, ui=self._ui, sshkey_path=self.sshkey_path)
-
-            if self._config.load() > 0:
-                print("configuring", self._instance)
-
-            elif self.config_check() not in [None, "", 0]:
-                self.interactive()
-
+            raise RuntimeError("self._config cannot be empty")
         return self._config
 
     @config.setter
@@ -65,30 +59,25 @@ class JSBaseClassConfig:
     def config_template(self):
         return self.config.template
 
-    def interactive(self):
-        if j.tools.configmanager.interactive:
-            print("Did not find config file:%s, will ask for initial configuration information." % self.config.location)
-            self.config.instance = j.tools.console.askString("specify name for instance", defaultparam=self.config.instance)
-            self.configure()
-        else:
-            raise RuntimeError("configuration not found for :%s, please run 'js9_config configure -l %s " % (self.__jslocation__, self.__jslocation__))
-
-    def configure(self, sshkey_path=None):
+    def configure(self):
         """
         call the form build to represent this object
         """
         if self._ui is None:
-            raise RuntimeError("cannot call configure UI because not defined yet, is None")
-        self.sshkey_path = sshkey_path if sshkey_path else self.sshkey_path
-        myui = self._ui(name=self.config.path, config=self.config.data, template=self.config.template)
+            raise RuntimeError(
+                "cannot call configure UI because not defined yet, is None")
+        myui = self._ui(name=self.config.path,
+                        config=self.config.data,
+                        template=self.config.template)
 
         while True:
             myui.run()
             self.config.data = myui.config  # config in the ui is a std dict
             msg = self.config_check()
             if msg is not None and msg != "":
-                print(msg)
-                j.tools.console.askString("please correct the information in next configuraton screen, press enter")
+                self.logger.debug(msg)
+                j.tools.console.askString(
+                    "please correct the information in next configuraton screen, press enter")
             else:
                 break
 

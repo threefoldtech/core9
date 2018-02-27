@@ -1,10 +1,11 @@
 
 from js9 import j
 
-
-class ZeroDomains:
+JSBASE = j.application.jsbase_get_class()
+class ZeroDomains(JSBASE):
 
     def init(self, name, giturl):
+        JSBASE.__init__(self)
         d = ZeroDomain()
 
     def load(self, path=None):

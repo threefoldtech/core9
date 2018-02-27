@@ -14,15 +14,16 @@ from stat import ST_MTIME
 from functools import wraps
 from .SystemFSDecorators import *
 from JumpScale9 import j
+import copy
 
-
-class SystemFS:
+JSBASE = j.application.jsbase_get_class()
+class SystemFS(JSBASE):
 
     def __init__(self):
-        self.__jslocation__ = "j.sal.fs"
-        self.logger = j.logger.get("j.sal.fs")
-        # self.logger.disabled = True
-
+        if not hasattr(self, '__jslocation__'):
+            self.__jslocation__ = "j.sal.fs"
+        JSBASE.__init__(self)
+        
     @path_check(fileFrom={"required", "exists", "file"}, to={"required"})
     def copyFile(self, fileFrom, to, createDirIfNeeded=False, overwriteFile=True):
         """Copy file
@@ -98,9 +99,12 @@ class SystemFS:
                 path = path[:-1]
             if os.path.islink(path):
                 os.unlink(path)
-            if self.exists(path):
+            else:
                 os.remove(path)
-                self.logger.debug('Done removing file with path: %s' % path)
+            self.logger.debug('Done removing file with path: %s' % path)
+        elif not self.isDir(path) and self.exists(path):
+            os.remove(path)
+            self.logger.debug('Done removing file with path: %s' % path)
         else:
             return self.removeDirTree(path)
 
@@ -457,6 +461,33 @@ class SystemFS:
         if parts == ['']:
             return os.sep
         return os.sep.join(parts)
+
+    def getParentWithDirname(self,path="",dirname=".git",die=False):
+        """
+        looks for parent which has $dirname in the parent dir, if found return
+        if not found will return None or die
+        
+        Raises:
+            RuntimeError -- if die 
+        
+        Returns:
+            string -- the path which has the dirname or None
+
+        """
+        if path == "":
+            path = j.sal.fs.getcwd()
+
+        # first check if there is no .jsconfig in parent dirs
+        curdir = copy.copy(path)
+        while curdir.strip() != "":
+            if j.sal.fs.exists("%s/%s" % (curdir,dirname)):
+                return curdir
+            # look for parent
+            curdir = j.sal.fs.getParent(curdir)
+        if die:
+            raise RuntimeError("Could not find %s dir as parent of:'%s'" % (dirname,path))
+        else:
+            return None
 
     @path_check(path={"required", })
     def getFileExtension(self, path):
@@ -907,7 +938,7 @@ class SystemFS:
         for item in items:
             dest2 = "%s/%s" % (dest, self.getBaseName(item))
             dest2 = dest2.replace("//", "/")
-            self.logger.info(("link %s:%s" % (item, dest2)))
+            self.logger.debug("link %s:%s" % (item, dest2))
             self.symlink(item, dest2, overwriteTarget=delete)
             if makeExecutable:
                 # print("executable:%s" % dest2)

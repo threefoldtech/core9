@@ -17,13 +17,14 @@ from JumpScale9 import j
 #
 #     return path.decode(sys.getfilesystemencoding())
 
-
-class Dirs:
+JSBASE = j.application.jsbase_get_class()
+class Dirs(JSBASE):
     """Utility class to configure and store all relevant directory paths"""
 
     def __init__(self):
         '''jumpscale sandbox base folder'''
         self.__jslocation__ = "j.core.dirs"
+        JSBASE.__init__(self)
         self.reload()
 
     def reload(self):

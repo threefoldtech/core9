@@ -12,7 +12,6 @@ class ExecutorSerial(ExecutorBase):
     """
     def __init__(self, device, baudrate=9600, type="serial", parity="N", stopbits=1, bytesize=8, timeout=1):
         ExecutorBase.__init__(self, checkok=False)
-
         self.device = device
         self.baudrate = baudrate
         self.type = type
@@ -22,7 +21,7 @@ class ExecutorSerial(ExecutorBase):
         self.timeout = timeout
 
         self._id = None
-        self._logger = j.logger.get("executorserial:%s" % self.device)
+        self._logger = self.logger
         self.logger.info("Initialized")
 
         self.reconnect()
@@ -40,11 +39,6 @@ class ExecutorSerial(ExecutorBase):
 
         return True
 
-    @property
-    def logger(self):
-        if self._logger is None:
-            self._logger = j.logger.get("executor.%s" % self.device)
-        return self._logger
 
     @property
     def id(self):

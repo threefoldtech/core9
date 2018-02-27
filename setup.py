@@ -85,7 +85,8 @@ setup(
         'npyscreen',
         'pyyaml',
         'pyserial>=3.4',
-        'docker>=3'
+        'docker>=3',
+        'fakeredis',
     ],
     cmdclass={
         'install': install,

@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 from js9 import j
-j.tools.prefab.local.bash.locale_check()
+j.tools.bash.local.locale_check()
 import click
 
 
@@ -10,8 +10,14 @@ def cli():
 
 
 @click.command()
-def init():
-    j.tools.configmanager.init(j.sal.fs.getcwd())
+@click.option('--silent', '-s',  type=bool, is_flag=True, default=False, help='if silent will try to figure out configuration automatically, make sure 1 sshkey loaded in ssh-agent.')
+def init(silent):
+    """
+    js9_config init -s
+    """
+    if silent == None:
+        silent = False
+    j.tools.configmanager.init(silent=silent)
 
 
 @click.command()
@@ -33,9 +39,18 @@ def reset(location, instance, force):
 @click.command()
 @click.option('--location', '-l', default=None, help='location in jumpscale e.g. j.clients.packetnet (j.clients can be ommitted)')
 @click.option('--instance', '-i', default='main', help='name of the instance, default: main')
-@click.option('--sshkey', '-s', default=None, help='path of the sshkey to be used in NACL')
-def configure(location, instance, sshkey):
-    j.tools.configmanager.configure(location=location, instance=instance, sshkey_path=sshkey)
+def configure(location, instance):
+    j.tools.configmanager.configure(location=location, instance=instance)
+
+
+@click.command()
+@click.option('--location', '-l', default=None, help='location in jumpscale e.g. j.clients.packetnet (j.clients can be ommitted)')
+@click.option('--instance', '-i', default='main', help='name of the instance, default: main')
+def get(location, instance):
+    c = j.tools.configmanager.js9_obj_get(location=location, instance=instance)
+    print("var c has the config management object")
+    from IPython import embed
+    embed(colors='Linux')
 
 
 @click.command()
@@ -51,6 +66,7 @@ def delete(location, instance):
 
 
 cli.add_command(configure)
+cli.add_command(get)
 cli.add_command(init)
 cli.add_command(test)
 cli.add_command(reset)

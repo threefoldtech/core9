@@ -2,7 +2,7 @@ from js9 import j
 from .ExecutorSSH import ExecutorSSH
 import os
 
-
+JSBASE = j.application.jsbase_get_class()
 class ExecutorAsyncSSH(ExecutorSSH):
 
     def __init__(self, addr='', port=22, login="root",
@@ -13,7 +13,6 @@ class ExecutorAsyncSSH(ExecutorSSH):
                          passwd=passwd, allow_agent=allow_agent, debug=debug,
                          look_for_keys=look_for_keys, checkok=checkok,
                          timeout=timeout, key_filename=(), passphrase=passphrase)
-
         self.init()
 
     def _getSSHClient(self, key_filename=None, passphrase=None):

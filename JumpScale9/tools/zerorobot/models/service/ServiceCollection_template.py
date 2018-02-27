@@ -13,6 +13,9 @@ class ServiceModel(ModelBase):
     '''
     '''
 
+    def __init__(self, key="", new=False, collection=None):
+        ModelBase.__init__(self, key=key, new=new, collection=collection)
+
     def index(self):
         #no need to put indexes because will be done by capnp
         pass
@@ -39,7 +42,6 @@ class ServiceCollection(ModelBaseCollection):
     '''
 
     def __init__(self):
-        self.logger = j.logger.get('model.service')
         category = 'service'
         namespace = ""
 

@@ -27,8 +27,10 @@ import sys
 #
 # log = logging.getLogger('stdxxx')
 
+JSBASE = j.application.jsbase_get_class()
 
-class Console:
+
+class Console(JSBASE):
     """
     class which groups functionality to print to a console
     self.width=120
@@ -38,7 +40,7 @@ class Console:
 
     def __init__(self):
         self.__jslocation__ = "j.tools.console"
-        self.logger = j.logger.get('j.tools.console')
+        JSBASE.__init__(self)
         self.width = 230
         self.indent = 0  # current indentation of messages send to console
         self.stdout = None
@@ -450,7 +452,6 @@ class Console:
 
         def pprint4autocomplete(chars=""):
             self.cls()
-            print()
             counter = 0
             if len(choicearray) > (height - 3):
 
@@ -472,7 +473,6 @@ class Console:
                     print("- %s" % item)
                     counter += 1
             while counter < (height - 3):
-                print()
                 counter += 1
             descr2 = "%s\nMake a selection please, start typing, we will try to do auto completion.\n" % descr
 

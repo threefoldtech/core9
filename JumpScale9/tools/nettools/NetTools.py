@@ -32,13 +32,13 @@ def getNetworkInfo():
         block = m.group('block')
         yield parseBlock(block)
 
-
-class NetTools:
+JSBASE = j.application.jsbase_get_class()
+class NetTools(JSBASE):
 
     def __init__(self):
         self.__jslocation__ = "j.sal.nettools"
         self.__imports__ = "netaddr"
-        self.logger = j.logger.get('j.sal.nettools')
+        JSBASE.__init__(self)
         self._windowsNetworkInfo = None
 
     def tcpPortConnectionTest(self, ipaddr, port, timeout=None):
@@ -492,7 +492,7 @@ class NetTools:
         while gwexists():
             removegw()
             time.sleep(1)
-            print("try to delete def gw")
+            self.logger.debug("try to delete def gw")
             counter += 1
             if counter > 10:
                 raise j.exceptions.RuntimeError("cannot delete def gw")
@@ -1010,5 +1010,9 @@ class NetTools:
             j.sal.process.execute('ifdown %s && ifup %s' % (device, device))
         self.logger.info('DONE')
 
-class NetworkZone:
+class NetworkZone(JSBASE):
+
+    def __init__(self):
+        JSBASE.__init__(self)
+
     ipRanges = None  # array(IPRange)

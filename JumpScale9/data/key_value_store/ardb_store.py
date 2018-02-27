@@ -2,7 +2,6 @@ from JumpScale9.data.key_value_store.redis_store import RedisKeyValueStore
 from JumpScale9.data.key_value_store.store import KeyValueStoreBase
 from js9 import j
 
-
 class ARDBKeyValueStore(RedisKeyValueStore):
 
     def __init__(
