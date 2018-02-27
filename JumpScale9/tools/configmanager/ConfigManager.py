@@ -30,7 +30,7 @@ class ConfigFactory(JSBASE):
         self.__jslocation__ = "j.tools.configmanager"
         JSBASE.__init__(self)
         self._path = ""
-        self.interactive = True #std needs to be on True
+        self.interactive = True  # std needs to be on True
         self.keyname = ""  # if set will overrule from the main js config file
         self._init = False
 
@@ -462,7 +462,7 @@ class ConfigFactory(JSBASE):
                 j.core.state.configSave()
 
         j.tools.myconfig.config.data = data
-        if j.tools.myconfig.config.data["email"] == "":
+        if j.tools.myconfig.config.data["email"] == "" and not silent:
             j.tools.myconfig.configure()
         j.tools.myconfig.config.save()
 
