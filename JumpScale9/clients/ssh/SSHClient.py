@@ -99,7 +99,7 @@ class SSHClient(SSHClientBase):
 
     @property
     def sftp(self):
-        return self._client._make_sftp()
+        return self.client._make_sftp()
 
     def close(self):
         # TODO: make sure we don't need to clean anything
@@ -144,17 +144,6 @@ class SSHClient(SSHClientBase):
             ssh=True,
             sshport=self.port_variable,
             recursive=recursive)
-
-    @property
-    def prefab(self):
-        if not self.usesproxy and self._prefab is None:
-            executor = j.tools.executor.getSSHBased(
-                addr=self.addr, port=self.port, timeout=self.timeout)
-            self._prefab = executor.prefab
-        if self.usesproxy:
-            ex = j.tools.executor.getSSHViaProxy(self.addr)
-            self._prefab = j.tools.prefab.get(self)
-        return self._prefab
 
     @property
     def prefab(self):

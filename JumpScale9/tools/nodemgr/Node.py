@@ -192,7 +192,7 @@ class Node(JSConfigBase):
     @property
     def executor(self):
         if self.config.data["sshclient"] != "":
-            return self.sshclient.executor
+            return self.sshclient.prefab.executor
         if self.config.data["zosclient"] != "":
             return self.zosclient.executor
 
@@ -221,7 +221,7 @@ class Node(JSConfigBase):
         # ddirs = j.tools.develop.codedirs.getActiveCodeDirs(): #TODO: *1 broken
         ddirs = j.clients.git.getGitReposListLocal(account="jumpscale")  # took predefined list
         for key, path in ddirs.items():
-            self.logger.debug("try to find git dir for:%s"%path)
+            self.logger.debug("try to find git dir for:%s" % path)
             repo = j.clients.git.get(path)
             if path not in done:
                 res.append(j.tools.develop.codedirs.get(repo.type, repo.account, repo.name))
@@ -240,8 +240,8 @@ class Node(JSConfigBase):
         if monitor:
             self.monitor()
 
-    def portforward(self,remote,local):
-        self.sshclient.port_forward_local_start(remoteport=remote,localport=local)
+    def portforward(self, remote, local):
+        self.sshclient.port_forward_local_start(remoteport=remote, localport=local)
 
     def monitor(self):
         """
