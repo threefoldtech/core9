@@ -23,8 +23,13 @@ class SSHKeys(JSConfigBase):
     def key_get(self, path, load=True):
         instance = j.sal.fs.getBaseName(path)
         sshkey = self.get(instance)
-        if sshkey.config.data["path"] != path:
-            raise RuntimeError("paths should be same")
+
+        if j.tools.configmanager.interactive:
+            if sshkey.config.data["path"] != path:
+                raise RuntimeError("paths should be same")
+        else:
+            sshkey.config.data["path"] == path
+
         if load:
             sshkey.load()
         return sshkey
@@ -178,7 +183,7 @@ class SSHKeys(JSConfigBase):
     def sshkey_pub_get(self, keyname, die=True):
         """
         Returns Content of public key that is loaded in the agent
-        @param keyname: name of key loaded to agent to get content from 
+        @param keyname: name of key loaded to agent to get content from
         """
         keyname = j.sal.fs.getBaseName(keyname)
         for name, pubkey in j.clients.sshkey.list(True):

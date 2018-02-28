@@ -28,8 +28,8 @@ class JSBaseClassConfig(JSBASE):
 
         self._config = j.tools.configmanager._get_for_obj(
             self, instance=self._instance, data=data, template=self._template, ui=self._ui)
-        
-        if self.config.new and data=={} and interactive:
+
+        if self.config.new and data == {} and self.interactive:
             self.configure()
 
     @property
