@@ -35,6 +35,7 @@ class SSHClient(SSHClientBase):
 
     def execute(self, cmd, showout=True, die=True):
         channel, _, stdout, stderr, _ = self.client.run_command(cmd)
+        self._client.wait_finished(channel)
 
         def _consume_stream(stream, printer):
             buffer = io.StringIO()
@@ -46,12 +47,9 @@ class SSHClient(SSHClientBase):
 
         out = _consume_stream(stdout, self.logger.info)
         err = _consume_stream(stderr, self.logger.error)
-
-        # TODO: not sure both of these are required
-        channel.wait_eof()
-        channel.close()
-
+        
         rc = channel.get_exit_status()
+
         if rc and die:
             raise j.exceptions.RuntimeError("Cannot execute (ssh):\n%s\noutput:\n%serrors:\n%s" % (cmd, out.getvalue(), err.getvalue()))
 
