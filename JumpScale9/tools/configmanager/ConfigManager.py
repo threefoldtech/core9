@@ -443,11 +443,11 @@ class ConfigFactory(JSBASE):
                     j.core.state.configSetInDict("myconfig", "giturl", giturl)
 
                 j.core.state.configSave()
-
-        j.tools.myconfig.config.data = data
-        if j.tools.myconfig.config.data["email"] == "":
-            j.tools.myconfig.configure()
-        j.tools.myconfig.config.save()
+        if not silent:
+            j.tools.myconfig.config.data = data
+            if j.tools.myconfig.config.data["email"] == "":
+                j.tools.myconfig.configure()
+            j.tools.myconfig.config.save()
 
     def test(self):
         """
