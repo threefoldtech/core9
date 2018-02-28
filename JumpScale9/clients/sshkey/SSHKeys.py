@@ -40,10 +40,7 @@ class SSHKeys(JSConfigBase):
             j.sal.fs.remove(path)
 
         if not j.sal.fs.exists(path):
-            if passphrase:
-                cmd = 'ssh-keygen -t rsa -f %s -q -P "%s"' % (path, passphrase)
-            else:
-                cmd = 'ssh-keygen -t rsa -f %s -q' % (path)
+            cmd = 'ssh-keygen -t rsa -f %s -q -P "%s"' % (path, passphrase)
             j.sal.process.execute(cmd, timeout=10)
 
         j.sal.fs.chmod(path, 0o600)
