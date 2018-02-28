@@ -37,7 +37,7 @@ class ExecutorFactory(JSBASE):
             key = '%s:%s:%s' % (sshclient.config.data['addr'],
                                 sshclient.config.data['port'], sshclient.config.data['login'])
             # if key not in self._executors or usecache is False or (key in self._executors and self._executors[key].sshclient.transport is None):
-            if key not in self._executors or self._executors[key].sshclient.transport is None:
+            if key not in self._executors or self._executors[key].sshclient is None:
                 self._executors[key] = ExecutorSSH(sshclient=sshclient)
             else:
                 print("cache hit for:%s" % sshclient)

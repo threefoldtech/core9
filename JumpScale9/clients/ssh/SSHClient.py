@@ -17,12 +17,13 @@ class SSHClient(SSHClientBase):
 
     @property
     def client(self):
-        pkey = self.sshkey.path
-        if self.passwd:
-            pkey = None
+        pkey = self.sshkey.path or None
+        passwd = self.passwd
+        if pkey:
+            passwd = self.sshkey.passphrase
         self._client = PSSHClient(self.addr,
                                   user=self.login,
-                                  password=self.passwd,
+                                  password=passwd,
                                   port=self.port,
                                   pkey=pkey,
                                   num_retries=0,
@@ -57,18 +58,20 @@ class SSHClient(SSHClientBase):
         return rc, out.getvalue(), err.getvalue()
 
     def connect(self):
-        pkey = self.sshkey.path
-        if self.passwd:
-            pkey = None
+        pkey = self.sshkey.path or None
+        passwd = self.passwd
+        if pkey:
+            passwd = self.sshkey.passphrase
         self._client = PSSHClient(self.addr,
                                   user=self.login,
-                                  password=self.passwd,
+                                  password=passwd,
                                   port=self.port,
                                   pkey=pkey,
                                   num_retries=self.timeout / 6,
                                   retry_delay=1,
                                   allow_agent=self.allow_agent,
                                   timeout=5)
+        self._client.session.sftp_init() # seems to go further when I add this - TODO: look into it
 
     # def connectViaProxy(self, host, username, port, identityfile, proxycommand=None):
     #     # TODO: Fix this
@@ -169,8 +172,9 @@ class SSHClient(SSHClientBase):
         return prefab
 
     def ssh_authorize(self, user, key):
-        self.prefab.system.ssh.authorize(user=user, key=key)
-
+        sshkey = j.clients.sshkey.get(key)
+        pubkey = sshkey.pubkey
+        self.prefab.system.ssh.authorize(user=user, key=pubkey)
     # def portforwardToLocal(self, remoteport, localport):
     #     self.portforwardKill(localport)
     #     C = "ssh -L %s:localhost:%s root@%s -p %s" % (
