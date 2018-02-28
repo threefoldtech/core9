@@ -327,6 +327,7 @@ class ConfigFactory(JSBASE):
             self._path = configpath
             j.sal.fs.createDir(configpath)
             j.sal.fs.touch("%s/.jsconfig" % configpath)
+            j.core.state.configSetInDict("myconfig", "path", configpath)
 
         cpath = configpath
 
@@ -403,9 +404,9 @@ class ConfigFactory(JSBASE):
                 j.core.state.configSetInDict("myconfig", "sshkeyname", keys0[0])
 
         if keypath:
+            self.keyname = j.sal.fs.getBaseName(keypath)
+            j.core.state.configSetInDict("myconfig", "sshkeyname", self.keyname)
             j.clients.sshkey.key_get(keypath, load=True)
-            keyname = j.sal.fs.getBaseName(keypath)
-            self.keyname = keyname
         else:
             ssh_init(silent=silent)
 
