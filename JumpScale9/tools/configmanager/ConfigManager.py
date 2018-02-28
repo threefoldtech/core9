@@ -31,7 +31,7 @@ class ConfigFactory(JSBASE):
         JSBASE.__init__(self)
         self._path = ""
         self.interactive = True  # std needs to be on True
-        self.keyname = ""  # if set will overrule from the main js config file
+        self._keyname = ""  # if set will overrule from the main js config file
         self._init = False
 
     def reset(self, location=None, instance=None):
@@ -55,6 +55,12 @@ class ConfigFactory(JSBASE):
             self._path = j.core.state.configGetFromDict("myconfig", "path")
         return self._path
 
+    @property
+    def keyname(self):
+        if not self._keyname:
+            self._keyname = j.core.state.configGetFromDict("myconfig", "sshkeyname")
+        return self._keyname
+
     def sandbox_check(self, path="", die=False):
         if self._init and path == "" and die == False:
             return
@@ -74,7 +80,7 @@ class ConfigFactory(JSBASE):
                 raise RuntimeError("should only find 1 key, found:%s" % items)
             sshkeyname = j.sal.fs.getBaseName(items[0][:-4])
             kpath_full = j.sal.fs.pathNormalize(path + "/keys/%s" % sshkeyname)
-            j.tools.configmanager.keyname = j.sal.fs.getBaseName(path)
+            j.tools.configmanager._keyname = j.sal.fs.getBaseName(path)
             self._init = True
             return j.clients.sshkey.key_load(path=kpath_full)
         if die:
@@ -113,7 +119,7 @@ class ConfigFactory(JSBASE):
             kpath_full = "keys/%s" % sshkeyname
             kpath_full0 = j.sal.fs.pathNormalize(kpath_full)
             j.sal.fs.createDir(kpath)
-            j.tools.configmanager.keyname = sshkeyname
+            j.tools.configmanager._keyname = sshkeyname
             j.clients.sshkey.key_generate(path=kpath_full0, passphrase=passphrase, load=True, returnObj=False)
 
         j.tools.configmanager._path = j.sal.fs.pathNormalize(cpath)
@@ -387,7 +393,7 @@ class ConfigFactory(JSBASE):
         cpath = configpath
 
         if keypath:
-            self.keyname = j.sal.fs.getBaseName(keypath)
+            self._keyname = j.sal.fs.getBaseName(keypath)
             j.core.state.configSetInDict("myconfig", "sshkeyname", self.keyname)
             j.clients.sshkey.key_get(keypath, load=True)
         else:
