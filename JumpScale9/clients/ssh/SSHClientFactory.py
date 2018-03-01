@@ -227,6 +227,7 @@ class SSHClientFactory:
                      enters interactive mode and ask which keys to load if dir path was provided
         :param duration: duration to retain the keys loaded in the agent
         """
+        import ipdb; ipdb.set_trace()
         self.ssh_agent_check()
 
         if path is None:
