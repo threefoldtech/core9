@@ -1,7 +1,10 @@
-from JumpScale9 import j
+from js9 import j
 
+JSBASE = j.application.jsbase_get_class()
+class SerializerBase(JSBASE):
 
-class SerializerBase:
+    def __init__(self):
+        JSBASE.__init__(self)
 
     def dump(self, filepath, obj):
         data = self.dumps(obj)

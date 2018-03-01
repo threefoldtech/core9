@@ -3,14 +3,15 @@
 from js9 import j
 from .Tags import Tags
 
-
-class TagsFactory:
+JSBASE = j.application.jsbase_get_class()
+class TagsFactory(JSBASE):
     """
     Factory Class of dealing with TAGS
     """
 
     def __init__(self):
         self.__jslocation__ = "j.data.tags"
+        JSBASE.__init__(self)
 
     def getObject(self, tagstring="", setFunction4Tagstring=None, keepcase=False):
         """

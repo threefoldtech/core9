@@ -1,6 +1,7 @@
 from js9 import j
 from .utils import get_msg_path
 
+JSBASE = j.application.jsbase_get_class()
 
 class attrdict(dict):
 
@@ -25,7 +26,7 @@ def toattrdict(d):
     return d
 
 
-class Message(attrdict):
+class Message(attrdict, JSBASE):
 
     """
 Details about the message for which the event occurred.
@@ -66,6 +67,7 @@ Details about the message for which the event occurred.
 
     def __init__(self, key, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        JSBASE.__init__()
         self._key = key
         self._cached = False
 

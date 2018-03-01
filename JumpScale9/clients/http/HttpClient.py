@@ -12,6 +12,8 @@ from urllib.parse import urlencode, urlparse, urlunparse
 import urllib.parse
 import urllib.request
 import urllib.error
+from js9 import j
+JSBASE = j.application.jsbase_get_class()
 
 
 HTTP_CREATED = 201  # from practical examples, authorization created returns 201
@@ -29,9 +31,10 @@ STATUS_AUTH_REQ = set([HTTP_AUTH_REQUIRED, HTTP_FORBIDDEN])
 AUTHORIZATION_HEADER = 'Authorization'
 
 
-class HTTPError(Exception):
+class HTTPError(Exception, JSBASE):
 
     def __init__(self, httperror, url):
+        JSBASE.__init__(self)
         msg = 'Could not open http connection to url %s' % url
         data = ''
         self.status_code = None
@@ -46,10 +49,10 @@ class HTTPError(Exception):
         return "%s:\n %s" % (self.status_code, self.msg)
 
 
-class Connection:
+class Connection(JSBASE):
 
     def __init__(self):
-        pass
+        JSBASE.__init__(self)
 
     def simpleAuth(self, url, username, password):
         """
@@ -64,7 +67,7 @@ class Connection:
             handle = urllib.request.urlopen(req)
             return handle
         except IOError as e:
-            print(e)
+            raise RuntimeError("could not do simple auth.\n%s"%e)
 
     def get(self, url, data=None, headers=None, **params):
         """
@@ -84,7 +87,6 @@ class Connection:
         if headers is None:
             headers = {'content-type': 'text/plain'}
 
-        # print data
         response = self._http_request(
             url, data=data, headers=headers, method='POST', **params)
         return response
@@ -139,7 +141,7 @@ class Connection:
             if meta_length:
                 file_size = int(meta_length[0])
             if report:
-                print(("Downloading: {0} Bytes: {1}".format(url, file_size)))
+                self.logger.debug(("Downloading: {0} Bytes: {1}".format(url, file_size)))
 
             file_size_dl = 0
             block_sz = 8192
@@ -156,7 +158,7 @@ class Connection:
                         status += "   [{0:6.2f}%]".format(
                             file_size_dl * 100 / file_size)
                     status += chr(13)
-                    print(status)
+                    self.logger.debug(status)
 
     def _updateUrlParams(self, url, **kwargs):
         """
@@ -203,7 +205,6 @@ class Connection:
         try:
             resp = urllib.request.urlopen(request)
         except Exception as e:
-            print(e)
             raise HTTPError(e, url)
 
         #if resp.code in STATUS_AUTH_REQ: raise AuthorizationError('Not logged in or token expired')
@@ -213,10 +214,11 @@ class Connection:
         return resp
 
 
-class HttpClient:
+class HttpClient(JSBASE):
 
     def __init__(self):
         self.__jslocation__ = "j.clients.http"
+        JSBASE.__init__(self)
 
     def getConnection(self):
         """

@@ -4,10 +4,12 @@ import tarantool
 import pystache
 import os
 
+JSBASE = j.application.jsbase_get_class()
 
-class TarantoolDB():
+class TarantoolDB(JSBASE):
 
     def __init__(self, name="test", path="$DATADIR/tarantool/$NAME", adminsecret="admin007", port=3301):
+        JSBASE.__init__(self)
         self.path = j.dirs.replace_txt_dir_vars(path).replace("$NAME", name).strip()
         j.sal.fs.createDir(self.path)
         self.name = name

@@ -1,9 +1,12 @@
 from js9 import j
 
+JSBASE = j.application.jsbase_get_class()
 
-class Disk:
+
+class Disk(JSBASE):
 
     def __init__(self, devname, node=None, disknr=None, screenname=None):
+        JSBASE.__init__(self)
         devname.replace("//", "/")
         self.devname = devname
         self.devnameshort = self.devname.split("/")[2]
@@ -17,19 +20,19 @@ class Disk:
         """
         fs: filesystem to use when formating
         """
-        print("init %s:%s" % (fs, self))
+        self.logger.debug("init %s:%s" % (fs, self))
         res = self.node.execute("lsblk -f | grep %s" % self.devnameshort, dieOnError=False)[1].strip()
         if res == "" or res.find(fs) == -1:
             # did not find formatted disk
             self.node.execute("mkfs.%s -f /dev/%s" % (fs, self.devnameshort))
         self.mount()
 
-        print("init %s:%s check mount" % (fs, self))
+        self.logger.debug("init %s:%s check mount" % (fs, self))
 
         if not self.checkMount():
             raise j.exceptions.RuntimeError("could not mount %s" % self)
 
-        print("init %s:%s done" % (fs, self))
+        self.logger.debug("init %s:%s done" % (fs, self))
 
     def initDiskXFS(self):
         self.initDisk(fs='xfs')
@@ -38,7 +41,7 @@ class Disk:
         self.initDisk(fs='btrfs')
 
     def mount(self):
-        print("mount:%s mounting %s on %s " % (self, self.devname, self.disknr))
+        self.logger.debug("mount:%s mounting %s on %s " % (self, self.devname, self.disknr))
         if self.mountpath is None:
             self.mountpath = '/storage/%s' % self.disknr
         self.node.execute("mkdir -p /storage/%s" % self.disknr)

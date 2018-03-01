@@ -3,10 +3,17 @@ from js9 import j
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
+JSBASE = j.application.jsbase_get_class()
 
-class MyFileSystemEventHandler(FileSystemEventHandler):
+
+class MyFileSystemEventHandler(FileSystemEventHandler, JSBASE):
+    def __init__(self):
+        JSBASE.__init__(self)
+        self.logger_enable()
+        self.nodes = j.tools.develop.nodes.getall()
 
     def handler(self, event, action="copy"):
+        self.logger.debug("%s:%s" % (event, action))
         changedfile = event.src_path
         if event.is_directory:
             if changedfile.find("/.git") != -1:
@@ -18,7 +25,7 @@ class MyFileSystemEventHandler(FileSystemEventHandler):
             j.tools.develop.sync()
         else:
             error = False
-            for node in j.tools.develop.nodes.getall():
+            for node in self.nodes:
                 if node.selected == False:
                     continue
                 if error is False:
@@ -34,16 +41,17 @@ class MyFileSystemEventHandler(FileSystemEventHandler):
                             node.prefab.core.dir_paths['CODEDIR'], destpart)
                     e = ""
                     if action == "copy":
-                        print("copy: %s %s:%s" % (changedfile, node, dest))
+                        self.logger.debug("copy: %s %s:%s" % (changedfile, node, dest))
                         try:
-                            node.ftpclient.put(changedfile, dest)
+                            node.sftp.put(changedfile, dest)
                         except Exception as e:
-                            print("** ERROR IN COPY, WILL SYNC ALL")
+                            self.logger.debug("** ERROR IN COPY, WILL SYNC ALL")
+                            self.logger.debug(str(e))
                             error = True
                     elif action == "delete":
-                        print("delete: %s %s:%s" % (changedfile, node, dest))
+                        self.logger.debug("delete: %s %s:%s" % (changedfile, node, dest))
                         try:
-                            node.ftpclient.remove(dest)
+                            node.sftp.remove(dest)
                         except Exception as e:
                             if "No such file" in str(e):
                                 return
@@ -56,7 +64,7 @@ class MyFileSystemEventHandler(FileSystemEventHandler):
 
                 if error:
                     try:
-                        print(e)
+                        self.logger.debug(e)
                     except BaseException:
                         pass
                     node.sync()

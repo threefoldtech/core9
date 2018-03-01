@@ -15,7 +15,6 @@ class NodeNas(NodeBase):
         e.g : if nbrdisk=3, use disks /dev/sdb, /dev/sdc, /dev/sdd
         """
         super(NodeNas, self).__init__(ipaddr=ipaddr, sshport=sshport, role="nas", name=name)
-
         self.debugdisk = debugdisk
         if self.debugdisk != "":
             self.debug = True
@@ -54,7 +53,7 @@ class NodeNas(NodeBase):
                 self.disks.append(disk)
 
             # check mounts
-            print("check disks are mounted and we find them all")
+            self.logger.debug("check disks are mounted and we find them all")
             result = self.ssh.run("mount")
             for line in result.split("\n"):
                 if line.find(" on ") != -1 and line.startswith("/dev/v"):  # and line.find(self.fstype)!=-1:
@@ -74,7 +73,7 @@ class NodeNas(NodeBase):
 
                     # raise j.exceptions.RuntimeError("Could not find all disks mounted, disk %s not mounted on %s"%(disk,self))
 
-            print("all disks mounted")
+            self.logger.debug("all disks mounted")
 
         else:
             i = 0
@@ -111,11 +110,11 @@ class NodeNas(NodeBase):
             # create backend file
             count = int(size) / 4
             cmd = 'dd if=/dev/zero of=%s bs=4MB count=%d' % (backend_file, int(count))
-            print("creation of the backend file %s, size %sMB. This can takes a while" % (backend_file, size))
+            self.logger.debug("creation of the backend file %s, size %sMB. This can takes a while" % (backend_file, size))
             self.execute(cmd, env={}, dieOnError=False, report=True)
 
             # create loop device
-            print("create loop device")
+            self.logger.debug("create loop device")
             cmd = 'losetup -f %s;losetup -a' % backend_file
             out = self.execute(cmd, env={}, dieOnError=True, report=True)
             dev = checkLoopExists(out)

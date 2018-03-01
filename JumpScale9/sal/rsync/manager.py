@@ -9,14 +9,18 @@ CONFIG_FILE = '/etc/rsyncd.conf'
 # EXPORT_OPT_REGEXT = re.compile('^(?:([\w/]+)|"([\w\s/]+)")\s+(.+)$')
 # CLIENT_OPT_REGEXT = re.compile('\s*([^\(]+)\(([^\)]+)\)')
 
+JSBASE = j.application.jsbase_get_class()
+class RsyncError(Exception, JSBASE):
 
-class RsyncError(Exception):
+    def __init__(self):
+        JSBASE.__init__(self)
+
     pass
 
-
-class RsyncModule:
+class RsyncModule(JSBASE):
 
     def __init__(self, name=None):
+        JSBASE.__init__(self)
         self.name = name
         self.params = {}
 
@@ -41,9 +45,10 @@ class RsyncModule:
         return str(self)
 
 
-class Rsync:
+class Rsync(JSBASE):
 
     def __init__(self):
+        JSBASE.__init__(self)
         self._local = j.tools.executorLocal
         self._modules = None
         self._globalParams = {}
@@ -185,7 +190,10 @@ class Rsync:
         return str(self)
 
 
-class RsyncFactory:
+class RsyncFactory(JSBASE):
+
+    def __init__(self):
+        JSBASE.__init__(self)
 
     def _getFactoryEnabledClasses(self):
         return (("", "RsyncModule", RsyncModule()), ("", "Rsync", Rsync()))

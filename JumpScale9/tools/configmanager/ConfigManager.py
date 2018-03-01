@@ -21,29 +21,21 @@ js9_config init
 
 """
 
+JSBASE = j.application.jsbase_get_class()
 
-class ConfigFactory:
+
+class ConfigFactory(JSBASE):
 
     def __init__(self):
         self.__jslocation__ = "j.tools.configmanager"
+        JSBASE.__init__(self)
         self._path = ""
-        # self._cache = {}
-        self.interactive = True
+        self.interactive = True  # std needs to be on True
+        self._keyname = ""  # if set will overrule from the main js config file
+        self._init = False
 
-    # def reset(self, location=None, instance=None):
-    #     if location and not instance:
-    #         for key in self._cache:
-    #             if key.startswith('%_' % location):
-    #                 self._cache.pop(key)
-    #     elif location and instance:
-    #         key = "%s_%s" % (location, instance)
-    #         if key in self._cache:
-    #             self._cache.pop(key)
-    #     else:
-    #         self._cache = {}
-
-    def reset(self, location=None, instance=None, force=False):
-        path = self.path_configrepo
+    def reset(self, location=None, instance=None):
+        path = self.path
         if location:
             path = j.sal.fs.joinPaths(path, location)
         if instance:
@@ -57,55 +49,123 @@ class ConfigFactory:
         else:
             j.sal.fs.remove(path)
 
-    def _findConfigDirParent(self, path, die=True):
-        if path == "":
-            path = j.sal.fs.getcwd()
-
-        # first check if there is no .jsconfig in parent dirs
-        curdir = copy.copy(path)
-        while curdir.strip() != "":
-            if j.sal.fs.exists("%s/.jsconfig" % curdir) and j.sal.fs.exists("%s/.git" % curdir):
-                break
-            # look for parent
-            curdir = j.sal.fs.getParent(curdir)
-        if curdir.strip() != "":
-            return curdir
-        if die:
-            raise RuntimeError(
-                "Could not find config dir as parent of:'%s'" % path)
-        else:
-            return None
+    @property
+    def path(self):
+        if not self._path:
+            self._path = j.core.state.configGetFromDict("myconfig", "path")
+        return self._path
 
     @property
-    def path_configrepo(self):
+    def keyname(self):
+        if not self._keyname:
+            self._keyname = j.core.state.configGetFromDict("myconfig", "sshkeyname")
+        return self._keyname
+
+    def sandbox_check(self, path="", die=False):
+        if self._init and path == "" and die == False:
+            return
+        if not path:
+            path = j.sal.fs.getcwd()
+
+        cpath = j.sal.fs.pathNormalize(path + "/secureconfig")
+        kpath = j.sal.fs.pathNormalize(path + "/keys")
+
+        if j.sal.fs.exists(cpath):
+            self.logger.debug("found sandbox config:%s" % cpath)
+            j.tools.configmanager._path = cpath
+        if j.sal.fs.exists(kpath):
+            self.logger.debug("found sandbox sshkeys:%s" % kpath)
+            items = j.sal.fs.listFilesInDir(kpath, filter="*.pub")
+            if len(items) != 1:
+                raise RuntimeError("should only find 1 key, found:%s" % items)
+            sshkeyname = j.sal.fs.getBaseName(items[0][:-4])
+            kpath_full = j.sal.fs.pathNormalize(path + "/keys/%s" % sshkeyname)
+            j.tools.configmanager._keyname = j.sal.fs.getBaseName(path)
+            self._init = True
+            return j.clients.sshkey.key_load(path=kpath_full)
+        if die:
+            raise RuntimeError("did not find sandbox on this path:%s" % path)
+        self._init = True
+
+    def sandbox_init(self, path="", systemssh=False, passphrase="", reset=False, sshkeyname=""):
+        """
+        Will use specified dir as sandbox for config management (will not use system config dir)
+
+        looks for $path/secureconfig & $path/sshkeys (if systemssh == False)
+        if not found will create
+
+        Keyword Arguments:
+            systemssh {Bool} -- if True will use the configured sshkey on system (default: {False})
+            reset {Bool} -- will replace current config (default: {False})
+            sshkeyname -- if empty will be dirname of current path
+
+        Returns:
+            SSHKey
+        """
+
+        if path:
+            j.sal.fs.changeDir(path)
+
+        # just to make sure all stays relative (we don't want to store full paths)
+        path = ""
+        if not sshkeyname:
+            sshkeyname = j.sal.fs.getBaseName(j.sal.fs.getcwd())
+
+        cpath = "secureconfig"
+        j.sal.fs.createDir(cpath)
+
+        if not systemssh:
+            kpath = "keys"
+            kpath_full = "keys/%s" % sshkeyname
+            kpath_full0 = j.sal.fs.pathNormalize(kpath_full)
+            j.sal.fs.createDir(kpath)
+            j.tools.configmanager._keyname = sshkeyname
+            j.clients.sshkey.key_generate(path=kpath_full0, passphrase=passphrase, load=True, returnObj=False)
+
+        j.tools.configmanager._path = j.sal.fs.pathNormalize(cpath)
+
+        data = {}
+        data["path"] = kpath_full
+        data["passphrase_"] = passphrase
+
+        sshkeyobj = j.clients.sshkey.get(instance=sshkeyname, data=data, interactive=False)
+
+        j.tools.configmanager.init(configpath=cpath, keypath=kpath_full, silent=False)
+
+        return sshkeyobj
+
+    def _findConfigRepo(self, die=False):
         """
         if path is not set, it will look under CODEDIRS for any pre-configured js9_config repo
         if there are more than one, will try to use one in root of cwd. If not in one, will raise a RuntimeError
+
+        return configpath,remoteGitUrl
         """
-        if not self._path:
-            paths = j.sal.fs.find(j.dirs.CODEDIR, '.jsconfig')
-            paths = [j.sal.fs.getParent(path) for path in paths]
-            if not paths:
-                print(installmessage)
-                raise RuntimeError("Cannot find path for configuration repo, please checkout right git repo "
-                                   "& run 'js9_config init' in that repo ")
-            if len(paths) > 1:
-                j.logger.logging.warning(
-                    "found configuration dirs in multiple locations: {}".format(paths))
-                path = self._findConfigDirParent(
-                    path=j.sal.fs.getcwd(), die=False)
-                if not path:
-                    raise RuntimeError("multipule configuration repos were found in {} but not currently in root of one".format(
-                        paths, j.sal.fs.getcwd()))
-                res = j.clients.git.getGitReposListLocal()
-                for _, path in res.items():
-                    checkpath = "%s/.jsconfig" % path
-                    if j.sal.fs.exists(checkpath):
-                        self._path = path
+        self.sandbox_check()
+        path = j.sal.fs.getParentWithDirname(dirname=".jsconfig", die=die)
+        if path != None:
+            return path, None
+        paths = []
+        for key, path in j.clients.git.getGitReposListLocal().items():
+            if j.sal.fs.exists(j.sal.fs.joinPaths(path, ".jsconfig")):
+                paths.append(path)
+        if len(paths) == 0:
+            if die:
+                raise RuntimeError("could not find config paths")
             else:
-                self._path = paths[0]
-            j.logger.logging.info("found jsconfig dir in: %s" % self._path)
-        return self._path
+                return None, None
+        if len(paths) > 1:
+            if die:
+                raise RuntimeError(
+                    "multipule configuration repos were found in {} but not currently in root of one".format(paths))
+            else:
+                return None, None
+        cpath = paths[0]
+        g = j.clients.git.get(cpath)
+        self.logger.info("found jsconfig dir in: %s" % cpath)
+        self.logger.info("remote url: %s" % g.remoteUrl)
+
+        return cpath, g.remoteUrl
 
     @property
     def base_class_config(self):
@@ -115,15 +175,15 @@ class ConfigFactory:
     def base_class_configs(self):
         return JSBaseClassConfigs
 
-    def configure(self, location="", instance="main", data={}, sshkey_path=None):
+    def configure(self, location="", instance="main", data={}):
         """
         Will display a npyscreen form to edit the configuration
         @param location: jslocation of module to configure for (eg: j.clients.openvcloud)
         @param: instance: configuration instance
-        @param: sshkey_path: sshkey for NACL encryption/decryption
         """
+        self.sandbox_check()
         js9obj = self.js9_obj_get(location=location, instance=instance, data=data)
-        js9obj.configure(sshkey_path=sshkey_path)
+        js9obj.configure()
         js9obj.config.save()
         return js9obj
 
@@ -132,16 +192,18 @@ class ConfigFactory:
         update the configuration by giving a dictionnary. The configuration will
         be updated with the value of updatedict
         """
+        self.sandbox_check()
         js9obj = self.js9_obj_get(location=location, instance=instance)
         sc = js9obj.config
         sc.data = updatedict
         sc.save()
         return sc
 
-    def _get_for_obj(self, jsobj, template, ui=None, instance="main", data={}, sshkey_path=None):
+    def _get_for_obj(self, jsobj, template, ui=None, instance="main", data={}):
         """
         return a secret config
         """
+        self.sandbox_check()
         if not hasattr(jsobj, '__jslocation__') or jsobj.__jslocation__ is None or jsobj.__jslocation__ is "":
             raise RuntimeError(
                 "__jslocation__ has not been set on class %s" % jsobj.__class__)
@@ -150,53 +212,49 @@ class ConfigFactory:
 
         if ui is not None:
             jsobj.ui = ui
-
-        sc = Config(instance=instance, location=location,
-                    template=template, sshkey_path=sshkey_path)
-
-        if data != {}:
-            sc.data = data
+        sc = Config(instance=instance, location=location, template=template, data=data)
 
         return sc
 
-    def js9_obj_get(self, location="", instance="main", data=None, sshkey_path=None):
+    def js9_obj_get(self, location="", instance="main", data={}):
         """
         will look for jumpscale module on defined location & return this object
         and generate the object which has a .config on the object
         """
-        if not data:
-            data = {}
+        self.sandbox_check()
         if not location:
-            if j.sal.fs.getcwd().startswith(self.path_configrepo):
+            if j.sal.fs.getcwd().startswith(self.path):
                 # means we are in subdir of current config  repo, so we can be
                 # in location
                 location = j.sal.fs.getBaseName(j.sal.fs.getcwd())
                 if not location.startswith("j."):
                     raise RuntimeError(
                         "Cannot find location, are you in right directory? now in:%s" % j.sal.fs.getcwd())
+            else:
+                raise RuntimeError(
+                    "location has not been specified, looks like we are not in config directory:'%s'" % self.path)
 
         obj = eval(location)
         # If the client is a single item one (i.e itsyouonline), we will always use the default `main` instance
         if obj._single_item:
             instance = "main"
-        obj = obj.get(instance=instance, data=data, sshkey_path=sshkey_path)
-        obj.sshkey_path = sshkey_path
+        if not hasattr(obj, 'get'):
+            return obj
+        obj = obj.get(instance=instance, data=data)
         return obj
 
-    # def get(self, location, template={}, instance="main", data={}, ui=None):
-    #     """
-    #     return a secret config
-    #     """
-    #     if location == "":
-    #         raise RuntimeError("location cannot be empty")
-    #     if instance == "" or instance == None:
-    #         raise RuntimeError("instance cannot be empty")
-    #     key = "%s_%s" % (location, instance)
-    #     if key not in self._cache:
-    #         sc = Config(instance=instance, location=location,
-    #                     template=template, ui=ui, data=data)
-    #         self._cache[key] = sc
-    #     return self._cache[key]
+    def get(self, location, instance="main"):
+        """
+        return a secret config, it needs to exist, otherwise it will die
+        """
+        self.sandbox_check()
+        if location == "":
+            raise RuntimeError("location cannot be empty")
+        if instance == "" or instance == None:
+            raise RuntimeError("instance cannot be empty")
+        key = "%s_%s" % (location, instance)
+        sc = Config(instance=instance, location=location)
+        return sc
 
     # should use config_update
     # def set(self, location, instance, config=None):
@@ -210,7 +268,7 @@ class ConfigFactory:
     #     """
     #     # create the config directory and file, so we don't trigger the form
     #     # when creating a SercretConfig object
-    #     path = j.sal.fs.joinPaths(j.tools.configmanager.path_configrepo, location, instance + '.toml')
+    #     path = j.sal.fs.joinPaths(j.tools.configmanager.path, location, instance + '.toml')
     #     j.sal.fs.createDir(j.sal.fs.getParent(path))
     #     j.sal.fs.writeFile(path, "")
 
@@ -228,9 +286,10 @@ class ConfigFactory:
 
         @return: list of instance name
         """
+        self.sandbox_check()
         instances = []
 
-        root = j.sal.fs.joinPaths(self.path_configrepo, location)
+        root = j.sal.fs.joinPaths(self.path, location)
         if not j.sal.fs.exists(root):
             return instances
 
@@ -246,68 +305,187 @@ class ConfigFactory:
         return instances
 
     def delete(self, location, instance="*"):
+        self.sandbox_check()
         if instance != "*":
-            path = j.sal.fs.joinPaths(j.tools.configmanager.path_configrepo, location, instance + '.toml')
+            path = j.sal.fs.joinPaths(j.tools.configmanager.path, location, instance + '.toml')
             if j.sal.fs.exists(path):
                 j.sal.fs.remove(path)
         else:
-            path = j.sal.fs.joinPaths(j.tools.configmanager.path_configrepo, location)
+            path = j.sal.fs.joinPaths(j.tools.configmanager.path, location)
             if j.sal.fs.exists(path):
                 for item in j.sal.fs.listFilesInDir(path):
                     j.sal.fs.remove(item)
 
-    def init(self, path="", data=None):
+    def init(self, data={}, silent=False, configpath="", keypath=""):
+        """
+        @param data is data for myconfig
+        @param configpath is the path towards the config directory can be git based or local
+        @param keypath is the path towards the ssh key which will be used to use the config manager
 
-        if self._findConfigDirParent(path, die=False) is not None:
-            return
-        gitdir = "%s/.git" % path
-        if not j.sal.fs.exists(gitdir) or not j.sal.fs.isDir(gitdir):
-            raise RuntimeError(
-                "path {} is not in root of a git repo".format(path))
+        """
 
-        j.sal.fs.touch("%s/.jsconfig" % path)
+        def msg(msg):
+            self.logger.info("JS9 init: %s" % msg)
 
-        self._path = path
-        if data is None:
-            j.tools.myconfig.configure()
+        def die(msg):
+            self.logger.error("ERROR: CAN NOT INIT JUMPSCALE9")
+            self.logger.error("ERROR: %s" % msg)
+            self.logger.error(
+                "make sure you did the upgrade procedure: 'cd  ~/code/github/jumpscale/core9/;python3 upgrade.py'")
+            sys.exit(1)
+
+        def ssh_init(ssh_silent=False):
+            self.logger.debug("ssh init (no keypath specified)")
+
+            keys = j.clients.sshkey.list()
+            keys0 = [j.sal.fs.getBaseName(item) for item in keys]
+
+            if not keys:
+                # if no keys try to load a key from home directory/.ssh and re-run the method again
+                self.logger.debug("found 0 keys")
+                keys = j.sal.fs.listFilesInDir("%s/.ssh" % j.dirs.HOMEDIR,
+                                               exclude=["*.pub", "*authorized_keys*", "*known_hosts*"])
+                if not keys:
+                    raise RuntimeError("Cannot find keys, please load right ssh keys in agent, now 0")
+                elif len(keys) > 1:
+                    if silent:
+                        raise RuntimeError("cannot run silent if more than 1 sshkey exists in your ~/.ssh directory, "
+                                           "please either load your key into your ssh-agent or "
+                                           "make sure you have only one key in ~/.ssh")
+                    msg("found ssh keys in your ~/.ssh directory, do you want to load one is ssh-agent?")
+                    key_chosen = j.tools.console.askChoice(keys)
+                    j.clients.sshkey.key_load(path=key_chosen)
+                else:
+                    j.clients.sshkey.key_load(path=keys[0])
+                return ssh_init()
+
+            elif len(keys) > 1:
+                # if loaded keys are more than one, ask user to select one or raise error if in silent mode
+                if ssh_silent:
+                    raise RuntimeError("cannot run silent if more than 1 sshkey loaded")
+                # more than 1 key
+                msg("Found more than 1 ssh key loaded in ssh-agent, "
+                    "please specify which one you want to use to store your secure config.")
+                key_chosen = j.tools.console.askChoice(keys0)
+                j.core.state.configSetInDict("myconfig", "sshkeyname", key_chosen)
+
+            else:
+                # 1 key found
+                msg("ssh key found in agent is:'%s'" % keys[0])
+                if not silent:
+                    msg("Is it ok to use this one:'%s'?" % keys[0])
+                    if not j.tools.console.askYesNo():
+                        die("cannot continue, please load other sshkey in your agent you want to use")
+                j.core.state.configSetInDict("myconfig", "sshkeyname", keys0[0])
+
+        self.sandbox_check()
+        if data != {}:
+            self.logger.debug("init: silent:%s path:%s data:\n%s" % (silent, configpath, data))
         else:
-            j.tools.myconfig.config.data = data
-            j.tools.myconfig.config.save()
+            self.logger.debug("init: silent:%s path:%s nodata\n" % (silent, configpath))
 
-        return path
+        if configpath:
+            self._path = configpath
+            j.sal.fs.createDir(configpath)
+            j.sal.fs.touch("%s/.jsconfig" % configpath)
+            j.core.state.configSetInDict("myconfig", "path", configpath)
+
+        cpath = configpath
+
+        if keypath:
+            self._keyname = j.sal.fs.getBaseName(keypath)
+            j.core.state.configSetInDict("myconfig", "sshkeyname", self.keyname)
+            j.clients.sshkey.key_get(keypath, load=True)
+        else:
+            ssh_init(ssh_silent=silent)
+
+        cfg = j.core.state.config_js
+        if "myconfig" not in cfg:
+            die("could not find myconfig in the main configuration file, prob need to upgrade")
+
+        if not cpath and not cfg["myconfig"]["path"]:
+            # means config directory not configured
+            cpath, giturl = self._findConfigRepo(die=False)
+
+            if silent:
+                if not cpath:
+                    msg("did not find config dir in code dirs, will create one in js9 cfg dir")
+                    cpath = '%s/myconfig/' % j.dirs.CFGDIR
+                    j.sal.fs.createDir(cpath)
+                    msg("Config dir in: '%s'" % cpath)
+                j.core.state.configSetInDict("myconfig", "path", cpath)
+                if not giturl:
+                    j.core.state.configSetInDict("myconfig", "giturl", giturl)
+            else:
+
+                if cpath:
+                    msg("Found a config repo on: '%s', do you want to use this one?" % cpath)
+                    if not j.tools.console.askYesNo():
+                        giturl = None
+                        cpath = ""
+                    else:
+                        if giturl:
+                            j.clients.git.pullGitRepo(url=giturl, interactive=True, ssh=True)
+
+                if not cpath:
+                    msg("Do you want to use a git based CONFIG dir, y/n?")
+                    if j.tools.console.askYesNo():
+                        msg("Specify a url like: 'ssh://git@docs.grid.tf:7022/despiegk/config_despiegk.git'")
+                        giturl = j.tools.console.askString("url")
+                        cpath = j.clients.git.pullGitRepo(url=giturl, interactive=True, ssh=True)
+
+                if not cpath:
+                    msg(
+                        "will create config dir in '%s/myconfig/', your config will not be centralised! Is this ok?" % j.dirs.CFGDIR)
+                    if j.tools.console.askYesNo():
+                        cpath = '%s/myconfig/' % j.dirs.CFGDIR
+                        j.sal.fs.createDir(cpath)
+
+                if cpath:
+                    j.core.state.configSetInDict("myconfig", "path", cpath)
+                else:
+                    die("ERROR: please restart config procedure, use git based config or need to store locally.")
+                if giturl:
+                    j.core.state.configSetInDict("myconfig", "giturl", giturl)
+
+                j.core.state.configSave()
+        if not silent:
+            j.tools.myconfig.config.data = data
+            if j.tools.myconfig.config.data["email"] == "":
+                j.tools.myconfig.configure()
+            j.tools.myconfig.config.save()
 
     def test(self):
         """
         js9 'j.tools.configmanager.test()'
         """
 
-        tdir = "/tmp/tests/secretconfig"
-        j.sal.fs.remove(tdir)
-        j.sal.fs.createDir(tdir)
-        j.sal.process.execute("cd %s && git init" % tdir)
+        def testinit():
 
-        self._test_myconfig_singleitem()
+            tdir = "/tmp/tests/secretconfig"
+            # j.sal.process.execute("cd %s && git init" % tdir)
+
+            MYCONFIG = """
+            fullname = "kristof@something"
+            email = "kkk@kk.com"
+            login_name = "dddd"
+            """
+            data = j.data.serializer.toml.loads(MYCONFIG)
+
+            self.init(path=tdir, data=data, silent=True)
+
+            assert j.tools.myconfig.config.data == data
+
+            return data
+
+        data = testinit()
+        self._test_myconfig_singleitem(data)
+        testinit()
         self._test_myconfig_multiitem()
 
-        j.sal.fs.remove(tdir)
+        # j.sal.fs.remove(tdir)
 
-    def _test_myconfig_singleitem(self):
-
-        tdir = "/tmp/tests/secretconfig"
-        tdir0 = "/tmp/tests/secretconfig"
-
-        MYCONFIG = """
-        fullname = "kristof@something"
-        email = "kkk@kk.com"
-        login_name = "dddd"
-        ssh_key_name = "something"
-        """
-        data = j.data.serializer.toml.loads(MYCONFIG)
-
-        self.init(path=tdir, data=data)
-
-        j.tools.myconfig.config.data = data
-        j.tools.myconfig.config.save()
+    def _test_myconfig_singleitem(self, data):
 
         tdir = "/tmp/tests/secretconfig/j.tools.myconfig"
         # there should be 1 file
@@ -323,13 +501,13 @@ class ConfigFactory:
         # j.tools.configmanager.reset()
         j.tools.myconfig.reset()  # will remove data from mem
         assert j.tools.myconfig.config._data == {
-            'email': '', 'fullname': '', 'login_name': '', 'ssh_key_name': ''}
+            'email': '', 'fullname': '', 'login_name': ''}
         assert j.tools.myconfig.config.data == {
-            'email': '', 'fullname': '', 'login_name': '', 'ssh_key_name': ''}
+            'email': '', 'fullname': '', 'login_name': ''}
 
         j.tools.myconfig.config.load()
         assert j.tools.myconfig.config.data == {
-            'email': '', 'fullname': '', 'login_name': '', 'ssh_key_name': ''}
+            'email': '', 'fullname': '', 'login_name': ''}
         j.tools.myconfig.config.data = data
         j.tools.myconfig.config.save()
         assert len(j.sal.fs.listFilesInDir(tdir)) == 1
@@ -353,7 +531,6 @@ class ConfigFactory:
         # delete
         self.delete("j.tools.myconfig", "main")
         assert len(j.sal.fs.listFilesInDir(tdir)) == 0
-        assert len(j.sal.fs.listFilesInDir(tdir0)) == 1
 
     def _test_myconfig_multiitem(self):
 
@@ -389,8 +566,11 @@ class ConfigFactory:
         tdir = "/tmp/tests/secretconfig/j.tools.nodemgr"
         assert len(j.sal.fs.listFilesInDir(tdir)) == 10
 
+        obj.config.data = {"secretconfig_": "test1"}
+        assert obj.config.data["secretconfig_"] == "test1"
+
         i = j.tools.nodemgr.get("test1")
         assert i.name == "test1"
 
         # j.tools.nodemgr.reset()
-        # assert len(j.sal.fs.listFilesInDir(tdir))==0
+        # assert len(j.sal.fs.listFilesInDir(tdir)) == 0

@@ -8,13 +8,12 @@ class PickleDBStore(KeyValueStoreBase):
     def __init__(self, name, namespace="db", baseDir='/tmp', host='localhost', serializers=[]):
         self._db_path = '{baseDir}/{name}'.format(baseDir=baseDir, name=name)
         self.db = pickledb.load(self._db_path, False)
-        KeyValueStoreBase.__init__(self, serializers)
         self.name = name
         self.namespace = namespace
         self.serializers = serializers
+        KeyValueStoreBase.__init__(self, namespace=self.namespace, serializers=self.serializers)
         self._indexkey = "index:%s" % namespace
         self.type = "file"
-        self.logger = j.logger.get("j.data.kvs.file")
 
     def _getKey(self, key):
         return '%s:%s' % (self.namespace, key)

@@ -6,11 +6,13 @@ from .ZeroTemplates import *
 from .ZeroRepos import *
 # from .ZeroServices import *
 
-
-class ZeroRobot:
+JSBASE = j.application.jsbase_get_class()
+class ZeroRobot(JSBASE):
 
     def __init__(self):
-        self.__jslocation__ = "j.tools.zerorobot"
+        if not hasattr(self, '__jslocation__'):
+            self.__jslocation__ = "j.tools.zerorobot"
+        JSBASE.__init__(self)
         self._models=None
         self._tarantool=None
         self._templates=None

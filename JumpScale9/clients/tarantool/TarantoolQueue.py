@@ -10,11 +10,13 @@ from .TarantoolDB import TarantoolDB
 
 import tarantool
 
+JSBASE = j.application.jsbase_get_class()
 
-class TarantoolQueue:
+class TarantoolQueue(JSBASE):
 
     def __init__(self, tarantoolclient, name, ttl=0, delay=0):
         """The default connection parameters are: host='localhost', port=9999, db=0"""
+        JSBASE.__init__(self)
         self.client = tarantoolclient
         self.db = self.client.db
         self.name = name

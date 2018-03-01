@@ -1,4 +1,4 @@
-from JumpScale9 import j
+from js9 import j
 
 # import JSModel
 import time
@@ -8,22 +8,21 @@ import collections
 import msgpack
 
 import re
-
-class KeyValueStoreBase:  # , metaclass=ABCMeta):
+JSBASE = j.application.jsbase_get_class()
+class KeyValueStoreBase(JSBASE):  # , metaclass=ABCMeta):
     '''KeyValueStoreBase defines a store interface.'''
 
     def __init__(self, namespace, name="", serializers=[], masterdb=None, cache=None, changelog=None):
         self.namespace = namespace
         self.name = name
-        self.logger = j.logger.get('j.data.kvs')
         self.serializers = serializers or list()
         self.unserializers = list(reversed(self.serializers))
-        self.cache = cache
         self.changelog = changelog
         self.masterdb = masterdb
         self._schema = b""
         self.owner = ""  # std empty
         self.inMem = False
+        JSBASE.__init__(self)
 
     def __new__(cls, *args, **kwargs):
         '''
@@ -33,10 +32,10 @@ class KeyValueStoreBase:  # , metaclass=ABCMeta):
         attrs = iter(list(cls.__dict__.items()))
 
         for attrName, attr in attrs:
-            if not attr.__doc__ and\
-               hasattr(KeyValueStoreBase, attrName) and\
-               not attrName.startswith('_')\
-               and isinstance(attr, collections.Callable):
+            if not attr.__doc__ and \
+                    hasattr(KeyValueStoreBase, attrName) and \
+                    not attrName.startswith('_') \
+                    and isinstance(attr, collections.Callable):
 
                 baseAttr = getattr(KeyValueStoreBase, attrName)
                 attr.__doc__ = baseAttr.__doc__
@@ -231,7 +230,7 @@ class KeyValueStoreBase:  # , metaclass=ABCMeta):
         else:
             if value is None:
                 raise j.exceptions.Input(message="value needs to be set (not None), key:%s" %
-                                         key, level=1, source="", tags="", msgpub="")
+                                                 key, level=1, source="", tags="", msgpub="")
 
         value2 = self.serialize(value)
 
@@ -249,7 +248,7 @@ class KeyValueStoreBase:  # , metaclass=ABCMeta):
                 # exists but no access, should just return False
                 # return False
                 # raise j.exceptions.Input(message="Object '%s' does exist but I have not rights." %
-                                        #  key, level=1, source="", tags="", msgpub="")
+                #  key, level=1, source="", tags="", msgpub="")
                 return True
             if "Cannot find" in str(e):
                 return False
@@ -396,7 +395,7 @@ class KeyValueStoreBase:  # , metaclass=ABCMeta):
     def lookupGet(self, name, key):
         raise NotImplemented()
 
-# DO NOT LOOK AT BELOW RIGHT NOW IS FOR FUTURE
+    # DO NOT LOOK AT BELOW RIGHT NOW IS FOR FUTURE
 
     # def checkChangeLog(self):
     #     pass

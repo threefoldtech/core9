@@ -3,8 +3,10 @@ import re
 from io import StringIO
 import os
 
+JSBASE = j.application.jsbase_get_class()
 
-class Profile:
+
+class Profile(JSBASE):
     env_pattern = re.compile(r'^([^=\n]+)="([^"\n]+)"$', re.MULTILINE)
     include_pattern = re.compile(r'^source (.*)$', re.MULTILINE)
 
@@ -17,6 +19,7 @@ class Profile:
         export X
         export Y
         """
+        JSBASE.__init__(self)
         self.bash = bash
         self.executor = bash.executor
 
@@ -34,7 +37,7 @@ class Profile:
         self._includes = []
 
         content = self.executor.file_read(self.pathProfile)
-        # content = self.executor.stateOnSystem["bashprofile"].strip()  ##WHY??????? 
+        # content = self.executor.stateOnSystem["bashprofile"].strip()  ##WHY???????
 
         for match in Profile.env_pattern.finditer(content):
             self._env[match.group(1)] = match.group(2)
@@ -171,7 +174,7 @@ class Profile:
         # make sure we include our custom profile in the default
         if includeInDefaultProfile is True:
             if self.pathProfile != self.bash.profileDefault.pathProfile:
-                print("INCLUDE IN DEFAULT PROFILE:%s" % self.pathProfile)
+                self.logger.debug("INCLUDE IN DEFAULT PROFILE:%s" % self.pathProfile)
                 out = ""
                 inProfile = self.executor.file_read(
                     self.bash.profileDefault.pathProfile)
@@ -203,11 +206,11 @@ class Profile:
             a = self.bash.env.get('LC_ALL') == 'C.UTF-8'
             b = self.bash.env.get('LANG') == 'C.UTF-8'
         if (a and b) != True:
-            print("WARNING: locale has been fixed, please do: `source ~/.profile_js`")
+            self.logger.debug("WARNING: locale has been fixed, please do: `source ~/.profile_js`")
             self.locale_fix()
-            self.save(True) 
+            self.save(True)
 
-    def locale_fix(self,reset=False):
+    def locale_fix(self, reset=False):
         items = self.getLocaleItems()
         self.envSet("TERMINFO", "xterm-256colors")
         if "en_US.UTF-8" in items or "en_US.utf8" in items:
@@ -221,10 +224,18 @@ class Profile:
         raise j.exceptions.Input("Cannot find C.UTF-8, cannot fix locale's")
 
 
-class BashFactory:
+class BashFactory(JSBASE):
 
     def __init__(self):
         self.__jslocation__ = "j.tools.bash"
+        JSBASE.__init__(self)
+        self._local = None
+
+    @property
+    def local(self):
+        if not self._local:
+            self._local = Bash()
+        return self._local
 
     def get(self, executor=None):
         """
@@ -234,9 +245,10 @@ class BashFactory:
         return b
 
 
-class Bash:
+class Bash(JSBASE):
 
     def __init__(self, executor=None):
+        JSBASE.__init__(self)
         if executor is not None:
             self.executor = executor
         else:
@@ -267,8 +279,7 @@ class Bash:
             "source ~/.bash_profile;which %s" % cmd, die=False, showout=False)
         if rc > 0:
             if die:
-                raise j.exceptions.RuntimeError(
-                    "Did not find command: %s" % cmd)
+                raise j.exceptions.RuntimeError("Did not find command: %s" % cmd)
             else:
                 return False
 

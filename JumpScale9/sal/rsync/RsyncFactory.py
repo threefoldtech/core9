@@ -2,13 +2,14 @@ from js9 import j
 
 from .Rsync import *
 
-
-class RsyncFactory:
+JSBASE = j.application.jsbase_get_class()
+class RsyncFactory(JSBASE):
     """
     """
 
     def __init__(self):
         self.__jslocation__ = "j.sal.rsync"
+        JSBASE.__init__(self)
 
     def getServer(self, root):
         return RsyncServer(root)

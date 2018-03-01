@@ -28,16 +28,22 @@ colored_traceback.add_hook(always=True)
 
 #     __repr__ = __str__
 
-class HaltException(Exception):
-    pass
+JSBASE = j.application.jsbase_get_class()
 
-class ErrorHandler:
 
-    def __init__(self, haltOnError=True, storeErrorConditionsLocal=True):
-        self.__jslocation__ = "j.core.errorhandler"
+class HaltException(Exception, JSBASE):
+    def __init__(self):
+        JSBASE.__init__(self)
+
+
+class ErrorHandler(JSBASE):
+
+    def __init__(self, storeErrorConditionsLocal=True):
+        if not hasattr(self, '__jslocation__'):
+            self.__jslocation__ = "j.core.errorhandler"
+        JSBASE.__init__(self)
         self._blacklist = None
         self.lastAction = ""
-        self.haltOnError = haltOnError
         self.setExceptHook()
         self.lastEco = None
         self.escalateToRedis = False
@@ -146,7 +152,7 @@ class ErrorHandler:
             return ErrorConditionObject
 
         if not isinstance(exceptionObject, BaseException):
-            print(
+            self.logger.debug(
                 "did not receive an Exceptio object for python exception, this is serious bug.")
             raise ValueError("exceptionObject was:\n%s not instance of BaseException" % exceptionObject)
 
@@ -229,14 +235,11 @@ class ErrorHandler:
         @tb : can be a python data object or a Event
         """
 
-        if isinstance(exceptionObject, HaltException):
-            j.application.stop(1)
-
-        # print "jumpscale EXCEPTIONHOOK"
+        # print ("jumpscale EXCEPTIONHOOK")
         if self.inException:
-            print(
+            self.logger.error(
                 "ERROR IN EXCEPTION HANDLING ROUTINES, which causes recursive errorhandling behavior.")
-            print(exceptionObject)
+            self.logger.error(exceptionObject)
             sys.exit(1)
             return
 
@@ -251,7 +254,7 @@ class ErrorHandler:
         # if eco.traceback != "":
         #     print("\n**** TRACEBACK ***")
         #     eco.printTraceback()
-        print(eco)
+        self.logger.error(eco)
         sys.exit(1)
 
     def checkErrorIgnore(self, eco):

@@ -13,8 +13,10 @@ TIMES = {'s': 1,
          'w': 3600 * 24 * 7
          }
 
+JSBASE = j.application.jsbase_get_class()
 
-class Time_:
+
+class Time_(JSBASE):
     """
     generic provider of time functions
     lives at j.data.time
@@ -22,6 +24,7 @@ class Time_:
 
     def __init__(self):
         self.timeinterval = TimeInterval
+        JSBASE.__init__(self)
 
     @property
     def epoch(self):

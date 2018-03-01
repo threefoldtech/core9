@@ -6,10 +6,12 @@ from .CustomTypes import *
 from .CollectionTypes import *
 from .PrimitiveTypes import *
 
-
-class Types:
+JSBASE = j.application.jsbase_get_class()
+class Types(JSBASE):
 
     def __init__(self):
+        self.__jslocation__ = "j.data.types"
+        JSBASE.__init__(self)
         self.dict = Dictionary()
         self.list = List()
         self.guid = Guid()
@@ -31,7 +33,6 @@ class Types:
         self.email = Email()
         self.date = Date()
         self.types_list=[self.bool,self.dict,self.list,self.bytes,self.guid,self.float,self.int,self.multiline,self.string]
-        self.__jslocation__ = "j.data.types"
 
     def type_detect(self,val):
         """

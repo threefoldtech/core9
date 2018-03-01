@@ -3,6 +3,7 @@ from js9 import j
 from .NodeBase import NodeBase
 
 
+
 class NodeMonitor(NodeBase):
 
     def __init__(self, ipaddr, sshport, name=""):
@@ -56,6 +57,6 @@ class NodeMonitor(NodeBase):
 
     def loopPrintStatus(self):
         while True:
-            print("total iops:%s (%s/%s)" % self.getTotalIOPS())
-            print("total throughput:%s (%s/%s)" % self.getTotalThroughput())
+            self.logger.debug("total iops:%s (%s/%s)" % self.getTotalIOPS())
+            self.logger.debug("total throughput:%s (%s/%s)" % self.getTotalThroughput())
             time.sleep(1)

@@ -7,11 +7,14 @@ from watchdog.observers import Observer
 import time
 import pytoml
 
+JSBASE = j.application.jsbase_get_class()
 
-class DevelopToolsFactory:
+
+class DevelopToolsFactory(JSBASE):
 
     def __init__(self):
         self.__jslocation__ = "j.tools.develop"
+        JSBASE.__init__(self)
         self.__imports__ = "watchdog"
         self.nodes = j.tools.nodemgr
         self._codedirs = None
@@ -37,7 +40,7 @@ class DevelopToolsFactory:
         H = """
         j.tools.develop.run()
         """
-        print(H)
+        self.logger.debug(H)
 
     # def resetState(self):
     #     j.actions.setRunId("developtools")
@@ -51,7 +54,7 @@ class DevelopToolsFactory:
 
         """
         if self.nodes.getall() == []:
-            print(
+            self.logger.debug(
                 "NOTHING TO DO, THERE ARE NO NODES DEFINED PLEASE USE  j.tools.develop.run()")
             return
         did = False
@@ -60,7 +63,7 @@ class DevelopToolsFactory:
                 node.sync()
                 did = True
         if did == False:
-            print("nodes are defined but not selected, please use j.tools.develop.run()")
+            self.logger.debug("nodes are defined but not selected, please use j.tools.develop.run()")
 
     def monitor(self):
         """
@@ -68,12 +71,22 @@ class DevelopToolsFactory:
         """
 
         self.sync()
+        nodes = self.nodes.getall()
+        paths = j.tools.develop.codedirs.getActiveCodeDirs()
+        self.sync_active(paths, nodes)
 
+    def sync_active(self, paths):
+        """
+
+        sync changes to destination nodes
+        Arguments:
+            paths list of paths -- existing folders on system
+
+        """
         event_handler = MyFileSystemEventHandler()
         observer = Observer()
-        codepaths = j.tools.develop.codedirs.getActiveCodeDirs()
-        for source in codepaths:
-            print("monitor:%s" % source)
+        for source in paths:
+            self.logger.debug("monitor:%s" % source)
             observer.schedule(event_handler, source.path, recursive=True)
         observer.start()
         try:

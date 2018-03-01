@@ -1,3 +1,4 @@
+# from js9 import j
 from JumpScale9 import j
 '''Definition of several custom types (paths, ipaddress, guid,...)'''
 
@@ -5,15 +6,16 @@ import re
 
 from .PrimitiveTypes import *
 
-
-class Guid(String):
+JSBASE = j.application.jsbase_get_class()
+class Guid(String, JSBASE):
     '''Generic GUID type'''
 
     def __init__(self):
-        String.__init__(self)
-        self.NAME = 'guid'
+        if not hasattr(self, 'NAME'):
+            self.NAME = 'guid'
         self._RE = re.compile(
             '^[0-9a-fA-F]{8}[-:][0-9a-fA-F]{4}[-:][0-9a-fA-F]{4}[-:][0-9a-fA-F]{4}[-:][0-9a-fA-F]{12}$')
+        String.__init__(self)
 
     def check(self, value):
         '''Check whether provided value is a valid GUID string'''
@@ -36,15 +38,16 @@ class Guid(String):
     toString = fromString
 
 
-class Email(String):
+class Email(String, JSBASE):
     """
     """
 
     def __init__(self):
-        String.__init__(self)
-        self.NAME = 'email'
+        if not hasattr(self, 'NAME'):
+            self.NAME = 'email'
         self._RE = re.compile(
             '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+        String.__init__(self)
 
     def check(self, value):
         '''
@@ -76,19 +79,19 @@ class Email(String):
         return "changeme@example.com"
 
 
-class Path(String):
+class Path(String, JSBASE):
     '''Generic path type'''
 
     def __init__(self):
-        Email.__init__(self)
         self.NAME = 'path'
         self._RE = re.compile('.*')
+        Email.__init__(self)
 
     def get_default():
         return ""
 
 
-class Tel(String):
+class Tel(String, JSBASE):
     """
     format is e.g. +32 475.99.99.99x123
     only requirement is it needs to start with +
@@ -97,9 +100,9 @@ class Tel(String):
     """
 
     def __init__(self):
-        Email.__init__(self)
         self.NAME = 'tel'
         self._RE = re.compile('^\+?[0-9]{6,15}(?:x[0-9]+)?$')
+        Email.__init__(self)
 
     def clean(self, v):
         if not j.data.types.string.check(v):
@@ -117,40 +120,43 @@ class Tel(String):
         return "+32 475.99.99.99"
 
 
-class IPRange(String):
+class IPRange(String, ):
     """
     """
 
     def __init__(self):
-        Email.__init__(self)
+        # JSBASE.__init__(self)
         self.NAME = 'iprange'
         self._RE = re.compile(
             '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/[0-9]{1,2}')
+        Email.__init__(self)
 
     def get_default(self):
         return "192.168.1.1/24"
 
 
-class IPAddress(String):
+class IPAddress(String, ):
     """
     """
 
     def __init__(self):
-        Email.__init__(self)
+        # JSBASE.__init__(self)
         self.NAME = 'ipaddress'
         self._RE = re.compile('[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
+        Email.__init__(self)
 
     def get_default(self):
         return "192.168.1.1"
 
 
-class IPPort(Integer):
+class IPPort(Integer, ):
     '''Generic IP port type'''
 
     def __init__(self):
-        Email.__init__(self)
+        # JSBASE.__init__(self)
         self.NAME = 'ipport'
         self.BASETYPE = 'string'
+        Email.__init__(self)
 
     def check(self, value):
         '''
@@ -165,7 +171,7 @@ class IPPort(Integer):
         return False
 
 
-class Date(String):
+class Date(String, ):
     '''
     Date
     -1 is indefinite in past
@@ -178,10 +184,12 @@ class Date(String):
     '''
 
     def __init__(self):
+        # JSBASE.__init__(self)
         self.NAME = 'date'
         self._RE = re.compile('[0-9]{2}/[0-9]{2}/[0-9]{4}')
         self._RE_days = re.compile('^\+\dd')
         self._RE_weeks = re.compile('^\+\dw')
+        String.__init__(self)
 
     def get_default(self):
         return "-1"
@@ -217,7 +225,7 @@ class Date(String):
         return v
 
 
-class Duration(String):
+class Duration(String, ):
     '''
     Duration type
 
@@ -236,9 +244,10 @@ class Duration(String):
     '''
 
     def __init__(self):
-        Email.__init__(self)
+        # JSBASE.__init__(self)
         self.NAME = 'duration'
         self._RE = re.compile('^(\d+)([wdhms]?)$')
+        Email.__init__(self)
 
     def check(self, value):
         if isinstance(value, int):

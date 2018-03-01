@@ -1,4 +1,5 @@
-class ModuleFilter:
+
+class ModuleFilter():
     """ModuleFilter filter out given modules"""
 
     def __init__(self, modules):

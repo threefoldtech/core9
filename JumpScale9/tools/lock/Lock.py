@@ -8,10 +8,11 @@ from js9 import j
 logger = j.core.logger.get('JumpScale9.core.logger')
 _LOCKDICTIONARY = dict()
 
-
-class LockException(Exception):
+JSBASE = j.application.jsbase_get_class()
+class LockException(Exception, JSBASE):
 
     def __init__(self, message='Failed to get lock', innerException=None):
+        JSBASE.__init__(self)
         if innerException:
             message += '\nProblem caused by:\n%s' % innerException
         Exception.__init__(self, message)
@@ -24,7 +25,9 @@ class LockTimeoutException(LockException):
         LockException.__init__(self, message, innerException)
 
 
-class Exceptions:
+class Exceptions(JSBASE):
+    def __init__(self):
+        JSBASE.__init__(self)
     LockException = LockException
     LockTimeoutException = LockTimeoutException
 
@@ -162,8 +165,9 @@ def unlock_(lockname):
     #     j.tools.console.echo("Lock %r not found"%lockname)
 
 
-class LockFactory:
+class LockFactory(JSBASE):
     def __init__(self):
+        JSBASE.__init__(self)
         self.__jslocation__ = "j.tools.lock"
         self.lock = lock
         self.unlock = unlock
@@ -172,7 +176,7 @@ class LockFactory:
         return FileLock(lock_name=lock_name, reentry=reentry, locktimeout=locktimeout)
 
 
-class FileLock:
+class FileLock(JSBASE):
 
     '''Context manager for file-based locks
 
@@ -187,6 +191,7 @@ class FileLock:
     '''
 
     def __init__(self, lock_name, reentry=False, locktimeout=60):
+        JSBASE.__init__(self)
         self.lock_name = lock_name
         self.reentry = reentry
         self.locktimeout = locktimeout

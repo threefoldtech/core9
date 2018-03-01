@@ -1,9 +1,12 @@
 from JumpScale9 import j
 
+JSBASE = j.application.jsbase_get_class()
 
-class BaseJSException(Exception):
+
+class BaseJSException(Exception, JSBASE):
 
     def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
+        JSBASE.__init__(self)
         if j.data.types.string.check(level):
             level = 1
             tags = "cat:%s" % level
@@ -46,7 +49,9 @@ class BaseJSException(Exception):
 
 
 class HaltException(BaseJSException):
-    pass
+    def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
+        super().__init__(message, level, source, actionkey, eco, tags, msgpub)
+        self.type = "halt.error"
 
 
 class RuntimeError(BaseJSException):

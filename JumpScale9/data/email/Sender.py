@@ -3,11 +3,14 @@ from contextlib import contextmanager
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.image import MIMEImage
+from js9 import j
 
+JSBASE = j.application.jsbase_get_class()
 
-class Sender:
+class Sender(JSBASE):
 
     def __init__(self, username, password, host, port):
+        JSBASE.__init__(self)
         self._host = host
         self._port = port
         self._username = username
