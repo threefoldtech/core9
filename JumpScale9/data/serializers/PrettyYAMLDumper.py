@@ -1,18 +1,20 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function
-
+from js9 import j
 import itertools as it, operator as op, functools as ft
 from collections import defaultdict, OrderedDict, namedtuple
 import os, sys, io, yaml
 
 if sys.version_info.major > 2: unicode = str
 
+JSBASE = j.application.jsbase_get_class()
 
-class PrettyYAMLDumper(yaml.dumper.SafeDumper):
+class PrettyYAMLDumper(yaml.dumper.SafeDumper, JSBASE):
 
 	def __init__(self, *args, **kws):
 		self.pyaml_force_embed = kws.pop('force_embed', False)
 		self.pyaml_string_val_style = kws.pop('string_val_style', None)
+		JSBASE.__init__(self)
 		return super(PrettyYAMLDumper, self).__init__(*args, **kws)
 
 	def represent_odict(dumper, data):
@@ -74,6 +76,9 @@ PrettyYAMLDumper.add_representer(None, PrettyYAMLDumper.represent_undefined)
 
 class UnsafePrettyYAMLDumper(PrettyYAMLDumper):
 
+	def __init__(self, *args, **kws):
+		PrettyYAMLDumper.__init__(self, *args, **kws)
+
 	def expect_block_sequence(self):
 		self.increase_indent(flow=False, indentless=False)
 		self.state = self.expect_first_block_sequence_item
@@ -131,8 +136,10 @@ for str_type in {bytes, unicode}:
 UnsafePrettyYAMLDumper.add_representer(
 	type(None), lambda s,o: s.represent_scalar('tag:yaml.org,2002:null', '') )
 
-class PrettyYaml():
+class PrettyYaml(JSBASE):
 
+	def __init__(self):
+		JSBASE.__init__(self)
 	def add_representer(self,*args, **kws):
 		PrettyYAMLDumper.add_representer(*args, **kws)
 		UnsafePrettyYAMLDumper.add_representer(*args, **kws)

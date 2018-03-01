@@ -3,10 +3,12 @@ import numpy
 import struct
 import math
 
-class NumTools:
+JSBASE = j.application.jsbase_get_class()
+class NumTools(JSBASE):
 
     def __init__(self):
         self.__jslocation__ = "j.tools.numtools"
+        JSBASE.__init__(self)
         self.__imports__ = "numpy"
         self._currencies = {}
 

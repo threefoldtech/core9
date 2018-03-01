@@ -1,10 +1,12 @@
-from js9 import j
+from JumpScale9 import j
 
-
-class EventHandler:
+JSBASE = j.application.jsbase_get_class()
+class EventHandler(JSBASE):
 
     def __init__(self):
-        self.__jslocation__ = "j.core.events"
+        if not hasattr(self, '__jslocation__'):
+            self.__jslocation__ = "j.core.events"
+        JSBASE.__init__(self)
 
     def bug_critical(self, msg, source=""):
         """

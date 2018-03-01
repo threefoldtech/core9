@@ -5,8 +5,8 @@ import sys
 
 import pyximport
 
-
-class CythonFactory:
+JSBASE = j.application.jsbase_get_class()
+class CythonFactory(JSBASE):
     """
     example:
         '''
@@ -19,6 +19,7 @@ class CythonFactory:
 
     def __init__(self):
         self.__jslocation__ = "j.tools.cython"
+        JSBASE.__init__(self)
         self.__imports__ = "cython"
         self.__path = ""
         self._currentPath

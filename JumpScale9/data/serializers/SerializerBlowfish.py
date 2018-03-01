@@ -1,9 +1,10 @@
 from .SerializerBase import SerializerBase
-
+from js9 import j
 
 class SerializerBlowfish(SerializerBase):
 
     def __init__(self,):
+        SerializerBase.__init__(self)
         self.encrkey = ""
         self.c = None
 

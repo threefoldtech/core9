@@ -1,6 +1,8 @@
 from JumpScale9 import j
 import git
+import copy
 
+JSBASE = j.application.jsbase_get_class()
 
 class GitClient:
     """
@@ -9,9 +11,16 @@ class GitClient:
 
     def __init__(self, baseDir, check_path=True):  # NOQA
 
+        if baseDir==None or baseDir.strip()=="":
+            raise RuntimeError("basedir cannot be empty")
+
+        baseDir_org=copy.copy(baseDir)
+
+        JSBASE.__init__(self)
+
         self._repo = None
         if not j.sal.fs.exists(path=baseDir):
-            raise j.exceptions.Input("git repo on %s not found." % baseDir)
+            raise j.exceptions.Input("git repo on %s not found." % baseDir_org)
 
         # split path to find parts
         baseDir = j.sal.fs.pathClean(baseDir)
@@ -28,7 +37,7 @@ class GitClient:
         baseDir = baseDir.rstrip("/")
 
         if baseDir.strip() == "":
-            raise j.exceptions.RuntimeError("could not find basepath for .git in %s" % baseDir)
+            raise j.exceptions.RuntimeError("could not find basepath for .git in %s" % baseDir_org)
         if check_path:
             if baseDir.find("/code/") == -1:
                 raise j.exceptions.Input(
@@ -50,6 +59,7 @@ class GitClient:
 
         # if len(self.repo.remotes) != 1:
         #     raise j.exceptions.Input("git repo on %s is corrupt could not find remote url" % baseDir)
+
 
     def __repr__(self):
         return str(self.__dict__)
@@ -296,7 +306,7 @@ class GitClient:
         if addremove:
             self.addRemoveFiles()
         if self.hasModifiedFiles() is False:
-            print("no need to commit, no changed files")
+            self.logger.info("no need to commit, no changed files")
             return
         return self.repo.index.commit(message)
 

@@ -1,9 +1,10 @@
 from js9 import j
 
-
-class RsyncInstance:
+JSBASE = j.application.jsbase_get_class()
+class RsyncInstance(JSBASE):
 
     def __init__(self):
+        JSBASE.__init__(self)
         self.name
         self.secret
         self.users = []
@@ -11,12 +12,13 @@ class RsyncInstance:
         self.exclude = "*.pyc .git"
 
 
-class RsyncServer:
+class RsyncServer(JSBASE):
 
     """
     """
 
     def __init__(self, root, port=873, distrdir=""):
+        JSBASE.__init__(self)
         self._local = j.tools.executorLocal
         self.root = root
         self.port = port
@@ -160,7 +162,7 @@ list = no
                     roles = [item.strip() for item in roles.split(",")]
                     for role in roles:
                         destdir = self.rolesdir.joinpath(role, catpath.basename(), relpath)
-                        print(("link: %s->%s" % (path, destdir)))
+                        self.logger.debug(("link: %s->%s" % (path, destdir)))
                         path.symlink(destdir)
                         # j.sal.fs.createDir(destdir)
                         # for item in j.sal.fs.listFilesInDir(path, recursive=False, exclude=["*.pyc",".roles"], followSymlinks=False, listSymlinks=False):
@@ -170,12 +172,13 @@ list = no
                         #     j.sal.fs.symlink(item, destpathfile, overwriteTarget=True)
 
 
-class RsyncClient:
+class RsyncClient(JSBASE):
 
     """
     """
 
     def __init__(self):
+        JSBASE.__init__(self)
         self.options = "-r --delete-after --modify-window=60 --compress --stats  --progress"
 
     def _pad(self, dest):
@@ -190,7 +193,7 @@ class RsyncClient:
             return
         j.tools.path.get(dest).mkdir_p()
         cmd = "rsync -av %s %s %s" % (src, dest, self.options)
-        print(cmd)
+        self.logger.debug(cmd)
         self._local.execute(cmd)
 
     def syncToServer(self, src, dest):
@@ -199,7 +202,7 @@ class RsyncClient:
         if src == dest:
             return
         cmd = "rsync -av %s %s %s" % (src, dest, self.options)
-        print(cmd)
+        self.logger.debug(cmd)
         self._local.execute(cmd)
 
 
@@ -209,6 +212,7 @@ class RsyncClientSecret(RsyncClient):
     """
 
     def __init__(self):
+        RsyncClient.__init__(self)
         self.options = "-r --delete-after --modify-window=60 --compress --stats --progress"
 
     def sync(self, src, dest):
@@ -220,5 +224,5 @@ class RsyncClientSecret(RsyncClient):
         if src == dest:
             return
         cmd = "rsync %s %s %s" % (src, dest, self.options)
-        print(cmd)
+        self.logger.debug(cmd)
         self._local.execute(cmd)

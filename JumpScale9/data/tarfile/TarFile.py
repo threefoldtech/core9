@@ -6,20 +6,23 @@ import tarfile
 # NOTE: When implementing, see documentation on the 'errorlevel' attribute of
 # the Python TarFile object
 
+JSBASE = j.application.jsbase_get_class()
 
-class TarFileFactory:
+
+class TarFileFactory(JSBASE):
     READ = 'r'
     WRITE = 'w'
     APPEND = 'a'
 
     def __init__(self):
         self.__jslocation__ = "j.tools.tarfile"
+        JSBASE.__init__(self)
 
     def get(self, path, mode=READ):
         return TarFile(path, mode)
 
 
-class TarFile:
+class TarFile(JSBASE):
     '''Handle tar files'''
 
     def __init__(self, path, mode=TarFileFactory.READ):
@@ -30,6 +33,7 @@ class TarFile:
         @prarm mode: mode to perform on the tar file
         @type mode: TarFilemode
         '''
+        JSBASE.__init__(self)
         if not j.data.types.path.check(path):
             raise ValueError('Provided string "%s" is not a valid path' % path)
 

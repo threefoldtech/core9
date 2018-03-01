@@ -5,6 +5,7 @@ import sys
 from .TarantoolQueue import TarantoolQueue
 
 JSConfigClient = j.tools.configmanager.base_class_config
+JSBASE = j.application.jsbase_get_class()
 
 TEMPLATE = """
 ip = "localhost"
@@ -210,7 +211,7 @@ class TarantoolClient(JSConfigClient):
             self.eval("require ('%s')"%name)        
 
     def addScript(self, path, name="", require=True):
-        print("addscript %s %s" % (path, name))
+        self.logger.debug("addscript %s %s" % (path, name))
         C = j.sal.fs.readFile(path)
         if name == "":
             name = j.sal.fs.getBaseName(path)[:-4]
@@ -220,5 +221,5 @@ class TarantoolClient(JSConfigClient):
             self.eval("package.loaded['%s']=nil"%name)
             self.eval("require ('%s')"%name)                    
             cmd = "%s=require('%s')" % (name, name)
-            print(cmd)
+            self.logger.debug(cmd)
             self.eval(cmd)

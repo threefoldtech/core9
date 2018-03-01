@@ -6,9 +6,10 @@ import inspect
 
 # TemplateCollectionClass= j.tools.zerorobot.models.TemplateCollection
 # TemplateModelClass= j.tools.zerorobot.models.TemplateModel
-
-class ZeroTemplate():
-    pass
+JSBASE = j.application.jsbase_get_class()
+class ZeroTemplate(JSBASE):
+    def __init__(self):
+        JSBASE.__init__(self)
 
 import time
 def our_decorator(func):
@@ -30,9 +31,10 @@ def retry(func):
     return function_wrapper
 
 
-class ZeroTemplates():
+class ZeroTemplates(JSBASE):
     def __init__(self):
         #is executed after the __init__ of the superclass
+        JSBASE.__init__(self)
         self.__templateTmpDir=None
 
     @property

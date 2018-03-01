@@ -8,8 +8,8 @@ except BaseException:
 import re
 matchquote = re.compile(r'\'[^\']*\'')
 
-
-class Tags:
+JSBASE = j.application.jsbase_get_class()
+class Tags(JSBASE):
     """
     represent set of tags & _labels
     label is e.g. important (no value attached)
@@ -22,6 +22,7 @@ class Tags:
         @type tagstring: string
         @param setFunction4Tagstring is a function which will set the paramstring somewhere when changed by this class
         """
+        JSBASE.__init__(self)
         self.tags = dict()
         self.labels = set()
         self.tagstring = tagstring or ''

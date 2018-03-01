@@ -7,7 +7,6 @@ from js9 import j
 # import psutil
 from .NodeBase import NodeBase
 
-
 class NodeHost(NodeBase):
 
     def __init__(self, ipaddr, sshport=22, name=""):
@@ -20,5 +19,5 @@ class NodeHost(NodeBase):
 
     def authorizeKey(self, keypath="/home/despiegk/.ssh/perftest.pub"):
         from IPython import embed
-        print("DEBUG NOW authorizeKey")
+        self.logger.debug("DEBUG NOW authorizeKey")
         embed()

@@ -1,14 +1,15 @@
 import os
 import re
-from JumpScale9 import j
+from js9 import j
 KEYP = re.compile("(\w+(\.\w+)*)\s*=\s*(.*)", re.DOTALL)
 
 DEFAULTLOCALE = 'en'
 
-
-class Domain:
+JSBASE = j.application.jsbase_get_class()
+class Domain(JSBASE):
 
     def __init__(self, key):
+        JSBASE.__init__(self)
         self._value_ = None
         self.__key = key
         self.__dict = dict()
@@ -37,9 +38,10 @@ class Domain:
         return str(self._value_) if self._value_ is not None else self._key_
 
 
-class Localizer:
+class Localizer(JSBASE):
 
     def __init__(self, tdirs):
+        JSBASE.__init__(self)
         self.__domains = self.__load(tdirs)
 
     def __load(self, tdirs):

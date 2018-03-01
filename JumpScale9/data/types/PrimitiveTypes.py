@@ -1,16 +1,17 @@
+# from js9 import j
 from JumpScale9 import j
-
 '''Definition of several primitive type properties (integer, string,...)'''
 
-
-class String:
+JSBASE = j.application.jsbase_get_class()
+class String(JSBASE):
 
     '''Generic string type'''
 
     def __init__(self):
-
-        self.NAME = 'string'
+        if not hasattr(self, 'NAME'):
+            self.NAME = 'string'
         self.BASETYPE = 'string'
+        JSBASE.__init__(self)
 
     def fromString(self, s):
         """
@@ -52,9 +53,10 @@ class String:
 
 class StringMultiLine(String):
     def __init__(self):
-
-        self.NAME = 'stringmultiline'
+        if not hasattr(self, 'NAME'):
+            self.NAME = 'stringmultiline'
         self.BASETYPE = 'stringmultiline'
+        String.__init__(self)
 
     def check(self, value):
         '''Check whether provided value is a string'''
@@ -98,13 +100,14 @@ class StringMultiLine(String):
             return out
 
 
-class Bytes:
+class Bytes(JSBASE):
     '''Generic array of bytes type'''
 
     def __init__(self):
-
-        self.NAME = 'bytes'
+        if not hasattr(self, 'NAME'):
+            self.NAME = 'bytes'
         self.BASETYPE = 'bytes'
+        JSBASE.__init__(self)
 
     def fromString(self, s):
         """
@@ -137,13 +140,15 @@ class Bytes:
         raise NotImplemented()
 
 
-class Boolean:
+class Boolean(JSBASE):
 
     '''Generic boolean type'''
 
     def __init__(self):
-        self.NAME = 'boolean'
+        if not hasattr(self, 'NAME'):
+            self.NAME = 'boolean'
         self.BASETYPE = 'boolean'
+        JSBASE.__init__(self)
 
     def fromString(self, s):
         if isinstance(s, bool):
@@ -206,13 +211,15 @@ class Boolean:
             return out
 
 
-class Integer:
+class Integer(JSBASE):
 
     '''Generic integer type'''
 
     def __init__(self):
-        self.NAME = 'integer'
+        if not hasattr(self, 'NAME'):
+            self.NAME = 'integer'
         self.BASETYPE = 'integer'
+        JSBASE.__init__(self)
 
     def checkString(self, s):
         return s.isdigit()
@@ -249,13 +256,15 @@ class Integer:
             return "%s = %s" % (key, self.clean(value))
 
 
-class Float:
+class Float(JSBASE):
 
     '''Generic float type'''
 
     def __init__(self):
-        self.NAME = 'float'
+        if not hasattr(self, 'NAME'):
+            self.NAME = 'float'
         self.BASETYPE = 'float'
+        JSBASE.__init__(self)
 
     def checkString(self, value):
         try:

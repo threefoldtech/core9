@@ -4,11 +4,12 @@ from .Message import Message
 import JumpScale9.data.email.Sender as Sender
 from .utils import get_msg_path, get_json_msg
 
-
-class EmailTool:
+JSBASE = j.application.jsbase_get_class()
+class EmailTool(JSBASE):
 
     def __init__(self):
         self.__jslocation__ = "j.tools.email"
+        JSBASE.__init__(self)
 
     def _get_lastest_keys(self, n=100):
         """

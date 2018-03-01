@@ -19,12 +19,15 @@ from os import O_NONBLOCK, read
 
 from JumpScale9 import j
 
+JSBASE = j.application.jsbase_get_class()
 
-class SystemProcess:
+
+class SystemProcess(JSBASE):
 
     def __init__(self):
-        self.logger = j.logger.get('j.sal.process')
-        self.__jslocation__ = "j.sal.process"
+        if not hasattr(self, '__jslocation__'):
+            self.__jslocation__ = "j.sal.process"
+        JSBASE.__init__(self)
         self._isunix=None
 
     @property
@@ -129,7 +132,7 @@ class SystemProcess:
                     # Add data to cache
                     data.append(line)
                     if showout:
-                        print(line,end="")
+                        self.logger.debug(line)
 
                 # Fold cache and return
                 return ''.join(data)
@@ -139,7 +142,7 @@ class SystemProcess:
                 def readout(stream):
                     line= stream.read().decode()
                     if showout:
-                        print(line)
+                        self.logger.debug(line)
 
         if timeout < 0:
             out, err = p.communicate()
@@ -280,7 +283,7 @@ class SystemProcess:
 
             if pending != set():
                 # timeout happened
-                print("ERROR TIMEOUT happend")
+                self.logger.debug("ERROR TIMEOUT happend")
                 for task in pending:
                     task.cancel()
                 process.kill()
@@ -393,7 +396,7 @@ class SystemProcess:
 
         if remote is not None:
             if sshkey:
-                if not j.clients.ssh.SSHKeyGetPathFromAgent(sshkey, die=False) is None:
+                if not j.clients.ssh.sshkey_path_get(sshkey, die=False) is None:
                     self.execute('ssh-add %s' % sshkey)
                 sshkey = '-i %s ' % sshkey.replace('!', '\!')
             self.execute(
@@ -406,6 +409,7 @@ class SystemProcess:
             rc, res, err = self.execute(
                 "bash %s" %
                 tmppathdest, die=die, showout=showout, timeout=timeout)
+            j.sal.fs.remove(tmppathdest)
         return rc, res, err
 
     def executeInteractive(self, command, die=True):
@@ -468,7 +472,7 @@ class SystemProcess:
             code2 += "%s\n" % line
 
         # try to load the code
-        print(code2)
+        self.logger.debug(code2)
         execContext = {}
         try:
             exec((code2, globals(), locals()), execContext)
@@ -527,6 +531,7 @@ class SystemProcess:
         @param pid: pid of the process to kill
         @param sig: signal. If no signal is specified signal.SIGKILL is used
         """
+        pid=int(pid)
         j.sal.process.logger.debug('Killing process %d' % pid)
         if self.isUnix:
             try:
@@ -573,7 +578,6 @@ class SystemProcess:
             self.logger.info("kill:%s (%s)" % (name, pid))
             self.kill(pid)
         if self.psfind(name):
-            raise RuntimeError("stop debug here")
             raise RuntimeError(
                 "Could not kill:%s, is still, there check if its not autorestarting." %
                 name)

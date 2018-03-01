@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 from js9 import j
-j.tools.prefab.local.bash.locale_check()
+j.tools.bash.local.locale_check()
 import click
 
 

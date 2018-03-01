@@ -8,10 +8,12 @@ ModelBaseCollection = j.data.capnp.getModelBaseClassCollection()
 ModelBase = j.data.capnp.getModelBaseClass()
 # from JumpScale9.clients.tarantool.KVSInterface import KVSTarantool
 
-
 class UserModel(ModelBase):
     '''
     '''
+
+    def __init__(self):
+        ModelBase.__init__(self)
 
     def index(self):
         #no need to put indexes because will be done by capnp
@@ -39,7 +41,6 @@ class UserCollection(ModelBaseCollection):
     '''
 
     def __init__(self):
-        self.logger = j.logger.get('model.user')
         category = 'user'
         namespace = ""
 

@@ -3,10 +3,11 @@ from js9 import j
 import sys
 import inspect
 
-
-class ZeroService():
+JSBASE = j.application.jsbase_get_class()
+class ZeroService(JSBASE):
 
     def __init__(self,zrepo,template):
+        JSBASE.__init__(self)
         def.guid=""
 
 
@@ -16,7 +17,8 @@ class ZeroService():
 
 
 
-class ZeroServices():
+class ZeroServices(JSBASE):
     def __init__(self):
+        JSBASE.__init__(self)
         self.services = {}
 

@@ -4,16 +4,18 @@ import random
 # import sys
 import string
 
+JSBASE = j.application.jsbase_get_class()
 
-class IDGenerator:
+class IDGenerator(JSBASE):
     """
     generic provider of id's
     lives at j.data.idgenerator
     """
 
     def __init__(self):
-        self._cryptogen = ""
         self.__jslocation__ = "j.data.idgenerator"
+        JSBASE.__init__(self)
+        self._cryptogen = ""
 
     @property
     def cryptogen(self):

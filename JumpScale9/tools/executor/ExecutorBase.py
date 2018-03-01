@@ -9,22 +9,23 @@ import pystache
 import hashlib
 import base64
 
+JSBASE = j.application.jsbase_get_class()
 
-class ExecutorBase:
+
+class ExecutorBase(JSBASE):
 
     def __init__(self, debug=False, checkok=True):
-
-        # print ("*****************")
-
+        JSBASE.__init__(self)
         self.debug = debug
         self.checkok = checkok
         self.type = None
         self._id = None
         self.readonly = False
+        self.state_disabled = False
         self.CURDIR = ""
         self._logger = None
         self.reset()
-        self._dirpaths_init=False
+        self._dirpaths_init = False
 
     def reset(self):
         self._iscontainer = None
@@ -55,7 +56,7 @@ class ExecutorBase:
     def env(self):
         return self.stateOnSystem["env"]
 
-    def docheckok(self, cmd, out):
+    def _docheckok(self, cmd, out):
         out = out.rstrip("\n")
         lastline = out.split("\n")[-1]
         if lastline.find("**OK**") == -1:
@@ -63,50 +64,65 @@ class ExecutorBase:
         out = "\n".join(out.split("\n")[:-1]).rstrip() + "\n"
         return out
 
-    def _transformCmds(self, cmds, die=True, checkok=None, env={}):
+    def commands_transform(self, cmds, die=True, checkok=False, env={}, sudo=False, shell=False):
         # print ("TRANSF:%s"%cmds)
-        if cmds.find("\n") == -1:
-            separator = ";"
-        else:
-            separator = "\n"
+
+        if sudo or shell:
+            checkok = False
+
+        multicommand = "\n" in cmds or ";" in cmds
+
+        if shell:
+            if "\n" in cmds:
+                raise RuntimeError("cannot do shell for multiline scripts")
+            else:
+                cmds = "bash -c '%s'" % cmds
 
         pre = ""
 
-        if checkok is None:
-            checkok = self.checkok
+        checkok = checkok or self.checkok
 
         if die:
-            if self.debug:
-                pre += "set -ex\n"
-            else:
-                pre += "set -e\n"
+            # first make sure not already one
+            if not "set -e" in cmds:
+                # now only do if multicommands
+                if multicommand:
+                    if self.debug:
+                        pre += "set -ex\n"
+                    else:
+                        pre += "set -e\n"
 
         if self.CURDIR != "":
             pre += "cd %s\n" % (self.CURDIR)
 
         if env != {}:
             for key, val in env.items():
-                pre += "%s=%s%s" % (key, val, separator)
+                pre += "%s=%s\n" % (key, val)
 
         cmds = "%s\n%s" % (pre, cmds)
 
-        if checkok:
-            cmds += "\necho '**OK**'"
+        if checkok and multicommand:
+            if not cmds.endswith('\n'):
+                cmds += '\n'
+            cmds += "echo '**OK**'"
 
-        cmds = cmds.replace("\n", separator).replace(";;", ";").strip(";")
+        if "\n" in cmds:
+            cmds = cmds.replace("\n", ";")
+            cmds.strip() + "\n"
+
+        cmds = cmds.replace(";;", ";").strip(";")
+
+        if sudo:
+            cmds = self.sudo_cmd(cmds)
+
+        self.logger.debug(cmds)
 
         return cmds
 
     @property
     def prefab(self):
         if self._prefab is None:
-            # from js9 import j
             self._prefab = j.tools.prefab.get(self)
-            # self._prefab.executor = self
-            # try:
-            #     self._prefab.sshclient = self.sshclient
-            # except BaseException:
-            #     pass
         return self._prefab
 
     def exists(self, path):
@@ -121,8 +137,7 @@ class ExecutorBase:
         self.state.configSave()
 
     # interface to implement by child classes
-    def execute(self, cmds, die=True, checkok=False, showout=True, timeout=0, env=None, # pylint: disable=R0913
-                asScript=False, hide=False):
+    def execute(self, cmds, die=True, checkok=None, showout=True, timeout=0, env={}, sudo=False):
         raise NotImplementedError()
 
     def executeRaw(self, cmd, die=True, showout=False):
@@ -144,12 +159,14 @@ class ExecutorBase:
         """
         is dict of all relevant param's on system
         """
-        if self._stateOnSystem is None:
+
+        def do():
+
+            self.logger.debug("stateonsystem for non local:%s" % self)
             C = """
             set +ex
             ls "/root/.iscontainer"  > /dev/null 2>&1 && echo 'ISCONTAINER = 1' || echo 'ISCONTAINER = 0'
             echo UNAME = \""$(uname -mnprs)"\"
-
 
             if [ "$(uname)" == "Darwin" ]; then
                 export PATH_JSCFG="$HOME/js9host/cfg"
@@ -164,7 +181,6 @@ class ExecutorBase:
             echo HOSTNAME = "$(hostname)"
 
             lsmod > /dev/null 2>&1|grep vboxdrv |grep -v grep  > /dev/null 2>&1 && echo 'VBOXDRV=1' || echo 'VBOXDRV=0'
-
 
             #OS
             apt-get -v > /dev/null 2>&1 && echo 'OS_TYPE="ubuntu"'
@@ -189,10 +205,9 @@ class ExecutorBase:
             echo "ENV = --TEXT--"
             export
             echo --TEXT--
-
             """
             C = j.data.text.strip(C)
-            rc, out, err = self.execute(C, showout=False, hide=True)
+            rc, out, err = self.execute(C, showout=False, sudo=False)
 
             res = {}
             state = ""
@@ -257,9 +272,11 @@ class ExecutorBase:
                     envdict[pname.strip()] = pval.strip()
 
             res["env"] = envdict
+            return res
 
-            self._stateOnSystem = res
-        return self._stateOnSystem 
+        if self._stateOnSystem is None:
+            self._stateOnSystem = self.cache.get("stateOnSystem", do)
+        return self._stateOnSystem
 
     def enableDebug(self):
         self.state.configSetInDictBool("system", "debug", True)
@@ -349,21 +366,21 @@ class ExecutorBase:
         TSYSTEM = '''
 
         [system]
-        debug = true
+        debug = false
         autopip = false
         readonly = false
         container = false
-
-        [redis]
-        enabled = false
-        port = 6379
-        addr = "localhost"
 
         [myconfig]
         #giturl = "ssh://git@docs.agitsystem.com:7022/myusername/myconfig.git"
         giturl = ""
         sshkeyname = ""
+        path = ""
 
+        [logging]
+        enabled = true
+        filter = []
+        level =20
 
         '''
 
@@ -377,41 +394,58 @@ class ExecutorBase:
 
         TT["system"]["container"] = self.stateOnSystem["iscontainer"]
 
-        if self.exists("%s/github/jumpscale/core9/" % DIRPATHS["CODEDIR"]):
-            if "plugins" not in TT.keys():
-                TT["plugins"] = {
-                    "JumpScale9": "%s/github/jumpscale/core9/JumpScale9/" % DIRPATHS["CODEDIR"]}
+        if "plugins" not in TT.keys():
+            TT["plugins"] = {}
 
-        if TT["system"]["container"] == True:
+        if not self.state_disabled:
+
+            out = ""
+            for key, val in DIRPATHS.items():
+                out += "mkdir -p %s\n" % val
+    
+            self.execute(out, sudo=True)
+
+            if self.exists("%s/github/jumpscale/core9/" % DIRPATHS["CODEDIR"]):
+                TT["plugins"]["JumpScale9"] = "%s/github/jumpscale/core9/JumpScale9/" % DIRPATHS["CODEDIR"]
+                # only check if core exists
+                if self.exists("%s/github/jumpscale/lib9/" % DIRPATHS["CODEDIR"]):
+                    TT["plugins"]["JumpScale9Lib"] = "%s/github/jumpscale/lib9/JumpScale9Lib/" % DIRPATHS["CODEDIR"]
+                if self.exists("%s/github/jumpscale/prefab9/" % DIRPATHS["CODEDIR"]):
+                    TT["plugins"]["JumpScale9Prefab"] = "%s/github/jumpscale/prefab9/JumpScale9Prefab/" % DIRPATHS["CODEDIR"]
+                if self.type == "local":
+                    src = "%s/github/jumpscale/core9/cmds/" % DIRPATHS["CODEDIR"]
+                    j.sal.fs.symlinkFilesInDir(src, "/usr/local/bin", delete=True,
+                                               includeDirs=False, makeExecutable=True)
+
+        if TT["system"]["container"] is True:
             self.state.configUpdate(TT, True)  # will overwrite
         else:
             self.state.configUpdate(TT, False)  # will not overwrite
 
         self.state.configSave()
+
         if self.type == "local":
-            j.core.state = self._state
+            j.core.state = self.state
 
         self.cache.reset()
 
-        for key, val in DIRPATHS.items():
-            out = ""
-            if not self.exists(val):
-                out += "mkdir -p %s\n" % val
-            self.execute(out)
+        self.logger.debug("initenv done on executor base")
 
-        if self.type == "local":
-            src = "%s/github/jumpscale/core9/cmds/" % j.core.state.configGetFromDict("dirs", "CODEDIR")
-            j.sal.fs.symlinkFilesInDir(
-                src, "/usr/local/bin", delete=True, includeDirs=False, makeExecutable=True)
-
-        print("initenv done on executor base")
+    def env_check_init(self):
+        """
+        check that system has been inited, if not do
+        """
+        # has already been implemented below
+        self.dir_paths
 
     @property
     def dir_paths(self):
         if not self._dirpaths_init:
-            if not self.exists(self.state.configJSPath) or self.state.configGet('dirs', {})=={}:
+            if not self.exists(self.state.configJSPath) or self.state.configGet('dirs', {}) == {}:
                 self.initEnv()
             self._dirpaths_init = True
+        self.state.configGet('dirs')
+
         return self.state.configGet('dirs')
 
     @property
@@ -420,20 +454,40 @@ class ExecutorBase:
 
     def file_read(self, path):
         self.logger.debug("file read:%s" % path)
-        rc, out, err = self.execute("cat %s" % path, showout=False, hide=True)
+        rc, out, err = self.execute("cat %s" % path, showout=False)
         return out
 
-    def file_write(self, path, content, mode=None, owner=None, group=None, append=False,hide=False):
+    def sudo_cmd(self, command):
+
+        if "\n" in command:
+            raise RuntimeError("cannot do sudo when multiline script:%s" % command)
+
+        if hasattr(self, 'sshclient'):
+            login = self.sshclient.config.data['login']
+            passwd = self.sshclient.config.data['passwd_']
+        else:
+            login = getattr(self, 'login', '')
+            passwd = getattr(self, 'passwd', '')
+
+        if "darwin" in self.platformtype.osname:
+            return command
+        if login == 'root':
+            return command
+
+        passwd = passwd or "\'\'"
+
+        cmd = 'echo %s | sudo -H -SE -p \'\' bash -c "%s"' % (passwd, command.replace('"', '\\"'))
+        return cmd
+
+    def file_write(self, path, content, mode=None, owner=None, group=None, append=False, sudo=False):
         """
         @param append if append then will add to file
 
         if file bigger than 100k it will not set the attributes!
 
         """
-        if hide==False:
-            self.logger.debug("file write:%s" % path)
-        # if sig != self.file_md5(location):
-        # cmd = 'set -ex && echo "%s" | openssl base64 -A -d > %s' % (content_base64, location)
+
+        self.logger.debug("file write:%s" % path)
 
         if len(content) > 100000:
             # when contents are too big, bash will crash
@@ -444,17 +498,12 @@ class ExecutorBase:
         else:
             content2 = content.encode('utf-8')
             # sig = hashlib.md5(content2).hexdigest()
-            cmd = "set -e\n"
-            cmd = "set +x\n"
             parent = j.sal.fs.getParent(path)
-            cmd += "mkdir -p %s\n" % parent
+            cmd = "set -e;mkdir -p %s\n" % parent
 
             content_base64 = base64.b64encode(content2).decode()
-            if self.platformtype.isMac:
-                # cmd += 'echo "%s" | openssl base64 -D '%content_base64   #DONT KNOW WHERE THIS COMES FROM?
-                cmd += 'echo "%s" | openssl base64 -A -d ' % content_base64
-            else:
-                cmd += 'echo "%s" | openssl base64 -A -d ' % content_base64
+            # cmd += 'echo "%s" | openssl base64 -D '%content_base64   #DONT KNOW WHERE THIS COMES FROM?
+            cmd += 'echo "%s" | openssl base64 -A -d ' % content_base64
 
             if append:
                 cmd += ">> %s\n" % path
@@ -469,9 +518,10 @@ class ExecutorBase:
                 cmd += 'chgrp %s %s\n' % (group, path)
 
             # if sig != self.file_md5(location):
-
-            # print(cmd)
-            res = self.execute(cmd, hide=True)
+            if sudo and self.type == "ssh":
+                self._execute_script(cmd, sudo=sudo, die=True, showout=False)
+            else:
+                res = self.execute(cmd, sudo=sudo)
 
         self.cache.reset()
 
@@ -511,4 +561,4 @@ class ExecutorBase:
 
         assert contentbig == content2
 
-        print("TEST for executor done")
+        self.logger.debug("TEST for executor done")

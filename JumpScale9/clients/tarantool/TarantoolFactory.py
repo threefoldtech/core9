@@ -121,7 +121,7 @@ class TarantoolFactory(JSConfigFactory):
         assert d.dbobj.region == d2.dbobj.region
         assert d.dbobj.epoch == d2.dbobj.epoch
 
-        print("list of users")
+        self.logger.debug("list of users")
         users = tt.models.UserCollection.list()
         assert len(users) == num_user
 
@@ -136,7 +136,7 @@ class TarantoolFactory(JSConfigFactory):
         user.dbobj.region = 10
         user.dbobj.epoch = j.data.time.getTimeEpoch()
         user.save()
-        print("user {} created".format(user))
+        self.logger.debug("user {} created".format(user))
 
     def test(self):
 
@@ -145,13 +145,13 @@ class TarantoolFactory(JSConfigFactory):
         tt.reloadSystemScripts()
         tt.addModels()
 
-        print(1)
+        self.logger.debug(1)
         for i in range(1000):
             bytestr = j.data.hash.hex2bin(j.data.hash.sha512_string("%s" % i))
             md5hex = j.data.hash.md5_string(bytestr)
             md5hex2 = tt.call("binarytest", (bytestr))[0][0]
             assert(md5hex == md5hex2)
-        print(2)
+        self.logger.debug(2)
 
         C = """
         function echo3(name)
@@ -159,7 +159,7 @@ class TarantoolFactory(JSConfigFactory):
         end
         """
         tt.eval(C)
-        print("return:%s" % tt.call("echo3", "testecho"))
+        self.logger.debug("return:%s" % tt.call("echo3", "testecho"))
 
         # capnpSchema = """
         # @0x9a7562d859cc7ffa;
@@ -176,6 +176,6 @@ class TarantoolFactory(JSConfigFactory):
         # res = j.data.capnp.schema_generate_lua(lpath)
 
         # # tt.scripts_execute()
-        # print(test)
+        # self.logger.debug(test)
         # from IPython import embed
         # embed(colors='Linux')
