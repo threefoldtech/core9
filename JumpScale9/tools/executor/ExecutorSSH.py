@@ -87,38 +87,42 @@ class ExecutorSSH(ExecutorBase):
             raise RuntimeError(content)
 
         if showout:
-            self.logger.info("EXECUTESCRIPT %s:%s:\n'''\n%s\n'''\n" %
-                             (self.sshclient.addr, self.sshclient.port, content))
+            self.logger.info("EXECUTESCRIPT {}:{}:\n'''\n{}\n'''\n".format(self.sshclient.addr, self.sshclient.port, content))
 
         if content[-1] != "\n":
             content += "\n"
 
         if die:
-            content = "set -ex\n%s" % content
+            content = "set -ex\n{}".format(content)
 
         if sudo:
             login = self.sshclient.config.data['login']
-            path = "/tmp/tmp_prefab_removeme_%s.sh" % login
+            path = "/tmp/tmp_prefab_removeme_{}.sh".format(login)
         else:
-            path = "/tmp/prefab_%s.sh" % j.data.idgenerator.generateRandomInt(1, 100000)
-        j.sal.fs.writeFile(path, content)
-        self.logger.debug("upload %s to %s over sftp" % (path, path))
-        self.sshclient.client.copy_file(path, path)  # is now always on tmp
+            path = "/tmp/prefab_{}.sh".format(j.data.idgenerator.generateRandomInt(1, 100000))
+        # j.sal.fs.writeFile(path, content)
+        # self.logger.debug("upload %s to %s over sftp" % (path, path))
 
+        # WORKAROUND till issue in ssh2 is fixed: https://github.com/ParallelSSH/ssh2-python/issues/23
+        # self.sshclient.client.copy_file(path, path)  # is now always on tmp
+        cmd = "echo '{}' > {}".format(content, path)
+        self.sshclient.execute(cmd)
+        # self.sshclient.rsync_up(path, path)
         if sudo:
             passwd = self.sshclient.config.data['passwd_']
-            cmd = 'echo \'%s\' | sudo -H -SE -p \'\' bash "%s"' % (passwd, path)
+            cmd = 'echo \'{}\' | sudo -H -SE -p \'\' bash "{}"'.format(passwd, path)
         else:
             cmd = "bash {}".format(path)
-
         rc, out, err = self.sshclient.execute(cmd, die=die, showout=showout)
 
         if checkok and die:
             out = self._docheckok(content, out)
 
         j.sal.fs.remove(path)
-        self.sshclient.sftp.unlink(path)
 
+        # WORKAROUND
+        self.sshclient.execute('rm -rf {}'.format(path))
+        # self.sshclient.sftp.unlink(path)
         return rc, out, err
 
     def upload(self, source, dest, dest_prefix="", recursive=True, createdir=True,

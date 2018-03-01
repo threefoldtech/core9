@@ -502,11 +502,8 @@ class ExecutorBase(JSBASE):
             cmd = "set -e;mkdir -p %s\n" % parent
 
             content_base64 = base64.b64encode(content2).decode()
-            if self.platformtype.isMac:
-                # cmd += 'echo "%s" | openssl base64 -D '%content_base64   #DONT KNOW WHERE THIS COMES FROM?
-                cmd += 'echo "%s" | openssl base64 -A -d ' % content_base64
-            else:
-                cmd += 'echo "%s" | openssl base64 -A -d ' % content_base64
+            # cmd += 'echo "%s" | openssl base64 -D '%content_base64   #DONT KNOW WHERE THIS COMES FROM?
+            cmd += 'echo "%s" | openssl base64 -A -d ' % content_base64
 
             if append:
                 cmd += ">> %s\n" % path

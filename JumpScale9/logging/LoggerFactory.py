@@ -105,7 +105,6 @@ class LoggerFactory():
             self.filter = []
             self.init()
 
-
     # def set_quiet(self, quiet):
     #     self._quiet = quiet
 
@@ -182,19 +181,19 @@ class LoggerFactory():
     def logger_filters_get(self):
         return j.core.state.config_js["logging"]["filter"]
 
-    def logger_filters_add(self,items=[],level=10,save=False):
+    def logger_filters_add(self, items=[], level=10, save=False):
         """
         items is list or string e.g. prefab, exec
         will add the filters to the logger and save it in the config file
 
         """
-        items=j.data.types.list.fromString(items)
+        items = j.data.types.list.fromString(items)
         if save:
-            new=False
+            new = False
             for item in items:
                 if item not in j.core.state.config_js["logging"]["filter"]:
                     j.core.state.config_js["logging"]["filter"].append(item)
-                    new=True
+                    new = True
             if new:
                 j.core.state.configSave()
                 self.init()
@@ -214,25 +213,22 @@ class LoggerFactory():
         j.core.state._logger = None
         j.core.dirs._logger = None
         j.core.application._logger = None
-        for cat in [j.data,j.clients,j.tools,j.sal]:
+        for cat in [j.data, j.clients, j.tools, j.sal]:
             for key, item in cat.__dict__.items():
                 if item is not None:
                     item._logger = None
         self.loggers = {}
 
-
     def init(self):
         """
         get info from config file & make sure all logging is done properly
         """
-
         self.enabled = j.core.state.configGetFromDict("logging", "enabled", True)
         self.loggers_level_set(j.core.state.configGetFromDict("logging", "level", 'DEBUG'))
         self.filter = []
         self.loggers = {}
         items = j.core.state.configGetFromDict("logging", "filter", [])
-        self.logger_filters_add(items=items,save=False)
-
+        self.logger_filters_add(items=items, save=False)
 
     # def enableConsoleMemHandler(self):
     #     self.logger.handlers = []

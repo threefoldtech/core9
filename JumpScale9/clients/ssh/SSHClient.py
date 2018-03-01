@@ -26,10 +26,10 @@ class SSHClient(SSHClientBase):
                                   password=passwd,
                                   port=self.port,
                                   pkey=pkey,
-                                  num_retries=0,
-                                  retry_delay=0,
+                                  num_retries=self.timeout / 6,
+                                  retry_delay=1,
                                   allow_agent=self.allow_agent,
-                                  timeout=self.timeout)
+                                  timeout=5)
 
         return self._client
 
@@ -47,29 +47,21 @@ class SSHClient(SSHClientBase):
 
         out = _consume_stream(stdout, self.logger.info)
         err = _consume_stream(stderr, self.logger.error)
-        
+
         rc = channel.get_exit_status()
+        output = out.getvalue()
+        out.close()
+        error = err.getvalue()
+        err.close()
+        channel.close()
 
         if rc and die:
-            raise j.exceptions.RuntimeError("Cannot execute (ssh):\n%s\noutput:\n%serrors:\n%s" % (cmd, out.getvalue(), err.getvalue()))
+            raise j.exceptions.RuntimeError("Cannot execute (ssh):\n%s\noutput:\n%serrors:\n%s" % (cmd, output, error))
 
-        return rc, out.getvalue(), err.getvalue()
+        return rc, output, error
 
     def connect(self):
-        pkey = self.sshkey.path or None
-        passwd = self.passwd
-        if pkey:
-            passwd = self.sshkey.passphrase
-        self._client = PSSHClient(self.addr,
-                                  user=self.login,
-                                  password=passwd,
-                                  port=self.port,
-                                  pkey=pkey,
-                                  num_retries=self.timeout / 6,
-                                  retry_delay=1,
-                                  allow_agent=self.allow_agent,
-                                  timeout=5)
-        self._client.session.sftp_init() # seems to go further when I add this - TODO: look into it
+        self.client
 
     # def connectViaProxy(self, host, username, port, identityfile, proxycommand=None):
     #     # TODO: Fix this
@@ -173,20 +165,3 @@ class SSHClient(SSHClientBase):
         sshkey = j.clients.sshkey.get(key)
         pubkey = sshkey.pubkey
         self.prefab.system.ssh.authorize(user=user, key=pubkey)
-    # def portforwardToLocal(self, remoteport, localport):
-    #     self.portforwardKill(localport)
-    #     C = "ssh -L %s:localhost:%s root@%s -p %s" % (
-    #         remoteport, localport, self.addr, self.port)
-    #     print(C)
-    #     pm = j.tools.prefab.local.system.processmanager.get()
-    #     pm.ensure(cmd=C, name="ssh_%s" % localport, wait=0.5)
-    #     print("Test tcp port to:%s" % localport)
-    #     if not j.sal.nettools.waitConnectionTest("127.0.0.1", localport, 10):
-    #         raise RuntimeError("Cannot open ssh forward:%s_%s_%s" %
-    #                            (self, remoteport, localport))
-    #     print("Connection ok")
-
-    # def portforwardKill(self, localport):
-    #     print("kill portforward %s" % localport)
-    #     pm = j.tools.prefab.local.system.processmanager.get()
-    #     pm.processmanager.stop('ssh_%s' % localport)
