@@ -51,17 +51,17 @@ class TestSSHClientFactory(base.BaseTestCase):
             ssh_instance_id_second = id(ssh_client_factory.get())
             assert ssh_instance_id_first == ssh_instance_id_second
 
-    @pytest.mark.ssh_factory
-    def test_get_ssh_client_not_cache(self):
-        """
-        Checks if j.client.ssh.get() disabling caching works properly
-        """
-        from JumpScale9.clients.ssh import SSHClientFactory
-        ssh_client_factory = SSHClientFactory.SSHClientFactory()
-        ssh_client_factory.reset()
-        ssh_instance_id_first = id(ssh_client_factory.get(usecache=False))
-        ssh_instance_id_second = id(ssh_client_factory.get(usecache=False))
-        assert not ssh_instance_id_first == ssh_instance_id_second
+    # @pytest.mark.ssh_factory
+    # def test_get_ssh_client_not_cache(self):
+    #     """
+    #     Checks if j.client.ssh.get() disabling caching works properly
+    #     """
+    #     from JumpScale9.clients.ssh import SSHClientFactory
+    #     ssh_client_factory = SSHClientFactory.SSHClientFactory()
+    #     ssh_client_factory.reset()
+    #     ssh_instance_id_first = id(ssh_client_factory.get(usecache=False))
+    #     ssh_instance_id_second = id(ssh_client_factory.get(usecache=False))
+    #     assert not ssh_instance_id_first == ssh_instance_id_second
 
     @pytest.mark.ssh_factory
     def test_reset_cache(self):
