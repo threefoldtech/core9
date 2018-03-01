@@ -1,13 +1,18 @@
 from js9 import j
 import numpy
-
+import struct
+import math
 
 class NumTools:
 
     def __init__(self):
         self.__jslocation__ = "j.tools.numtools"
         self.__imports__ = "numpy"
-        self.currencies = {}
+        self._currencies = {}
+
+    @property
+    def currencies(self):
+        return j.clients.currencylayer.cur2usd
 
     def _getYearFromMonthId(self, monthid, startyear=0):
         """
@@ -135,15 +140,6 @@ class NumTools:
                 result.append(item)
         return result
 
-    def _initCurrencies(self):
-        if self.currencies == {}:
-            path = j.sal.fs.joinPaths("cfg", "currencies.cfg")
-            if j.sal.fs.exists(path):
-                ini = j.tools.inifile.open(path)
-                if ini.checkSection("eur"):
-                    for cur in list(ini.getSectionAsDict("eur").keys()):
-                        self.currencies[cur] = ini.getFloatValue("eur", cur)
-
     def text2val(self, value):
         """
         value can be 10%,0.1,100,1m,1k  m=million
@@ -153,16 +149,22 @@ class NumTools:
         e.g.: 10EUR or 10 EUR (spaces are stripped)
         e.g.: 0.1mEUR or 0.1m EUR or 100k EUR or 100000 EUR
         """
-        if not j.data.types.string(value):
+        if not j.data.types.string.check(value):
             raise j.exceptions.RuntimeError("value needs to be string in text2val, here: %s" % value)
-        if value.lower().find("eur") != -1:
-            value = value.replace("eur", "").strip()
-        self._initCurrencies()
+        
         cur = 1.0
-        for cur2 in list(self.currencies.keys()):
-            if value.find(cur2) != -1:
-                value = value.replace(cur2, "").strip()
-                cur = self.currencies[cur2]
+        try:
+            #dirty trick to see if value can be float, if not will look for currencies
+            float(value)
+        except Exception as e:
+            value=value.lower()
+            for cur2 in list(self.currencies.keys()):
+                # print(cur2)
+                if value.find(cur2) != -1:
+                    # print("FOUND")
+                    value = value.lower().replace(cur2, "").strip()
+                    cur = 1/self.currencies[cur2]
+
         if value.find("k") != -1:
             value = float(value.replace("k", "").strip()) * 1000
         elif value.find("m") != -1:
@@ -171,3 +173,160 @@ class NumTools:
             value = float(value.replace("%", "").strip()) / 100
         value = float(value) * cur
         return value
+
+    def int_to_bitstring(self,val):
+        """
+        bitstring is like '10101011' 
+        """
+        if j.data.types.int.check(val):
+            bits = "{0:b}".format(val)
+        else:
+            raise RuntimeError("bits need to be an integer")
+
+        while(len(bits))<8:
+            bits="0%s"%bits
+
+        return bits
+
+    def bitstring8_to_int(self,val):
+        if not j.data.types.string.check(val):
+            raise RuntimeError("bits need to be string")
+        if len(val)!=8:
+            raise RuntimeError("bitstring needs to be 8 char")
+        return int(val, 2)
+
+
+    def bitstring_set_bit(self,bits,pos=7):
+        """
+        bitstring is like '10101011'
+
+        give bits as string of 8 chars or as int
+
+        set a bit in the byte
+
+        pos 7 means most left bit, 0 is most right bit (least value)
+
+        """
+              
+        bitsnew = self.int_to_bitstring(int(math.pow(2, pos)))
+
+        if not j.data.types.string.check(bits):            
+            bits=self.int_to_bitstring(bits)
+
+        bits=int(bits, 2) | int(bitsnew, 2)
+
+        return bits
+        
+    def bitstring_get_bit(self,bits,pos=7):
+        """
+        bitstring is like '10101011'
+
+        give bits as string of 8 chars or as int
+
+        get a bit in the byte
+
+        pos 7 means most left bit, 0 is most right bit (least value)
+
+        """
+              
+        if not j.data.types.string.check(bits):            
+            bits=self.int_to_bitstring(bits)
+
+        bitsnew = self.int_to_bitstring(int(math.pow(2, pos)))
+
+        res=int(bits, 2) & int(bitsnew, 2)
+
+        return res > 0        
+        
+
+    def listint_to_bin(self,llist,meta="00000000"):
+        """
+        convert list of integers to binary
+
+        @PARM meta are the bits of a byte, the first one is reserved for short or long format, 1 if long format
+        
+        """
+        shortFormat=True
+        for item in llist:
+            if item>65535:
+                shortFormat=False
+                meta=self.bitstring_set_bit(meta,7)
+                break
+        if shortFormat:
+            meta=self.bitstring8_to_int(meta)
+        
+        bindata=b""
+        if shortFormat:
+            sformat="<H"
+        else:
+            sformat="<I"
+        for item in llist:
+            bindata+=struct.pack(sformat,item)
+        return struct.pack("<B",meta)+bindata
+
+    def bin_to_listint(self,bindata):
+        """
+        for each 4 bytes convert to int
+        """
+        res=[]
+        if self.bitstring_get_bit(self.int_to_bitstring(bindata[0]),7):
+            #longformat
+            sformat="<I"
+        else:
+            sformat="<H"
+
+        bindata=bindata[1:]
+
+        for item in struct.iter_unpack(sformat, bindata):
+            res.append(item[0])
+        return res
+
+    def test(self):
+        """
+        js9 'j.tools.numtools.test()'
+        """
+        assert  self.text2val("10k")==10000.0
+
+        assert (1/self.currencies["egp"])*10000000 == self.text2val("10 m egp")
+        assert (1/self.currencies["egp"])*10000000 == self.text2val("10m egp")
+        assert (1/self.currencies["egp"])*10000000 == self.text2val("10mEGP")
+
+        assert self.int_to_bitstring(10)=='00001010'
+        assert self.bitstring8_to_int('00001010')==10
+
+        assert self.bitstring_set_bit("00000000",7) == 128
+        assert self.bitstring_set_bit("00000000",0) == 1
+
+        assert self.bitstring_get_bit("00000000",0) == False
+        assert self.bitstring_get_bit(128,7) == True
+        assert self.bitstring_get_bit("00000001",0) == True
+        assert self.bitstring_get_bit("00000011",1) == True
+        assert self.bitstring_get_bit("00000011",2) == False
+        assert self.bitstring_get_bit("10000011",7) == True
+        assert self.bitstring_get_bit("00000011",7) == False
+
+
+        llist0=[1,2,3,4,5,6,7,8,9,10]
+        bbin=self.listint_to_bin(llist0)
+        llist=self.bin_to_listint(bbin)
+        assert llist==llist0
+        assert  len(bbin)==21
+
+        #now the binary struct will be double as big because there is 1 long int in (above 65000)
+        llist2=[1,2,3,400000,5,6,7,8,9,10]
+        bbin2=self.listint_to_bin(llist2)
+        assert  len(bbin2)==41
+        llist3=self.bin_to_listint(bbin2)
+        assert llist3==llist2
+
+        #max value in short format
+        llist2=[1,2,3,65535,5,6,7,8,9,10]
+        bbin2=self.listint_to_bin(llist2)
+        assert  len(bbin2)==21
+        llist3=self.bin_to_listint(bbin2)
+        assert llist3==llist2
+
+
+
+
+

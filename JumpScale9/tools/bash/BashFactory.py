@@ -192,8 +192,24 @@ class Profile:
         out = self.executor.execute("locale -a")[1]
         return out.split("\n")
 
-    def fixlocale(self):
+    def locale_check(self):
+        '''
+        return true of locale is properly set
+        '''
+        if j.core.platformtype.myplatform.isMac:
+            a = self.bash.env.get('LC_ALL') == 'en_US.UTF-8'
+            b = self.bash.env.get('LANG') == 'en_US.UTF-8'
+        else:
+            a = self.bash.env.get('LC_ALL') == 'C.UTF-8'
+            b = self.bash.env.get('LANG') == 'C.UTF-8'
+        if (a and b) != True:
+            print("WARNING: locale has been fixed, please do: `source ~/.profile_js`")
+            self.locale_fix()
+            self.save(True) 
+
+    def locale_fix(self,reset=False):
         items = self.getLocaleItems()
+        self.envSet("TERMINFO", "xterm-256colors")
         if "en_US.UTF-8" in items or "en_US.utf8" in items:
             self.envSet("LC_ALL", "en_US.UTF-8")
             self.envSet("LANG", "en_US.UTF-8")
@@ -202,7 +218,6 @@ class Profile:
             self.envSet("LC_ALL", "C.UTF-8")
             self.envSet("LANG", "C.UTF-8")
             return
-
         raise j.exceptions.Input("Cannot find C.UTF-8, cannot fix locale's")
 
 
@@ -236,7 +251,9 @@ class Bash:
 
     @property
     def env(self):
-        return self.executor.env
+        dest = dict(self.profileJS.env)
+        dest.update(self.executor.env)
+        return dest
 
     @property
     def home(self):
@@ -287,16 +304,23 @@ class Bash:
     def profilePath(self):
         return self.profileDefault.pathProfile
 
-    def fixlocale(self):
-        self.profileJS.fixlocale()
-        self.profileJS.save(True)  # will make sure it gets in default profile
+    def locale_check(self):
+        self.profileJS.locale_check()
+
+    def locale_fix(self):
+        self.profileJS.locale_fix()
 
     def envSet(self, key, val):
         self.profileJS.envSet(key, val)
         self.profileJS.save(True)
 
     def envGet(self, key):
-        return self.profileJS.envGet(key)
+        dest = dict(self.profileJS.env)
+        dest.update(self.executor.env)
+        return dest[key]
 
     def envDelete(self, key):
-        return self.profileJS.envDelete(key)
+        if self.profileJS.envExists(key):
+            return self.profileJS.envDelete(key)
+        else:
+            del self.executor.env[key]

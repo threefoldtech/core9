@@ -33,6 +33,7 @@ class GitFactory:
             (repository_host, repository_type, repository_account, repository_name, repository_url, port)
         """
 
+        url=url.strip()
         if ssh == "auto" or ssh == "first":
             ssh = j.clients.ssh.ssh_agent_available()
         elif ssh or ssh is False:
@@ -125,7 +126,6 @@ class GitFactory:
             login=None,
             passwd=None,
             reset=False,
-            branch=None,
             ssh="auto",
             codeDir=None,
             executor=None):
@@ -154,13 +154,6 @@ class GitFactory:
         - if at this point still no login/passwd then we will try to build url with anonymous
 
 
-        # Process for defining branch
-
-        - if branch arg: None
-            - check if git directory exists if yes take that branch
-            - default to 'master'
-        - if it exists, use the branch arg
-
         Returns:
             (repository_host, repository_type, repository_account, repository_name, dest, repository_url)
 
@@ -169,7 +162,7 @@ class GitFactory:
         Remark:
             url can be empty, then the git params will be fetched out of the git configuration at that path
         """
-
+        url=url.strip()
         if url == "":
             if dest is None:
                 raise RuntimeError("dest cannot be None (url is also '')")
@@ -278,6 +271,12 @@ class GitFactory:
 
         base, provider, account, repo, dest, url, port = self.getGitRepoArgs(
             url, dest, login, passwd, reset=reset, ssh=ssh, codeDir=codeDir, executor=executor)
+
+        # Add ssh host to the known_hosts file if not exists to skip authenticity prompt
+        if ssh:
+            cmd = "grep -q {host} ~/.ssh/known_hosts || ssh-keyscan  -p {port} {host} >> ~/.ssh/known_hosts"
+            cmd = cmd.format(host=base, port=port or 22)
+            self.execute(cmd, timeout=timeout, executor=executor)
 
         self.logger.info("%s:pull:%s ->%s" % (executor, url, dest))
 
@@ -389,12 +388,16 @@ class GitFactory:
         return dest
 
     def getGitBranch(self, path):
-
+        """
+        get the branch name of the repo in the passed path
+        :param path:(String) repo url
+        :returns (String) Branch name
+        """
         # if we don't specify the branch, try to find the currently checkedout
         # branch
         cmd = 'cd %s;git rev-parse --abbrev-ref HEAD' % path
         try:
-            rc, out, err = self.execute(cmd, showout=False, outputStderr=False)
+            rc, out, err = self.execute(cmd, showout=False)
             if rc == 0:
                 branch = out.strip()
             else:  # if we can't retrieve current branch, use master as default
@@ -415,6 +418,7 @@ class GitFactory:
         - https://github.com/Jumpscale/jumpscale_core9/tree/master/lib/JumpScale/tools/docgenerator/macros
 
         """
+        url=url.strip()
         repository_host, repository_type, repository_account, repository_name, repository_url, port = self.rewriteGitRepoUrl(
             url)
         url_end = ""
@@ -461,8 +465,13 @@ class GitFactory:
             path,
             port)
 
-    def getContentInfoFromURL(self, url):
+    def getContentInfoFromURL(self, url, pull=True):
         """
+        get content info of repo from url
+
+        @param url : git repo url
+        @param pull : (default True) if True and repo doesn't exist localy will pull this repo
+
         @return (giturl,gitpath,relativepath)
 
         example Input
@@ -472,10 +481,11 @@ class GitFactory:
         - https://github.com/Jumpscale/jumpscale_core9/tree/master/lib/JumpScale/tools/docgenerator/macros
 
         """
+        url=url.strip()
         repository_host, repository_type, repository_account, repository_name, repository_url, branch, gitpath, relpath, port = j.clients.git.parseUrl(
             url)
         rpath = j.sal.fs.joinPaths(gitpath, relpath)
-        if not j.sal.fs.exists(rpath, followlinks=True):
+        if not j.sal.fs.exists(rpath, followlinks=True) and pull:
             j.clients.git.pullGitRepo(repository_url, branch=branch)
         if not j.sal.fs.exists(rpath, followlinks=True):
             raise j.exceptions.Input(message="Did not find path in git:%s" %
@@ -643,6 +653,12 @@ class GitFactory:
         return result
 
     def findGitPath(self, path):
+        """
+        given a path, check if this path or any of its parents is a git repo, return the first git repo
+        :param path: (String) path from where to start search
+        :returns (String) the first path which is a git repo
+        :raises Exception when no git path can be found
+        """
         while path != "":
             if j.sal.fs.exists(path=j.sal.fs.joinPaths(path, ".git")):
                 return path
@@ -702,7 +718,7 @@ class GitFactory:
                                                top, accountfound, reponame)
                     if j.sal.fs.exists(path="%s/.git" % repodir):
                         repos[reponame] = repodir
-        if len(list(repos.keys())) == 0:
+        if len(list(repos.keys())) == 0 and errorIfNone:
             raise RuntimeError(
                 "Cannot find git repo '%s':'%s':'%s'" % (provider, account, name))
         return repos

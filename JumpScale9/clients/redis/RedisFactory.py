@@ -1,13 +1,13 @@
 from JumpScale9 import j
 
-redisFound=False
+redisFound = False
 try:
     from .Redis import Redis
     from .RedisQueue import RedisQueue
     from redis._compat import nativestr
     # import itertools
     import socket
-    redisFound=True
+    redisFound = True
 except:
     pass
 import os
@@ -22,10 +22,13 @@ class RedisFactory:
 
     def __init__(self):
         self.clearCache()
-        self.redisFound=redisFound
+        self.redisFound = redisFound
         self.__jslocation__ = "j.clients.redis"
 
     def clearCache(self):
+        """
+        clear the cache formed by the functions get() and getQueue()
+        """
         self._redis = {}
         self._redisq = {}
         self._config = {}
@@ -39,7 +42,15 @@ class RedisFactory:
             unixsocket=None,
             ardb_patch=False,
             **args):
-        if redisFound==False:
+        """
+        get an instance of redis client, store it in cache so we could easily retrieve it later
+
+        :param ipaddr: used to form the key when no unixsocket
+        :param port: used to form the key when no unixsocket
+        :param fromcache: if False, will create a new one instead of checking cache
+        :param unixsocket: path of unixsocket to be used while creating Redis
+        """
+        if redisFound == False:
             raise RuntimeError("redis libraries are not installed, please pip3 install them.")
         if unixsocket is None:
             key = "%s_%s" % (ipaddr, port)
@@ -60,6 +71,15 @@ class RedisFactory:
         client.response_callbacks['HDEL'] = lambda r: r and nativestr(r) == 'OK'
 
     def getQueue(self, ipaddr, port, name, namespace="queues", fromcache=True):
+        """
+        get an instance of redis queue, store it in cache so we can easily retrieve it later
+
+        :param ipaddr: used to form the key when no unixsocket
+        :param port: used to form the key when no unixsocket
+        :param name: name of the queue
+        :param namespace: value of namespace for the queue
+        :param fromcache: if False, will create a new one instead of checking cache
+        """
         if not fromcache:
             return RedisQueue(self.get(ipaddr, port, fromcache=False), name, namespace=namespace)
         key = "%s_%s_%s_%s" % (ipaddr, port, name, namespace)
@@ -73,19 +93,27 @@ class RedisFactory:
         will try to create redis connection to $tmpdir/redis.sock
         if that doesn't work then will look for std redis port
         if that does not work then will return None
-        """
-        if "TMPDIR" in os.environ:
-            tmpdir = os.environ["TMPDIR"]
-        else:
-            tmpdir = "/tmp"
 
-        unix_socket_path = '%s/redis.sock' % tmpdir
+        j.clients.redis.get4core()
+
+        """
+        # if "TMPDIR" in os.environ:
+        #     tmpdir = os.environ["TMPDIR"]
+        # else:
+        #     tmpdir = "/tmp"
+
+        # tmpdir= j.core.dirs.TMPDIR
+
+        unix_socket_path = '%s/redis.sock' % j.core.dirs.TMPDIR
 
         db = None
-        if os.path.exists(path=unix_socket_path) and j.sal.process.checkProcessRunning('redis-server'):
+        if os.path.exists(path=unix_socket_path):
             db = Redis(unix_socket_path=unix_socket_path)
-        elif self._tcpPortConnectionTest("localhost", 6379, timeout=None):
-            db = Redis()
+        # elif j.sal.nettools.tcpPortConnectionTest("localhost", 6379):
+        #     db = Redis()
+        else:
+            self.start4core()
+            db = Redis(unix_socket_path=unix_socket_path)
 
         # try:
         #     j.core.db.set("internal.last", 0)
@@ -95,25 +123,13 @@ class RedisFactory:
 
         return db
 
-    def _tcpPortConnectionTest(self, ipaddr, port, timeout=None):
-        conn = None
-        try:
-            conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            if timeout:
-                conn.settimeout(timeout)
-            try:
-                conn.connect((ipaddr, port))
-            except BaseException:
-                return False
-        finally:
-            if conn:
-                conn.close()
-        return True
-
     def kill(self):
+        """
+        kill all running redis instances
+        """
         j.sal.process.execute("redis-cli -s %s/redis.sock shutdown" %
-                              j.dirs.TMPDIR, die=False, showout=False, outputStderr=False)
-        j.sal.process.execute("redis-cli shutdown", die=False, showout=False, outputStderr=False)
+                              j.dirs.TMPDIR, die=False, showout=False)
+        j.sal.process.execute("redis-cli shutdown", die=False, showout=False)
         j.sal.process.killall("redis")
 
     def start4core(self, timeout=20):
@@ -123,13 +139,14 @@ class RedisFactory:
         """
         if j.core.platformtype.myplatform.isMac:
             if not j.sal.process.checkInstalled("redis-server"):
+                # prefab.system.package.install('redis')
                 j.sal.process.execute("brew unlink redis", die=False)
                 j.sal.process.execute("brew install redis;brew link redis")
             if not j.sal.process.checkInstalled("redis-server"):
                 raise RuntimeError("Cannot find redis-server even after install")
             j.sal.process.execute("redis-cli -s %s/redis.sock shutdown" %
-                                  j.dirs.TMPDIR, die=False, showout=False, outputStderr=False)
-            j.sal.process.execute("redis-cli shutdown", die=False, showout=False, outputStderr=False)
+                                  j.dirs.TMPDIR, die=False, showout=False)
+            j.sal.process.execute("redis-cli shutdown", die=False, showout=False)
         elif j.core.platformtype.myplatform.isLinux:
             if j.core.platformtype.myplatform.isAlpine:
                 os.system("apk add redis")
@@ -164,7 +181,6 @@ class RedisFactory:
             "redis-server --port 6379 --unixsocket %s/redis.sock --maxmemory 100000000 --daemonize yes" % tmpdir)
         limit_timeout = time.time() + timeout
         while time.time() < limit_timeout:
-            j.core.db = self.get4core()
             if j.core.db:
                 break
             time.sleep(2)

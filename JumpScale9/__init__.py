@@ -27,8 +27,13 @@ else:
 
     class Core():
         def __init__(self):
-            pass
+            self._db  = None
 
+        @property
+        def db(self):
+            if not self._db:
+                self._db = j.clients.redis.get4core()
+            return self._db
 
     class Servers():
         def __init__(self):
@@ -177,12 +182,12 @@ else:
     from JumpScale9.errorhandling import JSExceptions
     j.exceptions = JSExceptions
     # j.events = j.core.events
-    j.core.db = j.clients.redis.get4core()
 
+    import logging
     j.core.logger = j.logger
     logging_cfg = j.core.state.configGet('logging', {})
     if logging_cfg:
-        level = logging_cfg.get('level', 'DEBUG').upper()
+        level = logging_cfg.get('level', getattr(logging, 'DEBUG'))
         mode = logging_cfg.get('mode', 'DEV')
         filter_module = logging_cfg.get('filter', [])
         j.logger.init(mode, level, filter_module)

@@ -9,14 +9,14 @@ import curses
 
 class ConfigUI(npyscreen.NPSAppManaged):
     def onStart(self):
-        self.addForm("MAIN",    MainForm)
-        self.addForm("SyncCodeForm",    SyncCodeForm)
-        self.addForm("FormSelectCodeDirs",       FormSelectCodeDirs,
+        # self.addForm("MAIN", MainForm)
+        self.addForm("MAIN", FormSelectCodeDirs,
                      name="Select Codedirs", color="IMPORTANT",)
-        # self.addForm("FormNodes",     FormNodes,
-        #              name="Edit Nodes", color="WARNING",)
-        self.addForm("FormSelectNodes",       FormSelectNodes,
+        self.addForm("FormSelectNodes", FormSelectNodes,
                      name="Select Nodes", color="IMPORTANT",)
+        # self.addForm("SyncCodeForm", SyncCodeForm)
+        # self.addForm("FormNodes", FormNodes,
+        #              name="Edit Nodes", color="WARNING",)
 
     def change_form(self, name):
         # Switch forms.  NB. Do *not* call the .edit() method directly (which
@@ -29,6 +29,7 @@ class ConfigUI(npyscreen.NPSAppManaged):
         self.resetHistory()
 
     def exit_application(self):
+        # TODO:*1 does not work well yet
         pass
 
 
@@ -39,10 +40,6 @@ class MyMenu():
                         shortcut=None, arguments=["MAIN"], keywords=None)
         self.m1.addItem(text='Select Active Codedirs', onSelect=self.go2form,
                         shortcut=None, arguments=["FormSelectCodeDirs"], keywords=None)
-        self.m1.addItem(text='Edit Nodes', onSelect=self.editNodes,
-                        shortcut=None, arguments=[], keywords=None)
-        self.m1.addItem(text='Edit JS9 ME Configfile', onSelect=self.editConfigFile,
-                        shortcut=None, arguments=[], keywords=None)
         self.m1.addItem(text='Edit JS9 Core Configfile', onSelect=self.editConfigFileJS,
                         shortcut=None, arguments=[], keywords=None)
         self.m1.addItem(text='Select Active Nodes', onSelect=self.go2form,
@@ -55,20 +52,11 @@ class MyMenu():
     def go2form(self, name):
         self.parentApp.change_form(name)
 
-    def editNodes(self):
-        j.tools.prefab.local.apps.microeditor.install()
-        j.sal.process.executeInteractive("micro %s" % j.tools.develop.nodes.configpath)
-        j.tools.develop.nodes.load()
-
-    def editConfigFile(self):
-        j.tools.prefab.local.apps.microeditor.install()
-        j.sal.process.executeInteractive("micro %s" % j.core.state.configMePath)
-        j.core.state.load()
-
     def editConfigFileJS(self):
         j.tools.prefab.local.apps.microeditor.install()
-        j.sal.process.executeInteractive("micro %s" % j.core.state.configJSPath)
-        j.core.state.load()        
+        j.sal.process.executeInteractive(
+            "micro %s" % j.core.state.configJSPath)
+        j.core.state.load()
 
     def onCleanExit(self):
         npyscreen.notify_wait("Goodbye!")
@@ -92,58 +80,44 @@ class MainForm(npyscreen.FormWithMenus, MyMenu):
         self.main()
 
     def main(self):
-        # from IPython import embed;embed(colors='Linux')
-        self.loginname = self.add_widget(
-            npyscreen.TitleText, name="Your login name:")
-        self.email = self.add_widget(npyscreen.TitleText, name="Your email:")
-        self.fullname = self.add_widget(npyscreen.TitleText, name="Full name:")
+        self.add_widget(npyscreen.TitleText, name="Use this to configure your nodes, codedirs and jsconfig")
+        # self.email = self.add_widget(npyscreen.TitleText, name="Your email:")
+        # self.fullname = self.add_widget(npyscreen.TitleText, name="Full name:")
+        # self.myconfig_url = self.add_widget(npyscreen.TitleText, name="My Config git URL:")
 
-        self.loginname.value = j.core.state.configMe["me"].get("loginname", "")
-        self.email.value = j.core.state.configMe["me"].get("email", "")
-        self.fullname.value = j.core.state.configMe["me"].get("fullname", "")
+        # self.loginname.value = j.core.state.configMe["me"].get("loginname", "")
+        # self.email.value = j.core.state.configMe["me"].get("email", "")
+        # self.fullname.value = j.core.state.configMe["me"].get("fullname", "")
 
-        # keyname = j.core.state.configMe["ssh"].get("sshkeyname", "")
+        # self.myconfig_url.value = j.core.state.configMe["me"].get("fullname", "")
 
-        # keypath = "%s/.ssh/%s" % (j.dirs.HOMEDIR, keyname)
-        # if not j.sal.fs.exists(keypath):
+        # # keyname = j.core.state.configMe["ssh"].get("sshkeyname", "")
 
-        sshpath = "%s/.ssh" % (j.dirs.HOMEDIR)
-        keynames = [j.sal.fs.getBaseName(
-            item)[:-4] for item in j.sal.fs.listFilesInDir(sshpath, filter="*.pub")]
-        self.sshkeyname = self.add_widget(
-            npyscreen.TitleSelectOne, name="YOUR SSH KEY:", values=keynames)
+        # # keypath = "%s/.ssh/%s" % (j.dirs.HOMEDIR, keyname)
+        # # if not j.sal.fs.exists(keypath):
 
-        sshkeyname = j.core.state.configMe["ssh"]["sshkeyname"]
+        # sshpath = "%s/.ssh" % (j.dirs.HOMEDIR)
+        # keynames = [j.sal.fs.getBaseName(
+        #     item)[:-4] for item in j.sal.fs.listFilesInDir(sshpath, filter="*.pub")]
+        # self.sshkeyname = self.add_widget(
+        #     npyscreen.TitleSelectOne, name="YOUR SSH KEY:", values=keynames)
 
-        if keynames.count(sshkeyname) > 0:
-            pos = keynames.index(sshkeyname)
-            self.sshkeyname.set_value(pos)
+        # sshkeyname = j.core.state.configMe["ssh"]["sshkeyname"]
 
-        self.keynames = keynames
+        # if keynames.count(sshkeyname) > 0:
+        #     pos = keynames.index(sshkeyname)
+        #     self.sshkeyname.set_value(pos)
 
-        # from IPython import embed
-        # embed(colors='Linux')
-        # else:
-        #     self.sshkeyname = self.add_widget(
-        #         npyscreen.TitleText, name="YOUR SSH KEY:", value=keyname)
+        # self.keynames = keynames
 
-        # from IPython import embed;embed(colors='Linux')
+        # def afterEditing(self):
+        #     j.core.state.configMe["me"]["loginname"] = self.loginname.value
+        #     j.core.state.configMe["me"]["email"] = self.email.value
+        #     j.core.state.configMe["me"]["fullname"] = self.fullname.value
+        #     if len(self.sshkeyname.value) == 1:
+        #         j.core.state.configMe["ssh"]["sshkeyname"] = self.keynames[self.sshkeyname.value[0]]
 
-        # self.sshkeypath = self.add_widget(npyscreen.TitleFilenameCombo, name="Your SSH Key Path:",must_exist=True)
-        # keyname=j.core.state.configGetFromDict("ssh","sshkeyname","")
-        # if keyname.strip()=="":
-        #     keypath="%s/.ssh/??????"%j.dirs.HOMEDIR
-        # else:
-        #     keypath="%s/.ssh/%s"%(j.dirs.HOMEDIR,keyname)
-        # self.sshkeypath.value=keypath
-
-    def afterEditing(self):
-        j.core.state.configMe["me"]["loginname"] = self.loginname.value
-        j.core.state.configMe["me"]["email"] = self.email.value
-        j.core.state.configMe["me"]["fullname"] = self.fullname.value
-        if len(self.sshkeyname.value) == 1:
-            j.core.state.configMe["ssh"]["sshkeyname"] = self.keynames[self.sshkeyname.value[0]]
-        j.core.state.configSave()
+        #     j.core.state.configSave()
 
 
 class FormSelectCodeDirs(npyscreen.FormWithMenus, MyMenu):
@@ -152,7 +126,6 @@ class FormSelectCodeDirs(npyscreen.FormWithMenus, MyMenu):
         self.main()
 
     def main(self):
-
         wgtree = self.add(npyscreen.MLTreeMultiSelect)
 
         treedata = npyscreen.NPSTreeData(
@@ -172,7 +145,6 @@ class FormSelectCodeDirs(npyscreen.FormWithMenus, MyMenu):
                     lowestChild.path = repo.path
 
         wgtree.values = treedata
-
         self.wgtree = wgtree
 
     def afterEditing(self):
@@ -180,10 +152,11 @@ class FormSelectCodeDirs(npyscreen.FormWithMenus, MyMenu):
             treeItem = j.tools.develop.codedirs.tree.findOne(path=e.path)
             treeItem.selected = e.selected
         j.tools.develop.codedirs.save()
-        self.parentApp.change_form("MAIN")
+        self.parentApp.change_form("FormSelectNodes")
 
 
 class FormSelectNodes(npyscreen.FormWithMenus, MyMenu):
+
     def create(self):
         self.addMenu()
         self.main()
@@ -195,55 +168,53 @@ class FormSelectNodes(npyscreen.FormWithMenus, MyMenu):
         treedata = npyscreen.NPSTreeData(
             content='root', selectable=True, ignoreRoot=False)
         treedata.path = ""
-
-        for cat in j.tools.develop.nodes.tree.children:
+        for cat in j.tools.nodemgr.tree.children:
             if cat.name == "":
                 continue
             currootTree = treedata.newChild(
-                content=cat.name, selectable=True, selected=cat.selected)
+                content='{} ({})'.format(cat.name, cat.cat), selectable=True, selected=cat.selected)
             currootTree.path = cat.path
             for node in cat.children:
                 nodeTree = currootTree.newChild(
-                    content=node.name, selectable=True, selected=node.selected)
+                    content='{} ({})'.format(node.name, node.cat), selectable=True, selected=node.selected)
                 nodeTree.path = node.path
 
         wgtree.values = treedata
-
         self.wgtree = wgtree
 
     def afterEditing(self):
         for e in self.wgtree.values:
-            treeItem = j.tools.develop.nodes.tree.findOne(path=e.path)
+            treeItem = j.tools.nodemgr.tree.findOne(path=e.path)
             treeItem.selected = e.selected
-        j.tools.develop.nodes.save()
-        self.parentApp.change_form("MAIN")
+            if treeItem.cat != None:
+                n = j.tools.nodemgr.get(treeItem.name)
+                if n.selected != treeItem.selected:
+                    n.selected = treeItem.selected
+                    n.save()
+        self.parentApp.change_form(None)
 
-    def addNode(self):
-        from IPython import embed
-        embed(colors='Linux')
 
+# class SyncCodeForm(npyscreen.FormWithMenus, MyMenu):
+#     def create(self):
+#         self.addMenu()
+#         self.main()
 
-class SyncCodeForm(npyscreen.FormWithMenus, MyMenu):
-    def create(self):
-        self.addMenu()
-        self.main()
+#     def main(self):
+#         self.sync_deletefiles = self.add_widget(npyscreen.TitleText, name="Delete Remove Files During Sync:",
+#                                                 value=j.core.state.stateGetFromDict("develop", "sync_deletefiles", default="1"))
+#         self.sync_deletefiles.text_field_begin_at = 50
+#         self.sync_deletefiles.use_two_lines = False
 
-    def main(self):
-        self.sync_deletefiles = self.add_widget(npyscreen.TitleText, name="Delete Remove Files During Sync:",
-                                                value=j.core.state.stateGetFromDict("develop", "sync_deletefiles", default="1"))
-        self.sync_deletefiles.text_field_begin_at = 50
-        self.sync_deletefiles.use_two_lines = False
+#         print("\n")
 
-        print("\n")
+#         self.addButton = self.add(
+#             npyscreen.ButtonPress, name="SYNC CODE", when_pressed_function=self.sync)
 
-        self.addButton = self.add(
-            npyscreen.ButtonPress, name="SYNC CODE", when_pressed_function=self.sync)
+#     def sync(self):
+#         j.tools.develop.monitor()
 
-    def sync(self):
-        j.tools.develop.monitor()
-
-    def afterEditing(self):
-        assert str(self.sync_deletefiles.value) == "1" or str(
-            self.sync_deletefiles.value) == "0"
-        j.core.state.stateSetInDict(
-            "develop", "sync_deletefiles", self.sync_deletefiles.value)
+#     def afterEditing(self):
+#         assert str(self.sync_deletefiles.value) == "1" or str(
+#             self.sync_deletefiles.value) == "0"
+#         j.core.state.stateSetInDict(
+#             "develop", "sync_deletefiles", self.sync_deletefiles.value)

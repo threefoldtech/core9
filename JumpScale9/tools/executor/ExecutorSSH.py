@@ -29,12 +29,11 @@ class ExecutorSSH(ExecutorBase):
         if path == "/env.sh":
             raise RuntimeError("SS")
 
-        rc, _, _ = self.execute('test -e %s' %
-                                path, die=False, showout=False, hide=True)
+        rc, _, _ = self.execute('ls %s' % path, die=False, showout=False, hide=True)
         if rc > 0:
             return False
         else:
-            return True    
+            return True
 
     # def pushkey(self, user='root'):
     #     self.logger.debug("pushkey from agent with name:%s" % self.key_filename)
@@ -119,7 +118,7 @@ class ExecutorSSH(ExecutorBase):
         #     raise RuntimeError("JJ")
 
         if hide:
-            showout=False
+            showout = False
 
         cmds2 = self._transformCmds(cmds, die, checkok=checkok, env=env)
 
@@ -173,7 +172,7 @@ class ExecutorSSH(ExecutorBase):
             1, 100000)
         j.sal.fs.writeFile(path, content)
         sftp = self.sshclient.getSFTP()
-        sftp.put(path, path)  # is now always on tmp
+        self.sshclient._client.copy_file(path, path)  # is now always on tmp
 
         cmd = "bash {}".format(path)
         rc, out, err = self.sshclient.execute(cmd, die=die, showout=showout)
@@ -182,7 +181,7 @@ class ExecutorSSH(ExecutorBase):
             out = self.docheckok(content, out)
 
         j.sal.fs.remove(path)
-        sftp.remove(path)
+        sftp.unlink(path)
 
         return rc, out, err
 

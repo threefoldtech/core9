@@ -3,6 +3,7 @@ from js9 import j
 from .ExecutorSSH import *
 from .ExecutorLocal import *
 from .ExecutorAsyncSSH import ExecutorAsyncSSH
+from .ExecutorSerial import ExecutorSerial
 import threading
 
 
@@ -48,6 +49,9 @@ class ExecutorFactory:
 
     def getLocal(self, jumpscale=False, debug=False, checkok=False):
         return ExecutorLocal(debug=debug, checkok=debug)
+
+    def getSerial(self, device, baudrate=9600, type="serial", parity="N", stopbits=1, bytesize=8, timeout=1):
+        return ExecutorSerial(device, baudrate=baudrate, type=type, parity=parity, stopbits=stopbits, bytesize=bytesize, timeout=timeout)
 
     def getSSHBased(self, addr="localhost", port=22, timeout=5, usecache=True):
         """
@@ -99,6 +103,10 @@ class ExecutorFactory:
 
             return self._executors_async[key]
 
+    def getLocalDocker(self, container_id_or_name):
+        from .ExecutorDocker import ExecutorDocker
+        return ExecutorDocker.from_local_container(container_id_or_name)
+
     def reset(self, executor):
         """
         reset remove the executor passed in argument from the cache.
@@ -106,7 +114,7 @@ class ExecutorFactory:
         if j.data.types.string.check(executor):
             key = executor
         elif executor.type == 'ssh':
-            key = '%s:%s' % (executor.addr, executor.port)
+            key = '%s:%s' % (executor.sshclient.addr, executor.sshclient.port)
         else:
             raise j.exceptions.Input(message='executor type not recognize.')
         with self._lock:

@@ -52,6 +52,9 @@ class Connection:
         pass
 
     def simpleAuth(self, url, username, password):
+        """
+        authorize with the given username and password on url
+        """
         req = urllib.request.Request(url)
         auth = '%s:%s' % (username, password)
         base64string = base64.encodebytes(auth.encode())[:-1]
@@ -87,11 +90,19 @@ class Connection:
         return response
 
     def put(self, url, data=None, headers=None, **params):
+        """
+        @data is the raw data which will be sent
+        @headers e.g. headers={'content-type':'text/plain'}  (this is the default)
+        """
         response = self._http_request(
             url, data=data, headers=headers, method='PUT', **params)
         return response
 
     def delete(self, url, data=None, headers=None, **params):
+        """
+        @data is the raw data which will be sent
+        @headers e.g. headers={'content-type':'text/plain'}  (this is the default)
+        """
         response = self._http_request(
             url, data=data, headers=headers, method='DELETE', **params)
         return response
@@ -148,6 +159,9 @@ class Connection:
                     print(status)
 
     def _updateUrlParams(self, url, **kwargs):
+        """
+        update the params of the url
+        """
         _scheme, _netloc, _url, _params, _query, _fragment = urlparse(url)
         params = urllib.parse.parse_qs(_query)
         # parse_qs puts the values in a list which corrupts the url later on
@@ -161,6 +175,19 @@ class Connection:
         return urlunparse((_scheme, _netloc, _url, _params, _query, _fragment))
 
     def _http_request(self, url, data=None, headers=None, method=None, **kwargs):
+        """
+        utility function for sending an http request
+
+        @url url of the request
+        @data data to be sent with the request
+        @headers headers to be sent with the request
+        @method method by which we will send the request, get, post, ..
+
+        :raises HTTPError when not able to make the request
+        :raises Exception when receiving response code represent error
+
+        :returns the response of calling the http request
+        """
         url = self._updateUrlParams(url, **kwargs)
         data = data or kwargs.get('data', None)
         if data and isinstance(data, (dict, list)):
@@ -192,5 +219,8 @@ class HttpClient:
         self.__jslocation__ = "j.clients.http"
 
     def getConnection(self):
+        """
+        :returns connection instance
+        """
         connection = Connection()
         return connection

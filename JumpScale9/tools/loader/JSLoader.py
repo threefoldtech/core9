@@ -85,7 +85,6 @@ j.dirs = j.core.dirs
 j.errorhandler = j.core.errorhandler
 j.exceptions = j.core.errorhandler.exceptions
 j.events = j.core.events
-j.core.db = j.clients.redis.get4core()
 from JumpScale9.tools.loader.JSLoader import JSLoader
 j.tools.jsloader = JSLoader()
 
@@ -260,7 +259,7 @@ class JSLoader():
             #is per item under j e.g. j.clients
 
             if not jlocationRoot.startswith("j."):
-                raise RuntimeError()
+                raise RuntimeError("jlocation should start with j, found: '%s', in %s"%(jlocationRoot,jlocationRootDict))
 
             jlocations["locations"].append({"name":jlocationRoot[2:]})
 
@@ -312,10 +311,13 @@ class JSLoader():
         res = {}
         C = j.sal.fs.readFile(path)
         classname = None
+        locfound=False
         for line in C.split("\n"):
             if line.startswith("class "):
                 classname = line.replace("class ", "").split(":")[0].split("(", 1)[0].strip()
-            if line.find("self.__jslocation__") != -1:
+                if classname == "JSBaseClassConfig":
+                    break
+            if line.find("self.__jslocation__") != -1 and locfound==False:
                 if classname is None:
                     raise RuntimeError(
                         "Could not find class in %s while loading jumpscale lib." % path)
@@ -324,6 +326,8 @@ class JSLoader():
                     if classname not in res:
                         res[classname] = {}
                     res[classname]["location"] = location
+                    locfound=True
+                    print("%s:%s:%s"%(path,classname,location))
             if line.find("self.__imports__") != -1:
                 if classname is None:
                     raise RuntimeError(

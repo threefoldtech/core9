@@ -969,6 +969,46 @@ class NetTools:
 
         return domainName
 
+    def ipSet(self, device, ip=None, netmask=None, gw=None, inet='dhcp', commit=False):
+        """
+        Return all interfaces that has this ifname
+        """
+        if device not in self.getNics():
+            raise j.exceptions.RuntimeError('Invalid NIC')
+
+        if inet not in ['static', 'dhcp']:
+            raise ValueError('Invalid inet .. use either dhcp or static')
+
+        if inet == 'static' and (not ip or not netmask):
+            raise ValueError('ip, and netmask, are required in static inet.')
+
+        file = j.tools.path.get('/etc/network/interfaces.d/%s' % device)
+        content = 'auto %s\n' % device
+
+        if inet == 'dhcp':
+            content += 'iface %s inet dhcp\n' % device
+        else:
+            content += 'iface %s inet static\naddress %s\nnetmask %s\n' % (device, ip, netmask)
+            if gw:
+                content += 'gateway %s\n' % gw
+
+        file.write_text(content)
+
+        if commit:
+            self.commit(device)
+        else:
+            self.logger.info('Do NOT FORGET TO COMMIT')
+
+    def commit(self, device=None):
+        #- make sure loopback exist
+        content = 'auto lo\niface lo inet loopback\n'
+        j.tools.path.get('/etc/network/interfaces.d/lo').write_text(content)
+
+        j.sal.process.execute('service networking restart')
+        if device:
+            self.logger.info('Restarting interface %s' % device)
+            j.sal.process.execute('ifdown %s && ifup %s' % (device, device))
+        self.logger.info('DONE')
 
 class NetworkZone:
     ipRanges = None  # array(IPRange)

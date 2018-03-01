@@ -66,14 +66,14 @@ class SystemFS:
         @param destination: string (Destination path the file should be moved to )
         """
         self.logger.debug('Move file from %s to %s' % (source, destin))
-        self.move(source, destin)
+        self._move(source, destin)
 
     def renameFile(self, filePath, new_name):
         """
         OBSOLETE
         """
         self.logger.debug("WARNING: renameFIle should not be used")
-        return self.move(filePath, new_name)
+        return self._move(filePath, new_name)
 
     @path_check(path={"exists", "required", "dir"})
     def removeIrrelevantFiles(self, path, followSymlinks=True):
@@ -150,7 +150,7 @@ class SystemFS:
 
     def copyDirTree(self, src, dst, keepsymlinks=False, deletefirst=False,
                     overwriteFiles=True, ignoredir=[".egg-info", ".dist-info"], ignorefiles=[".egg-info"], rsync=True,
-                    ssh=False, sshport=22, recursive=True, rsyncdelete=True, createdir=False, applyHrdOnDestPaths=None):
+                    ssh=False, sshport=22, recursive=True, rsyncdelete=True, createdir=False):
         """Recursively copy an entire directory tree rooted at src.
         The dst directory may already exist; if not,
         it will be created as well as missing parent directories
@@ -186,13 +186,16 @@ class SystemFS:
                 errors = []
                 for name in names:
                     # is only for the name
-                    if applyHrdOnDestPaths is not None:
-                        name2 = applyHrdOnDestPaths.applyOnContent(name)
-                    else:
-                        name2 = name
+                    name2 = name
 
                     srcname = self.joinPaths(src, name)
                     dstname = self.joinPaths(dst, name2)
+
+                    if self.isDir(srcname) and name in ignoredir:
+                        continue
+                    if self.isFile(srcname) and name in ignorefiles:
+                        continue
+
                     if deletefirst and self.exists(dstname):
                         if self.isDir(dstname, False):
                             self.removeDirTree(dstname)
@@ -205,7 +208,7 @@ class SystemFS:
                     elif self.isDir(srcname):
                         # print "1:%s %s"%(srcname,dstname)
                         self.copyDirTree(srcname, dstname, keepsymlinks, deletefirst,
-                                         overwriteFiles=overwriteFiles, applyHrdOnDestPaths=applyHrdOnDestPaths)
+                                         overwriteFiles=overwriteFiles)
                     else:
                         # print "2:%s %s"%(srcname,dstname)
                         self.copyFile(
@@ -224,12 +227,6 @@ class SystemFS:
             excl += "--exclude '*.pyc' "
             excl += "--exclude '*.bak' "
             excl += "--exclude '*__pycache__*' "
-
-            if self.isDir(src):
-                if dst[-1] != "/":
-                    dst += "/"
-                if src[-1] != "/":
-                    src += "/"
 
             dstpath = dst.split(':')[1] if ':' in dst else dst
             cmd = "rsync "
@@ -308,7 +305,7 @@ class SystemFS:
         @param destin: string (Destination path where the directory should be moved into)
         """
         self.logger.debug('Moving directory from %s to %s' % (source, destin))
-        self.move(source, destin)
+        self._move(source, destin)
         self.logger.debug(
             'Directory is successfully moved from %s to %s' % (source, destin))
 
@@ -498,6 +495,9 @@ class SystemFS:
         """
         @param permissions e.g. 0o660 (USE OCTAL !!!)
         """
+        if permissions > 511 or permissions < 0:
+            raise ValueError("can't perform chmod, %s is not a valid mode" % oct(permissions))
+           
         os.chmod(path, permissions)
         for root, dirs, files in os.walk(path):
             for ddir in dirs:
@@ -759,12 +759,19 @@ class SystemFS:
         @param toReplace e.g. {name}
         @param replace with e.g. "jumpscale"
         """
+        if not toReplace:
+            raise ValueError("Can't change file names, toReplace can't be empty")
+        if not replaceWith:
+            raise ValueError("Can't change file names, replaceWith can't be empty")
         paths = self.listFilesInDir(
             pathToSearchIn, recursive, filter, minmtime, maxmtime)
         for path in paths:
-            path2 = path.replace(toReplace, replaceWith)
-            if path2 != path:
-                self.renameFile(path, path2)
+            dir_name = self.getDirName(path)
+            file_name = self.getBaseName(path)
+            new_file_name = file_name.replace(toReplace, replaceWith)
+            if new_file_name != file_name:
+                new_path = self.joinPaths(dir_name, new_file_name)
+                self.renameFile(path, new_path)
 
     def replaceWordsInFiles(self, pathToSearchIn, templateengine, recursive=True,
                             filter=None, minmtime=None, maxmtime=None):
@@ -819,8 +826,7 @@ class SystemFS:
                 result.append(file)
         return result
 
-    @path_check(source={"exists", "required"}, destin={"exists", "required"})
-    def move(self, source, destin):
+    def _move(self, source, destin):
         """Main Move function
         @param source: string (If the specified source is a File....Calls moveFile function)
         (If the specified source is a Directory....Calls moveDir function)
@@ -928,12 +934,9 @@ class SystemFS:
     def checkDirParam(self, path):
         if(path.strip() == ""):
             raise TypeError("path parameter cannot be empty.")
-        path = path.replace("//", "/")
-        path = path.replace("\\\\", "/")
-        path = path.replace("\\", "/")
+        path = self.pathNormalize(path)
         if path[-1] != "/":
             path = path + "/"
-        path = path.replace("/", os.sep)
         return path
 
     @path_check(path={"required", "exists"})
@@ -1419,19 +1422,16 @@ class SystemFS:
     @path_check(startDir={"required", "exists", "dir"})
     def find(self, startDir, fileregex):
         """Search for files or folders matching a given pattern
-        this is a very weard function, don't use is better to use the list functions
-        make sure you do changedir to the starting dir first
         example: find("*.pyc")
         @param fileregex: The regex pattern to match
         @type fileregex: string
         """
-        pwd = self.getcwd()
-        try:
-            self.changeDir(startDir)
-            import glob
-            return glob.glob(fileregex)
-        finally:
-            self.changeDir(pwd)
+        result = []
+        for root, dirs, files in os.walk(startDir, followlinks=True):
+            for name in files:
+                if fnmatch.fnmatch(name, fileregex):
+                    result.append(os.path.join(root, name))
+        return result
 
     def grep(self, fileregex, lineregex):
         """Search for lines matching a given regex in all files matching a regex

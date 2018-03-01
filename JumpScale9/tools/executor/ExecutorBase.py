@@ -121,7 +121,8 @@ class ExecutorBase:
         self.state.configSave()
 
     # interface to implement by child classes
-    def execute(self, cmds, die=True, checkok=None, showout=True, timeout=0, env={}):
+    def execute(self, cmds, die=True, checkok=False, showout=True, timeout=0, env=None, # pylint: disable=R0913
+                asScript=False, hide=False):
         raise NotImplementedError()
 
     def executeRaw(self, cmd, die=True, showout=False):
@@ -172,10 +173,6 @@ class ExecutorBase:
             apk -v > /dev/null 2>&1 && echo 'OS_TYPE="alpine"'
             brew -v > /dev/null 2>&1 && echo 'OS_TYPE="darwin"'
             cat /etc/os-release | grep "VERSION_ID"
-
-            echo "CFG_ME = --TEXT--"
-            cat $PATH_JSCFG/me.toml 2>/dev/null || echo ""
-            echo --TEXT--
 
             echo "CFG_JS9 = --TEXT--"
             cat $PATH_JSCFG/jumpscale9.toml 2>/dev/null || echo ""
@@ -247,15 +244,6 @@ class ExecutorBase:
 
             else:
                 res["cfg_state"] = {}
-
-            if res["cfg_me"].strip() != "":
-                try:
-                    res["cfg_me"] = pytoml.loads(res["cfg_me"])
-                except Exception as e:
-                    raise RuntimeError(
-                        "Could not load me config file (pytoml error)\n%s\n" % res["cfg_me"])
-            else:
-                res["cfg_me"] = {}
 
             envdict = {}
             for line in res["env"].split("\n"):
@@ -371,6 +359,12 @@ class ExecutorBase:
         port = 6379
         addr = "localhost"
 
+        [myconfig]
+        #giturl = "ssh://git@docs.agitsystem.com:7022/myusername/myconfig.git"
+        giturl = ""
+        sshkeyname = ""
+
+
         '''
 
         TSYSTEM = j.data.text.strip(TSYSTEM)
@@ -393,27 +387,6 @@ class ExecutorBase:
         else:
             self.state.configUpdate(TT, False)  # will not overwrite
 
-        # check if there is a cfg_me if not put defaults
-        if self.stateOnSystem["cfg_me"] == {}:
-
-            TME = '''
-            [email]
-            server = ""
-
-            [me]
-            fullname = ""
-            loginname = ""
-            email = ""
-
-            [ssh]
-            sshkeyname = "idonotexist"
-
-            '''
-
-            TME = j.data.text.strip(TME)
-            # load the defaults
-            self.state.configMe = pytoml.loads(TME)
-
         self.state.configSave()
         if self.type == "local":
             j.core.state = self._state
@@ -431,7 +404,7 @@ class ExecutorBase:
             j.sal.fs.symlinkFilesInDir(
                 src, "/usr/local/bin", delete=True, includeDirs=False, makeExecutable=True)
 
-        print("initenv done on executor base")
+        self.logger.debug("initenv done on executor base")
 
     @property
     def dir_paths(self):
