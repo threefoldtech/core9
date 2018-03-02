@@ -175,6 +175,14 @@ class LoggerFactory():
         # self.logger.propagate = True
         self.logger.addHandler(self.handlers.consoleHandler)
 
+    def telegramhandler_enable(self, client, chat_id):
+        """
+        Enable a telegram handler to forward logs to a telegram group.
+        @param client: A jumpscale telegram_bot client 
+        @param chat_id: Telegram chat id to which logs need to be forwarded
+        """
+        self.logger.addHandler(self.handlers.telegramHandler(client, chat_id))     
+
     def handlers_reset(self):
         self.logger.handlers = []
 

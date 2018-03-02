@@ -2,6 +2,7 @@ import logging
 import time
 import os
 
+import logging
 from logging.handlers import TimedRotatingFileHandler
 from logging.handlers import MemoryHandler
 
@@ -20,6 +21,7 @@ class Handlers():
         self._fileRotateHandler = None
         self._consoleHandler = None
         self._memoryHandler = None
+        self._telegramHandler = None
         self._all = []
 
     @property
@@ -74,3 +76,43 @@ class Handlers():
             self._memoryHandler = MemoryHandler(capacity=10000)
             self._all.append(self._memoryHandler)
         return self._memoryHandler
+
+    def telegramHandler(self, client, chat_id, level=logging.CRITICAL):
+        """
+        Create a telegram handler to forward logs to a telegram group.
+        @param client: A jumpscale telegram_bot client 
+        @param chat_id: Telegram chat id to which logs need to be forwarded
+        @param level: Loglevel that should be handeld by this handler
+        """
+        if self._telegramHandler is None:
+            self._telegramHandler = TelegramHandler(client, chat_id)
+            self._telegramHandler.setLevel(level)
+            self._telegramHandler.setFormatter(TelegramFormatter())
+            self._all.append(self._telegramHandler)
+        return self._telegramHandler
+
+
+class TelegramHandler(logging.Handler):
+    """
+    Handler to forward logs to a telegram group
+    """
+
+    def __init__(self, client, chat_id):
+        """
+        Create a telegram handler to forward logs to a telegram group.
+        @param client: A jumpscale telegram_bot client 
+        @param chat_id: Telegram chat id to which logs need to be forwarded
+        """
+        super(TelegramHandler, self).__init__()
+        self.telegram_client = client
+        self.chat_id = chat_id
+
+    def emit(self, record):
+        log_entry = self.format(record)
+        self.telegram_client.send_message(self.chat_id, log_entry, parse_mode="Markdown")
+
+
+class TelegramFormatter(logging.Formatter):
+
+    def format(self, record):
+        return "```\n%s\n```" % super(TelegramFormatter, self).format(record)
