@@ -12,6 +12,8 @@ from urllib.parse import urlencode, urlparse, urlunparse
 import urllib.parse
 import urllib.request
 import urllib.error
+from js9 import j
+JSBASE = j.application.jsbase_get_class()
 
 
 HTTP_CREATED = 201  # from practical examples, authorization created returns 201
@@ -29,9 +31,10 @@ STATUS_AUTH_REQ = set([HTTP_AUTH_REQUIRED, HTTP_FORBIDDEN])
 AUTHORIZATION_HEADER = 'Authorization'
 
 
-class HTTPError(Exception):
+class HTTPError(Exception, JSBASE):
 
     def __init__(self, httperror, url):
+        JSBASE.__init__(self)
         msg = 'Could not open http connection to url %s' % url
         data = ''
         self.status_code = None
@@ -46,12 +49,15 @@ class HTTPError(Exception):
         return "%s:\n %s" % (self.status_code, self.msg)
 
 
-class Connection:
+class Connection(JSBASE):
 
     def __init__(self):
-        pass
+        JSBASE.__init__(self)
 
     def simpleAuth(self, url, username, password):
+        """
+        authorize with the given username and password on url
+        """
         req = urllib.request.Request(url)
         auth = '%s:%s' % (username, password)
         base64string = base64.encodebytes(auth.encode())[:-1]
@@ -61,7 +67,7 @@ class Connection:
             handle = urllib.request.urlopen(req)
             return handle
         except IOError as e:
-            print(e)
+            raise RuntimeError("could not do simple auth.\n%s"%e)
 
     def get(self, url, data=None, headers=None, **params):
         """
@@ -81,17 +87,24 @@ class Connection:
         if headers is None:
             headers = {'content-type': 'text/plain'}
 
-        # print data
         response = self._http_request(
             url, data=data, headers=headers, method='POST', **params)
         return response
 
     def put(self, url, data=None, headers=None, **params):
+        """
+        @data is the raw data which will be sent
+        @headers e.g. headers={'content-type':'text/plain'}  (this is the default)
+        """
         response = self._http_request(
             url, data=data, headers=headers, method='PUT', **params)
         return response
 
     def delete(self, url, data=None, headers=None, **params):
+        """
+        @data is the raw data which will be sent
+        @headers e.g. headers={'content-type':'text/plain'}  (this is the default)
+        """
         response = self._http_request(
             url, data=data, headers=headers, method='DELETE', **params)
         return response
@@ -128,7 +141,7 @@ class Connection:
             if meta_length:
                 file_size = int(meta_length[0])
             if report:
-                print(("Downloading: {0} Bytes: {1}".format(url, file_size)))
+                self.logger.debug(("Downloading: {0} Bytes: {1}".format(url, file_size)))
 
             file_size_dl = 0
             block_sz = 8192
@@ -145,9 +158,12 @@ class Connection:
                         status += "   [{0:6.2f}%]".format(
                             file_size_dl * 100 / file_size)
                     status += chr(13)
-                    print(status)
+                    self.logger.debug(status)
 
     def _updateUrlParams(self, url, **kwargs):
+        """
+        update the params of the url
+        """
         _scheme, _netloc, _url, _params, _query, _fragment = urlparse(url)
         params = urllib.parse.parse_qs(_query)
         # parse_qs puts the values in a list which corrupts the url later on
@@ -161,6 +177,19 @@ class Connection:
         return urlunparse((_scheme, _netloc, _url, _params, _query, _fragment))
 
     def _http_request(self, url, data=None, headers=None, method=None, **kwargs):
+        """
+        utility function for sending an http request
+
+        @url url of the request
+        @data data to be sent with the request
+        @headers headers to be sent with the request
+        @method method by which we will send the request, get, post, ..
+
+        :raises HTTPError when not able to make the request
+        :raises Exception when receiving response code represent error
+
+        :returns the response of calling the http request
+        """
         url = self._updateUrlParams(url, **kwargs)
         data = data or kwargs.get('data', None)
         if data and isinstance(data, (dict, list)):
@@ -176,7 +205,6 @@ class Connection:
         try:
             resp = urllib.request.urlopen(request)
         except Exception as e:
-            print(e)
             raise HTTPError(e, url)
 
         #if resp.code in STATUS_AUTH_REQ: raise AuthorizationError('Not logged in or token expired')
@@ -186,11 +214,15 @@ class Connection:
         return resp
 
 
-class HttpClient:
+class HttpClient(JSBASE):
 
     def __init__(self):
         self.__jslocation__ = "j.clients.http"
+        JSBASE.__init__(self)
 
     def getConnection(self):
+        """
+        :returns connection instance
+        """
         connection = Connection()
         return connection

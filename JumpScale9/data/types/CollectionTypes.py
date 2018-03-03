@@ -3,10 +3,14 @@
 from .PrimitiveTypes import *
 
 
-class YAML():
+JSBASE = j.application.jsbase_get_class()
+
+
+class YAML(JSBASE):
     '''Generic dictionary type'''
 
     def __init__(self):
+        JSBASE.__init__(self)
         self.NAME = 'yaml'
         self.BASETYPE = 'dictionary'
 
@@ -32,17 +36,18 @@ class YAML():
         return j.data.serializer.yaml.dumps(v)
 
 
-class JSON():
-
+class JSON(JSBASE):
     def __init__(self):
+        JSBASE.__init__(self)
         self.NAME = 'json'
         self.BASETYPE = 'dictionary'
 
 
-class Dictionary:
+class Dictionary(JSBASE):
     '''Generic dictionary type'''
 
     def __init__(self):
+        JSBASE.__init__(self)
         self.NAME = 'dictionary'
         self.BASETYPE = 'dictionary'
 
@@ -71,11 +76,11 @@ class Dictionary:
         return j.data.serializer.json.dumps(v, True, True)
 
 
-class List:
-
+class List(JSBASE):
     '''Generic list type'''
 
     def __init__(self):
+        JSBASE.__init__(self)
         self.NAME = 'list'
         self.BASETYPE = 'list'
 
@@ -86,118 +91,103 @@ class List:
     def get_default(self):
         return list()
 
-    def clean(self, v, ttype="str"):
-        if j.data.types.string.check(ttype):
-            ttype = j.data.types.getTypeClass(ttype)
-        if not j.data.types.string.check(v):
-            if not j.data.types.list.check(v):
-                raise ValueError("Input needs to be string or list:%s" % v)
-            out = []
-            for item in v:
-                item = ttype.fromString(item)
-                out.append(item)
-            v = out
-        else:
-            v = j.data.text.getList(v, ttype)
-        return v
-
-    def list_check_1type(self,llist,die=True):
-        if len(llist)==0:
+    def list_check_1type(self, llist, die=True):
+        if len(llist) == 0:
             return True
-        ttype=j.data.types.type_detect(llist[0])
+        ttype = j.data.types.type_detect(llist[0])
         for item in llist:
-            res=ttype.check(item)
-            if res ==False:
+            res = ttype.check(item)
+            if res == False:
                 if die:
                     raise RuntimeError("List is not of 1 type.")
                 else:
                     return False
-        return True                
+        return True
 
-    def fromString(self, v):
-        if "\n" in v:
-            v=v.split("\n")
-        v=[item for item in v if item.strip()!=""]
+    def fromString(self, v, ttype=None):
+        if v == None:
+            v = ""
+        v = j.data.text.getList(v, ttype)
         v = self.clean(v)
         if self.check(v):
             return v
         else:
             raise ValueError("List not properly formatted.")
 
-    def clean(self,val,toml=False,sort=False):
-        if len(val)==0:
+    def clean(self, val, toml=False, sort=False, ttype=None):
+        if len(val) == 0:
             return val
-        ttype=j.data.types.type_detect(val[0])
-        res=[]
+        if ttype == None:
+            ttype = j.data.types.type_detect(val[0])
+        res = []
         for item in val:
             if not toml:
-                item=ttype.clean(item)
+                item = ttype.clean(item)
             else:
-                item=ttype.toml_string_get(item)
+                item = ttype.toml_string_get(item)
             if item not in res:
                 res.append(item)
         res.sort()
-        return res          
+        return res
 
-    def toString(self,val,clean=True,sort=False):
+    def toString(self, val, clean=True, sort=False):
         """
         will translate to what we need in toml
         """
         if clean:
-            val=self.clean(val,toml=False,sort=sort)
-        if len (str(val))>30:
-            #multiline
-            out=""
+            val = self.clean(val, toml=False, sort=sort)
+        if len(str(val)) > 30:
+            # multiline
+            out = ""
             for item in val:
-                out+="%s,\n"%item
-            out+="\n"
+                out += "%s,\n" % item
+            out += "\n"
         else:
-            out=""
+            out = ""
             for item in val:
-                out+=" %s,"%item                    
-            out=out.strip().strip(",").strip()
-        return out 
-    
-    def toml_string_get(self,val,key="",clean=True,sort=True):
+                out += " %s," % item
+            out = out.strip().strip(",").strip()
+        return out
+
+    def toml_string_get(self, val, key="", clean=True, sort=True):
         """
         will translate to what we need in toml
         """
         if clean:
-            val=self.clean(val,toml=True,sort=sort)
-        if key=="":
+            val = self.clean(val, toml=True, sort=sort)
+        if key == "":
             raise NotImplemented()
         else:
-            out=""
-            if len (str(val))>30:
-                #multiline
-                out+="%s = [\n"%key
+            out = ""
+            if len(str(val)) > 30:
+                # multiline
+                out += "%s = [\n" % key
                 for item in val:
-                    out+="    %s,\n"%item
-                out+="]\n\n"
+                    out += "    %s,\n" % item
+                out += "]\n\n"
             else:
-                out+="%s = ["%key
+                out += "%s = [" % key
                 for item in val:
-                    out+=" %s,"%item                    
-                out=out.rstrip(",")
-                out+=" ]\n"  
-        return out    
+                    out += " %s," % item
+                out = out.rstrip(",")
+                out += " ]\n"
+        return out
 
-    def toml_value_get(self,val,key=""):
+    def toml_value_get(self, val, key=""):
         """
         will from toml string to value
         """
-        if key=="":
+        if key == "":
             raise NotImplemented()
         else:
             return j.data.serializer.toml.loads(val)
 
-     
 
-class Set:
-
+class Set(JSBASE):
     '''Generic set type'''
 
     def __init__(self):
+        JSBASE.__init__(self)
         self.NAME = 'set'
         self.BASETYPE = 'set'
 

@@ -1,4 +1,31 @@
 
+
+# how to init jumpscale config
+
+the config 
+
+## silent
+
+the silent configuration will 
+
+- check that ssh-agent has 1 key loaded & if so use that one
+- will try to find config git directory, if 1 found will use that one
+- if no git config dir found will put in '~/js9host/cfg/myconfig/'
+
+
+```bash
+js9_config init -s
+```
+
+## non silent
+
+```bash
+js9_config init
+```
+
+all questions will be asked interactive
+
+
 # how to create a configuration object
 
 

@@ -1,4 +1,4 @@
-from JumpScale9 import j
+from js9 import j
 
 
 from JumpScale9.data.serializers.SerializerBase import SerializerBase
@@ -55,11 +55,13 @@ except Exception as e:
 
 from JumpScale9.data.serializers.SerializerTOML import SerializerTOML
 
+JSBASE = j.application.jsbase_get_class()
 
-class SerializersFactory:
+class SerializersFactory(JSBASE):
 
     def __init__(self):
         self.__jslocation__ = "j.data.serializer"
+        JSBASE.__init__(self)
         self.types = {}
         self._cache = {}
         self.int = SerializerInt()
@@ -197,9 +199,10 @@ class SerializersFactory:
         return res
 
 
-class Serializer:
+class Serializer(JSBASE):
 
     def __init__(self, serializationstr, key=""):
+        JSBASE.__init__(self)
         self.serializationstr = serializationstr
         self.key = key
         for k in self.serializationstr:

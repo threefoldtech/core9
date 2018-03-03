@@ -1,12 +1,14 @@
 from js9 import j
 
-
-class PerformanceTraceFactory:
+JSBASE = j.application.jsbase_get_class()
+class PerformanceTraceFactory(JSBASE):
     """
     """
 
     def __init__(self):
-        self.__jslocation__ = "j.tools.performancetrace"
+        if not hasattr(self, '__jslocation__'):
+            self.__jslocation__ = "j.tools.performancetrace"
+        JSBASE.__init__(self)
 
     def profile(self, methodstatement, locals={}, globals={}):
         """

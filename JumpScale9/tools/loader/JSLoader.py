@@ -85,7 +85,6 @@ j.dirs = j.core.dirs
 j.errorhandler = j.core.errorhandler
 j.exceptions = j.core.errorhandler.exceptions
 j.events = j.core.events
-j.core.db = j.clients.redis.get4core()
 from JumpScale9.tools.loader.JSLoader import JSLoader
 j.tools.jsloader = JSLoader()
 
@@ -99,11 +98,11 @@ class JSLoader():
     def __init__(self):
         self.logger = j.logger.get("jsloader")
         self.__jslocation__ = "j.tools.jsloader"
-        self.tryimport=False
+        self.tryimport = False
 
     @property
     def autopip(self):
-        return j.core.state.config["system"]["autopip"] in [True,"true","1",1]
+        return j.core.state.config["system"]["autopip"] in [True, "true", "1", 1]
 
     def _installDevelopmentEnv(self):
         cmd = "apt-get install python3-dev libssl-dev -y"
@@ -126,8 +125,6 @@ class JSLoader():
             raise RuntimeError("Could not find sitepath")
         return res
 
-
-
     @property
     def initPath(self):
         path = self._findSitePath() + "/js9.py"
@@ -148,9 +145,8 @@ class JSLoader():
             print("WARNING: COULD NOT PIP INSTALL:%s\n\n" % item)
         return rc
 
-
-    def processLocationSub(self,jlocationSubName,jlocationSubList):
-        #import a specific location sub (e.g. j.clients.git)
+    def processLocationSub(self, jlocationSubName, jlocationSubList):
+        # import a specific location sub (e.g. j.clients.git)
 
         def removeDirPart(path):
             "only keep part after jumpscale9"
@@ -162,7 +158,7 @@ class JSLoader():
                 if state == 1:
                     res.append(item)
 
-            if res[0] == res[1] and res[0].casefold().find("jumpscale9") !=-1:
+            if res[0] == res[1] and res[0].casefold().find("jumpscale9") != -1:
                 res.pop(0)
             return "/".join(res)
 
@@ -174,9 +170,9 @@ class JSLoader():
         importlocation = removeDirPart(classfile)[:-3].replace("//", "/").replace("/", ".")
         generationParamsSub["importlocation"] = importlocation
 
-        rc=0
+        rc = 0
 
-        ##TO BE FIXED TO DO THE IMPORT PROPERLY AND PASS RIGHT DETAILS
+        # TO BE FIXED TO DO THE IMPORT PROPERLY AND PASS RIGHT DETAILS
         # try:
         #     if self.try_import:
         #         exec("from %s import %s" % (importlocation, classname))
@@ -205,8 +201,7 @@ class JSLoader():
         #                 if res3 not in generationParams["locationerr"]:
         #                     generationParams["locationerr"].append(res3)
 
-        return rc,generationParamsSub
-
+        return rc, generationParamsSub
 
     def _generate(self):
         """
@@ -220,11 +215,11 @@ class JSLoader():
         # outCC = outpath for code completion
         # out = path for core of jumpscale
 
-        j.tools.executorLocal.initEnv() #make sure the jumpscale toml file is set / will also link cmd files to system
+        j.tools.executorLocal.initEnv()  # make sure the jumpscale toml file is set / will also link cmd files to system
 
-        outCC = os.path.join(j.dirs.HOSTDIR,"autocomplete","js9.py")
-        outJSON = os.path.join(j.dirs.HOSTDIR,"autocomplete","js9.json")
-        j.sal.fs.createDir(os.path.join(j.dirs.HOSTDIR,"autocomplete"))
+        outCC = os.path.join(j.dirs.HOSTDIR, "autocomplete", "js9.py")
+        outJSON = os.path.join(j.dirs.HOSTDIR, "autocomplete", "js9.json")
+        j.sal.fs.createDir(os.path.join(j.dirs.HOSTDIR, "autocomplete"))
 
         out = self.initPath
         print("* js9 path:%s" % out)
@@ -237,13 +232,13 @@ class JSLoader():
         jlocations = {}
         jlocations["locations"] = []
 
+        moduleList = {}
 
 
-        moduleList={}
-        for name, path in j.core.state.configGet('plugins', {}).items():
+        for name, path in j.tools.executorLocal.state.configGet('plugins', {}).items():
             print("find modules in jumpscale for : '%s'" % path)
             if j.sal.fs.exists(path, followlinks=True):
-                moduleList = self.findModules(path=path,moduleList=moduleList)
+                moduleList = self.findModules(path=path, moduleList=moduleList)
             else:
                 raise RuntimeError("Could not find plugin dir:%s" % path)
                 # try:
@@ -252,34 +247,33 @@ class JSLoader():
                 # except Exception as e:
                 #     pass
 
-        modlistout_json=json.dumps(moduleList,sort_keys=True,indent=4)
-        j.sal.fs.writeFile(outJSON,modlistout_json)
+        modlistout_json = json.dumps(moduleList, sort_keys=True, indent=4)
+        j.sal.fs.writeFile(outJSON, modlistout_json)
 
         for jlocationRoot, jlocationRootDict in moduleList.items():
 
-            #is per item under j e.g. j.clients
+            # is per item under j e.g. j.clients
 
             if not jlocationRoot.startswith("j."):
-                raise RuntimeError("jlocation should start with j, found: '%s', in %s"%(jlocationRoot,jlocationRootDict))
+                raise RuntimeError("jlocation should start with j, found: '%s', in %s" % (jlocationRoot, jlocationRootDict))
 
-            jlocations["locations"].append({"name":jlocationRoot[2:]})
+            jlocations["locations"].append({"name": jlocationRoot[2:]})
 
             generationParams = {}
             generationParams["locationsubserror"] = []
-            generationParams["jname"] = jlocationRoot.split(".")[1].strip()                           #only name under j e.g. tools
-            generationParams["locationsubs"]=[]
+            generationParams["jname"] = jlocationRoot.split(".")[1].strip()  # only name under j e.g. tools
+            generationParams["locationsubs"] = []
 
-
-            #add per sublocation to the generation params
+            # add per sublocation to the generation params
             for jlocationSubName, jlocationSubList in jlocationRootDict.items():
 
-                rc,generationParamsSub=self.processLocationSub(jlocationSubName,jlocationSubList)
+                rc, generationParamsSub = self.processLocationSub(jlocationSubName, jlocationSubList)
 
-                if rc==0:
-                    #need to add
+                if rc == 0:
+                    # need to add
                     generationParams["locationsubs"].append(generationParamsSub)
 
-            #put the content in
+            # put the content in
             content0CC = pystache.render(GEN2, **generationParams)
             content0 = pystache.render(GEN, **generationParams)
             if len([item for item in content0CC.split("\n") if item.strip() != ""]) > 4:
@@ -290,11 +284,9 @@ class JSLoader():
         contentCC += pystache.render(GEN_END2, **jlocations)
         content += pystache.render(GEN_END, **jlocations)
 
-
         j.sal.fs.writeFile(outCC, contentCC)
 
         j.sal.fs.writeFile(out, content)
-
 
     def _pip_installed(self):
         "return the list of all installed pip packages"
@@ -312,13 +304,13 @@ class JSLoader():
         res = {}
         C = j.sal.fs.readFile(path)
         classname = None
-        locfound=False
+        locfound = False
         for line in C.split("\n"):
             if line.startswith("class "):
                 classname = line.replace("class ", "").split(":")[0].split("(", 1)[0].strip()
                 if classname == "JSBaseClassConfig":
                     break
-            if line.find("self.__jslocation__") != -1 and locfound==False:
+            if line.find("self.__jslocation__") != -1 and locfound == False:
                 if classname is None:
                     raise RuntimeError(
                         "Could not find class in %s while loading jumpscale lib." % path)
@@ -327,8 +319,8 @@ class JSLoader():
                     if classname not in res:
                         res[classname] = {}
                     res[classname]["location"] = location
-                    locfound=True
-                    print("%s:%s:%s"%(path,classname,location))
+                    locfound = True
+                    print("%s:%s:%s" % (path, classname, location))
             if line.find("self.__imports__") != -1:
                 if classname is None:
                     raise RuntimeError(
@@ -371,7 +363,7 @@ class JSLoader():
                 continue
 
             for classname, item in self.findJumpscaleLocationsInFile(classfile).items():
-                #item has "import" & "location" as key in the dict
+                # item has "import" & "location" as key in the dict
                 if "location" in item:
                     location = item["location"]
                     if "import" in item:
@@ -383,7 +375,7 @@ class JSLoader():
                     locSubName = location.split(".")[-1]
                     if locRoot not in moduleList:
                         moduleList[locRoot] = {}
-                    moduleList[locRoot][locSubName]=(classfile,classname,importItems)
+                    moduleList[locRoot][locSubName] = (classfile, classname, importItems)
         return moduleList
 
     def removeEggs(self):
@@ -397,7 +389,7 @@ class JSLoader():
         which can be use outside of docker for e.g. code completiong
         """
         if autocompletepath is None:
-            autocompletepath=os.path.join(j.dirs.HOSTDIR,"autocomplete")
+            autocompletepath = os.path.join(j.dirs.HOSTDIR, "autocomplete")
             j.sal.fs.createDir(autocompletepath)
 
         for item in sys.path:
@@ -414,59 +406,58 @@ class JSLoader():
 
             if j.sal.fs.exists(item, followlinks=True):
                 j.sal.fs.copyDirTree(item,
-                              autocompletepath,
-                              overwriteFiles=True,
-                              ignoredir=['*.egg-info',
-                                         '*.dist-info',
-                                         "*JumpScale*",
-                                         "*Tests*",
-                                         "*tests*"],
+                                     autocompletepath,
+                                     overwriteFiles=True,
+                                     ignoredir=['*.egg-info',
+                                                '*.dist-info',
+                                                "*JumpScale*",
+                                                "*Tests*",
+                                                "*tests*"],
 
-                              ignorefiles=['*.egg-info',
-                                           "*.pyc",
-                                           "*.so",
-                                           ],
-                              rsync=True,
-                              recursive=True,
-                              rsyncdelete=False,
-                              createdir=True)
+                                     ignorefiles=['*.egg-info',
+                                                  "*.pyc",
+                                                  "*.so",
+                                                  ],
+                                     rsync=True,
+                                     recursive=True,
+                                     rsyncdelete=False,
+                                     createdir=True)
 
         j.sal.fs.writeFile(filename=os.path.join(autocompletepath, "__init__.py"), contents="")
 
-    def generate(self,autocompletepath=None):
+    def generate(self, autocompletepath=None):
         """
         """
 
-        if j.dirs.HOSTDIR=="":
+        if j.dirs.HOSTDIR == "":
             raise RuntimeError("dirs in your jumpscale9.toml not ok, hostdir cannot be empty")
 
-        if autocompletepath==None:
-            autocompletepath=os.path.join(j.dirs.HOSTDIR,"autocomplete")
+        if autocompletepath == None:
+            autocompletepath = os.path.join(j.dirs.HOSTDIR, "autocomplete")
             j.sal.fs.createDir(autocompletepath)
 
         for name, path in j.core.state.configGet('plugins', {}).items():
             if j.sal.fs.exists(path, followlinks=True):
                 # link libs to location for hostos
                 j.sal.fs.copyDirTree(path,
-                                os.path.join(autocompletepath, name),
-                                overwriteFiles=True,
-                                ignoredir=['*.egg-info',
-                                            '*.dist-info',
-                                            "*JumpScale*",
-                                            "*Tests*",
-                                            "*tests*"],
+                                     os.path.join(autocompletepath, name),
+                                     overwriteFiles=True,
+                                     ignoredir=['*.egg-info',
+                                                '*.dist-info',
+                                                "*JumpScale*",
+                                                "*Tests*",
+                                                "*tests*"],
 
-                                ignorefiles=['*.egg-info',
-                                            "*.pyc",
-                                            "*.so",
-                                            ],
-                                rsync=True,
-                                recursive=True,
-                                rsyncdelete=True,
-                                createdir=True)
+                                     ignorefiles=['*.egg-info',
+                                                  "*.pyc",
+                                                  "*.so",
+                                                  ],
+                                     rsync=True,
+                                     recursive=True,
+                                     rsyncdelete=True,
+                                     createdir=True)
 
-
-        j.sal.fs.touch( os.path.join(j.dirs.HOSTDIR, 'autocomplete',"__init__.py"))
+        j.sal.fs.touch(os.path.join(j.dirs.HOSTDIR, 'autocomplete', "__init__.py"))
 
         # DO NOT AUTOPIP the deps are now installed while installing the libs
         j.core.state.configSetInDictBool("system", "autopip", False)

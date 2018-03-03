@@ -2,13 +2,15 @@ from js9 import j
 
 from BlockchainDB import BlockchainDB
 
+JSBASE = j.application.jsbase_get_class()
 
-class BlockchainFactory:
+class BlockchainFactory(JSBASE):
     '''
     '''
 
     def __init__(self):
         self.__jslocation__ = "j.data.blockchain"
+        JSBASE.__init__(self)
         self.adminsecret = "admin007"
         self.port = 3302
 
@@ -32,3 +34,4 @@ class BlockchainFactory:
         self.db.connect()
 
     def getBaseMessage(self):
+        pass

@@ -1,13 +1,16 @@
 import base64
 
+from JumpScale9 import j
+JSBASE = j.application.jsbase_get_class()
 
-class KVSTarantool:
+class KVSTarantool(JSBASE):
     """
     This class implement a simple key value store on top of tarantool
     It proxy calls to stored procedure in tarantool server
     """
 
     def __init__(self, db, space):
+        JSBASE.__init__(self)
         self._db = db
         self.space = space
         self.inMem = False

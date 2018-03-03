@@ -14,13 +14,12 @@ class FileKeyValueStore(KeyValueStoreBase):
     def __init__(self, name, namespace="db", baseDir='/tmp', host='localhost', serializers=[]):
         self._db_path = '{baseDir}/{name}'.format(baseDir=baseDir, name=name)
         self.db = shelve.open(self._db_path, writeback=True)
-        KeyValueStoreBase.__init__(self, serializers)
         self.name = name
         self.namespace = namespace
         self.serializers = serializers
         self._indexkey = "index:%s" % namespace
         self.type = "file"
-        self.logger = j.logger.get("j.data.kvs.file")
+        KeyValueStoreBase.__init__(self, serializers)
 
     def _getKey(self, key):
         return '%s:%s' % (self.namespace, key)

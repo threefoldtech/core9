@@ -21,11 +21,14 @@ try:
 except BaseException:
     pygmentsObj = False
 
+JSBASE = j.application.jsbase_get_class()
 
-class Text:
+
+class Text(JSBASE):
 
     def __init__(self):
         self.__jslocation__ = "j.data.text"
+        JSBASE.__init__(self)
 
     def decodeUnicode2Asci(self, text):
         return unicodedata.normalize('NFKD', text.decode("utf-8")).encode('ascii', 'ignore')
@@ -33,9 +36,9 @@ class Text:
     def toolStripNonAsciFromText(self, text):
         return "".join([char for char in str(text) if ((ord(char) > 31 and ord(char) < 127) or ord(char) == 10)])
 
-    def pad(self,text,length):
-        while len(text)<length:
-            text+=" "
+    def pad(self, text, length):
+        while len(text) < length:
+            text += " "
         return text
 
     def stripItems(self, line, items=["PATH", "\"", " ", "'", ":", "${PATH}", "=", ","]):
@@ -67,7 +70,7 @@ class Text:
             code2 = pygments.highlight(code, lexer, formatter)
             sys.stdout.write(code2)
         else:
-            print(code)
+            self.logger.info(code)
 
     def strToVersionInt(self, versionStr, minDigits=3):
         """
@@ -388,7 +391,7 @@ class Text:
                 regex = None
 
             if len(descr) > 30 and ttype not in ('dict', 'multiline'):
-                print(descr)
+                self.logger.info(descr)
                 descr = ""
 
             # print "type:'%s'"%ttype
@@ -436,7 +439,7 @@ class Text:
 
             elif ttype == "bool":
                 if descr != "":
-                    print(descr)
+                    self.logger.info(descr)
                 result = j.tools.console.askYesNo()
                 if result:
                     result = True
@@ -954,17 +957,31 @@ class Text:
             text = text.replace(item, item2)
         return text
 
-    def getList(self, text, ttype="str"):
+    def getList(self, text, ttype=None):
         """
         @type can be int,bool or float (otherwise its always str)
         """
+
+        # if already list just return
         if j.data.types.list.check(text):
             return text
+
+        if not j.data.types.string.check(text):
+            raise RuntimeError("need to be string:%s" % text)
+
         if self.strip(text) == "":
             return []
-        text = self._dealWithQuote(text)
-        text = text.split(",")
-        text = [item.strip() for item in text]
+
+        text = self._dealWithQuote(text)  # to get ',' in '' not counting
+        if "," in text:
+            text = text.split(",")
+            text = [item.strip().strip("'").strip() for item in text if item.strip().strip("'").strip() is not ""]
+        elif "\n" in text:
+            text = text.split("\n")
+            text = [item.strip().strip("'").strip() for item in text if item.strip().strip("'").strip() is not ""]
+        else:
+            text = [text]
+
         if ttype is not None:
             if ttype == "int":
                 text = [self.getInt(item) for item in text]
@@ -978,9 +995,6 @@ class Text:
                 text = [self.getFloat(item) for item in text]
             else:
                 text = [ttype.fromString(item) for item in text]
-
-            # else:
-            #     raise j.exceptions.Input("type needs to be: int,bool or float","self.getlist.type")
 
         return text
 

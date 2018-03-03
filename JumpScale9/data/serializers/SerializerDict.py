@@ -1,8 +1,11 @@
-from JumpScale9 import j
+from js9 import j
 import copy
 
+JSBASE = j.application.jsbase_get_class()
+class SerializerDict(JSBASE):
 
-class SerializerDict:
+    def __init__(self):
+        JSBASE.__init__(self)
 
     def _unique_list(self, items, sort=False, strip=False):
         res = []

@@ -13,8 +13,11 @@ nr = 87
 nr2 = 34.4
 """
 
+
 # from .PrettyYAMLDumper import PrettyYaml
 class SerializerYAML(SerializerBase):
+    def __init__(self):
+        SerializerBase.__init__(self)
 
     def dumps(self, obj):
         return yaml.dump(obj, default_flow_style=False, default_style='',indent=4,line_break="\n")
@@ -57,6 +60,21 @@ class SerializerYAML(SerializerBase):
             yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
             construct_mapping)
         return yaml.load(stream, OrderedLoader)
+
+    def ordered_dump(self, data, stream=None, Dumper=yaml.Dumper, **kwds):
+        """
+        dump a yaml stream with keeping the order
+        """
+        class OrderedDumper(Dumper):
+            pass
+
+        def _dict_representer(dumper, data):
+            return dumper.represent_mapping(
+                yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
+                data.items())
+
+        OrderedDumper.add_representer(OrderedDict, _dict_representer)
+        return yaml.dump(data, stream, OrderedDumper, **kwds)
 
     def test(self):
         ddict=j.data.serializer.toml.loads(testtoml)

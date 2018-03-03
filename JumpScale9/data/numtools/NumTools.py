@@ -3,10 +3,12 @@ import numpy
 import struct
 import math
 
-class NumTools:
+JSBASE = j.application.jsbase_get_class()
+class NumTools(JSBASE):
 
     def __init__(self):
         self.__jslocation__ = "j.tools.numtools"
+        JSBASE.__init__(self)
         self.__imports__ = "numpy"
         self._currencies = {}
 
@@ -144,10 +146,14 @@ class NumTools:
         """
         value can be 10%,0.1,100,1m,1k  m=million
         USD/EUR/CH/EGP/GBP are also understood
-        all gets translated to eur
+        all gets translated to usd
         e.g.: 10%
         e.g.: 10EUR or 10 EUR (spaces are stripped)
         e.g.: 0.1mEUR or 0.1m EUR or 100k EUR or 100000 EUR
+
+
+        j.tools.numtools.text2val("0.1mEUR")
+
         """
         if not j.data.types.string.check(value):
             raise j.exceptions.RuntimeError("value needs to be string in text2val, here: %s" % value)

@@ -16,8 +16,9 @@ import traceback
 
 LEVELMAP = {1: 'CRITICAL', 2: 'WARNING', 3: 'INFO', 4: 'DEBUG'}
 
+JSBASE = j.application.jsbase_get_class()
 
-class ErrorConditionObject(BaseException):
+class ErrorConditionObject(BaseException, JSBASE):
     """
     @param type #BUG,INPUT,MONITORING,OPERATIONS,PERFORMANCE,UNKNOWN
     @param level #1:critical, 2:warning, 3:info see j.enumerators.ErrorConditionLevel
@@ -25,6 +26,7 @@ class ErrorConditionObject(BaseException):
 
     def __init__(self, ddict={}, msg="", msgpub="", category="", level=1,
                  type="UNKNOWN", tb=None, data=None, tags="", limit=30):
+        JSBASE.__init__(self)
         if ddict != {}:
             self.__dict__ = ddict
         else:
@@ -146,7 +148,7 @@ class ErrorConditionObject(BaseException):
                 try:
                     s = str(s)
                 except Exception as e2:
-                    print("BUG in toascii in ErrorConditionObject")
+                    self.logger.debug("BUG in toascii in ErrorConditionObject")
                     import ipdb
 
         self.errormessage = _toAscii(self.errormessage)

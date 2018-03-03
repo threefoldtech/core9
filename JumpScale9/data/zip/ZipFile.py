@@ -8,20 +8,22 @@ import zipfile
 
 from js9 import j
 
-
-class ZipFileFactory:
+JSBASE = j.application.jsbase_get_class()
+class ZipFileFactory(JSBASE):
     READ = 'r'
     WRITE = 'w'
     APPEND = 'a'
 
     def __init__(self):
-        self.__jslocation__ = 'j.tools.zipfile'
+        if not hasattr(self, '__jslocation__'):
+            self.__jslocation__ = 'j.tools.zipfile'
+        JSBASE.__init__(self)
 
     def get(self, path, mode=READ):
         return ZipFile(path, mode)
 
 
-class ZipFile:
+class ZipFile(JSBASE):
     '''Handle zip files'''
 
     def __init__(self, path, mode=ZipFileFactory.READ):
@@ -32,7 +34,7 @@ class ZipFile:
         @prarm mode: Action to perform on the zip file
         @type mode: ZipFileFactory Action
         '''
-        self.logger = j.logger.get('j.tools.zipfile')
+        JSBASE.__init__(self)
 
         if not j.data.types.path.check(path):
             raise ValueError('Provided string %s is not a valid path' % path)

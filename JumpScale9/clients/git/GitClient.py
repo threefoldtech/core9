@@ -1,14 +1,26 @@
 from JumpScale9 import j
 import git
+import copy
 
+JSBASE = j.application.jsbase_get_class()
 
 class GitClient:
+    """
+    Client of git services, has all git related operations like push, pull, ...
+    """
 
     def __init__(self, baseDir, check_path=True):  # NOQA
 
+        if baseDir==None or baseDir.strip()=="":
+            raise RuntimeError("basedir cannot be empty")
+
+        baseDir_org=copy.copy(baseDir)
+
+        JSBASE.__init__(self)
+
         self._repo = None
         if not j.sal.fs.exists(path=baseDir):
-            raise j.exceptions.Input("git repo on %s not found." % baseDir)
+            raise j.exceptions.Input("git repo on %s not found." % baseDir_org)
 
         # split path to find parts
         baseDir = j.sal.fs.pathClean(baseDir)
@@ -25,7 +37,7 @@ class GitClient:
         baseDir = baseDir.rstrip("/")
 
         if baseDir.strip() == "":
-            raise j.exceptions.RuntimeError("could not find basepath for .git in %s" % baseDir)
+            raise j.exceptions.RuntimeError("could not find basepath for .git in %s" % baseDir_org)
         if check_path:
             if baseDir.find("/code/") == -1:
                 raise j.exceptions.Input(
@@ -48,6 +60,7 @@ class GitClient:
         # if len(self.repo.remotes) != 1:
         #     raise j.exceptions.Input("git repo on %s is corrupt could not find remote url" % baseDir)
 
+
     def __repr__(self):
         return str(self.__dict__)
 
@@ -55,16 +68,27 @@ class GitClient:
         return self.__repr__()
 
     def setRemoteURL(self, url):
+        """
+        set the remote url of the repo
+        """
         j.sal.process.executeWithoutPipe("cd %s;git remote set-url origin '%s'" % (self.BASEDIR, url))
 
     @property
     def remoteUrl(self):
+        """
+        get the remote url of the repo
+
+        :raises Exception when ther eis no remote configuration for the repo, you will have to use setRemoteURL then
+        """
         if len(self.repo.remotes) <= 0:
             raise j.exceptions.Input("There is not remote configured for this repository")
         return self.repo.remotes[0].url
 
     @property
     def branchName(self):
+        """
+        get the branch name of the repo
+        """
         return self.repo.git.rev_parse('HEAD', abbrev_ref=True)
 
     @property
@@ -76,6 +100,9 @@ class GitClient:
 
     @property
     def repo(self):
+        """
+        repo object
+        """
         # Load git when we absolutly need it cause it does not work in gevent
         # mode
         if not self._repo:
@@ -91,22 +118,39 @@ class GitClient:
         self.repo
 
     def getBranchOrTag(self):
+        """
+        get latest tag or branch
+
+        :return: Python tuple, first parameter will indicate the type of the second parameter either tag or branch
+        the second parameter will be the name of tag or branch
+        """
         try:
             return 'tag', self.repo.git.describe('--tags', '--exact-match')
         except BaseException:
             return 'branch', self.repo.head.ref.name
 
     def switchBranch(self, branchName, create=True):  # NOQA
+        """
+        switch from the current branch to the selected branch
+
+        :param branchName:(String) branch to switch to
+        :param create:(Boolean) if True will create the destination branch if not exist
+        """
         if create:
             import git
             try:
                 self.repo.git.branch(branchName)
             except git.GitCommandError:
                 # probably branch exists.
+                print("was not able to create branch {}".format(branchName))
                 pass
         self.repo.git.checkout(branchName)
 
     def checkFilesWaitingForCommit(self):
+        """
+        checks if there are modified, new, renamed, or deleted files which has not been yet committed,
+        returns True if there are any, False otherwise
+        """
         res = self.getModifiedFiles()
         if res["D"] != []:
             return True
@@ -119,6 +163,10 @@ class GitClient:
         return False
 
     def hasModifiedFiles(self):
+        """
+        :returns True if there is any file modified, new, renamed, or deleted and has not been yet committed,
+        False otherwise
+        """
         cmd = "cd %s;git status --porcelain" % self.BASEDIR
         rc, out, err = j.tools.executorLocal.execute(cmd, die=False)
         for item in out.split("\n"):
@@ -129,11 +177,21 @@ class GitClient:
         return False
 
     def getModifiedFiles(self, collapse=False, ignore=[]):
+        """
+        get the list of modified files separated in dict of 4 lists
+        N => New
+        M => Modified
+        R => Renamed
+        D => Deleted
+
+        :param collapse: (Boolean) if True, returns all files in one list
+        :param ignore: (List) files to ignore
+        """
         result = {}
-        result["D"] = []
-        result["N"] = []
-        result["M"] = []
-        result["R"] = []
+        result["D"] = []  # Deleted
+        result["N"] = []  # New
+        result["M"] = []  # Modified
+        result["R"] = []  # Renamed
 
         def checkignore(ignore, path):
             for item in ignore:
@@ -143,6 +201,7 @@ class GitClient:
 
         cmd = "cd %s;git status --porcelain" % self.BASEDIR
         rc, out, err = j.tools.executorLocal.execute(cmd)
+        # Organize files in lists
         for item in out.split("\n"):
             item = item.strip()
             if item == '':
@@ -158,6 +217,7 @@ class GitClient:
                 if _file not in result[state]:
                     result[state].append(_file)
 
+        # Organize files in lists
         for diff in self.repo.index.diff(None):
             # TODO: does not work, did not show my changes !!! *1
             if diff.a_blob==None:
@@ -183,42 +243,79 @@ class GitClient:
         return result
 
     def getUntrackedFiles(self):
+        """
+        :returns a list of untracked files
+        """
         return self.repo.untracked_files
 
     def checkout(self, path):
+        """
+        checkout to the sent path
+        """
         cmd = 'cd %s;git checkout %s' % (self.BASEDIR, path)
         j.tools.executorLocal.execute(cmd)
 
     def addRemoveFiles(self):
+        """
+        add all untracked files
+        """
         cmd = 'cd %s;git add -A :/' % self.BASEDIR
         j.tools.executorLocal.execute(cmd)
 
     def addFiles(self, files=[]):
+        """
+        add list of files to git index
+        :param files: (List) files to be added
+        """
         if files != []:
             self.repo.index.add(files)
 
     def removeFiles(self, files=[]):
+        """
+        remove list of files from git index
+
+        :param files: (List) files to be removed
+        """
         if files != []:
             self.repo.index.remove(files)
 
     def pull(self):
+        """
+        pull the current branch
+
+        :raises Exception when there are files waiting for commit
+        """
         if self.checkFilesWaitingForCommit():
             raise j.exceptions.Input(message="Cannot pull:%s, files waiting to commit" %
                                      self, level=1, source="", tags="", msgpub="")
         self.repo.git.pull()
 
     def fetch(self):
+        """
+        fetch
+        """
         self.repo.git.fetch()
 
     def commit(self, message='?', addremove=True):
+        """
+        commit the current repo state, or will return if no files to be committed
+
+        :param message:(String) commit message
+        :param addremove:(Boolean) if True, will add all untracked files to git
+        """
         if addremove:
             self.addRemoveFiles()
         if self.hasModifiedFiles() is False:
-            print("no need to commit, no changed files")
+            self.logger.info("no need to commit, no changed files")
             return
         return self.repo.index.commit(message)
 
     def push(self, force=False):
+        """
+        push the local repo
+
+        :param force:(Boolean) if True, will override the remote repo with the state of local repo. BE CAREFUL WHEN USING
+        """
         if force:
             self.repo.git.push('-f')
         else:
@@ -227,6 +324,7 @@ class GitClient:
     def getChangedFiles(self, fromref='', toref='', fromepoch=None, toepoch=None, author=None, paths=[]):
         """
         list all changed files since ref & epoch (use both)
+
         @param fromref = commit ref to start from
         @param toref = commit ref to end at
         @param author if limited to author

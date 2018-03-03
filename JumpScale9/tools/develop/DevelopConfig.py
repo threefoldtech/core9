@@ -6,11 +6,16 @@ import curses
 # TO TEST IN DOCKER
 # ZSSH "js9 'j.tools.develop.config()'"
 
+JSBASE = j.application.jsbase_get_class()
 
-class ConfigUI(npyscreen.NPSAppManaged):
+
+class ConfigUI(npyscreen.NPSAppManaged, JSBASE):
+    def __init__(self):
+        JSBASE.__init__(self)
+
     def onStart(self):
-        self.addForm("MAIN", MainForm)
-        self.addForm("FormSelectCodeDirs", FormSelectCodeDirs,
+        # self.addForm("MAIN", MainForm)
+        self.addForm("MAIN", FormSelectCodeDirs,
                      name="Select Codedirs", color="IMPORTANT",)
         self.addForm("FormSelectNodes", FormSelectNodes,
                      name="Select Nodes", color="IMPORTANT",)
@@ -33,7 +38,10 @@ class ConfigUI(npyscreen.NPSAppManaged):
         pass
 
 
-class MyMenu():
+class MyMenu(JSBASE):
+    def __init__(self):
+        JSBASE.__init__(self)
+
     def addMenu(self):
         self.m1 = self.add_menu(name="Main Menu", shortcut="^M")
         self.m1.addItem(text='Main', onSelect=self.go2form,
@@ -75,6 +83,9 @@ class MyMenu():
 
 
 class MainForm(npyscreen.FormWithMenus, MyMenu):
+    def __init__(self):
+        MyMenu.__init__(self)
+
     def create(self):
         self.addMenu()
         self.main()
@@ -121,6 +132,9 @@ class MainForm(npyscreen.FormWithMenus, MyMenu):
 
 
 class FormSelectCodeDirs(npyscreen.FormWithMenus, MyMenu):
+    def __init__(self):
+        MyMenu.__init__(self)
+
     def create(self):
         self.addMenu()
         self.main()
@@ -152,10 +166,12 @@ class FormSelectCodeDirs(npyscreen.FormWithMenus, MyMenu):
             treeItem = j.tools.develop.codedirs.tree.findOne(path=e.path)
             treeItem.selected = e.selected
         j.tools.develop.codedirs.save()
-        self.parentApp.change_form("MAIN")
+        self.parentApp.change_form("FormSelectNodes")
 
 
 class FormSelectNodes(npyscreen.FormWithMenus, MyMenu):
+    def __init__(self):
+        MyMenu.__init__(self)
 
     def create(self):
         self.addMenu()
@@ -191,7 +207,7 @@ class FormSelectNodes(npyscreen.FormWithMenus, MyMenu):
                 if n.selected != treeItem.selected:
                     n.selected = treeItem.selected
                     n.save()
-        self.parentApp.change_form("MAIN")
+        self.parentApp.change_form(None)
 
 
 # class SyncCodeForm(npyscreen.FormWithMenus, MyMenu):
