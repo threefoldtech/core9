@@ -22,18 +22,16 @@ class SSHKey(JSConfigBase):
         JSConfigBase.__init__(self, instance=instance, data=data,
                               parent=parent, template=TEMPLATE, interactive=interactive)
 
-        if "keys" in j.sal.fs.listDirsInDir(j.sal.fs.getcwd(),False,True,False,False):
-            #means we are in directory where keys dir is found
+        if "keys" in j.sal.fs.listDirsInDir(j.sal.fs.getcwd(), False, True, False, False):
+            # means we are in directory where keys dir is found
             kpath = self.config.data["path"]
             if "/keys/" in kpath:
-                #need to change the path to make sure that absolute path gets changed
-                self.config.data={"path":"keys/%s"%kpath.split("keys/")[1]}                
+                # need to change the path to make sure that absolute path gets changed
+                self.config.data = {"path": "keys/%s" % kpath.split("keys/")[1]}
 
         self._pubkey = ""
+        self._privkey = ""
         self._agent = None
-
-        self.pubkey
-        self.privkey
 
     @property
     def agent(self):
@@ -115,7 +113,10 @@ class SSHKey(JSConfigBase):
         if self.config._data['path']:
             return self.config.data['path']
         else:
-            return j.sal.fs.joinPaths(j.dirs.HOMEDIR, ".ssh", self.instance)
+            path = j.sal.fs.joinPaths(j.dirs.HOMEDIR, ".ssh", self.instance)
+            if j.sal.fs.isFile(path):
+                return path
+            return ""
 
     def delete(self):
         """

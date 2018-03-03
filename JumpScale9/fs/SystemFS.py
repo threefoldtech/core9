@@ -120,7 +120,7 @@ class SystemFS(JSBASE):
             'Empty file %s has been successfully created' % filename)
 
     @path_check(newdir={"required", })
-    def createDir(self, newdir, unlink=True):
+    def createDir(self, newdir, unlink=False):
         """Create new Directory
         @param newdir: string (Directory path/name)
         if newdir was only given as a directory name, the new directory will be created on the default path,

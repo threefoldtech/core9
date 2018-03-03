@@ -16,11 +16,11 @@ class SSHClientFactory(JSConfigBase):
 
     def __init__(self):
         self.__jslocation__ = "j.clients.ssh"
-        self.__imports__ = "paramiko,asyncssh"
+        self.__imports__ = "paramiko"
         JSConfigBase.__init__(self, SSHClient)
 
     def new(self, addr, port=22, instance="", keyname="", timeout=5, die=True, login="root", passwd="",
-            stdout=True, async=False, allow_agent=False, addr_priv="", port_priv=22):
+            stdout=True, allow_agent=False, addr_priv="", port_priv=22):
         """
         @PARAM instance is the name used for the sshclient instance name
 
@@ -45,12 +45,12 @@ class SSHClientFactory(JSConfigBase):
         #         usecache = not (self.cache[key]._client is None)
         #     except j.exceptions.RuntimeError:
         #         usecache = False
-        cl = self.get(instance=instance, data=data, die=die, async=async)
+        cl = self.get(instance=instance, data=data, die=die)
         return cl
 
-    def get(self, instance="main", data={}, create=True, die=True, async=False, interactive=False):
+    def get(self, instance="main", data={}, create=True, die=True, interactive=False):
         """
-        Get an instance of the SSHClient or SSHClientAsync depending on async value
+        Get an instance of the SSHClient
 
         @param instance: instance name to get. If an instance is already loaded in memory, return it
         @data data: dictionary of data use to configure the instance

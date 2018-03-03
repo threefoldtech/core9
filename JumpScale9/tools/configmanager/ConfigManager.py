@@ -31,7 +31,7 @@ class ConfigFactory(JSBASE):
         JSBASE.__init__(self)
         self._path = ""
         self.interactive = True  # std needs to be on True
-        self.keyname = ""  # if set will overrule from the main js config file
+        self._keyname = ""  # if set will overrule from the main js config file
         self._init = False
 
     def reset(self, location=None, instance=None):
@@ -55,6 +55,12 @@ class ConfigFactory(JSBASE):
             self._path = j.core.state.configGetFromDict("myconfig", "path")
         return self._path
 
+    @property
+    def keyname(self):
+        if not self._keyname:
+            self._keyname = j.core.state.configGetFromDict("myconfig", "sshkeyname")
+        return self._keyname
+
     def sandbox_check(self, path="", die=False):
         if self._init and path == "" and die == False:
             return
@@ -74,7 +80,7 @@ class ConfigFactory(JSBASE):
                 raise RuntimeError("should only find 1 key, found:%s" % items)
             sshkeyname = j.sal.fs.getBaseName(items[0][:-4])
             kpath_full = j.sal.fs.pathNormalize(path + "/keys/%s" % sshkeyname)
-            j.tools.configmanager.keyname = j.sal.fs.getBaseName(path)
+            j.tools.configmanager._keyname = j.sal.fs.getBaseName(path)
             self._init = True
             return j.clients.sshkey.key_load(path=kpath_full)
         if die:
@@ -113,7 +119,7 @@ class ConfigFactory(JSBASE):
             kpath_full = "keys/%s" % sshkeyname
             kpath_full0 = j.sal.fs.pathNormalize(kpath_full)
             j.sal.fs.createDir(kpath)
-            j.tools.configmanager.keyname = sshkeyname
+            j.tools.configmanager._keyname = sshkeyname
             j.clients.sshkey.key_generate(path=kpath_full0, passphrase=passphrase, load=True, returnObj=False)
 
         j.tools.configmanager._path = j.sal.fs.pathNormalize(cpath)
@@ -317,22 +323,6 @@ class ConfigFactory(JSBASE):
         @param keypath is the path towards the ssh key which will be used to use the config manager
 
         """
-        self.sandbox_check()
-        if data != {}:
-            self.logger.debug("init: silent:%s path:%s data:\n%s" % (silent, configpath, data))
-        else:
-            self.logger.debug("init: silent:%s path:%s nodata\n" % (silent, configpath))
-
-        if configpath:
-            self._path = configpath
-            j.sal.fs.createDir(configpath)
-            j.sal.fs.touch("%s/.jsconfig" % configpath)
-
-        cpath = configpath
-
-        if not keypath:
-            # only load config when no keypath given
-            cfg = j.core.state._configJS
 
         def msg(msg):
             self.logger.info("JS9 init: %s" % msg)
@@ -344,127 +334,126 @@ class ConfigFactory(JSBASE):
                 "make sure you did the upgrade procedure: 'cd  ~/code/github/jumpscale/core9/;python3 upgrade.py'")
             sys.exit(1)
 
-        def check():
-            if "myconfig" not in cfg:
-                die("could not find myconfig in the main configuration file, prob need to upgrade")
-            mcfg = cfg["myconfig"]
-            for tocheck in ["path", "giturl", "sshkeyname"]:
-                if tocheck not in mcfg:
-                    die("could not find '%s' in the main configuration section myconfig file, prob need to upgrade" % tocheck)
-            if "system" not in cfg:
-                die("could not find system in the main configuration file, prob need to upgrade")
-            scfg = cfg["system"]
-            for tocheck in ["container", "debug", "readonly"]:
-                if tocheck not in scfg:
-                    die("could not find '%s' in the main configuration file section system, prob need to upgrade" % tocheck)
-
-        if not keypath:
-            check()
-            mcfg = cfg["myconfig"]
-            scfg = cfg["system"]
-
-        def ssh_init(silent=False, keypath=""):
+        def ssh_init(ssh_silent=False):
             self.logger.debug("ssh init (no keypath specified)")
 
             keys = j.clients.sshkey.list()
             keys0 = [j.sal.fs.getBaseName(item) for item in keys]
 
-            # if mcfg["sshkeyname"].strip() != "" and  mcfg["sshkeyname"] in keys0:
-            #     return
-
-            if len(keys) == 0:
+            if not keys:
+                # if no keys try to load a key from home directory/.ssh and re-run the method again
                 self.logger.debug("found 0 keys")
-                keys = [item for item in j.sal.fs.listFilesInDir(
-                    "%s/.ssh" % j.dirs.HOMEDIR) if item.find(".pub") == -1]
-                keys = [item for item in keys if "authorized_keys" not in item]
-                keys = [item for item in keys if "known_hosts" not in item]
-                if len(keys) == 0:
+                keys = j.sal.fs.listFilesInDir("%s/.ssh" % j.dirs.HOMEDIR,
+                                               exclude=["*.pub", "*authorized_keys*", "*known_hosts*"])
+                if not keys:
                     raise RuntimeError("Cannot find keys, please load right ssh keys in agent, now 0")
-                if len(keys) > 0:
+                elif len(keys) > 1:
+                    if silent:
+                        raise RuntimeError("cannot run silent if more than 1 sshkey exists in your ~/.ssh directory, "
+                                           "please either load your key into your ssh-agent or "
+                                           "make sure you have only one key in ~/.ssh")
                     msg("found ssh keys in your ~/.ssh directory, do you want to load one is ssh-agent?")
                     key_chosen = j.tools.console.askChoice(keys)
                     j.clients.sshkey.key_load(path=key_chosen)
+                else:
+                    j.clients.sshkey.key_load(path=keys[0])
                 return ssh_init()
+
             elif len(keys) > 1:
-                if silent:
+                # if loaded keys are more than one, ask user to select one or raise error if in silent mode
+                if ssh_silent:
                     raise RuntimeError("cannot run silent if more than 1 sshkey loaded")
                 # more than 1 key
-                msg("Found more than 1 ssh key loaded in ssh-agent, please specify which one you want to use to store your secure config.")
+                msg("Found more than 1 ssh key loaded in ssh-agent, "
+                    "please specify which one you want to use to store your secure config.")
                 key_chosen = j.tools.console.askChoice(keys0)
                 j.core.state.configSetInDict("myconfig", "sshkeyname", key_chosen)
+
             else:
-                assert len(keys) == 1  # just to make sure
                 # 1 key found
                 msg("ssh key found in agent is:'%s'" % keys[0])
                 if not silent:
                     msg("Is it ok to use this one:'%s'?" % keys[0])
-                if not silent and not j.tools.console.askYesNo():
-                    die("cannot continue, please load other sshkey in your agent you want to use")
+                    if not j.tools.console.askYesNo():
+                        die("cannot continue, please load other sshkey in your agent you want to use")
                 j.core.state.configSetInDict("myconfig", "sshkeyname", keys0[0])
 
-        if keypath:
-            j.clients.sshkey.key_get(keypath, load=True)
-            keyname = j.sal.fs.getBaseName(keypath)
-            self.keyname = keyname
+        self.sandbox_check()
+        if data != {}:
+            self.logger.debug("init: silent:%s path:%s data:\n%s" % (silent, configpath, data))
         else:
-            ssh_init(silent=silent)
+            self.logger.debug("init: silent:%s path:%s nodata\n" % (silent, configpath))
 
-            # now manipulate config file on system
-            if silent or (not cpath and not mcfg["path"]):
-                # means config directory not configured
+        if configpath:
+            self._path = configpath
+            j.sal.fs.createDir(configpath)
+            j.sal.fs.touch("%s/.jsconfig" % configpath)
+            j.core.state.configSetInDict("myconfig", "path", configpath)
 
-                cpath, giturl = self._findConfigRepo(die=False)
+        cpath = configpath
 
-                if silent:
-                    if not cpath:
-                        msg("did not find config dir in code dirs, will create one in js9 cfg dir")
+        if keypath:
+            self._keyname = j.sal.fs.getBaseName(keypath)
+            j.core.state.configSetInDict("myconfig", "sshkeyname", self.keyname)
+            j.clients.sshkey.key_get(keypath, load=True)
+        else:
+            ssh_init(ssh_silent=silent)
+
+        cfg = j.core.state.config_js
+        if "myconfig" not in cfg:
+            die("could not find myconfig in the main configuration file, prob need to upgrade")
+
+        if not cpath and not cfg["myconfig"]["path"]:
+            # means config directory not configured
+            cpath, giturl = self._findConfigRepo(die=False)
+
+            if silent:
+                if not cpath:
+                    msg("did not find config dir in code dirs, will create one in js9 cfg dir")
+                    cpath = '%s/myconfig/' % j.dirs.CFGDIR
+                    j.sal.fs.createDir(cpath)
+                    msg("Config dir in: '%s'" % cpath)
+                j.core.state.configSetInDict("myconfig", "path", cpath)
+                if not giturl:
+                    j.core.state.configSetInDict("myconfig", "giturl", giturl)
+            else:
+
+                if cpath:
+                    msg("Found a config repo on: '%s', do you want to use this one?" % cpath)
+                    if not j.tools.console.askYesNo():
+                        giturl = None
+                        cpath = ""
+                    else:
+                        if giturl:
+                            j.clients.git.pullGitRepo(url=giturl, interactive=True, ssh=True)
+
+                if not cpath:
+                    msg("Do you want to use a git based CONFIG dir, y/n?")
+                    if j.tools.console.askYesNo():
+                        msg("Specify a url like: 'ssh://git@docs.grid.tf:7022/despiegk/config_despiegk.git'")
+                        giturl = j.tools.console.askString("url")
+                        cpath = j.clients.git.pullGitRepo(url=giturl, interactive=True, ssh=True)
+
+                if not cpath:
+                    msg(
+                        "will create config dir in '%s/myconfig/', your config will not be centralised! Is this ok?" % j.dirs.CFGDIR)
+                    if j.tools.console.askYesNo():
                         cpath = '%s/myconfig/' % j.dirs.CFGDIR
                         j.sal.fs.createDir(cpath)
-                        msg("Config dir in: '%s'" % cpath)
+
+                if cpath:
                     j.core.state.configSetInDict("myconfig", "path", cpath)
-                    if not giturl:
-                        j.core.state.configSetInDict("myconfig", "giturl", giturl)
                 else:
-
-                    if cpath:
-                        msg("Found a config repo on: '%s', do you want to use this one?" % cpath)
-                        if not j.tools.console.askYesNo():
-                            giturl = None
-                            cpath = ""
-                        else:
-                            if giturl:
-                                j.clients.git.pullGitRepo(url=giturl, interactive=True, ssh=True)
-
-                    if not cpath:
-                        msg("Do you want to use a git based CONFIG dir, y/n?")
-                        if j.tools.console.askYesNo():
-                            msg("Specify a url like: 'ssh://git@docs.grid.tf:7022/despiegk/config_despiegk.git'")
-                            giturl = j.tools.console.askString("url")
-                            cpath = j.clients.git.pullGitRepo(url=giturl, interactive=True, ssh=True)
-                        else:
-                            cpathask = False
-
-                    if not cpath:
-                        msg("will create config dir in '%s/myconfig/', your config will not be centralised! Is this ok?" % j.dirs.CFGDIR)
-                        if j.tools.console.askYesNo():
-                            cpath = '%s/myconfig/' % j.dirs.CFGDIR
-                            j.sal.fs.createDir(cpath)
-                        else:
-                            cpathask = False
-
-                    if cpath:
-                        j.core.state.configSetInDict("myconfig", "path", cpath)
-                    else:
-                        die("ERROR: please restart config procedure, use git based config or need to store locally.")
-                    if giturl:
-                        j.core.state.configSetInDict("myconfig", "giturl", giturl)
+                    die("ERROR: please restart config procedure, use git based config or need to store locally.")
+                if giturl:
+                    j.core.state.configSetInDict("myconfig", "giturl", giturl)
 
                 j.core.state.configSave()
-
-        j.tools.myconfig.config.data = data
-        if j.tools.myconfig.config.data["email"] == "" and not silent:
-            j.tools.myconfig.configure()
-        j.tools.myconfig.config.save()
+        if not silent:
+            j.tools.myconfig.config.data = data
+            if j.tools.myconfig.config.data["email"] == "":
+                j.tools.myconfig.configure()
+            j.tools.myconfig.config.save()
 
     def test(self):
         """

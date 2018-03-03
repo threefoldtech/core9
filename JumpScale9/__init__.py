@@ -28,21 +28,17 @@ else:
         def __init__(self):
             pass
 
-
     class Tools():
         def __init__(self):
             pass
-
 
     class Data():
         def __init__(self):
             pass
 
-
     class Clients():
         def __init__(self):
             pass
-
 
     class Core():
         def __init__(self):
@@ -64,26 +60,21 @@ else:
             j.data.cache._cache = {}
             self._db = None
 
-
     class Servers():
         def __init__(self):
             pass
-
 
     class DataUnits():
         def __init__(self):
             pass
 
-
     class Portal():
         def __init__(self):
             pass
 
-
     class AtYourService():
         def __init__(self):
             pass
-
 
     class Jumpscale9():
 
@@ -99,9 +90,7 @@ else:
             self.atyourservice = AtYourService()
             self.exceptions = None
 
-
     j = Jumpscale9()
-
 
     def profileStart():
         import cProfile
@@ -109,24 +98,21 @@ else:
         pr.enable()
         return pr
 
-
     def profileStop(pr):
         pr.disable()
-        import io, pstats
+        import io
+        import pstats
         s = io.StringIO()
         sortby = 'cumulative'
         ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
         ps.print_stats()
         print(s.getvalue())
 
-
     j._profileStart = profileStart
     j._profileStop = profileStop
 
-
     class Empty():
         pass
-
 
     j.dirs = Empty()
     j.dirs.TMPDIR = "/tmp"
@@ -134,10 +120,10 @@ else:
     from .logging.LoggerFactory import LoggerFactory
 
     j.logger = LoggerFactory()
-    
-    #IF YOU WANT TO DEBUG THE STARTUP, YOU NEED TO CHANGE THIS ONE
+
+    # IF YOU WANT TO DEBUG THE STARTUP, YOU NEED TO CHANGE THIS ONE
     j.logger.enabled = False
-    j.logger.filter = []  #default filter which captures all is *
+    j.logger.filter = []  # default filter which captures all is *
 
     from .core.Application import Application
     j.application = Application()
@@ -239,5 +225,4 @@ else:
 
     j.exceptions = JSExceptions
 
-    j.logger.init() #will reconfigure the logging to use the config file
-
+    j.logger.init()  # will reconfigure the logging to use the config file

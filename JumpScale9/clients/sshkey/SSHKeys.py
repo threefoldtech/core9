@@ -23,8 +23,13 @@ class SSHKeys(JSConfigBase):
     def key_get(self, path, load=True):
         instance = j.sal.fs.getBaseName(path)
         sshkey = self.get(instance)
-        if sshkey.config.data["path"] != path:
-            raise RuntimeError("paths should be same")
+
+        if j.tools.configmanager.interactive:
+            if sshkey.config.data["path"] != path:
+                raise RuntimeError("paths should be same")
+        else:
+            sshkey.config.data["path"] == path
+
         if load:
             sshkey.load()
         return sshkey
@@ -35,10 +40,7 @@ class SSHKeys(JSConfigBase):
             j.sal.fs.remove(path)
 
         if not j.sal.fs.exists(path):
-            if passphrase:
-                cmd = 'ssh-keygen -t rsa -f %s -q -P "%s"' % (path, passphrase)
-            else:
-                cmd = 'ssh-keygen -t rsa -f %s -q' % (path)
+            cmd = 'ssh-keygen -t rsa -f %s -q -P "%s"' % (path, passphrase)
             j.sal.process.execute(cmd, timeout=10)
 
         j.sal.fs.chmod(path, 0o600)
@@ -178,7 +180,7 @@ class SSHKeys(JSConfigBase):
     def sshkey_pub_get(self, keyname, die=True):
         """
         Returns Content of public key that is loaded in the agent
-        @param keyname: name of key loaded to agent to get content from 
+        @param keyname: name of key loaded to agent to get content from
         """
         keyname = j.sal.fs.getBaseName(keyname)
         for name, pubkey in j.clients.sshkey.list(True):
@@ -322,7 +324,8 @@ class SSHKeys(JSConfigBase):
         Check if agent available
         :return: bool
         """
-        if not j.sal.fs.exists(self._get_ssh_socket_path()):
+        socket_path = self._get_ssh_socket_path()
+        if not j.sal.fs.exists(socket_path):
             return False
         if "SSH_AUTH_SOCK" not in os.environ:
             self._init_ssh_env()
@@ -332,6 +335,9 @@ class SSHKeys(JSConfigBase):
         if 'The agent has no identities.' in out:
             return True
         if return_code != 0:
+            # Remove old socket if can't connect
+            if j.sal.fs.exists(socket_path):
+                j.sal.fs.remove(socket_path)
             return False
         else:
             return True
