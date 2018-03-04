@@ -380,6 +380,7 @@ class ExecutorBase(JSBASE):
         [logging]
         enabled = true
         filter = []
+        exclude = ["sal.fs"]
         level =20
 
         '''

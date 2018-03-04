@@ -324,7 +324,8 @@ class SSHKeys(JSConfigBase):
         Check if agent available
         :return: bool
         """
-        if not j.sal.fs.exists(self._get_ssh_socket_path()):
+        socket_path = self._get_ssh_socket_path()
+        if not j.sal.fs.exists(socket_path):
             return False
         if "SSH_AUTH_SOCK" not in os.environ:
             self._init_ssh_env()
@@ -334,6 +335,9 @@ class SSHKeys(JSConfigBase):
         if 'The agent has no identities.' in out:
             return True
         if return_code != 0:
+            # Remove old socket if can't connect
+            if j.sal.fs.exists(socket_path):
+                j.sal.fs.remove(socket_path)
             return False
         else:
             return True

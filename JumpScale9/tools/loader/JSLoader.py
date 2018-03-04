@@ -100,6 +100,7 @@ class JSLoader():
         self.__jslocation__ = "j.tools.jsloader"
         self.tryimport = False
 
+
     @property
     def autopip(self):
         return j.core.state.config["system"]["autopip"] in [True, "true", "1", 1]
@@ -222,8 +223,8 @@ class JSLoader():
         j.sal.fs.createDir(os.path.join(j.dirs.HOSTDIR, "autocomplete"))
 
         out = self.initPath
-        print("* js9 path:%s" % out)
-        print("* js9 codecompletion path:%s" % outCC)
+        self.logger.info("* js9 path:%s" % out)
+        self.logger.info("* js9 codecompletion path:%s" % outCC)
         self.initPath  # to make sure empty one is created
 
         content = GEN_START
@@ -236,7 +237,7 @@ class JSLoader():
 
 
         for name, path in j.tools.executorLocal.state.configGet('plugins', {}).items():
-            print("find modules in jumpscale for : '%s'" % path)
+            self.logger.info("find modules in jumpscale for : '%s'" % path)
             if j.sal.fs.exists(path, followlinks=True):
                 moduleList = self.findModules(path=path, moduleList=moduleList)
             else:
@@ -320,7 +321,7 @@ class JSLoader():
                         res[classname] = {}
                     res[classname]["location"] = location
                     locfound = True
-                    print("%s:%s:%s" % (path, classname, location))
+                    self.logger.debug("%s:%s:%s" % (path, classname, location))
             if line.find("self.__imports__") != -1:
                 if classname is None:
                     raise RuntimeError(
@@ -346,6 +347,7 @@ class JSLoader():
         [$rootlocationname][$locsubname]=(classfile,classname,importItems)
 
         """
+        # self.logger.debug("modulelist:%s"%moduleList)
         if moduleList is None:
             moduleList = {}
 
