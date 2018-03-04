@@ -7,6 +7,8 @@ from .CollectionTypes import *
 from .PrimitiveTypes import *
 
 JSBASE = j.application.jsbase_get_class()
+
+
 class Types(JSBASE):
 
     def __init__(self):
@@ -32,25 +34,25 @@ class Types(JSBASE):
         self.json = JSON()
         self.email = Email()
         self.date = Date()
-        self.types_list=[self.bool,self.dict,self.list,self.bytes,self.guid,self.float,self.int,self.multiline,self.string]
+        self.types_list = [self.bool, self.dict, self.list, self.bytes,
+                           self.guid, self.float, self.int, self.multiline, self.string, self.date]
 
-    def type_detect(self,val):
+    def type_detect(self, val):
         """
         check for most common types
         """
         for ttype in self.types_list:
             if ttype.check(val):
                 return ttype
-        raise RuntimeError("did not detect val for :%s"%val)
-
+        raise RuntimeError("did not detect val for :%s" % val)
 
     def getTypeClass(self, ttype):
         """
         type is one of following
-        - str, string
-        - int, integer
-        - float
-        - bool,boolean
+        - s, str, string
+        - i, int, integer
+        - f, float
+        - b, bool,boolean
         - tel, mobile
         - ipaddr, ipaddress
         - ipport, tcpport
@@ -65,11 +67,11 @@ class Types(JSBASE):
         - duration e.g. 1w, 1d, 1h, 1m, 1
         """
         ttype = ttype.lower().strip()
-        if ttype in ["str", "string"]:
+        if ttype in ["s", "str", "string"]:
             return self.string
-        elif ttype in ["int", "integer"]:
+        elif ttype in ["i","int", "integer"]:
             return self.int
-        elif ttype == "float":
+        elif ttype == ["f","float"]:
             return self.float
         elif ttype in ["tel", "mobile"]:
             return self.tel
@@ -79,7 +81,7 @@ class Types(JSBASE):
             return self.iprange
         elif ttype in ["ipport", "ipport"]:
             return self.ipport
-        elif ttype in ["bool", "boolean"]:
+        elif ttype in ["b","bool", "boolean"]:
             return self.bool
         elif ttype == "email":
             return self.email
@@ -107,9 +109,11 @@ class Types(JSBASE):
     def get(self, ttype, val):
         """
         type is one of following
-        - str, string
-        - int, integer
-        - float
+        - s, str, string
+        - i, int, integer
+        - f, float
+        - b, bool
+        - n, numeric (is a string representation of a number with potentially a currency symbol)
         - tel, mobile
         - ipaddr, ipaddress
         - ipport, tcpport
