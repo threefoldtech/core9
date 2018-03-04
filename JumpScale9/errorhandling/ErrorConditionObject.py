@@ -30,9 +30,7 @@ class ErrorConditionObject(BaseException, JSBASE):
         if ddict != {}:
             self.__dict__ = ddict
         else:
-
-            btkis, filename0, linenr0, func0 = j.errorhandler.getErrorTraceKIS(
-                tb=tb)
+            btkis, filename0, linenr0, func0 = j.errorhandler.getErrorTraceKIS(tb=tb)
 
             # if len(btkis)>1:
             #     self.backtrace=self.getBacktrace(btkis,filename0,linenr0,func0)
@@ -194,11 +192,17 @@ class ErrorConditionObject(BaseException, JSBASE):
         if res is not None:
             self.__dict__ = res
 
-    def toJson(self):
+
+    @property
+    def json(self):
         self.key  # make sure uniquekey is filled
         data = self.__dict__.copy()
         data.pop('tb', None)
         return j.data.serializer.json.dumps(data)
+
+    @property
+    def info(self):
+        return self.__str__()
 
     def __str__(self):
         self.printTraceback()
@@ -213,7 +217,9 @@ class ErrorConditionObject(BaseException, JSBASE):
         #     content += "errorpub:\n%s\n\n" % self.errormessagePub
         return self.errormessage
 
-    __repr__ = __str__
+    def __repr__(self):
+        return self.__str__()
+        
 
     def log2filesystem(self):
         """
