@@ -28,6 +28,10 @@ class Time_(JSBASE):
 
     @property
     def epoch(self):
+        """
+        j.data.time.epoch
+        """
+
         return int(time.time())
 
     def getTimeEpoch(self):
@@ -38,6 +42,9 @@ class Time_(JSBASE):
         return timestamp
 
     def getSecondsInHR(self, seconds):
+        """
+        j.data.time.getSecondsInHR(365)
+        """
         minute = 60.
         hour = 3600.
         day = hour * 24
@@ -55,12 +62,16 @@ class Time_(JSBASE):
 
     def getTimeEpochBin(self):
         '''
-        Get epoch timestamp (number of seconds passed since January 1, 1970)
+        Get epoch timestamp (number of seconds passed since January 1, 1970) in binary format of 4 bytes
         '''
         return struct.pack("<I", self.getTimeEpoch())
 
     def getLocalTimeHR(self):
-        '''Get the current local date and time in a human-readable form'''
+        '''
+        Get the current local date and time in a human-readable form
+
+        j.data.time.getLocalTimeHR()
+        '''
         #timestamp = time.asctime(time.localtime(time.time()))
         timestr = self.formatTime(self.getTimeEpoch())
         return timestr

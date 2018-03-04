@@ -44,7 +44,7 @@ class LoggerFactory():
 
         return name
 
-    def get(self, name="", force=False) -> JSLogger:
+    def get(self, name="", force=False):# -> JSLogger:
         """
         Return a logger with the given name. Name will be prepend with 'j.' so
         every logger return by this function is a child of the jumpscale root logger 'j'
@@ -53,12 +53,23 @@ class LoggerFactory():
 
         name = self._getName(name)
 
-        def check(name):
-            for item in self.filter:
-                # print("%s:%s" % (item, name))
+        def check_(name):
+            # print("check %s"%name)
+            for item in self.exclude:                
+                # print("check exclude:%s"%item)
                 if item == "*":
+                    # print("exclude %s:%s" % (item, name))
+                    return False
+                if name.find(item) != -1:
+                    # print("exclude %s:%s" % (item, name))
+                    return False
+            for item in self.filter:   
+                # print("check include:%s"%item)             
+                if item == "*":
+                    # print("include: %s:%s" % (item, name))
                     return True
                 if name.find(item) != -1:
+                    # print("include: %s:%s" % (item, name))
                     return True
             return False
 
@@ -66,7 +77,7 @@ class LoggerFactory():
             self.loggers[name] = self._default
             # print("DEFAULT LOGGER (disabledlogger):%s" % name)
         else:
-            if force or check(name):
+            if force or check_(name):
                 # print("JSLOGGER:%s" % name)
                 # logger = logging.getLogger(name)
                 logger = JSLogger(name)
@@ -189,18 +200,23 @@ class LoggerFactory():
     def logger_filters_get(self):
         return j.core.state.config_js["logging"]["filter"]
 
-    def logger_filters_add(self, items=[], level=10, save=False):
+    def logger_filters_add(self, items=[],exclude=[], level=10, save=False):
         """
         items is list or string e.g. prefab, exec
         will add the filters to the logger and save it in the config file
 
         """
         items = j.data.types.list.fromString(items)
+        exclude = j.data.types.list.fromString(exclude)
         if save:
             new = False
             for item in items:
                 if item not in j.core.state.config_js["logging"]["filter"]:
                     j.core.state.config_js["logging"]["filter"].append(item)
+                    new = True
+            for item in exclude:
+                if item not in j.core.state.config_js["logging"]["exclude"]:
+                    j.core.state.config_js["logging"]["exclude"].append(item)
                     new = True
             if new:
                 j.core.state.configSave()
@@ -210,6 +226,11 @@ class LoggerFactory():
             item = item.strip().lower()
             if item not in self.filter:
                 self.filter.append(item)
+
+        for item in exclude:
+            item = item.strip().lower()
+            if item not in self.exclude:
+                self.exclude.append(item)
 
         self.logger.debug("start re-init for logging")
 
@@ -224,8 +245,16 @@ class LoggerFactory():
         for cat in [j.data, j.clients, j.tools, j.sal]:
             for key, item in cat.__dict__.items():
                 if item is not None:
+                    # if hasattr(item, '__jslocation__'):
+                    #     print (item.__jslocation__)
+                    if 'logger' in item.__dict__:                        
+                        item.__dict__["logger"] = self.get(item.__jslocation__)
                     item._logger = None
         self.loggers = {}
+
+        
+        # print(j.tools.jsloader._logger)
+        # print(j.tools.jsloader.logger)
 
     def init(self):
         """
@@ -234,9 +263,11 @@ class LoggerFactory():
         self.enabled = j.core.state.configGetFromDict("logging", "enabled", True)
         self.loggers_level_set(j.core.state.configGetFromDict("logging", "level", 'DEBUG'))
         self.filter = []
+        self.exclude = []
         self.loggers = {}
         items = j.core.state.configGetFromDict("logging", "filter", [])
-        self.logger_filters_add(items=items, save=False)
+        exclude = j.core.state.configGetFromDict("logging", "exclude", [])
+        self.logger_filters_add(items=items, exclude=exclude, save=False)
 
     # def enableConsoleMemHandler(self):
     #     self.logger.handlers = []

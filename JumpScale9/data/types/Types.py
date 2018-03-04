@@ -54,6 +54,7 @@ class Types(JSBASE):
         - f, float
         - b, bool,boolean
         - tel, mobile
+        - d, date
         - ipaddr, ipaddress
         - ipport, tcpport
         - iprange
@@ -64,7 +65,7 @@ class Types(JSBASE):
         - yaml
         - set
         - guid
-        - duration e.g. 1w, 1d, 1h, 1m, 1
+        - dur, duration e.g. 1w, 1d, 1h, 1m, 1
         """
         ttype = ttype.lower().strip()
         if ttype in ["s", "str", "string"]:
@@ -99,7 +100,7 @@ class Types(JSBASE):
             return self.set
         elif ttype == "guid":
             return self.guid
-        elif ttype == "duration":
+        elif ttype in ["dur","duration"]:
             return self.duration
         elif ttype == "date":
             return self.date
@@ -124,7 +125,7 @@ class Types(JSBASE):
         - dict
         - set
         - guid
-        - duration e.g. 1w, 1d, 1h, 1m, 1
+        - dur,duration e.g. 1w, 1d, 1h, 1m, 1
         """
         cl = self.getTypeClass(ttype)
         return cl.get(val)
