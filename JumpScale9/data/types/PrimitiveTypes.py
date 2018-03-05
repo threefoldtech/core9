@@ -2,24 +2,23 @@
 from JumpScale9 import j
 '''Definition of several primitive type properties (integer, string,...)'''
 
-JSBASE = j.application.jsbase_get_class()
-class String(JSBASE):
+
+class String():
 
     '''Generic string type'''
 
     def __init__(self):
-        if not hasattr(self, 'NAME'):
-            self.NAME = 'string'
+        self.NAME = 'string'
         self.BASETYPE = 'string'
-        JSBASE.__init__(self)
 
     def fromString(self, s):
         """
         return string from a string (is basically no more than a check)
         """
         # if not isinstance(value, str):
-        #     raise ValueError("Should be string:%s"%s)
+        #     raise ValueError("Should be string:%s"%s)        
         s = str(s)
+        s = self.clean(s)
         return s
 
     def toString(self, v):
@@ -39,7 +38,7 @@ class String(JSBASE):
         """
         will do a strip
         """
-        return value.strip()
+        return value.strip().strip("'").strip("\"").strip()
 
     def toml_string_get(self, value, key=""):
         """
@@ -53,10 +52,9 @@ class String(JSBASE):
 
 class StringMultiLine(String):
     def __init__(self):
-        if not hasattr(self, 'NAME'):
-            self.NAME = 'stringmultiline'
-        self.BASETYPE = 'stringmultiline'
         String.__init__(self)
+        self.NAME = 'stringmultiline'
+        self.BASETYPE = 'stringmultiline'
 
     def check(self, value):
         '''Check whether provided value is a string'''
@@ -100,14 +98,12 @@ class StringMultiLine(String):
             return out
 
 
-class Bytes(JSBASE):
+class Bytes():
     '''Generic array of bytes type'''
 
     def __init__(self):
-        if not hasattr(self, 'NAME'):
-            self.NAME = 'bytes'
+        self.NAME = 'bytes'
         self.BASETYPE = 'bytes'
-        JSBASE.__init__(self)
 
     def fromString(self, s):
         """
@@ -140,33 +136,22 @@ class Bytes(JSBASE):
         raise NotImplemented()
 
 
-class Boolean(JSBASE):
+class Boolean():
 
     '''Generic boolean type'''
 
     def __init__(self):
-        if not hasattr(self, 'NAME'):
-            self.NAME = 'boolean'
+        self.NAME = 'boolean'
         self.BASETYPE = 'boolean'
-        JSBASE.__init__(self)
 
     def fromString(self, s):
-        if isinstance(s, bool):
-            return s
-        s = str(s)
-        if s.upper() in ('0', 'FALSE'):
-            return False
-        elif s.upper() in ('1', 'TRUE'):
-            return True
-        else:
-            raise ValueError("Invalid value for boolean: '%s'" % s)
+        return self.clean(s)
 
-    def checkString(self, s):
-        try:
-            self.fromString(s)
-            return True
-        except ValueError:
-            return False
+    # def checkString(self, s):
+    #     """
+    #     string which says True or true or false or False are considered to be textual representations
+    #     """
+    #     return s.lower().strip() == "true"
 
     def toString(self, boolean):
         if self.check(s):
@@ -211,15 +196,13 @@ class Boolean(JSBASE):
             return out
 
 
-class Integer(JSBASE):
+class Integer():
 
     '''Generic integer type'''
 
     def __init__(self):
-        if not hasattr(self, 'NAME'):
-            self.NAME = 'integer'
+        self.NAME = 'integer'
         self.BASETYPE = 'integer'
-        JSBASE.__init__(self)
 
     def checkString(self, s):
         return s.isdigit()
@@ -256,15 +239,13 @@ class Integer(JSBASE):
             return "%s = %s" % (key, self.clean(value))
 
 
-class Float(JSBASE):
+class Float():
 
     '''Generic float type'''
 
     def __init__(self):
-        if not hasattr(self, 'NAME'):
-            self.NAME = 'float'
+        self.NAME = 'float'
         self.BASETYPE = 'float'
-        JSBASE.__init__(self)
 
     def checkString(self, value):
         try:

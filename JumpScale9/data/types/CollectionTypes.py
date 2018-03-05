@@ -2,15 +2,10 @@
 
 from .PrimitiveTypes import *
 
-
-JSBASE = j.application.jsbase_get_class()
-
-
-class YAML(JSBASE):
+class YAML():
     '''Generic dictionary type'''
 
     def __init__(self):
-        JSBASE.__init__(self)
         self.NAME = 'yaml'
         self.BASETYPE = 'dictionary'
 
@@ -36,18 +31,16 @@ class YAML(JSBASE):
         return j.data.serializer.yaml.dumps(v)
 
 
-class JSON(JSBASE):
+class JSON():
     def __init__(self):
-        JSBASE.__init__(self)
         self.NAME = 'json'
         self.BASETYPE = 'dictionary'
 
 
-class Dictionary(JSBASE):
+class Dictionary():
     '''Generic dictionary type'''
 
     def __init__(self):
-        JSBASE.__init__(self)
         self.NAME = 'dictionary'
         self.BASETYPE = 'dictionary'
 
@@ -76,13 +69,13 @@ class Dictionary(JSBASE):
         return j.data.serializer.json.dumps(v, True, True)
 
 
-class List(JSBASE):
+class List():
     '''Generic list type'''
 
     def __init__(self):
-        JSBASE.__init__(self)
         self.NAME = 'list'
         self.BASETYPE = 'list'
+        self.SUBTYPE = None
 
     def check(self, value):
         '''Check whether provided value is a list'''
@@ -105,6 +98,8 @@ class List(JSBASE):
         return True
 
     def fromString(self, v, ttype=None):
+        if ttype is None:
+            ttype = self.SUBTYPE
         if v == None:
             v = ""
         v = j.data.text.getList(v, ttype)
@@ -115,6 +110,8 @@ class List(JSBASE):
             raise ValueError("List not properly formatted.")
 
     def clean(self, val, toml=False, sort=False, ttype=None):
+        if ttype is None:
+            ttype = self.SUBTYPE
         if len(val) == 0:
             return val
         if ttype == None:
@@ -183,11 +180,10 @@ class List(JSBASE):
             return j.data.serializer.toml.loads(val)
 
 
-class Set(JSBASE):
+class Set():
     '''Generic set type'''
 
     def __init__(self):
-        JSBASE.__init__(self)
         self.NAME = 'set'
         self.BASETYPE = 'set'
 

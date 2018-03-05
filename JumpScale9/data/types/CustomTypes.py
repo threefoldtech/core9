@@ -4,18 +4,16 @@ from JumpScale9 import j
 
 import re
 
-from .PrimitiveTypes import *
+from .PrimitiveTypes import String, Integer
 
-JSBASE = j.application.jsbase_get_class()
-class Guid(String, JSBASE):
+class Guid(String):
     '''Generic GUID type'''
 
     def __init__(self):
-        if not hasattr(self, 'NAME'):
-            self.NAME = 'guid'
+        String.__init__(self)
+        self.NAME = 'guid'
         self._RE = re.compile(
             '^[0-9a-fA-F]{8}[-:][0-9a-fA-F]{4}[-:][0-9a-fA-F]{4}[-:][0-9a-fA-F]{4}[-:][0-9a-fA-F]{12}$')
-        String.__init__(self)
 
     def check(self, value):
         '''Check whether provided value is a valid GUID string'''
@@ -38,16 +36,15 @@ class Guid(String, JSBASE):
     toString = fromString
 
 
-class Email(String, JSBASE):
+class Email(String):
     """
     """
 
     def __init__(self):
-        if not hasattr(self, 'NAME'):
-            self.NAME = 'email'
+        String.__init__(self)
+        self.NAME = 'email'
         self._RE = re.compile(
             '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
-        String.__init__(self)
 
     def check(self, value):
         '''
@@ -79,19 +76,19 @@ class Email(String, JSBASE):
         return "changeme@example.com"
 
 
-class Path(String, JSBASE):
+class Path(String):
     '''Generic path type'''
 
     def __init__(self):
+        String.__init__(self)
         self.NAME = 'path'
         self._RE = re.compile('.*')
-        Email.__init__(self)
 
     def get_default():
         return ""
 
 
-class Tel(String, JSBASE):
+class Tel(String):
     """
     format is e.g. +32 475.99.99.99x123
     only requirement is it needs to start with +
@@ -100,9 +97,9 @@ class Tel(String, JSBASE):
     """
 
     def __init__(self):
+        String.__init__(self)
         self.NAME = 'tel'
         self._RE = re.compile('^\+?[0-9]{6,15}(?:x[0-9]+)?$')
-        Email.__init__(self)
 
     def clean(self, v):
         if not j.data.types.string.check(v):
@@ -120,43 +117,40 @@ class Tel(String, JSBASE):
         return "+32 475.99.99.99"
 
 
-class IPRange(String, ):
+class IPRange(String):
     """
     """
 
     def __init__(self):
-        # JSBASE.__init__(self)
+        String.__init__(self)
         self.NAME = 'iprange'
         self._RE = re.compile(
             '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/[0-9]{1,2}')
-        Email.__init__(self)
 
     def get_default(self):
         return "192.168.1.1/24"
 
 
-class IPAddress(String, ):
+class IPAddress(String):
     """
     """
 
     def __init__(self):
-        # JSBASE.__init__(self)
+        String.__init__(self)
         self.NAME = 'ipaddress'
         self._RE = re.compile('[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
-        Email.__init__(self)
 
     def get_default(self):
         return "192.168.1.1"
 
 
-class IPPort(Integer, ):
+class IPPort(Integer):
     '''Generic IP port type'''
 
     def __init__(self):
-        # JSBASE.__init__(self)
+        Integer.__init__(self)
         self.NAME = 'ipport'
         self.BASETYPE = 'string'
-        Email.__init__(self)
 
     def check(self, value):
         '''
@@ -171,7 +165,21 @@ class IPPort(Integer, ):
         return False
 
 
-class Date(String, ):
+class Numeric(String):
+    """
+    has support for currencies
+    """
+
+    def __init__(self):
+        String.__init__(self)
+        self.NAME = 'numeric'
+        
+
+    def get_default(self):
+        return "0 USD"
+
+
+class Date(String):
     '''
     Date
     -1 is indefinite in past
@@ -184,12 +192,11 @@ class Date(String, ):
     '''
 
     def __init__(self):
-        # JSBASE.__init__(self)
+        String.__init__(self)
         self.NAME = 'date'
         self._RE = re.compile('[0-9]{2}/[0-9]{2}/[0-9]{4}')
         self._RE_days = re.compile('^\+\dd')
         self._RE_weeks = re.compile('^\+\dw')
-        String.__init__(self)
 
     def get_default(self):
         return "-1"
@@ -225,7 +232,7 @@ class Date(String, ):
         return v
 
 
-class Duration(String, ):
+class Duration(String):
     '''
     Duration type
 
@@ -244,10 +251,9 @@ class Duration(String, ):
     '''
 
     def __init__(self):
-        # JSBASE.__init__(self)
+        String.__init__(self)
         self.NAME = 'duration'
         self._RE = re.compile('^(\d+)([wdhms]?)$')
-        Email.__init__(self)
 
     def check(self, value):
         if isinstance(value, int):
@@ -299,97 +305,3 @@ class Duration(String, ):
             return amount * multiplier
         return value
 
-
-# class DirPath(Path):
-#     '''Generic folder path type'''
-#     NAME = 'dirpath'
-
-#
-#     def check(value):
-#         '''Check whether provided value is a valid directory path
-
-#         This checks whether value is a valid Path only.
-#         '''
-#         return Path.check(value)
-
-# class FilePath(Path):
-#     '''Generic file path type'''
-#     NAME = 'filepath'
-
-#
-#     def check(value):
-#         '''Check whether provided value is a valid file path
-
-#         This checks whether value is a valid Path only.
-#         '''
-#         return Path.check(value)
-
-# class UnixDirPath(DirPath):
-#     '''Generic Unix folder path type'''
-#     NAME = 'unixdirpath'
-
-#
-#     def check(value):
-#         '''Check whether provided value is a valid UNIX directory path
-
-#         This checks whether value is a valid DirPath which starts and stops
-#         with '/'.
-#         '''
-#         if not DirPath.check(value):
-#             return False
-#         return value.startswith("/") and value.endswith("/")
-
-# class UnixFilePath(FilePath):
-#     '''Generic Unix file path type'''
-#     NAME = 'unixfilepath'
-
-#
-#     def check(value):
-#         '''Check whether provided value is a valid UNIX file path
-
-#         This checks whether value is a valid FilePath which starts with '/' and
-#         does not end with '/'.
-#         '''
-#         if not FilePath.check(value):
-#             return False
-#         return value.startswith("/") and not value.endswith("/")
-
-# WINDOWS_DIR_RE = re.compile('^([a-zA-Z]:)?[\\\\/]')
-# class WindowsDirPath(DirPath):
-#     '''Generic Windows folder path type'''
-#     NAME = 'windowsdirpath'
-
-#
-#     def check(value):
-#         '''Check whether provided value is a valid Windows directory path
-
-#         This checks whether value is a valid DirPath which starts with '/' or
-#         '\\', optionally prepended with a drive name, and ends with '/' or
-#         '\\'.
-#         '''
-#         if not DirPath.check(value):
-#             return False
-
-#         if not WINDOWS_DIR_RE.match(value):
-#             return False
-#         return value.endswith(('\\', '/', ))
-
-# WINDOWS_FILE_RE = re.compile('^([a-zA-Z]:)?[\\\\/]')
-# class WindowsFilePath(FilePath):
-#     '''Generic Windows file path type'''
-#     NAME = 'windowsfilepath'
-
-#
-#     def check(value):
-#         '''Check whether provided value is a valid Windows file path
-
-#         This checks whether value is a valid FilePath which starts with '/' or
-#         '\\', optionally prepended with a drive name, and not ends with '/' or
-#         '\\'.
-#         '''
-#         if not FilePath.check(value):
-#             return False
-
-#         if not WINDOWS_FILE_RE.match(value):
-#             return False
-#         return not value.endswith(('\\', '/', ))

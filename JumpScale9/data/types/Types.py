@@ -34,6 +34,29 @@ class Types(JSBASE):
         self.json = JSON()
         self.email = Email()
         self.date = Date()
+
+        self._dict = Dictionary
+        self._list = List
+        self._guid = Guid
+        self._path = Path
+        self._bool = Boolean
+        self._int = Integer
+        self._float = Float
+        self._string = String
+        self._bytes = Bytes
+        self._multiline = StringMultiLine
+        self._set = Set
+        self._ipaddr = IPAddress
+        self._iprange = IPRange
+        self._ipport = IPPort
+        self._duration = Duration
+        self._tel = Tel
+        self._yaml = YAML
+        self._json = JSON
+        self._email = Email
+        self._date = Date
+        self._duration = Duration
+
         self.types_list = [self.bool, self.dict, self.list, self.bytes,
                            self.guid, self.float, self.int, self.multiline, self.string, self.date]
 
@@ -46,7 +69,7 @@ class Types(JSBASE):
                 return ttype
         raise RuntimeError("did not detect val for :%s" % val)
 
-    def getTypeClass(self, ttype):
+    def get(self, ttype, return_class=False):
         """
         type is one of following
         - s, str, string
@@ -69,63 +92,54 @@ class Types(JSBASE):
         """
         ttype = ttype.lower().strip()
         if ttype in ["s", "str", "string"]:
-            return self.string
+            res = self._string
         elif ttype in ["i","int", "integer"]:
-            return self.int
+            res = self._int
         elif ttype == ["f","float"]:
-            return self.float
+            res = self._float
         elif ttype in ["tel", "mobile"]:
-            return self.tel
+            res = self._tel
         elif ttype in ["ipaddr", "ipaddress"]:
-            return self.ipaddr
+            res = self._ipaddr
         elif ttype in ["iprange", "ipaddressrange"]:
-            return self.iprange
+            res = self._iprange
         elif ttype in ["ipport", "ipport"]:
-            return self.ipport
+            res = self._ipport
         elif ttype in ["b","bool", "boolean"]:
-            return self.bool
+            res = self._bool
         elif ttype == "email":
-            return self.email
+            res = self._email
         elif ttype == "multiline":
-            return self.multiline
-        elif ttype == "list":
-            return self.list
+            res = self._multiline
+        elif ttype.startswith("l"):
+            res = self._list
+            if len(ttype)==2:
+                if return_class:
+                    raise RuntimeError("cannot return class if subtype specified")
+                tt = self.list
+                ttsub = self.get(ttype[1],return_class=True)
+                tt.SUBTYPE = ttsub
+                return tt
         elif ttype == "dict":
-            return self.dict
+            res = self._dict
         elif ttype == "yaml":
-            return self.yaml
+            res = self._yaml
         elif ttype == "json":
-            return self.json
+            res = self._json
         elif ttype == "set":
-            return self.set
+            res = self._set
         elif ttype == "guid":
-            return self.guid
+            res = self._guid
         elif ttype in ["dur","duration"]:
-            return self.duration
+            res = self._duration
         elif ttype == "date":
-            return self.date
-
+            res = self._date
         raise j.exceptions.RuntimeError("did not find type:'%s'" % ttype)
 
-    def get(self, ttype, val):
-        """
-        type is one of following
-        - s, str, string
-        - i, int, integer
-        - f, float
-        - b, bool
-        - n, numeric (is a string representation of a number with potentially a currency symbol)
-        - tel, mobile
-        - ipaddr, ipaddress
-        - ipport, tcpport
-        - iprange
-        - email
-        - multiline
-        - list
-        - dict
-        - set
-        - guid
-        - dur,duration e.g. 1w, 1d, 1h, 1m, 1
-        """
-        cl = self.getTypeClass(ttype)
-        return cl.get(val)
+        if return_class:
+            return res
+        else:
+            return res()
+
+
+
