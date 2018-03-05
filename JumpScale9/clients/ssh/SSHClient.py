@@ -17,7 +17,7 @@ class SSHClient(SSHClientBase):
 
     @property
     def client(self):
-        pkey = self.sshkey.path or None
+        pkey = (self.sshkey and self.sshkey.path) or None
         passwd = self.passwd
         if pkey:
             passwd = self.sshkey.passphrase
