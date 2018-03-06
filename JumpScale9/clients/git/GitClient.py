@@ -453,7 +453,38 @@ docs/_build/
         this method get latest tag or branch
         """
         try:
-            cmd = 'cd {path}; git describe --tags'.format(path=self.baseDir)
+            cmd = 'cd {path}; git describe --tags'.format(path=self.BASEDIR)
             return 'tag', j.tools.executorLocal.execute(cmd)[1]
         except BaseException:
             return 'branch', self.repo.head.ref.name
+
+    def getConfig(self, field):
+        """
+        returns value of provided field name
+        returns empty string if not found
+
+        :param fields: field name of the config to search for 
+        :return: value of the field name
+        """
+        cmd = "cd %s; git config %s" % (self.BASEDIR, field)
+        rc, output, _ = j.tools.executorLocal.execute(cmd, die=False)
+        if rc != 0:
+            return ""
+
+        return output
+
+    def setConfig(self, field, value, local=True, die=True):
+        """
+        Sets provided field with value to the git config
+
+        :param field: field name to be set
+        :param value: value of field to be set
+        :param local: Set value as local config, set to false for global config
+        :param die: raise exception on error
+        """
+        flags = ""
+        if not local:
+            flags += "--global "
+        
+        cmd = "cd %s; git config %s %s %s" % (self.BASEDIR, flags, field, value)
+        j.tools.executorLocal.execute(cmd, die=die)
