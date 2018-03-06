@@ -488,3 +488,18 @@ docs/_build/
         
         cmd = "cd %s; git config %s %s %s" % (self.BASEDIR, flags, field, value)
         j.tools.executorLocal.execute(cmd, die=die)
+
+    def unsetConfig(self, field, local=True,  die=True):
+        """
+        Removes/unsets config field
+
+        :param field: fieldname to remove
+        :param local: remove from local config, set to false to remove from global config
+        :param die: raise exception on error
+        """
+        flags = ""
+        if not local:
+            flags += "--global "
+
+        cmd = "cd %s; git config --unset %s %s" % (self.BASEDIR, flags, field)
+        j.tools.executorLocal.execute(cmd, die=die)
