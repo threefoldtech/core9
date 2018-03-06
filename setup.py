@@ -3,24 +3,26 @@ from distutils.sysconfig import get_python_lib
 from setuptools.command.install import install as _install
 from setuptools.command.develop import develop as _develop
 import os
+import subprocess
 
 
 def _post_install(libname, libpath):
+    pssh = """
+    # WORKAROUND till issue in ssh2 is fixed: https://github.com/ParallelSSH/ssh2-python/issues/23
+    pip3 install http://home.maxux.net/wheelhouse/ssh2_python-0.10.0%2B4.g7dc3833.dirty-cp35-cp35m-manylinux1_x86_64.whl
+    pip3 install parallel_ssh>=1.4.0
+    """
+    with open('/tmp/pssh.sh', 'w') as f:
+        f.write(pssh)
+    res = subprocess.check_output(["bash", "/tmp/pssh.sh"])
+
     from JumpScale9 import j  # here its still the boostrap JumpScale9
-
-    # NO LONGER NEEDED
-    # # add this plugin to the config
-    # c = {}  # first time need to make sure is empty
-    # c[libname] = libpath
-    # j.core.state.configSet('plugins', c)
-
     # remove leftovers
-    for item in j.sal.fs.find("/usr/local/bin/",fileregex="js9*"):
-         j.sal.fs.remove("/usr/local/bin/%s"%item)
+    for item in j.sal.fs.find("/usr/local/bin/", fileregex="js9*"):
+        j.sal.fs.remove("/usr/local/bin/%s" % item)
 
     j.tools.executorLocal.initEnv()
     j.tools.jsloader.generate()
-
 
 
 class install(_install):
@@ -87,7 +89,6 @@ setup(
         'pyserial>=3.4',
         'docker>=3',
         'fakeredis',
-        'parallel_ssh>=1.4.0',
     ],
     cmdclass={
         'install': install,

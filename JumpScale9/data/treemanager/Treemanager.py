@@ -1,6 +1,8 @@
 from js9 import j
 
 JSBASE = j.application.jsbase_get_class()
+
+
 class TreeItem(JSBASE):
 
     def __init__(self):
@@ -185,7 +187,7 @@ class Tree(JSBASE):
             self.set(path=path, id=id, cat=cat, description=descr,
                      item=None, selected=selected, data=data)
 
-    def find(self, partOfPath="", maxAmount=200, getItems=False, selected=None, cat=None):
+    def find(self, partOfPath="", maxAmount=400, getItems=False, selected=None, cat=None):
         """
         @param if getItems True then will return the items in the treeobj
         """

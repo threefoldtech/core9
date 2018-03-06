@@ -100,14 +100,9 @@ class ExecutorSSH(ExecutorBase):
             path = "/tmp/tmp_prefab_removeme_{}.sh".format(login)
         else:
             path = "/tmp/prefab_{}.sh".format(j.data.idgenerator.generateRandomInt(1, 100000))
-        # j.sal.fs.writeFile(path, content)
-        # self.logger.debug("upload %s to %s over sftp" % (path, path))
+        j.sal.fs.writeFile(path, content)
 
-        # WORKAROUND till issue in ssh2 is fixed: https://github.com/ParallelSSH/ssh2-python/issues/23
-        # self.sshclient.client.copy_file(path, path)  # is now always on tmp
-        cmd = "echo '{}' > {}".format(content, path)
-        self.sshclient.execute(cmd)
-        # self.sshclient.rsync_up(path, path)
+        self.sshclient.client.copy_file(path, path)  # is now always on tmp
         if sudo:
             passwd = self.sshclient.config.data['passwd_']
             cmd = 'echo \'{}\' | sudo -H -SE -p \'\' bash "{}"'.format(passwd, path)
@@ -119,10 +114,7 @@ class ExecutorSSH(ExecutorBase):
             out = self._docheckok(content, out)
 
         j.sal.fs.remove(path)
-
-        # WORKAROUND
-        self.sshclient.execute('rm -rf {}'.format(path))
-        # self.sshclient.sftp.unlink(path)
+        self.sshclient.sftp.unlink(path)
         return rc, out, err
 
     def upload(self, source, dest, dest_prefix="", recursive=True, createdir=True,
