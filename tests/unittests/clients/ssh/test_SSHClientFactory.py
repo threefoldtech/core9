@@ -23,9 +23,7 @@ class TestSSHClientFactory(base.BaseTestCase):
         ssh_client_factory.reset()
         ssh_client = ssh_client_factory.get()
 
-        assert ssh_client.addr == "localhost"
         assert ssh_client.port == 22
-        assert ssh_client.login == "root"
         assert ssh_client.timeout == 5
         assert ssh_client.stdout
         assert ssh_client.forward_agent
