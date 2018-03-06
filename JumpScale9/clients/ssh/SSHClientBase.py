@@ -1,11 +1,11 @@
 from js9 import j
 
 TEMPLATE = """
-addr = "localhost"
+addr = ""
 port = 22
 addr_priv = ""
 port_priv = 22
-login = "root"
+login = ""
 passwd_ = ""
 sshkey = ""
 clienttype = ""
