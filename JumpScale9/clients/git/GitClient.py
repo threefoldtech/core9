@@ -464,7 +464,7 @@ docs/_build/
         returns empty string if not found
 
         :param fields: field name of the config to search for 
-        :return: value of the field name
+        :return: string value of the field name
         """
         cmd = "cd %s; git config %s" % (self.BASEDIR, field)
         rc, output, _ = j.tools.executorLocal.execute(cmd, die=False)
