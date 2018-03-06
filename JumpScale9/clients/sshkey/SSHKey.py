@@ -114,9 +114,7 @@ class SSHKey(JSConfigBase):
             return self.config.data['path']
         else:
             path = j.sal.fs.joinPaths(j.dirs.HOMEDIR, ".ssh", self.instance)
-            if j.sal.fs.isFile(path):
-                return path
-            return ""
+            return path
 
     def delete(self):
         """

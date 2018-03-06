@@ -136,10 +136,9 @@ class SSHClientBase(JSConfigBase):
         """
         return right sshkey
         """
-        if self.config.data["sshkey"]:
-            return j.clients.sshkey.get(self.config.data["sshkey"])
-        else:
+        if not self.config.data["sshkey"]:
             return None
+        return j.clients.sshkey.get(self.config.data["sshkey"])
 
     @sshkey.setter
     def sshkey(self, val):
