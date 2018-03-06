@@ -969,6 +969,8 @@ class Text(JSBASE):
         if not j.data.types.string.check(text):
             raise RuntimeError("need to be string:%s" % text)
 
+        text=text.strip("'").strip("\"").strip()
+
         if self.strip(text) == "":
             return []
 

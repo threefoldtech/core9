@@ -20,8 +20,10 @@ class Types(JSBASE):
         self.path = Path()
         self.bool = Boolean()
         self.int = Integer()
+        self.integer = self.int
         self.float = Float()
         self.string = String()
+        self.str = self.string
         self.bytes = Bytes()
         self.multiline = StringMultiLine()
         self.set = Set()
@@ -34,6 +36,7 @@ class Types(JSBASE):
         self.json = JSON()
         self.email = Email()
         self.date = Date()
+        self.numeric = Numeric()
 
         self._dict = Dictionary
         self._list = List
@@ -56,9 +59,10 @@ class Types(JSBASE):
         self._email = Email
         self._date = Date
         self._duration = Duration
+        self._numeric = Numeric
 
         self.types_list = [self.bool, self.dict, self.list, self.bytes,
-                           self.guid, self.float, self.int, self.multiline, self.string, self.date]
+                           self.guid, self.float, self.int, self.multiline, self.string, self.date, self.numeric]
 
     def type_detect(self, val):
         """
@@ -78,6 +82,7 @@ class Types(JSBASE):
         - b, bool,boolean
         - tel, mobile
         - d, date
+        - n, numeric
         - ipaddr, ipaddress
         - ipport, tcpport
         - iprange
@@ -95,7 +100,7 @@ class Types(JSBASE):
             res = self._string
         elif ttype in ["i","int", "integer"]:
             res = self._int
-        elif ttype == ["f","float"]:
+        elif ttype in ["f","float"]:
             res = self._float
         elif ttype in ["tel", "mobile"]:
             res = self._tel
@@ -111,6 +116,10 @@ class Types(JSBASE):
             res = self._email
         elif ttype == "multiline":
             res = self._multiline
+        elif ttype in ["d", "date"]:
+            res = self._date
+        elif ttype in ["n", "num","numeric"]:
+            res = self._numeric
         elif ttype.startswith("l"):
             res = self._list
             if len(ttype)==2:
@@ -118,7 +127,7 @@ class Types(JSBASE):
                     raise RuntimeError("cannot return class if subtype specified")
                 tt = self.list
                 ttsub = self.get(ttype[1],return_class=True)
-                tt.SUBTYPE = ttsub
+                tt.SUBTYPE = ttsub()
                 return tt
         elif ttype == "dict":
             res = self._dict
@@ -132,9 +141,8 @@ class Types(JSBASE):
             res = self._guid
         elif ttype in ["dur","duration"]:
             res = self._duration
-        elif ttype == "date":
-            res = self._date
-        raise j.exceptions.RuntimeError("did not find type:'%s'" % ttype)
+        else:
+            raise j.exceptions.RuntimeError("did not find type:'%s'" % ttype)
 
         if return_class:
             return res

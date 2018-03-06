@@ -315,7 +315,7 @@ class ExecutorBase(JSBASE):
 
         BASE = '''
         HOMEDIR = "~"
-        TMPDIR = "{{TMPDIR}}"
+        TMPDIR = "{{TMPDIR}}/js9/"
         BASEDIRJS = "{{BASEDIR}}/jumpscale9"
         JSAPPSDIR= "{{BASEDIRJS}}/apps"
         TEMPLATEDIR ="{{VARDIR}}/templates"

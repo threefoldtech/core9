@@ -7,9 +7,8 @@ class String():
 
     '''Generic string type'''
 
-    def __init__(self):
-        self.NAME = 'string'
-        self.BASETYPE = 'string'
+    NAME = 'string'
+    BASETYPE = 'string'
 
     def fromString(self, s):
         """
@@ -40,6 +39,14 @@ class String():
         """
         return value.strip().strip("'").strip("\"").strip()
 
+    def python_code_get(self, value):
+        """
+        produce the python code which represents this value
+        """
+        value = self.clean(value)
+        return "'%s'" % value
+
+
     def toml_string_get(self, value, key=""):
         """
         will translate to what we need in toml
@@ -51,10 +58,9 @@ class String():
 
 
 class StringMultiLine(String):
-    def __init__(self):
-        String.__init__(self)
-        self.NAME = 'stringmultiline'
-        self.BASETYPE = 'stringmultiline'
+
+    NAME = 'stringmultiline'
+    BASETYPE = 'stringmultiline'
 
     def check(self, value):
         '''Check whether provided value is a string'''
@@ -80,6 +86,15 @@ class StringMultiLine(String):
         else:
             raise ValueError("Could not convert to string:%s" % v)
 
+    def python_code_get(self, value):
+        """
+        produce the python code which represents this value
+        """
+        value = self.clean(value)
+        value = value.replace("\n", "\\n")
+        return "'%s'" % value
+
+
     def toml_string_get(self, value, key):
         """
         will translate to what we need in toml
@@ -101,9 +116,8 @@ class StringMultiLine(String):
 class Bytes():
     '''Generic array of bytes type'''
 
-    def __init__(self):
-        self.NAME = 'bytes'
-        self.BASETYPE = 'bytes'
+    NAME = 'bytes'
+    BASETYPE = 'bytes'
 
     def fromString(self, s):
         """
@@ -124,13 +138,23 @@ class Bytes():
         return isinstance(value, bytes)
 
     def get_default(self):
-        return ""
+        return b""
 
     def clean(self, value):
         """
         used to change the value to a predefined standard for this type
         """
         return value
+
+    def python_code_get(self, value):
+        """
+        produce the python code which represents this value
+        """
+        raise NotImplemented()
+        value = self.clean(value)
+        value = value.replace("\n", "\\n")
+        return "'%s'" % value
+        
 
     def toml_string_get(self, value, key):
         raise NotImplemented()
@@ -140,9 +164,8 @@ class Boolean():
 
     '''Generic boolean type'''
 
-    def __init__(self):
-        self.NAME = 'boolean'
-        self.BASETYPE = 'boolean'
+    NAME = 'boolean'
+    BASETYPE = 'boolean'
 
     def fromString(self, s):
         return self.clean(s)
@@ -178,7 +201,19 @@ class Boolean():
             value = False
         return value
 
-    def toml_string_get(self, value, key):
+    def python_code_get(self, value):
+        """
+        produce the python code which represents this value
+        """
+        value = self.clean(value)
+        if value == True:
+            value = "True"
+        else:
+            value = "False"
+        return value
+  
+
+    def toml_string_get(self, value, key=""):
         value = self.clean(value)
         if key == "":
             if value == True:
@@ -200,9 +235,8 @@ class Integer():
 
     '''Generic integer type'''
 
-    def __init__(self):
-        self.NAME = 'integer'
-        self.BASETYPE = 'integer'
+    NAME = 'integer'
+    BASETYPE = 'integer'
 
     def checkString(self, s):
         return s.isdigit()
@@ -229,6 +263,13 @@ class Integer():
         """
         return int(value)
 
+    def python_code_get(self, value):
+        """
+        produce the python code which represents this value
+        """
+        return self.toml_string_get(value)
+        
+
     def toml_string_get(self, value, key=""):
         """
         will translate to what we need in toml
@@ -243,9 +284,8 @@ class Float():
 
     '''Generic float type'''
 
-    def __init__(self):
-        self.NAME = 'float'
-        self.BASETYPE = 'float'
+    NAME = 'float'
+    BASETYPE = 'float'
 
     def checkString(self, value):
         try:
@@ -275,6 +315,12 @@ class Float():
         used to change the value to a predefined standard for this type
         """
         return float(value)
+
+    def python_code_get(self, value):
+        """
+        produce the python code which represents this value
+        """
+        return self.toml_string_get(value)        
 
     def toml_string_get(self, value, key=""):
         """

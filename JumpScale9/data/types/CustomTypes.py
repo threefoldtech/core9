@@ -9,9 +9,10 @@ from .PrimitiveTypes import String, Integer
 class Guid(String):
     '''Generic GUID type'''
 
+    NAME = 'guid'
+
     def __init__(self):
         String.__init__(self)
-        self.NAME = 'guid'
         self._RE = re.compile(
             '^[0-9a-fA-F]{8}[-:][0-9a-fA-F]{4}[-:][0-9a-fA-F]{4}[-:][0-9a-fA-F]{4}[-:][0-9a-fA-F]{12}$')
 
@@ -40,9 +41,11 @@ class Email(String):
     """
     """
 
+    NAME = 'email'
+
     def __init__(self):
         String.__init__(self)
-        self.NAME = 'email'
+        
         self._RE = re.compile(
             '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
 
@@ -78,10 +81,10 @@ class Email(String):
 
 class Path(String):
     '''Generic path type'''
+    NAME = 'path'
 
     def __init__(self):
-        String.__init__(self)
-        self.NAME = 'path'
+        String.__init__(self)        
         self._RE = re.compile('.*')
 
     def get_default():
@@ -95,10 +98,10 @@ class Tel(String):
     the. & , and spaces will not be remembered
     and x stands for phone number extension
     """
+    NAME = 'tel'
 
     def __init__(self):
         String.__init__(self)
-        self.NAME = 'tel'
         self._RE = re.compile('^\+?[0-9]{6,15}(?:x[0-9]+)?$')
 
     def clean(self, v):
@@ -120,10 +123,10 @@ class Tel(String):
 class IPRange(String):
     """
     """
+    NAME = 'iprange'
 
     def __init__(self):
         String.__init__(self)
-        self.NAME = 'iprange'
         self._RE = re.compile(
             '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/[0-9]{1,2}')
 
@@ -134,10 +137,10 @@ class IPRange(String):
 class IPAddress(String):
     """
     """
+    NAME = 'ipaddress'
 
     def __init__(self):
-        String.__init__(self)
-        self.NAME = 'ipaddress'
+        String.__init__(self)        
         self._RE = re.compile('[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
 
     def get_default(self):
@@ -146,10 +149,10 @@ class IPAddress(String):
 
 class IPPort(Integer):
     '''Generic IP port type'''
+    NAME = 'ipport'
 
     def __init__(self):
-        Integer.__init__(self)
-        self.NAME = 'ipport'
+        Integer.__init__(self)        
         self.BASETYPE = 'string'
 
     def check(self, value):
@@ -169,34 +172,24 @@ class Numeric(String):
     """
     has support for currencies
     """
+    NAME = 'numeric'
 
     def __init__(self):
         String.__init__(self)
-        self.NAME = 'numeric'
-        
-
+    
     def get_default(self):
         return "0 USD"
 
 
 class Date(String):
     '''
-    Date
-    -1 is indefinite in past
-    0 is now
-    +1 is indefinite in future
-    +1d will be converted to 1 day from now, 1 can be any int
-    +1w will be converted to 1 week from now, 1 can be any int
-    +1w_end will be converted to 1 week from now at end of week (Saturday), 1 can be any int
-    +1m_end will be converted to 1 week from now at end of month (last day of month), 1 can be any int
+    Date in year/month/day format
     '''
+    NAME = 'date'
 
     def __init__(self):
-        String.__init__(self)
-        self.NAME = 'date'
-        self._RE = re.compile('[0-9]{2}/[0-9]{2}/[0-9]{4}')
-        self._RE_days = re.compile('^\+\dd')
-        self._RE_weeks = re.compile('^\+\dw')
+        String.__init__(self)        
+        self._RE = re.compile('[0-9]{4}/[0-9]{2}/[0-9]{2}')
 
     def get_default(self):
         return "-1"
@@ -208,27 +201,25 @@ class Date(String):
         if not j.data.types.string.check(value):
             return False
         value = self.clean(value)
-        if value in ["-1", "+1", "0", ""]:
-            return True
         return self._RE.fullmatch(value) is not None
+
+    def fromString(self, txt):
+        try:
+            epoch = int(txt)
+            if epoch == 0:
+                return ""
+            txt = j.data.time.epoch2HRDate(epoch)
+        except Exception as  e:
+            raise  e        
+        if self.check(txt) == False:
+            raise RuntimeError("is not date:%s"%txt)
+        return txt
 
     def clean(self, v):
         if j.data.types.string.check(v):
-            if v.count("-") > 1:
-                v = v.replace("-", ":")
-
-        if v == -1:
-            v = "-1"
-        elif v == 1:
-            v = "+1"
-        elif v == 0:
-            v == "0"
+            return v
         elif not j.data.types.string.check(v):
             raise ValueError("Input needs to be string:%s" % v)
-        elif self._RE_days.fullmatch(value) is not None:
-            j.application.break_into_jshell("DEBUG NOW day extra")
-        elif self._RE_weeks.fullmatch(value) is not None:
-            j.application.break_into_jshell("DEBUG NOW week extra")
         return v
 
 
@@ -249,10 +240,11 @@ class Duration(String):
     -1 is infinite
 
     '''
-
+    NAME = 'duration'
+    
     def __init__(self):
         String.__init__(self)
-        self.NAME = 'duration'
+        
         self._RE = re.compile('^(\d+)([wdhms]?)$')
 
     def check(self, value):

@@ -285,8 +285,10 @@ class JSLoader():
         contentCC += pystache.render(GEN_END2, **jlocations)
         content += pystache.render(GEN_END, **jlocations)
 
+        self.logger.info("wrote js9 autocompletion file in %s"%outCC)
         j.sal.fs.writeFile(outCC, contentCC)
 
+        self.logger.info("wrote js9 file in %s"%out)
         j.sal.fs.writeFile(out, content)
 
     def _pip_installed(self):
@@ -385,10 +387,12 @@ class JSLoader():
             for item in [item for item in j.sal.fs.listDirsInDir(path) if item.find("egg-info") != -1]:
                 j.sal.fs.removeDirTree(item)
 
-    def copyPyLibs(self, autocompletepath=None):
+    def _copyPyLibs(self, autocompletepath=None):
         """
         this looks for python libs (non jumpscale) and copies them to our gig lib dir
-        which can be use outside of docker for e.g. code completiong
+        which can be use outside of docker for e.g. code completion
+
+        NOT NEEDED NOW
         """
         if autocompletepath is None:
             autocompletepath = os.path.join(j.dirs.HOSTDIR, "autocomplete")

@@ -5,9 +5,8 @@ from .PrimitiveTypes import *
 class YAML():
     '''Generic dictionary type'''
 
-    def __init__(self):
-        self.NAME = 'yaml'
-        self.BASETYPE = 'dictionary'
+    NAME = 'yaml'
+    BASETYPE = 'dictionary'
 
     def check(self, value):
         '''Check whether provided value is a dict'''
@@ -30,19 +29,17 @@ class YAML():
     def toString(self, v):
         return j.data.serializer.yaml.dumps(v)
 
-
 class JSON():
-    def __init__(self):
-        self.NAME = 'json'
-        self.BASETYPE = 'dictionary'
-
+    
+    NAME = 'json'
+    BASETYPE = 'dictionary'
 
 class Dictionary():
     '''Generic dictionary type'''
 
-    def __init__(self):
-        self.NAME = 'dictionary'
-        self.BASETYPE = 'dictionary'
+    NAME = 'dictionary'
+    BASETYPE = 'dictionary'
+
 
     def check(self, value):
         '''Check whether provided value is a dict'''
@@ -68,18 +65,18 @@ class Dictionary():
     def toString(self, v):
         return j.data.serializer.json.dumps(v, True, True)
 
-
 class List():
     '''Generic list type'''
+    NAME = 'list'
+    BASETYPE = 'list'
 
     def __init__(self):
-        self.NAME = 'list'
-        self.BASETYPE = 'list'
         self.SUBTYPE = None
 
     def check(self, value):
         '''Check whether provided value is a list'''
         return isinstance(value, (list, tuple))
+        # self.list_check_1type(value)
 
     def get_default(self):
         return list()
@@ -102,6 +99,8 @@ class List():
             ttype = self.SUBTYPE
         if v == None:
             v = ""
+        if ttype is not None:
+            ttype = ttype.NAME
         v = j.data.text.getList(v, ttype)
         v = self.clean(v)
         if self.check(v):
@@ -115,7 +114,8 @@ class List():
         if len(val) == 0:
             return val
         if ttype == None:
-            ttype = j.data.types.type_detect(val[0])
+            self.SUBTYPE = j.data.types.type_detect(val[0])
+            ttype = self.SUBTYPE
         res = []
         for item in val:
             if not toml:
@@ -145,6 +145,19 @@ class List():
                 out += " %s," % item
             out = out.strip().strip(",").strip()
         return out
+
+    def python_code_get(self, value, sort=False):
+        """
+        produce the python code which represents this value
+        """
+        value = self.clean(value, toml=False, sort=sort)
+        out = "[ "
+        for item in value:
+            out += "%s, "%self.SUBTYPE.python_code_get(item)
+        out = out.strip(",")
+        out += " ]"            
+        return out
+        
 
     def toml_string_get(self, val, key="", clean=True, sort=True):
         """
@@ -179,13 +192,11 @@ class List():
         else:
             return j.data.serializer.toml.loads(val)
 
-
 class Set():
     '''Generic set type'''
 
-    def __init__(self):
-        self.NAME = 'set'
-        self.BASETYPE = 'set'
+    NAME = 'set'
+    BASETYPE = 'set'
 
     def check(self, value):
         '''Check whether provided value is a set'''
