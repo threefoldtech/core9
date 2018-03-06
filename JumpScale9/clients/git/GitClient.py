@@ -471,7 +471,7 @@ docs/_build/
         if rc != 0:
             return ""
 
-        return output
+        return output.strip()
 
     def setConfig(self, field, value, local=True, die=True):
         """
