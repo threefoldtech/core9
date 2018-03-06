@@ -969,6 +969,8 @@ class Text(JSBASE):
         if not j.data.types.string.check(text):
             raise RuntimeError("need to be string:%s" % text)
 
+        text=text.strip("'").strip("\"").strip()
+
         if self.strip(text) == "":
             return []
 
@@ -983,20 +985,17 @@ class Text(JSBASE):
             text = [text]
 
         if ttype is not None:
-            if ttype == "int":
-                text = [self.getInt(item) for item in text]
-            elif ttype == "str" or ttype == j.data.types.string:
-                text = [j.data.types.string.fromString(item) for item in text]
-                text = [item.replace("\\K", ",").replace("'", "")
-                        for item in text]
-            elif ttype == "bool":
-                text = [self.getBool(item) for item in text]
-            elif ttype == "float":
-                text = [self.getFloat(item) for item in text]
-            else:
-                text = [ttype.fromString(item) for item in text]
+            ttype = j.data.types.get(ttype)
+        else:
+            ttype = j.data.types.string
 
-        return text
+        res = []
+        for item in text:
+            item = ttype.fromString(item)
+            if item not in res:
+                res.append(item)
+        return res
+
 
     def getDict(self, text, ttype=None):
         """

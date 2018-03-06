@@ -2,24 +2,22 @@
 from JumpScale9 import j
 '''Definition of several primitive type properties (integer, string,...)'''
 
-JSBASE = j.application.jsbase_get_class()
-class String(JSBASE):
+
+class String():
 
     '''Generic string type'''
 
-    def __init__(self):
-        if not hasattr(self, 'NAME'):
-            self.NAME = 'string'
-        self.BASETYPE = 'string'
-        JSBASE.__init__(self)
+    NAME = 'string'
+    BASETYPE = 'string'
 
     def fromString(self, s):
         """
         return string from a string (is basically no more than a check)
         """
         # if not isinstance(value, str):
-        #     raise ValueError("Should be string:%s"%s)
+        #     raise ValueError("Should be string:%s"%s)        
         s = str(s)
+        s = self.clean(s)
         return s
 
     def toString(self, v):
@@ -39,7 +37,15 @@ class String(JSBASE):
         """
         will do a strip
         """
-        return value.strip()
+        return value.strip().strip("'").strip("\"").strip()
+
+    def python_code_get(self, value):
+        """
+        produce the python code which represents this value
+        """
+        value = self.clean(value)
+        return "'%s'" % value
+
 
     def toml_string_get(self, value, key=""):
         """
@@ -52,11 +58,9 @@ class String(JSBASE):
 
 
 class StringMultiLine(String):
-    def __init__(self):
-        if not hasattr(self, 'NAME'):
-            self.NAME = 'stringmultiline'
-        self.BASETYPE = 'stringmultiline'
-        String.__init__(self)
+
+    NAME = 'stringmultiline'
+    BASETYPE = 'stringmultiline'
 
     def check(self, value):
         '''Check whether provided value is a string'''
@@ -82,6 +86,15 @@ class StringMultiLine(String):
         else:
             raise ValueError("Could not convert to string:%s" % v)
 
+    def python_code_get(self, value):
+        """
+        produce the python code which represents this value
+        """
+        value = self.clean(value)
+        value = value.replace("\n", "\\n")
+        return "'%s'" % value
+
+
     def toml_string_get(self, value, key):
         """
         will translate to what we need in toml
@@ -100,14 +113,11 @@ class StringMultiLine(String):
             return out
 
 
-class Bytes(JSBASE):
+class Bytes():
     '''Generic array of bytes type'''
 
-    def __init__(self):
-        if not hasattr(self, 'NAME'):
-            self.NAME = 'bytes'
-        self.BASETYPE = 'bytes'
-        JSBASE.__init__(self)
+    NAME = 'bytes'
+    BASETYPE = 'bytes'
 
     def fromString(self, s):
         """
@@ -128,7 +138,7 @@ class Bytes(JSBASE):
         return isinstance(value, bytes)
 
     def get_default(self):
-        return ""
+        return b""
 
     def clean(self, value):
         """
@@ -136,37 +146,35 @@ class Bytes(JSBASE):
         """
         return value
 
+    def python_code_get(self, value):
+        """
+        produce the python code which represents this value
+        """
+        raise NotImplemented()
+        value = self.clean(value)
+        value = value.replace("\n", "\\n")
+        return "'%s'" % value
+        
+
     def toml_string_get(self, value, key):
         raise NotImplemented()
 
 
-class Boolean(JSBASE):
+class Boolean():
 
     '''Generic boolean type'''
 
-    def __init__(self):
-        if not hasattr(self, 'NAME'):
-            self.NAME = 'boolean'
-        self.BASETYPE = 'boolean'
-        JSBASE.__init__(self)
+    NAME = 'boolean'
+    BASETYPE = 'boolean'
 
     def fromString(self, s):
-        if isinstance(s, bool):
-            return s
-        s = str(s)
-        if s.upper() in ('0', 'FALSE'):
-            return False
-        elif s.upper() in ('1', 'TRUE'):
-            return True
-        else:
-            raise ValueError("Invalid value for boolean: '%s'" % s)
+        return self.clean(s)
 
-    def checkString(self, s):
-        try:
-            self.fromString(s)
-            return True
-        except ValueError:
-            return False
+    # def checkString(self, s):
+    #     """
+    #     string which says True or true or false or False are considered to be textual representations
+    #     """
+    #     return s.lower().strip() == "true"
 
     def toString(self, boolean):
         if self.check(s):
@@ -193,7 +201,19 @@ class Boolean(JSBASE):
             value = False
         return value
 
-    def toml_string_get(self, value, key):
+    def python_code_get(self, value):
+        """
+        produce the python code which represents this value
+        """
+        value = self.clean(value)
+        if value == True:
+            value = "True"
+        else:
+            value = "False"
+        return value
+  
+
+    def toml_string_get(self, value, key=""):
         value = self.clean(value)
         if key == "":
             if value == True:
@@ -211,15 +231,12 @@ class Boolean(JSBASE):
             return out
 
 
-class Integer(JSBASE):
+class Integer():
 
     '''Generic integer type'''
 
-    def __init__(self):
-        if not hasattr(self, 'NAME'):
-            self.NAME = 'integer'
-        self.BASETYPE = 'integer'
-        JSBASE.__init__(self)
+    NAME = 'integer'
+    BASETYPE = 'integer'
 
     def checkString(self, s):
         return s.isdigit()
@@ -246,6 +263,13 @@ class Integer(JSBASE):
         """
         return int(value)
 
+    def python_code_get(self, value):
+        """
+        produce the python code which represents this value
+        """
+        return self.toml_string_get(value)
+        
+
     def toml_string_get(self, value, key=""):
         """
         will translate to what we need in toml
@@ -256,15 +280,12 @@ class Integer(JSBASE):
             return "%s = %s" % (key, self.clean(value))
 
 
-class Float(JSBASE):
+class Float():
 
     '''Generic float type'''
 
-    def __init__(self):
-        if not hasattr(self, 'NAME'):
-            self.NAME = 'float'
-        self.BASETYPE = 'float'
-        JSBASE.__init__(self)
+    NAME = 'float'
+    BASETYPE = 'float'
 
     def checkString(self, value):
         try:
@@ -294,6 +315,12 @@ class Float(JSBASE):
         used to change the value to a predefined standard for this type
         """
         return float(value)
+
+    def python_code_get(self, value):
+        """
+        produce the python code which represents this value
+        """
+        return self.toml_string_get(value)        
 
     def toml_string_get(self, value, key=""):
         """

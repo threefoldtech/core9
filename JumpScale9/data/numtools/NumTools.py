@@ -2,6 +2,7 @@ from js9 import j
 import numpy
 import struct
 import math
+print("NUMTOOLS")
 
 JSBASE = j.application.jsbase_get_class()
 class NumTools(JSBASE):
