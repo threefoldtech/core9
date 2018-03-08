@@ -146,20 +146,14 @@ class SSHClient(SSHClientBase):
 
     @property
     def prefab(self):
-        # FIXME: THIS is very spaghetti` !!!
-
-        if not self.config.data['proxy']:
-            executor = j.tools.executor.ssh_get(self.instance)
-            if self.config.data["login"] != "root":
-                # print("NONROOT PREFAB")
-                executor.state_disabled = True
-            prefab = executor.prefab
-
-        elif self.config.data['proxy']:
-            ex = j.tools.executor.getSSHViaProxy(self.addr_variable)
-            prefab = j.tools.prefab.get(self)
-
-        return prefab
+        if self._prefab:
+            return self._prefab
+        ex = j.tools.executor
+        executor = ex.getSSHViaProxy(self.addr_variable) if self.config.data['proxy'] else ex.ssh_get(self) 
+        if self.config.data["login"] != "root":
+            executor.state_disabled = True
+        self._prefab = executor.prefab
+        return self._prefab
 
     def ssh_authorize(self, user, key):
         sshkey = j.clients.sshkey.get(key)
