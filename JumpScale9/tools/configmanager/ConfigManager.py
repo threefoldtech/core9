@@ -34,7 +34,12 @@ class ConfigFactory(JSBASE):
         self._keyname = ""  # if set will overrule from the main js config file
         self._init = False
 
-    def reset(self, location=None, instance=None):
+    def reset(self, location=None, instance=None, force=False):
+        """
+        Reset configurations
+
+        @param force: If no location is gvien and force is set to true then all locations will be reset
+        """
         path = self.path
         if location:
             path = j.sal.fs.joinPaths(path, location)
