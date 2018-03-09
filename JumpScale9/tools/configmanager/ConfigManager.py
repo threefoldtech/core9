@@ -38,7 +38,7 @@ class ConfigFactory(JSBASE):
         """
         Reset configurations
 
-        @param force: If no location is gvien and force is set to true then all locations will be reset
+        @param force: If no location is given and force is set to true then all locations will be reset
         """
         path = self.path
         if location:
