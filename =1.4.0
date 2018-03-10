@@ -1,0 +1,12 @@
+Requirement already satisfied: parallel_ssh in /usr/local/lib/python3.6/site-packages
+Requirement already satisfied: ssh2-python>=0.6.0 in /usr/local/lib/python3.6/site-packages (from parallel_ssh)
+Requirement already satisfied: paramiko<2.2 in /usr/local/lib/python3.6/site-packages (from parallel_ssh)
+Requirement already satisfied: gevent>=1.1 in /usr/local/lib/python3.6/site-packages (from parallel_ssh)
+Requirement already satisfied: cryptography>=1.1 in /usr/local/lib/python3.6/site-packages (from paramiko<2.2->parallel_ssh)
+Requirement already satisfied: pyasn1>=0.1.7 in /usr/local/lib/python3.6/site-packages (from paramiko<2.2->parallel_ssh)
+Requirement already satisfied: greenlet>=0.4.10 in /usr/local/lib/python3.6/site-packages (from gevent>=1.1->parallel_ssh)
+Requirement already satisfied: cffi>=1.4.1 in /usr/local/lib/python3.6/site-packages (from cryptography>=1.1->paramiko<2.2->parallel_ssh)
+Requirement already satisfied: six>=1.4.1 in /usr/local/lib/python3.6/site-packages (from cryptography>=1.1->paramiko<2.2->parallel_ssh)
+Requirement already satisfied: setuptools>=11.3 in /usr/local/lib/python3.6/site-packages (from cryptography>=1.1->paramiko<2.2->parallel_ssh)
+Requirement already satisfied: idna>=2.0 in /usr/local/lib/python3.6/site-packages (from cryptography>=1.1->paramiko<2.2->parallel_ssh)
+Requirement already satisfied: pycparser in /usr/local/lib/python3.6/site-packages (from cffi>=1.4.1->cryptography>=1.1->paramiko<2.2->parallel_ssh)
