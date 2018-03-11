@@ -12,9 +12,18 @@ def _post_install(libname, libpath):
     pip3 install http://home.maxux.net/wheelhouse/ssh2_python-0.10.0%2B4.g7dc3833.dirty-cp35-cp35m-manylinux1_x86_64.whl
     pip3 install parallel_ssh>=1.4.0
     """
-    with open('/tmp/pssh.sh', 'w') as f:
-        f.write(pssh)
-    res = subprocess.check_output(["bash", "/tmp/pssh.sh"])
+    platformType = j.core.platformtype.get(j.tools.executorLocal)
+    if(platformType.osname !=  "ubuntu"):
+        psh = """
+        pip3 install ssh2-python
+        pip3 install parallel_ssh>1.4.0"""
+        with open('/tmp/pssh.sh', 'w') as f:
+            f.write(psh)
+        res = subprocess.check_output(["bash", "/tmp/pssh.sh"])
+    else:
+        with open('/tmp/pssh.sh', 'w') as f:
+            f.write(pssh)
+        res = subprocess.check_output(["bash", "/tmp/pssh.sh"])
 
     from JumpScale9 import j  # here its still the boostrap JumpScale9
     # remove leftovers
