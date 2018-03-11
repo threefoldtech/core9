@@ -11,7 +11,7 @@ class SSHClient(SSHClientBase):
     def __init__(self, instance, data={}, parent=None, interactive=False):
         SSHClientBase.__init__(self, instance=instance,
                                data=data, parent=parent, interactive=interactive)
-        self._logger = j.logger.get("ssh client: %s:%s(%s)" % (self.addr, self.port, self.login))
+        self._logger = j.logger.get("ssh client: %s:%s(%s)" % (self.addr_variable, self.port, self.login))
         self._client = None
         self._prefab = None
 
@@ -21,7 +21,7 @@ class SSHClient(SSHClientBase):
         passwd = self.passwd
         if pkey:
             passwd = self.sshkey.passphrase
-        self._client = PSSHClient(self.addr,
+        self._client = PSSHClient(self.addr_variable,
                                   user=self.login,
                                   password=passwd,
                                   port=self.port,
