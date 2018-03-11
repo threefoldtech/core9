@@ -43,6 +43,7 @@ class RedisFactory(JSBASE):
             fromcache=True,
             unixsocket=None,
             ardb_patch=False,
+            set_patch=False,
             **args):
         """
         get an instance of redis client, store it in cache so we could easily retrieve it later
@@ -66,11 +67,17 @@ class RedisFactory(JSBASE):
 
         if ardb_patch:
             self._ardb_patch(self._redis[key])
+        
+        if set_patch:
+            self._set_patch(self._redis[key])
 
         return self._redis[key]
 
     def _ardb_patch(self, client):
         client.response_callbacks['HDEL'] = lambda r: r and nativestr(r) == 'OK'
+
+    def _set_patch(self, client):
+        client.response_callbacks['SET'] = lambda r: r
 
     def getQueue(self, ipaddr, port, name, namespace="queues", fromcache=True):
         """
