@@ -54,7 +54,7 @@ def pathNormalize(path):
     path = pathClean(path)
     if len(path) > 0 and path[0] != os.sep:
         if path[0] == "~":
-            path = joinPaths(os.getenv("HOME"), path)
+            path = joinPaths(os.getenv("HOME"), path[2:])
         else:
             path = joinPaths(getcwd(), path)
     path = pathShorten(path)

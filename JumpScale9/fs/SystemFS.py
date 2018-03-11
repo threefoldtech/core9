@@ -1296,8 +1296,8 @@ class SystemFS(JSBASE):
         Located in temp dir of qbase
         @rtype: string representing the path of the temp file generated
         """
-        # return tempfile.mktemp())
-        tmpdir = j.dirs.TMPDIR+"/js9/"        
+        tmpdir = j.dirs.TMPDIR+"/js9/"
+        j.sal.fs.createDir(tmpdir)
         fd, path = tempfile.mkstemp(dir=tmpdir)
         try:
             real_fd = os.fdopen(fd)
