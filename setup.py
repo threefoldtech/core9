@@ -7,6 +7,7 @@ import subprocess
 
 
 def _post_install(libname, libpath):
+    from JumpScale9 import j  # here its still the boostrap JumpScale9
     pssh = """
     # WORKAROUND till issue in ssh2 is fixed: https://github.com/ParallelSSH/ssh2-python/issues/23
     pip3 install http://home.maxux.net/wheelhouse/ssh2_python-0.10.0%2B4.g7dc3833.dirty-cp35-cp35m-manylinux1_x86_64.whl
@@ -25,7 +26,6 @@ def _post_install(libname, libpath):
             f.write(pssh)
         res = subprocess.check_output(["bash", "/tmp/pssh.sh"])
 
-    from JumpScale9 import j  # here its still the boostrap JumpScale9
     # remove leftovers
     for item in j.sal.fs.find("/usr/local/bin/", fileregex="js9*"):
         j.sal.fs.remove("/usr/local/bin/%s" % item)
