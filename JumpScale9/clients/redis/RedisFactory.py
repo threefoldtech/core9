@@ -52,6 +52,9 @@ class RedisFactory(JSBASE):
         :param port: used to form the key when no unixsocket
         :param fromcache: if False, will create a new one instead of checking cache
         :param unixsocket: path of unixsocket to be used while creating Redis
+
+        set_patch is needed when using the client for gedis
+
         """
         if redisFound == False:
             raise RuntimeError("redis libraries are not installed, please pip3 install them.")

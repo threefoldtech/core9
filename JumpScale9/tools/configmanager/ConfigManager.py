@@ -58,6 +58,8 @@ class ConfigFactory(JSBASE):
     def path(self):
         if not self._path:
             self._path = j.core.state.configGetFromDict("myconfig", "path")
+            if self._path == "":
+                self.init()
         return self._path
 
     @property
@@ -285,7 +287,7 @@ class ConfigFactory(JSBASE):
     #     sc.save()
     #     return sc
 
-    def list(self, location):
+    def list(self, location="j.tools.myconfig"):
         """
         list all the existing instance name for a location
 
