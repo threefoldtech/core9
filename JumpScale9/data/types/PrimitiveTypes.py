@@ -330,3 +330,24 @@ class Float():
             return "%s" % (self.clean(value))
         else:
             return "%s = %s" % (key, self.clean(value))
+
+
+class Percent(Float):
+
+    '''Generic float type'''
+
+    NAME = 'percent'
+    BASETYPE = 'float'
+
+    def clean(self, value):
+        """
+        used to change the value to a predefined standard for this type
+        """
+        if "%" in value:
+            return int(value.replace("%",""))/100
+        else:
+            return float(value)    
+
+    def fromString(self, s):
+        s = self.clean(s)
+        return j.data.text.getFloat(s)

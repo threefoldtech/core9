@@ -1,7 +1,7 @@
 '''Definition of several collection types (list, dict, set,...)'''
 
 from .PrimitiveTypes import *
-
+import struct
 class YAML():
     '''Generic dictionary type'''
 
@@ -191,6 +191,87 @@ class List():
             raise NotImplemented()
         else:
             return j.data.serializer.toml.loads(val)
+
+class Hash():
+
+    '''hash is 2 value list, represented as 2 times 4 bytes'''
+
+    NAME = 'hash'
+    BASETYPE = 'string'
+
+    def fromString(self, s):
+        """
+        return string from a string (is basically no more than a check)
+        """
+        if not isinstance(s, str):
+            raise ValueError("Should be string:%s"%s)        
+        s = self.clean(s)
+        return s
+
+    def toString(self, value):
+        v0,v1 = self.clean(value)
+        return "%s:%s" % (v0,v1)
+
+    def check(self, value):
+        return isinstance(value, (list, tuple)) and len(value)==2
+
+    def get_default(self):
+        return (0,0)
+
+    def clean(self, value):
+        """
+        will do a strip
+        """
+
+        def bytesToInt(val):
+            if j.data.types.bytes.check(val):
+                if len(val) is not 4:
+                    raise RuntimeError("byte for first part of hash can only be 4 bytes")
+                return struct.unpack("I", val)
+            else:
+                return int(val)
+
+        if j.data.types.list.check(value) or j.data.types.set.check(value):
+            #prob given as list or set of 2 which is the base representation
+            if len(value)!=2:
+                raise RuntimeError("hash can only be list/set of 2")
+            v0 = bytesToInt(value[0])
+            v1 = bytesToInt(value[1])
+            return (v0,v1)
+            
+        elif j.data.types.bytes.check(value):
+            if len(value) is not 8:        
+                raise RuntimeError("bytes should be len 8")
+            #means is byte
+            return struct.unpack("II", b"aaaadddd")
+        
+        elif j.data.types.string.check(value):
+            if ":" not in value:
+                raise RuntimeError("when string, needs to have : inside %s"%value)
+            v0,v1=value.split(":")
+            v0=int(v0)
+            v1=int(v1)
+            return (v0,v1)
+
+        else:
+            raise RuntimeError("unrecognized format for hash:%s"%value)
+
+
+    def python_code_get(self, value):
+        """
+        produce the python code which represents this value
+        """
+        return "'%s'" % self.toString(value)
+
+
+    def toml_string_get(self, value, key=""):
+        """
+        will translate to what we need in toml
+        """
+        if key == "":
+            return self.python_code_get(value)
+        else:
+            return "%s = %s" % (key, self.python_code_get(value))
 
 class Set():
     '''Generic set type'''

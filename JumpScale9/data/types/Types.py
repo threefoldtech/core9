@@ -37,6 +37,8 @@ class Types(JSBASE):
         self.email = Email()
         self.date = Date()
         self.numeric = Numeric()
+        self.percent = Percent()
+        self.hash = Hash()
 
         self._dict = Dictionary
         self._list = List
@@ -60,9 +62,11 @@ class Types(JSBASE):
         self._date = Date
         self._duration = Duration
         self._numeric = Numeric
+        self._percent = Percent
+        self._hash = Hash
 
         self.types_list = [self.bool, self.dict, self.list, self.bytes,
-                           self.guid, self.float, self.int, self.multiline, self.string, self.date, self.numeric]
+                           self.guid, self.float, self.int, self.multiline, self.string, self.date, self.numeric, self.percent, self.hash]
 
     def type_detect(self, val):
         """
@@ -83,6 +87,8 @@ class Types(JSBASE):
         - tel, mobile
         - d, date
         - n, numeric
+        - h, hash (set of 2 int)
+        - p, percent
         - ipaddr, ipaddress
         - ipport, tcpport
         - iprange
@@ -118,6 +124,10 @@ class Types(JSBASE):
             res = self._multiline
         elif ttype in ["d", "date"]:
             res = self._date
+        elif ttype in ["h", "hash"]:
+            res = self._hash
+        elif ttype in ["p", "perc","percent"]:
+            res = self._percent
         elif ttype in ["n", "num","numeric"]:
             res = self._numeric
         elif ttype.startswith("l"):
