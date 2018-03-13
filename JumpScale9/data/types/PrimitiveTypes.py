@@ -56,6 +56,9 @@ class String():
         else:
             return "%s = '%s'" % (key, self.clean(value))
 
+    def capnp_schema_get(self,name,nr):
+        return "%s @%s :Text;"%(name,nr)
+
 
 class StringMultiLine(String):
 
@@ -155,6 +158,8 @@ class Bytes():
         value = value.replace("\n", "\\n")
         return "'%s'" % value
         
+    def capnp_schema_get(self,name,nr):
+        return "%s @%s :Data;"%(name,nr)
 
     def toml_string_get(self, value, key):
         raise NotImplemented()
@@ -230,6 +235,8 @@ class Boolean():
 
             return out
 
+    def capnp_schema_get(self,name,nr):
+        return "%s @%s :Bool;"%(name,nr)
 
 class Integer():
 
@@ -279,6 +286,8 @@ class Integer():
         else:
             return "%s = %s" % (key, self.clean(value))
 
+    def capnp_schema_get(self,name,nr):
+        return "%s @%s :UInt32;"%(name,nr)
 
 class Float():
 
@@ -331,6 +340,8 @@ class Float():
         else:
             return "%s = %s" % (key, self.clean(value))
 
+    def capnp_schema_get(self,name,nr):
+        return "%s @%s :Float32;"%(name,nr)
 
 class Percent(Float):
 

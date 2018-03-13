@@ -2,7 +2,7 @@
 
 from .PrimitiveTypes import *
 import struct
-class YAML():
+class YAML(String):
     '''Generic dictionary type'''
 
     NAME = 'yaml'
@@ -29,7 +29,7 @@ class YAML():
     def toString(self, v):
         return j.data.serializer.yaml.dumps(v)
 
-class JSON():
+class JSON(String):
     
     NAME = 'json'
     BASETYPE = 'dictionary'
@@ -64,6 +64,9 @@ class Dictionary():
 
     def toString(self, v):
         return j.data.serializer.json.dumps(v, True, True)
+
+    def capnp_schema_get(self,name,nr):
+        raise RuntimeError("not implemented")
 
 class List():
     '''Generic list type'''
@@ -192,7 +195,14 @@ class List():
         else:
             return j.data.serializer.toml.loads(val)
 
-class Hash():
+    def capnp_schema_get(self,name,nr):
+        s=self.SUBTYPE.capnp_schema_get("name",0)
+        print("capnpschema_list")
+        from IPython import embed;embed(colors='Linux')
+        s
+        return "%s @%s :List();"%(name,nr)
+
+class Hash(List):
 
     '''hash is 2 value list, represented as 2 times 4 bytes'''
 
@@ -273,7 +283,7 @@ class Hash():
         else:
             return "%s = %s" % (key, self.python_code_get(value))
 
-class Set():
+class Set(List):
     '''Generic set type'''
 
     NAME = 'set'

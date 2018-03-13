@@ -135,14 +135,14 @@ class NetTools(JSBASE):
         self.logger.debug(
             'Checking whether a service is running on port %d' % port)
 
-        if j.core.platformtype.myplatform.isLinux:
+        if j.core.platformtype.myplatform.isLinux or j.core.platformtype.myplatform.isMac:
             # netstat: n == numeric, -t == tcp, -u = udp, l= only listening, p = program
             command = "netstat -ntulp | grep ':%s '" % port
             # raise j.exceptions.RuntimeError("stop")
             exitcode, output, err = j.sal.process.execute(
                 command, die=False, showout=False)
             return exitcode == 0
-        elif j.core.platformtype.myplatform.isOSX():
+        elif j.core.platformtype.myplatform.isMac():
             command = "netstat -an -f inet"
             exitcode, output, err = j.sal.process.execute(
                 command, die=False, showout=False)
@@ -278,27 +278,27 @@ class NetTools(JSBASE):
         """
         regex = ''
         output = ''
-        if j.core.platformtype.myplatform.isLinux or j.core.platformtype.myplatform.isESX():
+        if j.core.platformtype.myplatform.isLinux:
             return [nic['name'] for nic in getNetworkInfo()]
-        elif j.core.platformtype.myplatform.isSolaris():
-            exitcode, output, err = j.sal.process.execute(
-                "ifconfig -a", showout=False)
-            if up:
-                regex = "^([\w:]+):\sflag.*<.*UP.*>.*$"
-            else:
-                regex = "^([\w:]+):\sflag.*$"
-            nics = set(re.findall(regex, output, re.MULTILINE))
-            exitcode, output, err = j.sal.process.execute(
-                "dladm show-phys", showout=False)
-            lines = output.splitlines()
-            for line in lines[1:]:
-                nic = line.split()
-                if up:
-                    if nic[2] == 'up':
-                        nics.add(nic[0])
-                else:
-                    nics.add(nic[0])
-            return list(nics)
+        # elif j.core.platformtype.myplatform.isSolaris():
+        #     exitcode, output, err = j.sal.process.execute(
+        #         "ifconfig -a", showout=False)
+        #     if up:
+        #         regex = "^([\w:]+):\sflag.*<.*UP.*>.*$"
+        #     else:
+        #         regex = "^([\w:]+):\sflag.*$"
+        #     nics = set(re.findall(regex, output, re.MULTILINE))
+        #     exitcode, output, err = j.sal.process.execute(
+        #         "dladm show-phys", showout=False)
+        #     lines = output.splitlines()
+        #     for line in lines[1:]:
+        #         nic = line.split()
+        #         if up:
+        #             if nic[2] == 'up':
+        #                 nics.add(nic[0])
+        #         else:
+        #             nics.add(nic[0])
+        #     return list(nics)
         elif j.core.platformtype.myplatform.isWindows:
             import wmi
             w = wmi.WMI()
