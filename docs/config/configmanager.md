@@ -4,7 +4,7 @@ JumpScale 9.3.0 introduces a secure configuration manager that makes sure that p
 
 ### read more about config file locations
 
-[configmanager](configmanager.md)
+[config_file_locations.md](config_file_locations.md)
 
 ### how to create your own config directory
 
