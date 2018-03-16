@@ -75,7 +75,7 @@ class ConfigFactory(JSBASE):
             path = j.sal.fs.getcwd()
 
         cpath = j.sal.fs.pathNormalize(path + "/secureconfig")
-        kpath = j.sal.fs.pathNormalize(path + "/keys")
+        kpath = j.sal.fs.pathNormalize(path + "/key")
 
         if j.sal.fs.exists(cpath):
             self.logger.debug("found sandbox config:%s" % cpath)
@@ -86,8 +86,8 @@ class ConfigFactory(JSBASE):
             if len(items) != 1:
                 raise RuntimeError("should only find 1 key, found:%s" % items)
             sshkeyname = j.sal.fs.getBaseName(items[0][:-4])
-            kpath_full = j.sal.fs.pathNormalize(path + "/keys/%s" % sshkeyname)
-            j.tools.configmanager._keyname = j.sal.fs.getBaseName(path)
+            kpath_full = j.sal.fs.pathNormalize(path + "/key/%s" % sshkeyname)
+            j.tools.configmanager._keyname = sshkeyname
             self._init = True
             return j.clients.sshkey.key_load(path=kpath_full)
         if die:
@@ -148,7 +148,7 @@ class ConfigFactory(JSBASE):
 
         return configpath,remoteGitUrl
         """
-        self.sandbox_check()
+        # self.sandbox_check()
         path = j.sal.fs.getParentWithDirname(dirname=".jsconfig", die=die)
         if path != None:
             return path, None
@@ -344,12 +344,12 @@ class ConfigFactory(JSBASE):
         def ssh_init(ssh_silent=False):
             self.logger.debug("ssh init (no keypath specified)")
 
-            keys = j.clients.sshkey.list()
+            keys = j.clients.sshkey.list()  #LOADS FROM AGENT NOT FROM CONFIG
             keys0 = [j.sal.fs.getBaseName(item) for item in keys]
 
             if not keys:
                 # if no keys try to load a key from home directory/.ssh and re-run the method again
-                self.logger.debug("found 0 keys")
+                self.logger.info("found 0 keys from ssh-agent")
                 keys = j.sal.fs.listFilesInDir("%s/.ssh" % j.dirs.HOMEDIR,
                                                exclude=["*.pub", "*authorized_keys*", "*known_hosts*"])
                 if not keys:

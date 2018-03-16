@@ -2,12 +2,19 @@
 
 JumpScale 9.3.0 introduces a secure configuration manager that makes sure that private configuration data is NACL encrypted on the filesystem.
 
-### Getting started
+### read more about config file locations
 
-to get started
+[configmanager](configmanager.md)
+
+### how to create your own config directory
+
  1. create a git repo under j.dirs.CODEDIR
  2. run `js9_config init`. This will mark this repo as your configuration repo
  3. Start creating your configuration instances
+
+it will ask for the right locations
+
+you can also do such an initialization silently see [init_silent](init_silent.md)
 
 ### Configuring
 
@@ -15,6 +22,8 @@ to configure a client from the cmdline
 ```
 js9_config configure -l j.clients.openvcloud -i test -s /root/.ssh/id_rsa
 ```
+
+- the -s is not needed it will find the directory for you and use default locations
 
 where 
  - `-l` denotes the jslocation of the client to be configured
