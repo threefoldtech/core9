@@ -197,10 +197,13 @@ class List():
 
     def capnp_schema_get(self,name,nr):
         s=self.SUBTYPE.capnp_schema_get("name",0)
-        print("capnpschema_list")
-        from IPython import embed;embed(colors='Linux')
-        s
-        return "%s @%s :List();"%(name,nr)
+        if self.SUBTYPE.BASETYPE in ["string","integer","float","bool"]:
+            capnptype = self.SUBTYPE.capnp_schema_get("",0).split(":",1)[1].rstrip(";").strip()
+        else:                
+            print("capnpschema_list")
+            from IPython import embed;embed(colors='Linux')
+            s
+        return "%s @%s :List(%s);"%(name,nr,capnptype)
 
 class Hash(List):
 

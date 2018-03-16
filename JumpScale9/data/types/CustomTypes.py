@@ -3,11 +3,17 @@ from JumpScale9 import j
 '''Definition of several custom types (paths, ipaddress, guid,...)'''
 
 import re
-
+import struct
+import builtins
 from .PrimitiveTypes import String, Integer
+import copy
+import time
 
 class Guid(String):
-    '''Generic GUID type'''
+    '''
+    Generic GUID type
+    stored as binary internally
+    '''
 
     NAME = 'guid'
 
@@ -170,7 +176,10 @@ class IPPort(Integer):
 
 class Numeric(String):
     """
-    has support for currencies
+    has support for currencies and does nice formatting in string
+
+    storformat = 6 or 10 bytes (10 for float)
+
     """
     NAME = 'numeric'
 
@@ -180,10 +189,276 @@ class Numeric(String):
     def get_default(self):
         return "0 USD"
 
+    def capnp_schema_get(self,name,nr):
+        """
+        is 5 bytes, 1 for type, 4 for float value
+        - j.clients.currencylayer.cur2id
+        - j.clients.currencylayer.id2cur
+
+        struct.pack("B",1)+struct.pack("f",1234234234.0)
+
+        """
+        return "%s @%s :Data;"%(name,nr)
+
+    def bytes2cur(self,bindata,curcode="usd",roundnr=None):
+        if len(bindata)!=6 and len(bindata)!=10:
+            raise InputError("len of data needs to be 6 or 10")
+
+        ttype = struct.unpack("B",builtins.bytes([bindata[0]]))[0]
+        curtype0 = struct.unpack("B",builtins.bytes([bindata[1]]))[0]
+
+        if ttype>127:
+            ttype = ttype - 128
+            negative = True
+        else:
+            negative = False
+
+        if ttype == 1:
+            val = struct.unpack("d",bindata[2:])[0]
+        else:
+            val = struct.unpack("I",bindata[2:])[0]
+
+        if ttype == 10:
+            val = val * 1000
+        elif ttype == 11:
+            val = val * 1000000
+        elif ttype == 2:
+            val = round(float(val)/10000,3)
+            if int(float(val))==val:
+                val=int(val)
+            
+        # if curtype0 not in j.clients.currencylayer.id2cur:
+        #     raise RuntimeError("need to specify valid curtype, was:%s"%curtype)
+
+        curcode0 = j.clients.currencylayer.id2cur[curtype0]
+        if not curcode0==curcode: 
+            val = val / j.clients.currencylayer.cur2usd[curcode0] #val now in usd
+            val = val * j.clients.currencylayer.cur2usd[curcode]
+
+
+        if negative:            
+            val = -val
+
+        if roundnr:
+            val = round(val,roundnr)
+
+        return val
+        
+    def bytes2str(self,bindata,roundnr=8,comma=True):
+        if len(bindata)!=6 and len(bindata)!=10:
+            raise InputError("len of data needs to be 6 or 10")
+
+        ttype = struct.unpack("B",builtins.bytes([bindata[0]]))[0]
+        curtype = struct.unpack("B",builtins.bytes([bindata[1]]))[0]
+
+        if ttype>127:
+            ttype = ttype - 128
+            negative = True
+        else:
+            negative = False
+
+        if ttype == 1:
+            val = struct.unpack("d",bindata[2:])[0]
+        else:
+            val = struct.unpack("I",bindata[2:])[0]
+
+        if ttype == 10:
+            mult = "k"
+        elif ttype == 11:
+            mult = "m"
+        elif ttype == 2:
+            mult = "%"
+            val = round(float(val)/100,2)
+            if int(val)==val:
+                val=int(val)
+        else:
+            mult = ""
+            
+        if curtype is not j.clients.currencylayer.cur2id["usd"]:
+            curcode = j.clients.currencylayer.id2cur[curtype]
+        else:
+            curcode = ""
+
+        if comma:            
+            out=str(val)
+            if "." not in out:
+                val = ""
+                while len(out)>3:
+                    val = ","+out[-3:]+val
+                    out = out[:-3]
+                val = out+val
+                val=val.strip(",")
+
+
+        if negative:            
+            res = "-%s %s%s"%(val,mult,curcode.upper())
+        else:
+            res = "%s %s%s"%(val,mult,curcode.upper())
+        res = res.replace(" %","%")
+        # print(res)
+        return res.strip()
+        
+    def str2bytes(self, value):
+        """
+
+        US style: , is for 1000  dot(.) is for floats
+
+        value can be 10%,0.1,100,1m,1k  m=million
+        USD/EUR/CH/EGP/GBP are understood (+- all currencies in world)
+
+        e.g.: 10%
+        e.g.: 10EUR or 10 EUR (spaces are stripped)
+        e.g.: 0.1mEUR or 0.1m EUR or 100k EUR or 100000 EUR
+
+        j.tools.numtools.text2num_bytes("0.1mEUR")
+        
+        j.tools.numtools.text2num_bytes("100")
+        if not currency symbol specified then will default to usd
+
+        bytes format:
+
+        $type:1byte + $cur:1byte + $4byte value (int or float)
+
+        $type: 
+        last 4 bytes:
+        - 0: int, no multiplier
+        - 1: float, no multiplier
+        - 2: int, percent (expressed as 1-10000, so 100% = 10000, 1%=100)
+        - 3: was float but expressed as int because is bigger than 10000 (no need to keep float part)
+        - 10: int, multiplier = 1000
+        - 11: int, multiplier = 1000000
+
+        first bit:
+        - True if neg nr, otherwise pos nr (in other words if nr < 128 then pos nr)
+
+        see for codes in:
+        - j.clients.currencylayer.cur2id
+        - j.clients.currencylayer.id2cur        
+
+        """
+        
+        if not j.data.types.string.check(value):
+            raise j.exceptions.RuntimeError("value needs to be string in text2val, here: %s" % value)
+
+        if "," in value: #is only formatting in US
+            value = value.replace(",","").lstrip(",").strip()
+
+
+        if "-" in value:
+            negative = True
+            value = value.replace("-","").lstrip("-")
+        else:
+            negative = False
+
+        def getCur(value):
+            value = value.lower()
+            for cur2 in list(j.clients.currencylayer.cur2usd.keys()):
+                # print(cur2)
+                if value.find(cur2) != -1:
+                    # print("FOUND:%s"%cur2)
+                    value = value.lower().replace(cur2, "").strip()
+                    return value,cur2
+            cur2 = "usd"
+            return value,cur2
+
+            
+        try:
+            # dirty trick to see if value can be float, if not will look for currencies
+            v=float(value)
+            cur2 = "usd"
+        except Exception as e:
+            value, cur2 = getCur(value)
+                
+
+        if value.find("k") != -1:
+            value = value.replace("k", "").strip()
+            if "." in value:
+                value = int(float(value)*1000)
+                ttype = 0
+            else:
+                value = int(value)
+                ttype = 10
+        elif value.find("m") != -1:
+            value = value.replace("m", "").strip()
+            if "." in value:
+                value = int(float(value)*1000)
+                ttype = 10
+            else:
+                value = int(value)
+                ttype = 11         
+        elif value.find("%") != -1:
+            value = value.replace("%", "").strip()
+            value = int(float(value)*100)
+            ttype = 2
+        else:
+            if float(value)==int(float(value)):
+                value=int(value)
+                ttype = 0
+            else:
+                value=float(value)
+                if value>10000:
+                    value=int(value)
+                    ttype = 3
+                else:
+                    value=float(value)
+                    ttype = 1
+
+        curcat = j.clients.currencylayer.cur2id[cur2]
+        
+        if negative:
+            ttype+=128
+
+        if ttype==1 or ttype == 129:
+            return struct.pack("B",ttype)+struct.pack("B",curcat)+struct.pack("d",value)
+        else:
+            return struct.pack("B",ttype)+struct.pack("B",curcat)+struct.pack("I",value)
+        
+    def test(self):
+        """
+        js9 'j.data.types.numeric.test()'
+        """
+
+        assert self.bytes2str(self.str2bytes("123456789"))=="123,456,789"
+        assert self.bytes2str(self.str2bytes("100000"))=="100,000"
+        assert self.bytes2str(self.str2bytes("10000"))=="10,000"
+        assert self.bytes2str(self.str2bytes("1000"))=="1,000"
+        assert self.bytes2str(self.str2bytes("100"))=="100"
+
+        assert self.bytes2cur(self.str2bytes("10usd"),"eur") < 10
+        assert self.bytes2cur(self.str2bytes("10usd"),"eur") >7
+        assert self.bytes2cur(self.str2bytes("10eur"),"eur") == 10
+        assert self.bytes2cur(self.str2bytes("10.3eur"),"eur") == 10.3
+        assert self.bytes2cur(self.str2bytes("10eur"),"usd") >10
+        assert self.bytes2cur(self.str2bytes("10eur"),"usd") <15
+
+        assert self.bytes2str(self.str2bytes("10"))=="10"
+        assert self.bytes2str(self.str2bytes("10 USD"))=="10"
+        assert self.bytes2str(self.str2bytes("10 usd"))=="10"
+        assert self.bytes2str(self.str2bytes("10 eur"))=="10 EUR"
+        assert self.bytes2str(self.str2bytes("10 keur"))=="10 kEUR"
+        assert self.bytes2str(self.str2bytes("10.1 keur"))=="10,100 EUR"        
+        assert self.bytes2str(self.str2bytes("10,001 eur"))=="10,001 EUR"        
+        assert self.bytes2str(self.str2bytes("10,001 keur"))=="10,001 kEUR"
+        assert self.bytes2str(self.str2bytes("10,001.01 keur"))=="10,001,010 EUR"
+        assert self.bytes2str(self.str2bytes("10,001.01 k"))=="10,001,010"
+        assert self.bytes2str(self.str2bytes("-10,001.01 k"))=="-10,001,010"
+        assert self.bytes2str(self.str2bytes("0.1%"))=="0.1%"
+        assert self.bytes2str(self.str2bytes("1%"))=="1%"
+        assert self.bytes2str(self.str2bytes("150%"))=="150%"
+        assert self.bytes2str(self.str2bytes("-150%"))=="-150%"
+        assert self.bytes2str(self.str2bytes("0.001"))=="0.001"
+        assert self.bytes2str(self.str2bytes("0.001 eur"))=="0.001 EUR"
+        assert self.bytes2str(self.str2bytes("-0.1 eur"))=="-0.1 EUR"
+        # assert self.bytes2str(self.str2bytes(("-0.0001"))=="-0.0001"
+        # assert self.bytes2cur(self.str2bytes("0.001usd"),"usd") == 1
+        # assert self.bytes2cur(self.str2bytes("0.001k"),"usd") == 0.001
+
+        # print (self.bytes2cur(self.str2bytes("0.001k"),"eur"))
+        # from IPython import embed;embed(colors='Linux')
 
 class Date(String):
-    '''
-    Date in year/month/day format
+    '''    
+    internal representation is an epoch (int)
     '''
     NAME = 'date'
 
@@ -192,108 +467,145 @@ class Date(String):
         self._RE = re.compile('[0-9]{4}/[0-9]{2}/[0-9]{2}')
 
     def get_default(self):
-        return "-1"
+        return 0
 
     def check(self, value):
         '''
-        Check whether provided value is a valid tel nr
+        Check whether provided value is a valid date/time representation
+        be carefull is SLOW
         '''
-        if not j.data.types.string.check(value):
+        try:
+            self.clean(value)
+            return True
+        except:
             return False
-        value = self.clean(value)
-        return self._RE.fullmatch(value) is not None
 
     def fromString(self, txt):
-        try:
-            epoch = int(txt)
-            if epoch == 0:
-                return ""
-            txt = j.data.time.epoch2HRDate(epoch)
-        except Exception as  e:
-            raise  e        
-        if self.check(txt) == False:
-            raise RuntimeError("is not date:%s"%txt)
-        return txt
+        return self.clean(txt)
+
+    def toString(self,val,local=True):
+        val = self.clean(val)
+        return j.data.time.epoch2HRDateTime(val,local=local)
 
     def clean(self, v):
-        if j.data.types.string.check(v):
-            return v
-        elif not j.data.types.string.check(v):
-            raise ValueError("Input needs to be string:%s" % v)
-        return v
-
-
-class Duration(String):
-    '''
-    Duration type
-
-    Understood formats:
-    - #w week
-    - #d days
-    - #h hours
-    - #m minutes
-    - #s seconds
-
-    e.g. 10d is 10 days
-    if int then in seconds
-
-    -1 is infinite
-
-    '''
-    NAME = 'duration'
-    
-    def __init__(self):
-        String.__init__(self)
-        
-        self._RE = re.compile('^(\d+)([wdhms]?)$')
-
-    def check(self, value):
-        if isinstance(value, int):
-            if value == -1:
-                return True
-            elif value >= 0:
-                return True
-        elif isinstance(value, str):
-            if self.fullmatch(value):
-                return True
-        return False
-
-    def convertToSeconds(self, value):
-        """Translate a string representation of a duration to an int
-        representing the amount of seconds.
-
-        Understood formats:
-        - #w week
-        - #d days
-        - #h hours
-        - #m minutes
-        - #s seconds
-
-        @param value: number or string representation of a duration in the above format
-        @type value: string or int
-        @return: amount of seconds
-        @rtype: int
         """
-        if not isinstance(value, str):
-            return value
-        m = self._RE.match(value)
-        if m:
-            # Ok, valid format
-            amount, granularity = m.groups()
-            amount = int(amount)
-            if granularity == 'w':
-                multiplier = 60 * 60 * 24 * 7
-            elif granularity == 'd':
-                multiplier = 60 * 60 * 24
-            elif granularity == 'h':
-                multiplier = 60 * 60
-            elif granularity == 'm':
-                multiplier = 60
-            elif granularity == 's':
-                multiplier = 1
+        support following formats:
+        - epoch = int
+        - month/day 22:50
+        - month/day  (will be current year if specified this way)
+        - year(4char)/month/day 
+        - year(4char)/month/day 10am:50
+        - year(2char)/month/day
+        - day/month/4char
+        - year(4char)/month/day 22:50
+        - +4h
+        - -4h 
+        in stead of h also supported: s (second) ,m (min) ,h (hour) ,d (day),w (week)  
+        """
+        def date_process(dd):
+            if "/" not in dd:
+                raise InputError("date needs to have:/, now:%s"%v)
+            splitted = dd.split("/")
+            if len(splitted)==2:
+                dfstr = "%Y/%m/%d"
+                dd = "%s/%s"%(j.data.time.epoch2HRDate(j.data.time.epoch).split("/")[0],dd.strip())
+            elif len(splitted)==3:
+                s0=splitted[0].strip()
+                s1=splitted[1].strip()
+                s2=splitted[2].strip()
+                if len(s0)==4 and len(s1)==2 and len(s2)==2:
+                    #year in front
+                    dfstr = "%Y/%m/%d"
+                elif len(s2)==4 and len(s1)==2 and len(s0)==2:
+                    #year at end
+                    dfstr = "%d/%m/%Y"
+                elif len(s2)==2 and len(s1)==2 and len(s0)==2:
+                    #year at start but small
+                    dfstr = "%y/%m/%d"
+                else:
+                    raise InputError("date wrongly formatted, now:%s"%v)                
             else:
-                # Default to seconds
-                multiplier = 1
-            return amount * multiplier
-        return value
+                raise InputError("date needs to have 2 or 3 /, now:%s"%v)
+            return (dd,dfstr )                                   
+            
+        def time_process(v): 
+            v=v.strip() 
+            if ":" not in v:
+                return ("10:00:00","%H:%M:%S")
+            splitted = v.split(":")
+            if len(splitted)==2:
+                if "am" in v.lower() or "pm" in v.lower():
+                    fstr = "%I%p:%M"
+                else:
+                    fstr = "%H:%M"
+            elif len(splitted)==3:            
+                if "am" in v.lower() or "pm" in v.lower():
+                    fstr = "%I%p:%M:%S"
+                else:
+                    fstr = "%H:%M:%S"
+            return (v,fstr)
+        
+        if j.data.types.string.check(v):
+            
+            if "+" in v or "-" in v:
+                return j.data.time.getEpochDeltaTime(v)
+            
+            if ":" in v:
+                #have time inside the representation
+                dd,tt=v.split(" ",1)
+                tt, tfstr = time_process(tt)
+            else:
+                tt, tfstr = time_process("")
+                dd = v
+
+            dd, dfstr = date_process(dd)
+
+            fstr = dfstr+" "+tfstr
+            hrdatetime = dd + " " + tt
+            epoch = int(time.mktime(time.strptime(hrdatetime,  fstr)))
+            return epoch
+        elif j.data.types.int.check(v):
+            return v
+        else:
+            raise ValueError("Input needs to be string:%s" % v)
+
+    def capnp_schema_get(self,name,nr):
+        return "%s @%s :UInt32;"%(name,nr)      
+      
+    def test(self):
+        """
+        js9 'j.data.types.date.test()'
+        """
+        c="""
+        11/30 22:50
+        11/30
+        1990/11/30
+        1990/11/30 10am:50
+        1990/11/30 10pm:50
+        1990/11/30 22:50
+        30/11/1990
+        30/11/1990 10pm:50
+        """
+        c=j.data.text.strip(c)
+        out=""
+        for line in c.split("\n"):
+            if line.strip()=="":
+                continue           
+            epoch = self.clean(line)
+            out+="%s -> %s\n" %(line,self.toString(epoch))
+        out_compare="""
+        11/30 22:50 -> 2018/11/30 22:50:00
+        11/30 -> 2018/11/30 10:00:00
+        1990/11/30 -> 1990/11/30 10:00:00
+        1990/11/30 10am:50 -> 1990/11/30 10:50:00
+        1990/11/30 10pm:50 -> 1990/11/30 22:50:00
+        1990/11/30 22:50 -> 1990/11/30 22:50:00
+        30/11/1990 -> 1990/11/30 10:00:00
+        30/11/1990 10pm:50 -> 1990/11/30 22:50:00
+        """
+        print (out)
+        out = j.data.text.strip(out)
+        out_compare = j.data.text.strip(out_compare)
+        assert out == out_compare
+
 

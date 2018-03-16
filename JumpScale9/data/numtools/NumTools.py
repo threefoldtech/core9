@@ -142,7 +142,8 @@ class NumTools(JSBASE):
                 result.append(item)
         return result
 
-    def text2val(self, value):
+
+    def text2val(self, value,curcode="usd"):
         """
         value can be 10%,0.1,100,1m,1k  m=million
         USD/EUR/CH/EGP/GBP are also understood
@@ -155,30 +156,8 @@ class NumTools(JSBASE):
         j.tools.numtools.text2val("0.1mEUR")
 
         """
-        if not j.data.types.string.check(value):
-            raise j.exceptions.RuntimeError("value needs to be string in text2val, here: %s" % value)
-
-        cur = 1.0
-        try:
-            # dirty trick to see if value can be float, if not will look for currencies
-            float(value)
-        except Exception as e:
-            value = value.lower()
-            for cur2 in list(self.currencies.keys()):
-                # print(cur2)
-                if value.find(cur2) != -1:
-                    # print("FOUND")
-                    value = value.lower().replace(cur2, "").strip()
-                    cur = 1/self.currencies[cur2]
-
-        if value.find("k") != -1:
-            value = float(value.replace("k", "").strip()) * 1000
-        elif value.find("m") != -1:
-            value = float(value.replace("m", "").strip()) * 1000000
-        elif value.find("%") != -1:
-            value = float(value.replace("%", "").strip()) / 100
-        value = float(value) * cur
-        return value
+        d = j.data.types.numeric.str2bytes(value)
+        return j.data.types.numeric.bin2cur(d,curcode=curcode)
 
     def int_to_bitstring(self, val):
         """

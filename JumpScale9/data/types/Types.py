@@ -30,7 +30,6 @@ class Types(JSBASE):
         self.ipaddr = IPAddress()
         self.iprange = IPRange()
         self.ipport = IPPort()
-        self.duration = Duration()
         self.tel = Tel()
         self.yaml = YAML()
         self.json = JSON()
@@ -54,13 +53,11 @@ class Types(JSBASE):
         self._ipaddr = IPAddress
         self._iprange = IPRange
         self._ipport = IPPort
-        self._duration = Duration
         self._tel = Tel
         self._yaml = YAML
         self._json = JSON
         self._email = Email
         self._date = Date
-        self._duration = Duration
         self._numeric = Numeric
         self._percent = Percent
         self._hash = Hash
@@ -99,7 +96,6 @@ class Types(JSBASE):
         - yaml
         - set
         - guid
-        - dur, duration e.g. 1w, 1d, 1h, 1m, 1
         """
         ttype = ttype.lower().strip()
         if ttype in ["s", "str", "string"]:
@@ -149,8 +145,6 @@ class Types(JSBASE):
             res = self._set
         elif ttype == "guid":
             res = self._guid
-        elif ttype in ["dur","duration"]:
-            res = self._duration
         else:
             raise j.exceptions.RuntimeError("did not find type:'%s'" % ttype)
 

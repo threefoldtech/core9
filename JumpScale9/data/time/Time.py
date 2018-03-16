@@ -181,11 +181,11 @@ class Time_(JSBASE):
             raise j.exceptions.RuntimeError(
                 "Cannot find time, needs to be in format have time indicator %s " % list(TIMES.keys()))
         value = float(txt[:-1])
-        return value * TIMES[unit]
+        return int(value * TIMES[unit])
 
-    def getEpochAgo(self, txt):
+    def getEpochDeltaTime(self, txt):
         """
-        only supported now is -3m, -3d and -3h  (ofcourse 3 can be any int)
+        only supported now is + and -3m, -3d and -3h  (ofcourse 3 can be any int)
         and an int which would be just be returned
         means 3 days ago 3 hours ago
         if 0 or '' then is now
@@ -194,30 +194,20 @@ class Time_(JSBASE):
             return self.getTimeEpoch()
         return self.getTimeEpoch() + self.getDeltaTime(txt)
 
-    def getEpochFuture(self, txt):
-        """
-        only supported now is +3d and +3h  (ofcourse 3 can be any int)
-        +3d means 3 days in future
-        and an int which would be just be returned
-        if txt==None or 0 then will be 1 day ago
-        """
-        if txt is None or str(txt).strip() == "0":
-            return self.getTimeEpoch()
-        return self.getTimeEpoch() + self.getDeltaTime(txt)
 
-    def HRDatetoEpoch(self, datestr, local=True):
+    def HRDateToEpoch(self, datestr, local=True):
         """
         convert string date to epoch
-        Date needs to be formatted as 16/06/1988
+        Date needs to be formatted as 1988/06/16  (Y/m/d)
         """
         if datestr.strip() == "":
             return 0
         try:
             datestr = datestr.strip()
-            return time.mktime(time.strptime(datestr, "%d/%m/%Y"))
+            return time.mktime(time.strptime(datestr, "%Y/%m/%d"))
         except BaseException:
             raise ValueError(
-                "Date needs to be formatted as \"16/06/1981\", also check if date is valid, now format = %s" % datestr)
+                "Date needs to be formatted as \" 1988/06/16\", also check if date is valid, now format = %s" % datestr)
 
     def HRDateTime2epoch(self, hrdatetime):
         """
@@ -278,7 +268,7 @@ class Time_(JSBASE):
         epoch = self.any2epoch(val)
         return self.epoch2HRDateTime(epoch)
 
-    def _test(self):
+    def test(self):
         now = self.getTimeEpoch()
         hr = self.epoch2HRDateTime(now)
         assert self.HRDateTime2epoch(hr) == now

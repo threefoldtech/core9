@@ -5,7 +5,10 @@ from JumpScale9 import j
 
 class String():
 
-    '''Generic string type'''
+    '''
+    Generic string type
+    stored in capnp as string
+    '''
 
     NAME = 'string'
     BASETYPE = 'string'
@@ -13,18 +16,11 @@ class String():
     def fromString(self, s):
         """
         return string from a string (is basically no more than a check)
-        """
-        # if not isinstance(value, str):
-        #     raise ValueError("Should be string:%s"%s)        
-        s = str(s)
-        s = self.clean(s)
-        return s
+        """        
+        return self.clean(s)
 
     def toString(self, v):
-        if self.check(v):
-            return "'%s'" % str(v)
-        else:
-            raise ValueError("Could not convert to string:%s" % v)
+        return self.clean(v)
 
     def check(self, value):
         '''Check whether provided value is a string'''
@@ -37,6 +33,9 @@ class String():
         """
         will do a strip
         """
+        if value is None:
+            value = ""
+        value = str(value)
         return value.strip().strip("'").strip("\"").strip()
 
     def python_code_get(self, value):
@@ -66,44 +65,41 @@ class StringMultiLine(String):
     BASETYPE = 'stringmultiline'
 
     def check(self, value):
-        '''Check whether provided value is a string'''
+        '''Check whether provided value is a string and has \n inside'''
         return isinstance(value, str) and "\n" in value
 
     def clean(self, value):
         """
         will do a strip on multiline
         """
+        value = str(value)
         return j.data.text.strip(value)
 
     def toString(self, v):
-        if self.check(v):
-            v = self.clean(v)
-            out0 = ""
-            out0 += "'''\n"
-            for item in val.split("\n"):
-                out0 += "%s\n" % item
-            out0 = out0.rstrip()
-            out += "%s\n'''\n\n" % out0
-
-            return out
-        else:
-            raise ValueError("Could not convert to string:%s" % v)
+        v = self.clean(v)
+        return out
 
     def python_code_get(self, value):
         """
         produce the python code which represents this value
         """
         value = self.clean(value)
-        value = value.replace("\n", "\\n")
-        return "'%s'" % value
+        # value = value.replace("\n", "\\n")
+        out0 = ""
+        out0 += "'''\n"
+        for item in val.split("\n"):
+            out0 += "%s\n" % item
+        out0 = out0.rstrip()
+        out += "%s\n'''\n\n" % out0        
+        return out
 
 
-    def toml_string_get(self, value, key):
+    def toml_string_get(self, value, key=""):
         """
         will translate to what we need in toml
         """
         if key == "":
-            return self.toString(value)
+            out = self.python_code_get(value)
         else:
             value = self.clean(value)
             out0 = ""
@@ -113,21 +109,23 @@ class StringMultiLine(String):
                 out0 += "    %s\n" % item
             out0 = out0.rstrip()
             out = "%s\n    '''" % out0
-            return out
+        return out
 
 
 class Bytes():
-    '''Generic array of bytes type'''
+    '''
+    Generic array of bytes type
+    stored as bytes directly, no conversion
+    '''
 
     NAME = 'bytes'
     BASETYPE = 'bytes'
 
     def fromString(self, s):
         """
-        return string from a string (is basically no more than a check)
         """
-        # if not isinstance(value, str):
-        #     raise ValueError("Should be string:%s"%s)
+        if not isinstance(s, str):
+            raise ValueError("Should be string:%s"%s)
         return s.encode()
 
     def toString(self, v):
@@ -341,24 +339,49 @@ class Float():
             return "%s = %s" % (key, self.clean(value))
 
     def capnp_schema_get(self,name,nr):
-        return "%s @%s :Float32;"%(name,nr)
+        return "%s @%s :Float64;"%(name,nr)
 
-class Percent(Float):
+class Percent(Integer):
 
-    '''Generic float type'''
+    '''
+    stored as integer,
+    to deal with percentages < 1 we multiply with 100 before storing
+
+    as input support:
+
+    xx%
+    when int: is native format is multiples of 100 e.g. 1000 is 10%
+    when string: is e.g. 99 which would be 99%
+    when float is e.g. 0.5 which would be 50%
+
+    '''
 
     NAME = 'percent'
-    BASETYPE = 'float'
+    BASETYPE = 'integer'
 
     def clean(self, value):
         """
         used to change the value to a predefined standard for this type
         """
-        if "%" in value:
-            return int(value.replace("%",""))/100
+        if self.string.check(value):
+            if "%" in value:
+                return int(value.replace("%",""))*100
+            else:
+                return int(value)*100
+        elif self.integer.check(value):
+            return value
+        elif self.float.check(value):
+            return value*10000
         else:
-            return float(value)    
+            raise RuntimeError("could not convert input to percent, input was:%s"%value)
 
     def fromString(self, s):
         s = self.clean(s)
-        return j.data.text.getFloat(s)
+        return s
+
+    def toString(self, v):
+        v = self.clean(v)
+        v = round(value/100,2)
+        if int(v) == v:
+            v=int(v)
+        return "%s/%"%v
