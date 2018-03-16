@@ -18,7 +18,7 @@ die() {
 
 cd /tmp
 
-export ZUTILSBRANCH=${ZUTILSBRANCH:-master}
+export ZUTILSBRANCH=${ZUTILSBRANCH:-development}
 
 echo "INSTALL BASHTOOLS"
 curl https://raw.githubusercontent.com/Jumpscale/bash/$ZUTILSBRANCH/install.sh?$RANDOM > /tmp/install.sh;bash /tmp/install.sh
@@ -37,6 +37,10 @@ ZDoneReset
 
 rm ~/js9host/cfg/me.toml > /dev/null 2>&1
 rm ~/js9host/cfg/jumpscale9.toml > /dev/null 2>&1
+
+pip3 uninstall parallel-ssh
+pip3 uninstall ssh2-python
+
 
 echo "install js9"
 ZInstall_host_js9 || die "Could not install core9 of js9" || exit 1

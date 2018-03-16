@@ -63,3 +63,5 @@ class NACLClientFactory:
         a = cl.encrypt("something", hex=True)  # non binary start
         b = cl.decrypt(a, hex=True)
         assert b == b"something"
+
+        self.logger.info("TEST OK")
