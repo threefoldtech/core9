@@ -209,9 +209,9 @@ else:
 
     j.tools.tmux = Tmux()
 
-    from .clients.git.GitFactory import GitFactory
+    # from .clients.git.GitFactory import GitFactory
 
-    j.clients.git = GitFactory()
+    # j.clients.git = GitFactory()
 
     from .tools.path.PathFactory import PathFactory
 

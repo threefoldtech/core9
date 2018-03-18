@@ -291,8 +291,8 @@ class ExecutorBase(JSBASE):
             CODEDIR = "/opt/code"
             HOSTDIR = "/host"
             HOSTCFGDIR = "/hostcfg"
-            CFGDIR = "{{HOSTCFGDIR}}"
-            VARDIR = "{{HOSTDIR}}/var"
+            CFGDIR = "{{BASEDIR}}/cfg"
+            VARDIR = "/var"
             '''
         elif self.platformtype.isMac:
             T = '''
@@ -379,7 +379,7 @@ class ExecutorBase(JSBASE):
 
         [logging]
         enabled = true
-        filter = []
+        filter = ["*"]
         exclude = ["sal.fs"]
         level =20
 

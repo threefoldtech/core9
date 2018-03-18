@@ -3,6 +3,8 @@ from .ExecutorBase import ExecutorBase
 import subprocess
 import os
 import pytoml
+import socket
+import sys
 
 JSBASE = j.application.jsbase_get_class()
 
@@ -60,19 +62,20 @@ class ExecutorLocal(ExecutorBase):
             res["cfg_me"] = load("me")
             res["env"] = getenv()
 
-            res["uname"] = subprocess.Popen("uname -mnprs", stdout=subprocess.PIPE,
-                                            shell=True).stdout.read().decode().strip()
-            res["hostname"] = subprocess.Popen("hostname", stdout=subprocess.PIPE,
-                                               shell=True).stdout.read().decode().strip()
+            # res["uname"] = subprocess.Popen("uname -mnprs", stdout=subprocess.PIPE,
+            #                                 shell=True).stdout.read().decode().strip()
+            # res["hostname"] = subprocess.Popen("hostname", stdout=subprocess.PIPE,
+            #                                    shell=True).stdout.read().decode().strip()
+            res["uname"] = None
+            res["hostname"] = socket.gethostname()
 
-            if "darwin" in res["uname"].lower():
+            if "darwin" in sys.platform.lower():
                 res["os_type"] = "darwin"
-            elif "linux" in res["uname"].lower():
+            elif "linux" in sys.platform.lower():
                 res["os_type"] = "ubuntu"  # dirty hack, will need to do something better, but keep fast
             else:
                 print("need to fix for other types (check executorlocal")
-                from IPython import embed
-                embed(colors='Linux')
+                sys.exit(1)
 
             path = path = "%s/.profile_js" % (homedir)
             if os.path.exists(path):

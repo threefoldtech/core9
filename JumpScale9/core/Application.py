@@ -69,26 +69,6 @@ class Application:
             raise j.exceptions.RuntimeError(
                 "Can't break into jsshell in production mode.")
 
-    # def locale_init(self):
-    #     """
-    #     check with locale language variables to load
-    #     """
-    #     # if j.core.platformtype.myplatform.isMac:
-        #     os.environ['LC_ALL'] = 'en_US.UTF-8'
-        #     os.environ['LANG'] = 'en_US.UTF-8'
-        # else:
-        #     os.environ['LC_ALL'] = 'C.UTF-8'
-        #     os.environ['LANG'] = 'C.UTF-8'
-        
-        # rc, out, err = self.executor.execute("locale -a", showout=False)
-        # out = [item for item in out.split(
-        #     "\n") if not item.startswith("locale:")]
-        # if 'C.UTF-8' not in out:
-        #     raise j.exceptions.RuntimeError(
-        #         "Cannot find C.UTF-8 in locale -a, cannot continue.")
-        # from IPython import embed
-        # self.logger.debug("DEBUG NOW fix locale in application")
-        # embed()
 
     def init(self):
         pass

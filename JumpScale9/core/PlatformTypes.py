@@ -130,19 +130,26 @@ class PlatformType(JSBASE):
     @property
     def uname(self):
         if self._uname is None:
-            _uname = self.executor.stateOnSystem["uname"]
-            if _uname.find("warning: setlocale") != -1:
-                raise RuntimeError("run js9 'j.tools.bash.local.locale_check()'")
-            _uname = _uname.split("\n")[0]
-            _tmp, self._hostname, _osversion, self._cpu, self._platform = _uname.split(
-                " ")
-            if self.osname == "darwin":
-                self._osversion = _osversion
+            if  self.executor.type=="local":
+                unn = os.uname()
+                self._osversion = unn.release
+                self._cpu = unn.machine
+                self._platform = unn.sysname
+                self._hostname = unn.nodename
             else:
-                # is for ubuntu
-                if "version_id" in self.executor.stateOnSystem:
-                    self._osversion = self.executor.stateOnSystem["version_id"]
-            self._uname = _uname
+                _uname = self.executor.stateOnSystem["uname"]
+                if _uname.find("warning: setlocale") != -1:
+                    raise RuntimeError("run js9 'j.tools.bash.local.locale_check()'")
+                _uname = _uname.split("\n")[0]
+                _tmp, self._hostname, _osversion, self._cpu, self._platform = _uname.split(
+                    " ")
+                if self.osname == "darwin":
+                    self._osversion = _osversion
+                else:
+                    # is for ubuntu
+                    if "version_id" in self.executor.stateOnSystem:
+                        self._osversion = self.executor.stateOnSystem["version_id"]
+                self._uname = _uname
         return self._uname
 
     @property

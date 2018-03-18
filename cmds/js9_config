@@ -10,6 +10,13 @@ def cli():
 
 
 @click.command()
+def sandbox():
+    """
+    js9_config sandbox
+    """
+    j.tools.configmanager.sandbox_init(path="", systemssh=False, passphrase="", reset=False, sshkeyname="")
+
+@click.command()
 @click.option('--silent', '-s',  type=bool, is_flag=True, default=False, help='if silent will try to figure out configuration automatically, make sure 1 sshkey loaded in ssh-agent.')
 @click.option('--path', '-p',  help='path of the configuration repository you want to use')
 @click.option('--key', '-k', help='path to the ssh key you want to use')
@@ -74,6 +81,7 @@ def delete(location, instance):
 
 
 cli.add_command(configure)
+cli.add_command(sandbox)
 cli.add_command(get)
 cli.add_command(init)
 cli.add_command(test)

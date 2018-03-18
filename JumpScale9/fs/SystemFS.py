@@ -203,7 +203,7 @@ class SystemFS(JSBASE):
                     if deletefirst and self.exists(dstname):
                         if self.isDir(dstname, False):
                             self.removeDirTree(dstname)
-                        if self.isLink(dstname):
+                        elif self.isLink(dstname):
                             self.unlink(dstname)
 
                     if keepsymlinks and self.isLink(srcname):
