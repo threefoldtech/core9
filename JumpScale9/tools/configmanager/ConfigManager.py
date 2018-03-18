@@ -465,9 +465,6 @@ class ConfigFactory(JSBASE):
             if not silent:
                 j.tools.myconfig.configure()
                 j.tools.myconfig.config.save()
-            else:
-                raise RuntimeError("Email field can't be empty")
-        
 
 
     def test(self):
