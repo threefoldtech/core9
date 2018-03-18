@@ -385,3 +385,42 @@ class Percent(Integer):
         if int(v) == v:
             v=int(v)
         return "%s/%"%v
+
+
+class Object(Bytes):
+    '''
+    is capnp object in binary format
+    '''
+
+    NAME = 'object'
+    BASETYPE = 'bytes'
+
+    def fromString(self, s):
+        """
+        """
+        raise NotImplemented()
+
+    def toString(self, v):
+        return isinstance(value, bytes)
+
+    def check(self, value):
+        return isinstance(value, bytes)
+
+    def get_default(self):
+        return b""
+
+    def clean(self, value):
+        """
+        
+        """
+        return value
+
+    def python_code_get(self, value):
+        raise NotImplemented()
+
+        
+    def capnp_schema_get(self,name,nr):
+        return "%s @%s :Data;"%(name,nr)
+
+    def toml_string_get(self, value, key):
+        raise NotImplemented()

@@ -1,0 +1,20 @@
+Collecting parallel_ssh
+  Downloading parallel-ssh-1.5.2.tar.gz (93kB)
+Requirement already satisfied: paramiko<2.2 in /usr/local/lib/python3.6/site-packages (from parallel_ssh)
+Requirement already satisfied: gevent>=1.1 in /usr/local/lib/python3.6/site-packages (from parallel_ssh)
+Requirement already satisfied: ssh2-python>=0.6.0 in /usr/local/lib/python3.6/site-packages (from parallel_ssh)
+Requirement already satisfied: pyasn1>=0.1.7 in /usr/local/lib/python3.6/site-packages (from paramiko<2.2->parallel_ssh)
+Requirement already satisfied: cryptography>=1.1 in /usr/local/lib/python3.6/site-packages (from paramiko<2.2->parallel_ssh)
+Requirement already satisfied: greenlet>=0.4.10 in /usr/local/lib/python3.6/site-packages (from gevent>=1.1->parallel_ssh)
+Requirement already satisfied: asn1crypto>=0.21.0 in /usr/local/lib/python3.6/site-packages (from cryptography>=1.1->paramiko<2.2->parallel_ssh)
+Requirement already satisfied: six>=1.4.1 in /usr/local/lib/python3.6/site-packages (from cryptography>=1.1->paramiko<2.2->parallel_ssh)
+Requirement already satisfied: cffi>=1.7 in /usr/local/lib/python3.6/site-packages (from cryptography>=1.1->paramiko<2.2->parallel_ssh)
+Requirement already satisfied: idna>=2.1 in /usr/local/lib/python3.6/site-packages (from cryptography>=1.1->paramiko<2.2->parallel_ssh)
+Requirement already satisfied: pycparser in /usr/local/lib/python3.6/site-packages (from cffi>=1.7->cryptography>=1.1->paramiko<2.2->parallel_ssh)
+Building wheels for collected packages: parallel-ssh
+  Running setup.py bdist_wheel for parallel-ssh: started
+  Running setup.py bdist_wheel for parallel-ssh: finished with status 'done'
+  Stored in directory: /Users/kristofdespiegeleer/Library/Caches/pip/wheels/65/a1/8b/893c5550f05bce6bc24e709eadbfbff749cc1743818e431185
+Successfully built parallel-ssh
+Installing collected packages: parallel-ssh
+Successfully installed parallel-ssh-1.5.2

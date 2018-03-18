@@ -8,7 +8,7 @@ import nacl.encoding
 import hashlib
 # from .AgentWithKeyname import AgentWithName
 import binascii
-
+from nacl.exceptions import BadSignatureError
 JSBASE = j.application.jsbase_get_class()
 
 
@@ -66,6 +66,13 @@ class NACLClient:
             self._keys_generate()
         self._privkey = ""
         self._pubkey = ""
+        self._signingkey = ""
+        self._signingkey_pub = ""
+
+        # self.path_privatekey_sign = "%s/%s_sign.priv" % (self.path, self.name)
+        # if not j.sal.fs.exists(self.path_privatekey_sign):
+        #     self._keys_generate_sign()
+
 
     @property
     def agent(self):
@@ -96,6 +103,19 @@ class NACLClient:
         if self._pubkey == "":
             return self.privkey.public_key
         return self._pubkey
+
+    @property
+    def signingkey(self):
+        if self._signingkey == "":
+            self._signingkey = nacl.signing.SigningKey(self.privkey.encode())
+        return self._signingkey
+
+    @property
+    def signingkey_pub(self):
+        if self._signingkey_pub == "":
+            self._signingkey_pub = self.signingkey.verify_key
+        return self._signingkey_pub
+
 
     def _getSecret(self):
         # this to make sure we don't have our secret key open in memory
@@ -185,36 +205,69 @@ class NACLClient:
         key4 = self.file_read_hex(path)
         assert key3 == key4
 
+    def sign(self,data):
+        """
+        sign using your private key using Ed25519 algorithm
+        the result will be 64 bytes
+        """
+        res = self.signingkey.sign(data)
+        return res[:-len(data)]
+
+    def verify(self,data, signature, pubkey=""):
+        """
+        data is the original data we have to verify with signature
+        signature is Ed25519 64 bytes signature
+        pubkey is the signature public key, is not specified will use your own  (the pubkey is 32 bytes)
+        
+        """
+        if pubkey == "":
+            pubkey = self.signingkey_pub
+        else:
+            pubkey = nacl.signing.VerifyKey(pubkey)        
+        try:
+            pubkey.verify(data,signature)
+        except BadSignatureError:
+            return False
+
+        return True
+
+
     def sign_with_ssh_key(self, data):
         """
         will return 32 byte signature which uses the sshagent loaded on your system
         this can be used to verify data against your own sshagent to make sure data has not been tampered with
+
+        this signature is then stored with e.g. data and you can verify against your own ssh-agent if the data was not tampered with
+
         """
         hash = hashlib.sha1(data).digest()
         signeddata = self.agent.sign_ssh_data(hash)
         return self.hash32(signeddata)
 
-    def sign(self, data):
-        """
-        Sign data provided
-            :param data: data to be signed, should be of type binary
-            @return: tuple of signed data and verification key
-        """
-        signing_key = nacl.signing.SigningKey.generate()
-        signed = signing_key.sign(data)
-        verify_key = signing_key.verify_key
-        return signed, verify_key.encode(encoder=nacl.encoding.HexEncoder)
 
-    def verify(self, data, signature):
-        """
-        verify data provided using the signature
-            :param data: signed data to be verified
-            :param signature: signature to verify the data
-            @return: original data
-        """
-        verify_key = nacl.signing.VerifyKey(
-            signature, encoder=nacl.encoding.HexEncoder)
-        return verify_key.verify(data)
+
+    #IS NOT WHAT WE NEED, we need to sign with a private key and then allow others to verify with public key of the author
+    # def sign(self, data):
+    #     """
+    #     Sign data provided
+    #         :param data: data to be signed, should be of type binary
+    #         @return: tuple of signed data and verification key
+    #     """
+    #     signing_key = nacl.signing.SigningKey.generate()
+    #     signed = signing_key.sign(data)
+    #     verify_key = signing_key.verify_key
+    #     return signed, verify_key.encode(encoder=nacl.encoding.HexEncoder)
+
+    # def verify(self, data, signature):
+    #     """
+    #     verify data provided using the signature
+    #         :param data: signed data to be verified
+    #         :param signature: signature to verify the data
+    #         @return: original data
+    #     """
+    #     verify_key = nacl.signing.VerifyKey(
+    #         signature, encoder=nacl.encoding.HexEncoder)
+    #     return verify_key.verify(data)
 
     def file_write_hex(self, path, content):
         content = binascii.hexlify(content)

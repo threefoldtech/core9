@@ -38,6 +38,7 @@ class Types(JSBASE):
         self.numeric = Numeric()
         self.percent = Percent()
         self.hash = Hash()
+        self.object = Object()
 
         self._dict = Dictionary
         self._list = List
@@ -61,9 +62,11 @@ class Types(JSBASE):
         self._numeric = Numeric
         self._percent = Percent
         self._hash = Hash
+        self._object = Object
 
         self.types_list = [self.bool, self.dict, self.list, self.bytes,
-                           self.guid, self.float, self.int, self.multiline, self.string, self.date, self.numeric, self.percent, self.hash]
+                           self.guid, self.float, self.int, self.multiline, 
+                           self.string, self.date, self.numeric, self.percent, self.hash, self.object]
 
     def type_detect(self, val):
         """
@@ -86,6 +89,7 @@ class Types(JSBASE):
         - n, numeric
         - h, hash (set of 2 int)
         - p, percent
+        - o, object
         - ipaddr, ipaddress
         - ipport, tcpport
         - iprange
@@ -104,6 +108,10 @@ class Types(JSBASE):
             res = self._int
         elif ttype in ["f","float"]:
             res = self._float
+        elif ttype in ["o","obj","object"]:
+            res = self._object
+        elif ttype in ["b","bool", "boolean"]:
+            res = self._bool
         elif ttype in ["tel", "mobile"]:
             res = self._tel
         elif ttype in ["ipaddr", "ipaddress"]:
@@ -112,8 +120,6 @@ class Types(JSBASE):
             res = self._iprange
         elif ttype in ["ipport", "ipport"]:
             res = self._ipport
-        elif ttype in ["b","bool", "boolean"]:
-            res = self._bool
         elif ttype == "email":
             res = self._email
         elif ttype == "multiline":

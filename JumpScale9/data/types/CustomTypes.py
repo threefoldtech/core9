@@ -202,7 +202,7 @@ class Numeric(String):
 
     def bytes2cur(self,bindata,curcode="usd",roundnr=None):
         if len(bindata)!=6 and len(bindata)!=10:
-            raise InputError("len of data needs to be 6 or 10")
+            raise j.exceptions.Input("len of data needs to be 6 or 10")
 
         ttype = struct.unpack("B",builtins.bytes([bindata[0]]))[0]
         curtype0 = struct.unpack("B",builtins.bytes([bindata[1]]))[0]
@@ -246,7 +246,7 @@ class Numeric(String):
         
     def bytes2str(self,bindata,roundnr=8,comma=True):
         if len(bindata)!=6 and len(bindata)!=10:
-            raise InputError("len of data needs to be 6 or 10")
+            raise j.exceptions.Input("len of data needs to be 6 or 10")
 
         ttype = struct.unpack("B",builtins.bytes([bindata[0]]))[0]
         curtype = struct.unpack("B",builtins.bytes([bindata[1]]))[0]
@@ -490,6 +490,7 @@ class Date(String):
     def clean(self, v):
         """
         support following formats:
+        - 0: means undefined date
         - epoch = int
         - month/day 22:50
         - month/day  (will be current year if specified this way)
@@ -504,7 +505,7 @@ class Date(String):
         """
         def date_process(dd):
             if "/" not in dd:
-                raise InputError("date needs to have:/, now:%s"%v)
+                raise j.exceptions.Input("date needs to have:/, now:%s"%v)
             splitted = dd.split("/")
             if len(splitted)==2:
                 dfstr = "%Y/%m/%d"
@@ -523,9 +524,9 @@ class Date(String):
                     #year at start but small
                     dfstr = "%y/%m/%d"
                 else:
-                    raise InputError("date wrongly formatted, now:%s"%v)                
+                    raise j.exceptions.Input("date wrongly formatted, now:%s"%v)                
             else:
-                raise InputError("date needs to have 2 or 3 /, now:%s"%v)
+                raise j.exceptions.Input("date needs to have 2 or 3 /, now:%s"%v)
             return (dd,dfstr )                                   
             
         def time_process(v): 
@@ -546,6 +547,9 @@ class Date(String):
             return (v,fstr)
         
         if j.data.types.string.check(v):
+            
+            if v.strip() in ["0",""]:
+                return 0
             
             if "+" in v or "-" in v:
                 return j.data.time.getEpochDeltaTime(v)
