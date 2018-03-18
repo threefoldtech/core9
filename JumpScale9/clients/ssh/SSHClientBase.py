@@ -31,9 +31,9 @@ class SSHClientBase(JSConfigBase):
 
     @property
     def isprivate(self):
-        if self._private == None:
-            self._private = self.config.data["addr_priv"] and j.sal.nettools.tcpPortConnectionTest(
-                self.config.data["addr_priv"], self.config.data["port_priv"], 1)
+        if self._private is None:
+            self._private = self.config.data["addr_priv"] and not j.sal.nettools.tcpPortConnectionTest(
+                self.config.data["addr"], self.config.data["port"], 1)
         return self._private
 
     # SETTERS & GETTERS
@@ -56,7 +56,7 @@ class SSHClientBase(JSConfigBase):
 
     @property
     def port(self):
-        if self._private == True:
+        if self._private is True:
             return self.port_variable
         return self.config.data["port"]
 
