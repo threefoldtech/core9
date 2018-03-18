@@ -56,7 +56,9 @@ class GitFactory(JSBASE):
                 "ssh needs to be auto, first or True or False: here:'%s'" %
                 ssh)
 
-        url = url.replace("ssh://", "")
+        if url.startswith("ssh://"):
+            ssh = True
+            url = url.replace("ssh://", "")
 
         port = None
         if ssh:

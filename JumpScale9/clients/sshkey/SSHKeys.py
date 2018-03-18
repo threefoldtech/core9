@@ -22,7 +22,7 @@ class SSHKeys(JSConfigBase):
 
     def key_get(self, path, load=True):
         instance = j.sal.fs.getBaseName(path)
-        sshkey = self.get(instance)
+        sshkey = self.get(instance, interactive=j.tools.configmanager.interactive)
 
         if j.tools.configmanager.interactive:
             if sshkey.config.data["path"] != path:
