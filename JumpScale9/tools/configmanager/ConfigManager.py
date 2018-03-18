@@ -5,6 +5,8 @@ from .JSBaseClassConfig import JSBaseClassConfig
 from .JSBaseClassConfigs import JSBaseClassConfigs
 from .Config import Config
 import sys
+
+
 installmessage = """
 
 **ERROR**: there is no config directory created
@@ -122,12 +124,13 @@ class ConfigFactory(JSBASE):
         j.sal.fs.createDir(cpath)
 
         if not systemssh:
-            kpath = "keys"
-            kpath_full = "keys/%s" % sshkeyname
+            kpath = "key"
+            kpath_full = "key/%s" % sshkeyname
             kpath_full0 = j.sal.fs.pathNormalize(kpath_full)
-            j.sal.fs.createDir(kpath)
+            if not j.sal.fs.exists(kpath_full0):
+                j.sal.fs.createDir(kpath)
+                j.clients.sshkey.key_generate(path=kpath_full0, passphrase=passphrase, load=True, returnObj=False)
             j.tools.configmanager._keyname = sshkeyname
-            j.clients.sshkey.key_generate(path=kpath_full0, passphrase=passphrase, load=True, returnObj=False)
 
         j.tools.configmanager._path = j.sal.fs.pathNormalize(cpath)
 
@@ -335,7 +338,7 @@ class ConfigFactory(JSBASE):
             self.logger.info("JS9 init: %s" % msg)
 
         def die(msg):
-            self.logger.error("ERROR: CAN NOT INIT JUMPSCALE9")
+            self.logger.error("ERROR: CANNOT INIT JUMPSCALE9")
             self.logger.error("ERROR: %s" % msg)
             self.logger.error(
                 "make sure you did the upgrade procedure: 'cd  ~/code/github/jumpscale/core9/;python3 upgrade.py'")
@@ -344,7 +347,7 @@ class ConfigFactory(JSBASE):
         def ssh_init(ssh_silent=False):
             self.logger.debug("ssh init (no keypath specified)")
 
-            keys = j.clients.sshkey.list()  #LOADS FROM AGENT NOT FROM CONFIG
+            keys = j.clients.sshkey.list()  # LOADS FROM AGENT NOT FROM CONFIG
             keys0 = [j.sal.fs.getBaseName(item) for item in keys]
 
             if not keys:
@@ -413,7 +416,7 @@ class ConfigFactory(JSBASE):
         if "myconfig" not in cfg:
             die("could not find myconfig in the main configuration file, prob need to upgrade")
 
-        if not cpath and not cfg["myconfig"]["path"]:
+        if not cpath and not cfg["myconfig"].get("path", None):
             # means config directory not configured
             cpath, giturl = self._findConfigRepo(die=False)
 
