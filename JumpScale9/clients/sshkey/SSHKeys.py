@@ -28,7 +28,7 @@ class SSHKeys(JSConfigBase):
             if sshkey.config.data["path"] != path:
                 raise RuntimeError("paths should be same")
         else:
-            sshkey.config.data["path"] == path
+            sshkey = self.get(instance, data={'path':path}, interactive=j.tools.configmanager.interactive)
 
         if load:
             sshkey.load()

@@ -17,13 +17,15 @@ class SSHClient(SSHClientBase):
 
     @property
     def client(self):
-        if self.sshkey:
-            self.sshkey.load()
+        pkey = self.sshkey.path if (self.sshkey and self.sshkey.path) else None
         passwd = self.passwd
+        if pkey:
+            passwd = self.sshkey.passphrase
         self._client = PSSHClient(self.addr_variable,
                                   user=self.login,
                                   password=passwd,
                                   port=self.port,
+                                  pkey=pkey,
                                   num_retries=self.timeout / 6,
                                   retry_delay=1,
                                   allow_agent=self.allow_agent,

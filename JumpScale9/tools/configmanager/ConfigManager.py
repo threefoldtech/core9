@@ -330,7 +330,7 @@ class ConfigFactory(JSBASE):
         @param keypath is the path towards the ssh key which will be used to use the config manager
 
         """
-
+    
         def msg(msg):
             self.logger.info("JS9 init: %s" % msg)
 
@@ -390,7 +390,10 @@ class ConfigFactory(JSBASE):
             self.logger.debug("init: silent:%s path:%s data:\n%s" % (silent, configpath, data))
         else:
             self.logger.debug("init: silent:%s path:%s nodata\n" % (silent, configpath))
-
+        
+        if silent:
+            self.interactive = False
+        
         if configpath:
             self._path = configpath
             j.sal.fs.createDir(configpath)
@@ -456,11 +459,13 @@ class ConfigFactory(JSBASE):
                     j.core.state.configSetInDict("myconfig", "giturl", giturl)
 
                 j.core.state.configSave()
-        if not silent:
-            j.tools.myconfig.config.data = data
-            if j.tools.myconfig.config.data["email"] == "":
+
+        j.tools.myconfig.config.data = data
+        if j.tools.myconfig.config.data["email"] == "":
+            if not silent:
                 j.tools.myconfig.configure()
-            j.tools.myconfig.config.save()
+                j.tools.myconfig.config.save()
+
 
     def test(self):
         """
