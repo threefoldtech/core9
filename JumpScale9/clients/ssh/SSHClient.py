@@ -35,10 +35,9 @@ class SSHClient(SSHClientBase):
 
     def execute(self, cmd, showout=True, die=True):
         channel, _, stdout, stderr, _ = self.client.run_command(cmd)
-        self._client.wait_finished(channel)
 
-        def _consume_stream(stream, printer):
-            buffer = io.StringIO()
+        def _consume_stream(stream, printer, buf=None):
+            buffer = buf or io.StringIO()
             for line in stream:
                 buffer.write(line + '\n')
                 if showout:
@@ -47,6 +46,9 @@ class SSHClient(SSHClientBase):
 
         out = _consume_stream(stdout, self.logger.info)
         err = _consume_stream(stderr, self.logger.error)
+        self._client.wait_finished(channel)
+        _consume_stream(stdout, self.logger.info, out)
+        _consume_stream(stderr, self.logger.error, err)
 
         rc = channel.get_exit_status()
         output = out.getvalue()
