@@ -521,8 +521,6 @@ class ExecutorBase(JSBASE):
             # if sig != self.file_md5(location):
             if sudo and self.type == "ssh":
                 self._execute_script(cmd, sudo=sudo, die=True, showout=False)
-                from IPython import embed;embed(colors='Linux')
-                jhg
             else:
                 res = self.execute(cmd, sudo=sudo, showout=False)
 
