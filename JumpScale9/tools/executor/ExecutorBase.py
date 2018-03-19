@@ -188,6 +188,7 @@ class ExecutorBase(JSBASE):
             test -f /etc/redhat-release > /dev/null 2>&1 && echo 'OS_TYPE="redhat"'
             apk -v > /dev/null 2>&1 && echo 'OS_TYPE="alpine"'
             brew -v > /dev/null 2>&1 && echo 'OS_TYPE="darwin"'
+            opkg -v > /dev/null 2>&1 && echo 'OS_TYPE="LEDE"'            
             cat /etc/os-release | grep "VERSION_ID"
 
             echo "CFG_JS9 = --TEXT--"
