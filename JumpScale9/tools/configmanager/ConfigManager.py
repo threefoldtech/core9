@@ -215,8 +215,7 @@ class ConfigFactory(JSBASE):
         """
         self.sandbox_check()
         if not hasattr(jsobj, '__jslocation__') or jsobj.__jslocation__ is None or jsobj.__jslocation__ is "":
-            raise RuntimeError(
-                "__jslocation__ has not been set on class %s" % jsobj.__class__)
+            raise RuntimeError("__jslocation__ has not been set on class %s" % jsobj.__class__)
         location = jsobj.__jslocation__
         key = "%s_%s" % (location, instance)
 
@@ -333,7 +332,7 @@ class ConfigFactory(JSBASE):
         @param keypath is the path towards the ssh key which will be used to use the config manager
 
         """
-    
+
         def msg(msg):
             self.logger.info("JS9 init: %s" % msg)
 
@@ -393,10 +392,10 @@ class ConfigFactory(JSBASE):
             self.logger.debug("init: silent:%s path:%s data:\n%s" % (silent, configpath, data))
         else:
             self.logger.debug("init: silent:%s path:%s nodata\n" % (silent, configpath))
-        
+
         if silent:
             self.interactive = False
-        
+
         if configpath:
             self._path = configpath
             j.sal.fs.createDir(configpath)
@@ -463,12 +462,15 @@ class ConfigFactory(JSBASE):
 
                 j.core.state.configSave()
 
-        j.tools.myconfig.config.data = data
+        data = data or {}
+        if data:
+            from JumpScale9.tools.myconfig.MyConfig import MyConfig as MyConfig
+            j.tools._myconfig = MyConfig(data=data)
+
         if j.tools.myconfig.config.data["email"] == "":
             if not silent:
                 j.tools.myconfig.configure()
                 j.tools.myconfig.config.save()
-
 
     def test(self):
         """
