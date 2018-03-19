@@ -2,6 +2,7 @@ from js9 import j
 import re
 from io import StringIO
 import os
+import locale
 
 JSBASE = j.application.jsbase_get_class()
 
@@ -192,8 +193,11 @@ class Profile(JSBASE):
         self.bash.reset()  # do not remove !
 
     def getLocaleItems(self, force=False, showout=False):
-        out = self.executor.execute("locale -a")[1]
-        return out.split("\n")
+        if  self.executor.type=="local":
+            return [item for key,item in locale.locale_alias.items()]
+        else:
+            out = self.executor.execute("locale -a")[1]
+            return out.split("\n")
 
     def locale_check(self):
         '''

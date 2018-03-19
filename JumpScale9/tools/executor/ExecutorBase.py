@@ -292,8 +292,8 @@ class ExecutorBase(JSBASE):
             CODEDIR = "/opt/code"
             HOSTDIR = "/host"
             HOSTCFGDIR = "/hostcfg"
-            CFGDIR = "{{HOSTCFGDIR}}"
-            VARDIR = "{{HOSTDIR}}/var"
+            CFGDIR = "{{BASEDIR}}/cfg"
+            VARDIR = "/var"
             '''
         elif self.platformtype.isMac:
             T = '''
@@ -380,7 +380,7 @@ class ExecutorBase(JSBASE):
 
         [logging]
         enabled = true
-        filter = []
+        filter = ["*"]
         exclude = ["sal.fs"]
         level =20
 
@@ -523,7 +523,7 @@ class ExecutorBase(JSBASE):
             if sudo and self.type == "ssh":
                 self._execute_script(cmd, sudo=sudo, die=True, showout=False)
             else:
-                res = self.execute(cmd, sudo=sudo)
+                res = self.execute(cmd, sudo=sudo, showout=False)
 
         self.cache.reset()
 

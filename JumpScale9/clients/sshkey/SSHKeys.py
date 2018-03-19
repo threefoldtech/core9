@@ -22,13 +22,8 @@ class SSHKeys(JSConfigBase):
 
     def key_get(self, path, load=True):
         instance = j.sal.fs.getBaseName(path)
-        sshkey = self.get(instance, interactive=j.tools.configmanager.interactive)
-
-        if j.tools.configmanager.interactive:
-            if sshkey.config.data["path"] != path:
-                raise RuntimeError("paths should be same")
-        else:
-            sshkey.config.data["path"] == path
+        sshkey = self.get(instance)
+        sshkey = self.get(instance, data={'path': path}, interactive=j.tools.configmanager.interactive)
 
         if load:
             sshkey.load()
@@ -283,9 +278,9 @@ class SSHKeys(JSConfigBase):
             # ssh-agent not loaded
             self.logger.info("load ssh agent")
             rc, out, err = j.sal.process.execute("ssh-agent -a %s" % socketpath,
-                                                die=False,
-                                                showout=False,
-                                                timeout=20)
+                                                 die=False,
+                                                 showout=False,
+                                                 timeout=20)
             if rc > 0:
                 raise RuntimeError("Could not start ssh-agent, \nstdout:%s\nstderr:%s\n" % (out, err))
             else:

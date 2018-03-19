@@ -1,6 +1,4 @@
 from js9 import j
-# import os
-# import copy
 
 JSBASE = j.application.jsbase_get_class()
 
@@ -22,7 +20,7 @@ class Config(JSBASE):
 
         self.reset()
         if not j.sal.fs.exists(self.path):
-            j.sal.fs.createDir(j.sal.fs.getDirName(self.path))            
+            j.sal.fs.createDir(j.sal.fs.getDirName(self.path))
             self.new = True
             dataOnFS = {}
         else:
@@ -45,8 +43,6 @@ class Config(JSBASE):
         # do the fancydump to make sure we really look at differences
         if j.data.serializer.toml.fancydumps(self.data) != j.data.serializer.toml.fancydumps(dataOnFS):
             self.logger.debug("change of data in config, need to save")
-            self.logger.debug("OLD\n%s" % j.data.serializer.toml.fancydumps(dataOnFS))
-            self.logger.debug("NEW\n%s" % j.data.serializer.toml.fancydumps(self.data))
             self.save()
 
     def reset(self):

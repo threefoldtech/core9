@@ -5,6 +5,8 @@ from .JSBaseClassConfig import JSBaseClassConfig
 from .JSBaseClassConfigs import JSBaseClassConfigs
 from .Config import Config
 import sys
+
+
 installmessage = """
 
 **ERROR**: there is no config directory created
@@ -75,7 +77,7 @@ class ConfigFactory(JSBASE):
             path = j.sal.fs.getcwd()
 
         cpath = j.sal.fs.pathNormalize(path + "/secureconfig")
-        kpath = j.sal.fs.pathNormalize(path + "/key")
+        kpath = j.sal.fs.pathNormalize(path + "/keys")
 
         if j.sal.fs.exists(cpath):
             self.logger.debug("found sandbox config:%s" % cpath)
@@ -86,7 +88,7 @@ class ConfigFactory(JSBASE):
             if len(items) != 1:
                 raise RuntimeError("should only find 1 key, found:%s" % items)
             sshkeyname = j.sal.fs.getBaseName(items[0][:-4])
-            kpath_full = j.sal.fs.pathNormalize(path + "/key/%s" % sshkeyname)
+            kpath_full = j.sal.fs.pathNormalize(path + "/keys/%s" % sshkeyname)
             j.tools.configmanager._keyname = sshkeyname
             self._init = True
             return j.clients.sshkey.key_load(path=kpath_full)
@@ -122,12 +124,13 @@ class ConfigFactory(JSBASE):
         j.sal.fs.createDir(cpath)
 
         if not systemssh:
-            kpath = "keys"
-            kpath_full = "keys/%s" % sshkeyname
+            kpath = "key"
+            kpath_full = "key/%s" % sshkeyname
             kpath_full0 = j.sal.fs.pathNormalize(kpath_full)
-            j.sal.fs.createDir(kpath)
+            if not j.sal.fs.exists(kpath_full0):
+                j.sal.fs.createDir(kpath)
+                j.clients.sshkey.key_generate(path=kpath_full0, passphrase=passphrase, load=True, returnObj=False)
             j.tools.configmanager._keyname = sshkeyname
-            j.clients.sshkey.key_generate(path=kpath_full0, passphrase=passphrase, load=True, returnObj=False)
 
         j.tools.configmanager._path = j.sal.fs.pathNormalize(cpath)
 
@@ -212,8 +215,7 @@ class ConfigFactory(JSBASE):
         """
         self.sandbox_check()
         if not hasattr(jsobj, '__jslocation__') or jsobj.__jslocation__ is None or jsobj.__jslocation__ is "":
-            raise RuntimeError(
-                "__jslocation__ has not been set on class %s" % jsobj.__class__)
+            raise RuntimeError("__jslocation__ has not been set on class %s" % jsobj.__class__)
         location = jsobj.__jslocation__
         key = "%s_%s" % (location, instance)
 
@@ -335,7 +337,7 @@ class ConfigFactory(JSBASE):
             self.logger.info("JS9 init: %s" % msg)
 
         def die(msg):
-            self.logger.error("ERROR: CAN NOT INIT JUMPSCALE9")
+            self.logger.error("ERROR: CANNOT INIT JUMPSCALE9")
             self.logger.error("ERROR: %s" % msg)
             self.logger.error(
                 "make sure you did the upgrade procedure: 'cd  ~/code/github/jumpscale/core9/;python3 upgrade.py'")
@@ -344,7 +346,7 @@ class ConfigFactory(JSBASE):
         def ssh_init(ssh_silent=False):
             self.logger.debug("ssh init (no keypath specified)")
 
-            keys = j.clients.sshkey.list()  #LOADS FROM AGENT NOT FROM CONFIG
+            keys = j.clients.sshkey.list()  # LOADS FROM AGENT NOT FROM CONFIG
             keys0 = [j.sal.fs.getBaseName(item) for item in keys]
 
             if not keys:
@@ -391,6 +393,9 @@ class ConfigFactory(JSBASE):
         else:
             self.logger.debug("init: silent:%s path:%s nodata\n" % (silent, configpath))
 
+        if silent:
+            self.interactive = False
+
         if configpath:
             self._path = configpath
             j.sal.fs.createDir(configpath)
@@ -410,7 +415,7 @@ class ConfigFactory(JSBASE):
         if "myconfig" not in cfg:
             die("could not find myconfig in the main configuration file, prob need to upgrade")
 
-        if not cpath and not cfg["myconfig"]["path"]:
+        if not cpath and not cfg["myconfig"].get("path", None):
             # means config directory not configured
             cpath, giturl = self._findConfigRepo(die=False)
 
@@ -456,11 +461,16 @@ class ConfigFactory(JSBASE):
                     j.core.state.configSetInDict("myconfig", "giturl", giturl)
 
                 j.core.state.configSave()
-        if not silent:
-            j.tools.myconfig.config.data = data
-            if j.tools.myconfig.config.data["email"] == "":
+
+        data = data or {}
+        if data:
+            from JumpScale9.tools.myconfig.MyConfig import MyConfig as MyConfig
+            j.tools._myconfig = MyConfig(data=data)
+
+        if j.tools.myconfig.config.data["email"] == "":
+            if not silent:
                 j.tools.myconfig.configure()
-            j.tools.myconfig.config.save()
+                j.tools.myconfig.config.save()
 
     def test(self):
         """
