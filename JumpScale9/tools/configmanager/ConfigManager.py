@@ -75,7 +75,7 @@ class ConfigFactory(JSBASE):
             path = j.sal.fs.getcwd()
 
         cpath = j.sal.fs.pathNormalize(path + "/secureconfig")
-        kpath = j.sal.fs.pathNormalize(path + "/key")
+        kpath = j.sal.fs.pathNormalize(path + "/keys")
 
         if j.sal.fs.exists(cpath):
             self.logger.debug("found sandbox config:%s" % cpath)
@@ -86,7 +86,7 @@ class ConfigFactory(JSBASE):
             if len(items) != 1:
                 raise RuntimeError("should only find 1 key, found:%s" % items)
             sshkeyname = j.sal.fs.getBaseName(items[0][:-4])
-            kpath_full = j.sal.fs.pathNormalize(path + "/key/%s" % sshkeyname)
+            kpath_full = j.sal.fs.pathNormalize(path + "/keys/%s" % sshkeyname)
             j.tools.configmanager._keyname = sshkeyname
             self._init = True
             return j.clients.sshkey.key_load(path=kpath_full)

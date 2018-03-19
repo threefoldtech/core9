@@ -39,8 +39,9 @@ class GitFactory(JSBASE):
             url (str): the HTTP URL of the Git repository. ex: 'https://github.com/despiegk/odoo'
             login (str): authentication login name
             passwd (str): authentication login password
-            ssh = if True will build ssh url, if "auto" will check if there is ssh-agent available & keys are loaded,
-                if yes will use ssh
+            ssh = if True will build ssh url, if "auto" or "first" will check if there is ssh-agent available & keys are loaded,
+                if yes will use ssh (True)
+                if no will use http (False)
 
         Returns:
             (repository_host, repository_type, repository_account, repository_name, repository_url, port)

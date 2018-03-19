@@ -61,15 +61,14 @@ class ExecutorSSH(ExecutorBase):
         # online command, we use prefab
         if showout:
             self.logger.info("EXECUTE %s:%s: %s" % (self.sshclient.addr, self.sshclient.port, cmds))
-        else:
-            self.logger.debug("EXECUTE %s:%s: %s" % (self.sshclient.addr, self.sshclient.port, cmds))
 
         if sudo:
             cmds2 = self.sudo_cmd(cmds2)
         rc, out, err = self.sshclient.execute(
             cmds2, die=die, showout=showout)
 
-        self.logger.debug("EXECUTE OK")
+        if showout:
+            self.logger.debug("EXECUTE OK")
 
         if checkok and die:
             out = self._docheckok(cmds, out)
@@ -80,8 +79,6 @@ class ExecutorSSH(ExecutorBase):
         """
         @param remote can be ip addr or hostname of remote, if given will execute cmds there
         """
-
-        showout = True
 
         if "sudo -H -SE" in content:
             raise RuntimeError(content)
@@ -100,8 +97,8 @@ class ExecutorSSH(ExecutorBase):
             path = "/tmp/tmp_prefab_removeme_{}.sh".format(login)
         else:
             path = "/tmp/prefab_{}.sh".format(j.data.idgenerator.generateRandomInt(1, 100000))
+        
         j.sal.fs.writeFile(path, content)
-
         self.sshclient.client.copy_file(path, path)  # is now always on tmp
         if sudo:
             passwd = self.sshclient.config.data['passwd_']

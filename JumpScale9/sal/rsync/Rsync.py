@@ -63,33 +63,34 @@ class RsyncServer(JSBASE):
     def saveConfig(self):
 
         C = """
-#motd file = /etc/rsync/rsyncd.motd
-port = $port
-log file=/var/log/rsync
-max verbosity = 1
+        #motd file = /etc/rsync/rsyncd.motd
+        port = $port
+        log file=/var/log/rsync
+        max verbosity = 1
 
-[upload]
-exclude = *.pyc .git
-path = $root/root
-comment = upload
-uid = root
-gid = root
-read only = false
-auth users = $users
-secrets file = /etc/rsync/users
+        [upload]
+        exclude = *.pyc .git
+        path = $root/root
+        comment = upload
+        uid = root
+        gid = root
+        read only = false
+        auth users = $users
+        secrets file = /etc/rsync/users
 
-"""
-        D = """
-[$secret]
-exclude = *.pyc .git
-path = $root/root/$name
-comment = readonlypart
-uid = root
-gid = root
-read only = true
-list = no
+        """
+                D = """
+        [$secret]
+        exclude = *.pyc .git
+        path = $root/root/$name
+        comment = readonlypart
+        uid = root
+        gid = root
+        read only = true
+        list = no
 
-"""
+        """
+        C = j.data.text.strip(C)
         users = ""
         for name, secret in list(self.users.items()):
             users += "%s," % name
