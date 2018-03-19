@@ -1,6 +1,5 @@
 from js9 import j
-# import os
-# import copy
+from collections import OrderedDict
 
 JSBASE = j.application.jsbase_get_class()
 
@@ -66,9 +65,14 @@ class JSBaseClassConfig(JSBASE):
         if self._ui is None:
             raise RuntimeError(
                 "cannot call configure UI because not defined yet, is None")
+
+        template_sorted = sorted(self.config.template, key=str.casefold)
+        template_ordered = OrderedDict()
+        for k in template_sorted:
+            template_ordered[k] = self.config.template[k]
         myui = self._ui(name=self.config.path,
                         config=self.config.data,
-                        template=self.config.template)
+                        template=template_ordered)
 
         while True:
             myui.run()
