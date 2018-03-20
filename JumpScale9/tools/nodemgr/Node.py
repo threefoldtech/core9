@@ -4,7 +4,6 @@ TEMPLATE = """
 name = ""
 clienttype = ""
 sshclient = ""
-zosclient = ""
 active = false
 selected = false
 category = ""
@@ -12,6 +11,7 @@ description = ""
 secretconfig_ = ""
 pubconfig = ""
 installed = false
+zosclient = ""
 """
 
 FormBuilderBaseClass = j.tools.formbuilder.baseclass_get()
@@ -31,7 +31,7 @@ class MyConfigUI(FormBuilderBaseClass):
         self.widget_add_boolean("active", default=False)
         self.widget_add_boolean("selected", default=True)
         self.widget_add_multichoice("clienttype", [
-                                    "ovh", "packetnet", "ovc", "physical", "docker", "container", "zos"])
+                                    "ovh", "packetnet", "ovc", "physical", "docker", "container"])
 
 
 JSConfigBase = j.tools.configmanager.base_class_config
@@ -57,9 +57,6 @@ class Node(JSConfigBase):
             if self.config.data["sshclient"] != "":
                 if self.config.data["addr_priv"]:
                     self._private = self.sshclient.isprivate
-            if self.config.data["zosclient"] != "":
-                if self.config.data["addr_priv"]:
-                    self._private = self.zosclient.isprivate
         return self._private
 
     @property
@@ -67,15 +64,11 @@ class Node(JSConfigBase):
         if self.config.data["sshclient"] != "":
             self.sshclient
             return self.sshclient.addr
-        if self.config.data["zosclient"] != "":
-            return self.zosclient.addr
 
     @property
     def port(self):
         if self.config.data["sshclient"] != "":
             return self.sshclient.port
-        if self.config.data["zosclient"] != "":
-            return self.zosclient.port
 
     @property
     def active(self):
@@ -151,8 +144,6 @@ class Node(JSConfigBase):
     def isconnected(self):
         if self.config.data["sshclient"] != "":
             return self.sshclient.isconnected
-        if self.config.data["zosclient"] != "":
-            return self.zosclient.isconnected
         # if self._connected is None:
         #     # lets test tcp on 22 if not then 9022 which are our defaults
         #     test = j.sal.nettools.tcpPortConnectionTest(
@@ -193,8 +184,6 @@ class Node(JSConfigBase):
     def executor(self):
         if self.config.data["sshclient"] != "":
             return self.sshclient.prefab.executor
-        if self.config.data["zosclient"] != "":
-            return self.zosclient.executor
 
     @property
     def prefab(self):
@@ -222,9 +211,12 @@ class Node(JSConfigBase):
         ddirs = j.clients.git.getGitReposListLocal(account="jumpscale")  # took predefined list
         for key, path in ddirs.items():
             self.logger.debug("try to find git dir for:%s" % path)
-            repo = j.clients.git.get(path)
-            if path not in done:
-                res.append(j.tools.develop.codedirs.get(repo.type, repo.account, repo.name))
+            try:
+                repo = j.clients.git.get(path)
+                if path not in done:
+                    res.append(j.tools.develop.codedirs.get(repo.type, repo.account, repo.name))
+            except Exception as e:
+                self.logger.error(e)
         return res
 
     def sync(self, monitor=False):
