@@ -332,7 +332,6 @@ class ConfigFactory(JSBASE):
         @param keypath is the path towards the ssh key which will be used to use the config manager
 
         """
-
         def msg(msg):
             self.logger.info("JS9 init: %s" % msg)
 
@@ -389,7 +388,7 @@ class ConfigFactory(JSBASE):
 
         self.sandbox_check()
         if data != {}:
-            self.logger.debug("init: silent:%s path:%s data:\n%s" % (silent, configpath, data))
+            self.logger.debug("init: silent:%s path:%s withdata:\n" % (silent, configpath))
         else:
             self.logger.debug("init: silent:%s path:%s nodata\n" % (silent, configpath))
 

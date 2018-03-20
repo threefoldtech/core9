@@ -72,7 +72,7 @@ class SSHKeys(JSConfigBase):
         name = j.sal.fs.getBaseName(path)
 
         if name in self.listnames():
-            return self.get(instance=name)
+            return self.get(instance=name, data={'path': path})
 
         path0 = j.sal.fs.pathNormalize(path)  # otherwise the expect script will fail
 
