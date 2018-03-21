@@ -92,7 +92,6 @@ setup(
         'psutil',
         'watchdog',
         'msgpack-python',
-        'colorlog',
         'npyscreen',
         'pyyaml',
         'pyserial>=3.4',
