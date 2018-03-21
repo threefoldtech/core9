@@ -33,6 +33,7 @@ class ConfigFactory(JSBASE):
         JSBASE.__init__(self)
         self._path = ""
         self.interactive = True  # std needs to be on True
+        self.sandbox = False
         self._keyname = ""  # if set will overrule from the main js config file
         self._init = False
 
@@ -60,7 +61,7 @@ class ConfigFactory(JSBASE):
     def path(self):
         if not self._path:
             self._path = j.core.state.configGetFromDict("myconfig", "path")
-            if self._path == "":
+            if not self._path:
                 self.init()
         return self._path
 
@@ -72,7 +73,7 @@ class ConfigFactory(JSBASE):
 
     def sandbox_check(self, path="", die=False):
         if self._init and path == "" and die == False:
-            return
+            return self.sandbox
         if not path:
             path = j.sal.fs.getcwd()
 
@@ -82,6 +83,7 @@ class ConfigFactory(JSBASE):
         if j.sal.fs.exists(cpath):
             self.logger.debug("found sandbox config:%s" % cpath)
             j.tools.configmanager._path = cpath
+            self.sandbox = True
         if j.sal.fs.exists(kpath):
             self.logger.debug("found sandbox sshkeys:%s" % kpath)
             items = j.sal.fs.listFilesInDir(kpath, filter="*.pub")
@@ -91,10 +93,13 @@ class ConfigFactory(JSBASE):
             kpath_full = j.sal.fs.pathNormalize(path + "/keys/%s" % sshkeyname)
             j.tools.configmanager._keyname = sshkeyname
             self._init = True
+            self.sandbox = True
             return j.clients.sshkey.key_load(path=kpath_full)
+        
         if die:
             raise RuntimeError("did not find sandbox on this path:%s" % path)
         self._init = True
+        return self.sandbox
 
     def sandbox_init(self, path="", systemssh=False, passphrase="", reset=False, sshkeyname=""):
         """
@@ -124,11 +129,10 @@ class ConfigFactory(JSBASE):
         j.sal.fs.createDir(cpath)
 
         if not systemssh:
-            kpath = "key"
-            kpath_full = "key/%s" % sshkeyname
+            kpath_full = "keys/%s" % sshkeyname
             kpath_full0 = j.sal.fs.pathNormalize(kpath_full)
-            if not j.sal.fs.exists(kpath_full0):
-                j.sal.fs.createDir(kpath)
+            if not j.sal.fs.exists("keys"):
+                j.sal.fs.createDir("keys")
                 j.clients.sshkey.key_generate(path=kpath_full0, passphrase=passphrase, load=True, returnObj=False)
             j.tools.configmanager._keyname = sshkeyname
 
@@ -140,7 +144,10 @@ class ConfigFactory(JSBASE):
 
         sshkeyobj = j.clients.sshkey.get(instance=sshkeyname, data=data, interactive=False)
 
-        j.tools.configmanager.init(configpath=cpath, keypath=kpath_full, silent=False)
+        self.sandbox = True
+
+        #WE SHOULD NOT CONFIGURE THE HOST CONFIGMMANAGER ALL SHOULD BE ALREADY DONE
+        #j.tools.configmanager.init(configpath=cpath, keypath=kpath_full, silent=False)
 
         return sshkeyobj
 
@@ -386,7 +393,9 @@ class ConfigFactory(JSBASE):
                         die("cannot continue, please load other sshkey in your agent you want to use")
                 j.core.state.configSetInDict("myconfig", "sshkeyname", keys0[0])
 
-        self.sandbox_check()
+        if self.sandbox_check():
+            return
+
         if data != {}:
             self.logger.debug("init: silent:%s path:%s withdata:\n" % (silent, configpath))
         else:
@@ -395,7 +404,7 @@ class ConfigFactory(JSBASE):
         if silent:
             self.interactive = False
 
-        if configpath:
+        if configpath and not self.sandbox:
             self._path = configpath
             j.sal.fs.createDir(configpath)
             j.sal.fs.touch("%s/.jsconfig" % configpath)

@@ -18,7 +18,7 @@ step 2/3 only happens once, then the path and other required params get stored i
 the system checks that the following dirs exist
 
 - $curdir/secureconfig
-- $curdir/key
+- $curdir/keys
 
 if secureconfig exists then the config files will only be fetched from here.
 if keys exist then it expects only 1 key inside and will load it in the ssh-agent

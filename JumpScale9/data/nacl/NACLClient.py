@@ -9,21 +9,27 @@ import hashlib
 # from .AgentWithKeyname import AgentWithName
 import binascii
 from nacl.exceptions import BadSignatureError
+
 JSBASE = j.application.jsbase_get_class()
 
 
-class NACLClient:
+class NACLClient(JSBASE):
 
-    def __init__(self, name, path, secret="", sshkeyname=""):
+    def __init__(self, name, secret="", sshkeyname=""):
         """
         is secret == "" then will use the ssh-agent to generate a secret
         """
+        JSBASE.__init__(self)
         if sshkeyname:
+            self.logger.debug("sshkeyname for nacl:%s"%sshkeyname)
             pass
         elif j.tools.configmanager.keyname:
+            self.logger.debug("get config from git repo, keyname='%s'"% j.tools.configmanager.keyname)
             sshkeyname = j.tools.configmanager.keyname
         else:
             sshkeyname = j.core.state.configGetFromDict("myconfig", "sshkeyname")
+            self.logger.debug("get config from system, keyname:'%s'"%sshkeyname)
+            
 
         self.sshkeyname = sshkeyname
         self._agent = None
@@ -34,6 +40,7 @@ class NACLClient:
         self.name = name
 
         self.path = j.tools.configmanager.path
+        self.logger.debug("naclclient uses path:'%s'"%self.path)
 
         # get/create the secret seed
         self.path_secretseed = "%s/%s.seed" % (self.path, self.name)
