@@ -42,14 +42,14 @@ class ConfigFactory(JSBASE):
 
         @param force: If no location is given and force is set to true then all locations will be reset
         """
-        path = self.path
+        path = self._path
         if location:
             path = j.sal.fs.joinPaths(path, location)
         if instance:
             path = j.sal.fs.joinPaths(path, '%s.toml' % instance)
         if not location:
             if force or j.tools.console.askYesNo("No location specified, Are you sure you want to delete all configs?", default=True):
-                configs = j.sal.fs.listDirsInDir(path)
+                configs = j.sal.fs.listDirsInDir(path) if path else []
                 for config in configs:
                     if not j.sal.fs.getBaseName(config).startswith('.'):
                         j.sal.fs.removeDirTree(config)
