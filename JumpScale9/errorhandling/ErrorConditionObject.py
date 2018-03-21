@@ -28,7 +28,22 @@ class ErrorConditionObject(BaseException, JSBASE):
                  type="UNKNOWN", tb=None, data=None, tags="", limit=30):
         JSBASE.__init__(self)
         if ddict != {}:
-            self.__dict__ = ddict
+            defaults = {
+                "guid": j.data.idgenerator.generateGUID(),
+                "category": category,
+                "errormessage": msg,
+                "errormessagePub": msgpub,
+                "level": level,
+                "data": data,
+                "tags": tags,
+                "_limit": limit,
+                "code": "",
+                "funcname": "",
+                "funcfilename": "",
+                "funclinenr": "",
+            }
+            self.__dict__.setDefault(defaults)
+            self.__dict__.update(ddict)
         else:
             btkis, filename0, linenr0, func0 = j.errorhandler.getErrorTraceKIS(tb=tb)
 

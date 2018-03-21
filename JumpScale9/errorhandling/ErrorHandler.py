@@ -149,7 +149,7 @@ class ErrorHandler(JSBASE):
         # was BaseException  , dont understand (despiegk)
         if isinstance(exceptionObject, ErrorConditionObject):
             # return self.getErrorConditionObject(exceptionObject.eco)
-            return ErrorConditionObject
+            return exceptionObject
 
         if not isinstance(exceptionObject, BaseException):
             self.logger.debug(
