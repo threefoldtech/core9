@@ -29,14 +29,14 @@ class ErrorConditionObject(BaseException, JSBASE):
         JSBASE.__init__(self)
         if ddict != {}:
             defaults = {
-                "guid": "",
-                "category": "",
-                "errormessage": "",
-                "errormessagePub": "",
-                "level": 1,
-                "data": None,
-                "tags": "",
-                "_limit": 30,
+                "guid": j.data.idgenerator.generateGUID(),
+                "category": category,
+                "errormessage": msg,
+                "errormessagePub": msgpub,
+                "level": level,
+                "data": data,
+                "tags": tags,
+                "_limit": limit,
                 "code": "",
                 "funcname": "",
                 "funcfilename": "",
