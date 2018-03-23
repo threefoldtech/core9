@@ -89,7 +89,8 @@ class Config(JSBASE):
             for key, val in self.template.items():
                 ttype = j.data.types.type_detect(self.template[key])
                 if ttype.BASETYPE == "string":
-                    self._data[key] = self._data[key].strip()
+                    if key in self._data:
+                        self._data[key] = self._data[key].strip()
 
     def save(self):
         # at this point we have the config & can write (self._data has the encrypted pieces)
