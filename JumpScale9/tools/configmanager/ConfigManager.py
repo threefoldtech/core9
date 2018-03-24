@@ -300,10 +300,21 @@ class ConfigFactory(JSBASE):
         """
         list all the existing instance name for a location
 
+        if empty then will list (($location,$name),)
+
         @return: list of instance name
         """
         self.sandbox_check()
         instances = []
+
+        if not location:
+            res=[]
+            for location in j.sal.fs.listDirsInDir(self.path, recursive=False, dirNameOnly=True):
+                if ".git" in location:
+                    continue
+                for instance in self.list(location):
+                    res.append((location,instance))
+            return res
 
         root = j.sal.fs.joinPaths(self.path, location)
         if not j.sal.fs.exists(root):
@@ -480,6 +491,42 @@ class ConfigFactory(JSBASE):
                 j.tools.myconfig.configure()
                 j.tools.myconfig.config.save()
 
+    def __str__(self):
+        sshagent = j.clients.sshkey.sshagent_available()
+        keyloaded = self.keyname in j.clients.sshkey.listnames()
+        C="""
+        
+        configmanager:
+
+        - path: {path}
+        - keyname: {keyname}
+        - is sandbox: {sandbox}
+        - sshagent loaded: {sshagent}
+        - key in sshagent: {keyloaded}
+
+        """.format(**{"path":self.path,
+            "sshagent":sshagent,
+            "keyloaded":keyloaded,
+            "keyname":self.keyname,
+            "sandbox":self.sandbox_check()})
+        C=j.data.text.strip(C)
+        
+        return C
+        
+
+    __repr__ = __str__
+
+
+    def check(self):
+        """
+        js9 'j.tools.configmanager.check()'        
+        """
+        # print(self)
+        j.data.nacl.default.agent
+        print(self)
+        
+
+
     def test(self):
         """
         js9 'j.tools.configmanager.test()'
@@ -599,3 +646,4 @@ class ConfigFactory(JSBASE):
 
         # j.tools.nodemgr.reset()
         # assert len(j.sal.fs.listFilesInDir(tdir)) == 0
+

@@ -5,6 +5,22 @@ from pssh.ssh2_client import SSHClient as PSSHClient
 
 from .SSHClientBase import SSHClientBase
 
+#THIS IS NOT THE ORIGINAL FILE, IS JUST A COPY FROM SSHCLientBase.TEMPLATE: CHANGE THERE !!!! (and copy here)
+TEMPLATE = """
+addr = ""
+port = 22
+addr_priv = ""
+port_priv = 22
+login = ""
+passwd_ = ""
+sshkey = ""
+clienttype = ""
+proxy = ""
+timeout = 5
+forward_agent = true
+allow_agent = true
+stdout = true
+"""
 
 class SSHClient(SSHClientBase):
 

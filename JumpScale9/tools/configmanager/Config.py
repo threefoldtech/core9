@@ -5,7 +5,7 @@ JSBASE = j.application.jsbase_get_class()
 
 class Config(JSBASE):
 
-    def __init__(self, instance="main", location=None, template={}, data={}):
+    def __init__(self, instance="main", location=None, template=None, data={}):
         """
         jsclient_object is e.g. j.clients.packet.net
         """
@@ -14,7 +14,11 @@ class Config(JSBASE):
 
         self.location = location
         self.instance = instance
+        self.error = False #if this is true then need to call the configure part
         self._template = template
+        if not j.data.types.string.check(template):
+            if template is not None:
+                raise RuntimeError("template needs to be None or string:%s"%template)
         if self.instance is None:
             raise RuntimeError("instance cannot be None")
 
@@ -84,8 +88,13 @@ class Config(JSBASE):
             if not j.sal.fs.exists(self.path):
                 raise RuntimeError("should exist at this point")
             else:
-                content = j.sal.fs.fileGetContents(self.path)
-                self._data = j.data.serializer.toml.loads(content)
+                content = j.sal.fs.fileGetContents(self.path)                
+                try:
+                    self._data = j.data.serializer.toml.loads(content)
+                except Exception as e:
+                    if "deserialization failed" in str(e):
+                        raise RuntimeError("config file:%s is not valid toml.\n%s"%(self.path,content))
+                    raise e                     
             for key, val in self.template.items():
                 ttype = j.data.types.type_detect(self.template[key])
                 if ttype.BASETYPE == "string":
@@ -103,9 +112,33 @@ class Config(JSBASE):
     @property
     def template(self):
         if self._template is None or self._template == '':
-            raise RuntimeError("self._template has to be set")
+            obj = eval(self.location)
+            if hasattr(obj,"_child_class"):
+                obj._child_class
+                myvars={}
+                try:
+                    exec("from %s import TEMPLATE;template=TEMPLATE"%obj._child_class.__module__,myvars)
+                except Exception as e:
+                    if "cannot import name" in str(e):
+                        raise RuntimeError("cannot find TEMPLATE in %s, please call the template: TEMPLATE"%obj._child_class.__module__)
+                    raise e          
+            else:
+                myvars={}
+                try:
+                    exec("from %s import TEMPLATE;template=TEMPLATE"%obj.__module__,myvars)
+                except Exception as e:
+                    if "cannot import name" in str(e):
+                        raise RuntimeError("cannot find TEMPLATE in %s, please call the template: TEMPLATE"%obj._child_class.__module__)
+                    raise e
+            self._template = myvars["template"]
         if j.data.types.string.check(self._template):
-            self._template = j.data.serializer.toml.loads(self._template)
+            try:
+                self._template = j.data.serializer.toml.loads(self._template)
+            except Exception as e:
+                if "deserialization failed" in str(e):
+                    raise RuntimeError("config file:%s is not valid toml.\n%s"%(self.path,self._template))
+                raise e          
+
         return self._template
 
     @property
@@ -114,17 +147,22 @@ class Config(JSBASE):
         if self._data == {}:
             self.load()
         for key, item in self._data.items():
-            ttype = j.data.types.type_detect(self.template[key])
-            if key.endswith("_"):
-                if ttype.BASETYPE == "string":
-                    if item != '' and item != '""':
-                        res[key] = self.nacl.decryptSymmetric(item, hex=True).decode()
+            if key not in self.template:
+                self.logger.warning("could not find key:%s in template, while it was in instance:%s"%(key,self.path))
+                self.logger.debug("template was:%s\n"%self.template)
+                self.error=True
+            else:
+                ttype = j.data.types.type_detect(self.template[key])
+                if key.endswith("_"):
+                    if ttype.BASETYPE == "string":
+                        if item != '' and item != '""':
+                            res[key] = self.nacl.decryptSymmetric(item, hex=True).decode()
+                        else:
+                            res[key] = ''
                     else:
-                        res[key] = ''
+                        res[key] = item
                 else:
                     res[key] = item
-            else:
-                res[key] = item
         return res
 
     @data.setter

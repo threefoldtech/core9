@@ -30,6 +30,10 @@ class JSBaseClassConfig(JSBASE):
 
         if self.config.new and data == {} and self.interactive:
             self.configure()
+            self.config.error = False
+
+        if self.config.error and self.interactive:
+            self.configure()
 
     @property
     def logger(self):
