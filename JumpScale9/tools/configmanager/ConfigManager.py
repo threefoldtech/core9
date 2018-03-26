@@ -192,15 +192,18 @@ class ConfigFactory(JSBASE):
     def base_class_configs(self):
         return JSBaseClassConfigs
 
-    def configure(self, location="", instance="main", data={}):
+    def configure(self, location="", instance="main", data={}, interactive=True):
         """
         Will display a npyscreen form to edit the configuration
         @param location: jslocation of module to configure for (eg: j.clients.openvcloud)
         @param: instance: configuration instance
         """
         self.sandbox_check()
+        if not data:
+            interactive = True
         js9obj = self.js9_obj_get(location=location, instance=instance, data=data)
-        js9obj.configure()
+        if interactive:
+            js9obj.configure()
         js9obj.config.save()
         return js9obj
 
