@@ -18,6 +18,7 @@ LEVELMAP = {1: 'CRITICAL', 2: 'WARNING', 3: 'INFO', 4: 'DEBUG'}
 
 JSBASE = j.application.jsbase_get_class()
 
+
 class ErrorConditionObject(BaseException, JSBASE):
     """
     @param type #BUG,INPUT,MONITORING,OPERATIONS,PERFORMANCE,UNKNOWN
@@ -42,7 +43,7 @@ class ErrorConditionObject(BaseException, JSBASE):
                 "funcfilename": "",
                 "funclinenr": "",
             }
-            self.__dict__.setDefault(defaults)
+            self.__dict__.setdefault(defaults)
             self.__dict__.update(ddict)
         else:
             btkis, filename0, linenr0, func0 = j.errorhandler.getErrorTraceKIS(tb=tb)
