@@ -312,7 +312,7 @@ class Bash(JSBASE):
     def profileDefault(self):
         if self._profileDefault is None:
             path = "~/.profile_js"
-        self._profileDefault = self.profileGet(path)
+            self._profileDefault = self.profileGet(path)
         return self._profileDefault
 
     @property
