@@ -43,7 +43,8 @@ class ErrorConditionObject(BaseException, JSBASE):
                 "funcfilename": "",
                 "funclinenr": "",
             }
-            self.__dict__.setdefault(defaults)
+            for k, v in defaults.items():
+                self.__dict__.setdefault(k, v)
             self.__dict__.update(ddict)
         else:
             btkis, filename0, linenr0, func0 = j.errorhandler.getErrorTraceKIS(tb=tb)
