@@ -133,7 +133,7 @@ class PlatformType(JSBASE):
             if  self.executor.type=="local":
                 unn = os.uname()
                 self._hostname = unn.nodename
-                if 'ubuntu' in self._hots_name:
+                if 'ubuntu' in self._hostname:
                     import lsb_release
                     self._osversion = lsb_release.get_lsb_information()['RELEASE']
                 else:
