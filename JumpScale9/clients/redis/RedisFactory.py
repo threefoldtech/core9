@@ -56,15 +56,20 @@ class RedisFactory(JSBASE):
         :param fromcache: if False, will create a new one instead of checking cache
         :param unixsocket: path of unixsocket to be used while creating Redis
 
+        other arguments to redis: ssl_cert_reqs=None, ssl_ca_certs=None 
+
         set_patch is needed when using the client for gedis
 
         """
+        
+
         if redisFound == False:
             raise RuntimeError("redis libraries are not installed, please pip3 install them.")
         if unixsocket is None:
             key = "%s_%s" % (ipaddr, port)
         else:
             key = unixsocket
+
         if key not in self._redis or not fromcache:
             if unixsocket is None:
                 self._redis[key] = Redis(ipaddr, port, password=password, ssl=ssl, ssl_certfile=ssl_certfile, ssl_keyfile=ssl_keyfile, **args)
