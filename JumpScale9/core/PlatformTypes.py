@@ -132,10 +132,15 @@ class PlatformType(JSBASE):
         if self._uname is None:
             if  self.executor.type=="local":
                 unn = os.uname()
-                self._osversion = unn.release
+                self._hostname = unn.nodename
+                if 'ubuntu' in self._hots_name:
+                    import lsb_release
+                    self._osversion = lsb_release.get_lsb_information()['RELEASE']
+                else:
+                    self._osversion = unn.release
                 self._cpu = unn.machine
                 self._platform = unn.sysname
-                self._hostname = unn.nodename
+
             else:
                 _uname = self.executor.stateOnSystem["uname"]
                 if _uname.find("warning: setlocale") != -1:
