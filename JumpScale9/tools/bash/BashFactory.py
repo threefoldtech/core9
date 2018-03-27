@@ -280,7 +280,7 @@ class Bash(JSBASE):
         checks cmd Exists and returns the path
         """
         rc, out, err = self.executor.execute(
-            "which %s" % cmd, die=False, showout=False)
+            "source ~/.bash_profile;which %s" % cmd, die=False, showout=False)
         if rc > 0:
             if die:
                 raise j.exceptions.RuntimeError("Did not find command: %s" % cmd)
@@ -311,7 +311,7 @@ class Bash(JSBASE):
     @property
     def profileDefault(self):
         if self._profileDefault is None:
-            path = "~/.bashrc"
+            path = "~/.bash_profile"
             self._profileDefault = self.profileGet(path)
         return self._profileDefault
 

@@ -44,6 +44,9 @@ class RedisFactory(JSBASE):
             unixsocket=None,
             ardb_patch=False,
             set_patch=False,
+            ssl=False,
+            ssl_certfile=None,
+            ssl_keyfile=None,
             **args):
         """
         get an instance of redis client, store it in cache so we could easily retrieve it later
@@ -64,9 +67,9 @@ class RedisFactory(JSBASE):
             key = unixsocket
         if key not in self._redis or not fromcache:
             if unixsocket is None:
-                self._redis[key] = Redis(ipaddr, port, password=password, **args)  # , unixsocket=unixsocket)
+                self._redis[key] = Redis(ipaddr, port, password=password, ssl=ssl, ssl_certfile=ssl_certfile, ssl_keyfile=ssl_keyfile, **args)
             else:
-                self._redis[key] = Redis(unix_socket_path=unixsocket, password=password, **args)
+                self._redis[key] = Redis(unix_socket_path=unixsocket, password=password,  ssl=ssl, ssl_certfile=ssl_certfile, ssl_keyfile=ssl_keyfile, **args)
 
         if ardb_patch:
             self._ardb_patch(self._redis[key])
