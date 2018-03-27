@@ -1,12 +1,12 @@
 from js9 import j
 
-from .NACLClient import NACLClient
+from .NACL import NACL
 
 
 
 JSBASE = j.application.jsbase_get_class()
 
-class NACLClientFactory(JSBASE):
+class NACLFactory(JSBASE):
 
     def __init__(self):
         self.__jslocation__ = "j.data.nacl"
@@ -17,7 +17,7 @@ class NACLClientFactory(JSBASE):
         if more than 1 will match ourid (generated from sshagent)
         if path not specified then is ~/.secrets
         """
-        return NACLClient(name, secret, sshkeyname=j.tools.configmanager.keyname)
+        return NACL(name, secret, sshkeyname=j.tools.configmanager.keyname)
 
     @property
     def default(self):

@@ -13,7 +13,7 @@ from nacl.exceptions import BadSignatureError
 JSBASE = j.application.jsbase_get_class()
 
 
-class NACLClient(JSBASE):
+class NACL(JSBASE):
 
     def __init__(self, name, secret="", sshkeyname=""):
         """
@@ -40,7 +40,7 @@ class NACLClient(JSBASE):
         self.name = name
 
         self.path = j.tools.configmanager.path
-        self.logger.debug("naclclient uses path:'%s'"%self.path)
+        self.logger.debug("NACL uses path:'%s'"%self.path)
 
         # get/create the secret seed
         self.path_secretseed = "%s/%s.seed" % (self.path, self.name)
