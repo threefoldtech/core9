@@ -424,8 +424,6 @@ class ExecutorBase(JSBASE):
         else:
             self.state.configUpdate(TT, False)  # will not overwrite
 
-        self.state.configSave()
-
         if self.type == "local":
             j.core.state = self.state
 
@@ -446,8 +444,6 @@ class ExecutorBase(JSBASE):
             if not self.exists(self.state.configJSPath) or self.state.configGet('dirs', {}) == {}:
                 self.initEnv()
             self._dirpaths_init = True
-        self.state.configGet('dirs')
-
         return self.state.configGet('dirs')
 
     @property
