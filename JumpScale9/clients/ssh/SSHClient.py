@@ -1,7 +1,7 @@
 import io
+import functools
 
 from js9 import j
-from pssh.ssh2_client import SSHClient as PSSHClient
 
 from .SSHClientBase import SSHClientBase
 
@@ -24,12 +24,13 @@ stdout = true
 
 class SSHClient(SSHClientBase):
 
-    def __init__(self, instance, data={}, parent=None, interactive=False):
+    def __init__(self, instance, data={}, parent=None, interactive=False, use_paramiko=False):
         SSHClientBase.__init__(self, instance=instance,
                                data=data, parent=parent, interactive=interactive)
         self._logger = j.logger.get("ssh client: %s:%s(%s)" % (self.addr_variable, self.port, self.login))
         self._client = None
         self._prefab = None
+        self._use_paramiko = use_paramiko
 
     @property
     def client(self):
@@ -37,13 +38,19 @@ class SSHClient(SSHClientBase):
         passwd = self.passwd
         if pkey:
             passwd = self.sshkey.passphrase
+        if self._use_paramiko:
+            from pssh.ssh_client import SSHClient as PSSHClient
+            PSSHClient = functools.partial(PSSHClient, forward_ssh_agent=self.forward_agent)
+        else:
+            from pssh.ssh2_client import SSHClient as PSSHClient
+            PSSHClient = functools.partial(PSSHClient, retry_delay=1)
+
         self._client = PSSHClient(self.addr_variable,
                                   user=self.login,
                                   password=passwd,
                                   port=self.port,
                                   pkey=pkey,
                                   num_retries=self.timeout / 6,
-                                  retry_delay=1,
                                   allow_agent=self.allow_agent,
                                   timeout=5)
 
@@ -168,7 +175,7 @@ class SSHClient(SSHClientBase):
         if self._prefab:
             return self._prefab
         ex = j.tools.executor
-        executor = ex.getSSHViaProxy(self.addr_variable) if self.config.data['proxy'] else ex.ssh_get(self) 
+        executor = ex.getSSHViaProxy(self.addr_variable) if self.config.data['proxy'] else ex.ssh_get(self)
         if self.config.data["login"] != "root":
             executor.state_disabled = True
         self._prefab = executor.prefab

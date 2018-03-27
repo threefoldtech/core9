@@ -20,7 +20,7 @@ class SSHClientFactory(JSConfigBase):
         JSConfigBase.__init__(self, SSHClient)
 
     def new(self, addr, port=22, instance="", keyname="", timeout=5, die=True, login="root", passwd="",
-            stdout=True, allow_agent=False, addr_priv="", port_priv=22):
+            stdout=True, allow_agent=False, addr_priv="", port_priv=22, use_paramiko=False):
         """
         @PARAM instance is the name used for the sshclient instance name
 
@@ -45,10 +45,10 @@ class SSHClientFactory(JSConfigBase):
         #         usecache = not (self.cache[key]._client is None)
         #     except j.exceptions.RuntimeError:
         #         usecache = False
-        cl = self.get(instance=instance, data=data, die=die)
+        cl = self.get(instance=instance, data=data, die=die, use_paramiko=use_paramiko)
         return cl
 
-    def get(self, instance="main", data={}, create=True, die=True, interactive=False):
+    def get(self, instance="main", data={}, create=True, die=True, interactive=False, use_paramiko=False):
         """
         Get an instance of the SSHClient
 
@@ -62,7 +62,7 @@ class SSHClientFactory(JSConfigBase):
             else:
                 return None
 
-        return SSHClient(instance=instance, data=data, parent=self, interactive=interactive)
+        return SSHClient(instance=instance, data=data, parent=self, interactive=interactive, use_paramiko=use_paramiko)
 
     def reset(self):
         """
