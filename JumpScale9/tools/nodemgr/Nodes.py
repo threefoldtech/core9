@@ -51,13 +51,13 @@ class Nodes(JSConfigBase):
         node = self.get(instance=name, data=data, create=True, interactive=False)
         node.config.save()
 
-        if self.exists(name):
-            treeitem = self.tree.findByName(name, die=False)
-            if treeitem is not None:
-                tpath = treeitem.path
-                self.tree.items.pop(tpath)
+        # if self.exists(name):
+        #     treeitem = self.tree.findByName(name, die=False)
+        #     if treeitem is not None:
+        #         tpath = treeitem.path
+        #         self.tree.items.pop(tpath)
 
-        self._add2tree(node)
+        # self._add2tree(node)
 
         return node
 
