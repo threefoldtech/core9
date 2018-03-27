@@ -2,6 +2,7 @@ from JumpScale9 import j
 
 import sys
 import os
+import platform
 # import re
 
 
@@ -133,9 +134,9 @@ class PlatformType(JSBASE):
             if  self.executor.type=="local":
                 unn = os.uname()
                 self._hostname = unn.nodename
-                if 'ubuntu' in self._hostname:
-                    import lsb_release
-                    self._osversion = lsb_release.get_lsb_information()['RELEASE']
+                distro_info = platform.linux_distribution()
+                if 'Ubuntu' in distro_info:
+                    self._osversion = distro_info[1]
                 else:
                     self._osversion = unn.release
                 self._cpu = unn.machine
