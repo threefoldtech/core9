@@ -13,24 +13,24 @@ class ZeroRobot(JSBASE):
         if not hasattr(self, '__jslocation__'):
             self.__jslocation__ = "j.tools.zerorobot"
         JSBASE.__init__(self)
-        self._models=None
-        self._tarantool=None
-        self._templates=None
-        self._repos=None
-        # self.ZeroServiceClass = 
+        self._models = None
+        self._tarantool = None
+        self._templates = None
+        self._repos = None
+        # self.ZeroServiceClass =
         self.ZeroTemplateClass = ZeroTemplate
 
     @property
     def templates(self):
-        if self._templates==None:
-            self._templates=ZeroTemplates()
+        if self._templates is None:
+            self._templates = ZeroTemplates()
         return self._templates
 
     @property
     def repos(self):
-        if self._repos==None:
-            self._repos=ZeroRepos()
-            self._repos.load() #auto load the known ones
+        if self._repos is None:
+            self._repos = ZeroRepos()
+            self._repos.load()  # auto load the known ones
         return self._repos
 
 
@@ -47,7 +47,7 @@ class ZeroRobot(JSBASE):
     # @property
     # def models(self):
     #     if self._models==None:
-    #         self.tarantool.addModels(self._path+"models") 
+    #         self.tarantool.addModels(self._path+"models")
     #         self._models= self.tarantool.models
     #     return self._models
 
@@ -55,5 +55,5 @@ class ZeroRobot(JSBASE):
         self.templates.load() #will load all templates it can find
 
         from IPython import embed;embed(colors='Linux')
-        
+
 
