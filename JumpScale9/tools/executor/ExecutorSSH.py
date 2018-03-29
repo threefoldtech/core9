@@ -100,7 +100,7 @@ class ExecutorSSH(ExecutorBase):
         
         j.sal.fs.writeFile(path, content)
         self.sshclient.client.copy_file(path, path)  # is now always on tmp
-        if sudo:
+        if sudo and "LEDE" not in j.core.platformtype.get(self).osname:
             passwd = self.sshclient.config.data['passwd_']
             cmd = 'echo \'{}\' | sudo -H -SE -p \'\' bash "{}"'.format(passwd, path)
         else:
