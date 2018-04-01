@@ -140,12 +140,12 @@ class NetTools(JSBASE):
             command = "netstat -ntulp | grep ':%s '" % port
             # raise j.exceptions.RuntimeError("stop")
             exitcode, output, err = j.sal.process.execute(
-                command, die=False, showout=False)
+                command, die=True, showout=False)
             return exitcode == 0
         elif j.core.platformtype.myplatform.isMac():
             command = "netstat -an -f inet"
             exitcode, output, err = j.sal.process.execute(
-                command, die=False, showout=False)
+                command, die=True, showout=False)
             for line in output.splitlines():
                 match = re.match(".*\.%s .*\..*LISTEN" % port, line)
                 if match:
@@ -153,7 +153,7 @@ class NetTools(JSBASE):
             # No ipv4? Then check ipv6
             command = "netstat -an -f inet6"
             exitcode, output, err = j.sal.process.execute(
-                command, die=False, showout=False)
+                command, die=True, showout=False)
             for line in output.splitlines():
                 match = re.match(".*\.%s .*\..*LISTEN" % port, line)
                 if match:
