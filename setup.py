@@ -7,6 +7,7 @@ import subprocess
 
 
 def _post_install(libname, libpath):
+    from JumpScale9 import j  # here its still the boostrap JumpScale9
 
     # remove leftovers
     for item in j.sal.fs.find("/usr/local/bin/", fileregex="js9*"):
