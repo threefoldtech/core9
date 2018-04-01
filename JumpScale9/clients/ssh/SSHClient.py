@@ -4,6 +4,7 @@ import functools
 from js9 import j
 
 from .SSHClientBase import SSHClientBase
+from .SSHClientParamiko import SSHClientParamiko
 
 #THIS IS NOT THE ORIGINAL FILE, IS JUST A COPY FROM SSHCLientBase.TEMPLATE: CHANGE THERE !!!! (and copy here)
 TEMPLATE = """
@@ -24,13 +25,18 @@ stdout = true
 
 class SSHClient(SSHClientBase):
 
-    def __init__(self, instance, data={}, parent=None, interactive=False, use_paramiko=False):
+    def __init__(self, instance, data={}, parent=None, interactive=False, use_paramiko=True):
         SSHClientBase.__init__(self, instance=instance,
                                data=data, parent=parent, interactive=interactive)
         self._logger = j.logger.get("ssh client: %s:%s(%s)" % (self.addr_variable, self.port, self.login))
         self._client = None
         self._prefab = None
         self._use_paramiko = use_paramiko
+        # if self._use_paramiko:
+            # self._paramiko_init_kwargs = dict(instance=instance, data=data, interactive=interactive, parent=parent)
+
+        self._paramiko_init_kwargs = dict(instance=instance, data=data, interactive=interactive, parent=parent)
+
 
     @property
     def client(self):
@@ -38,25 +44,29 @@ class SSHClient(SSHClientBase):
         passwd = self.passwd
         if pkey:
             passwd = self.sshkey.passphrase
+
         if self._use_paramiko:
-            from pssh.ssh_client import SSHClient as PSSHClient
-            PSSHClient = functools.partial(PSSHClient, forward_ssh_agent=self.forward_agent)
+            print("USING PARAMIKO: ", self._use_paramiko)
+            self._client = SSHClientParamiko(**self._paramiko_init_kwargs)
         else:
             from pssh.ssh2_client import SSHClient as PSSHClient
             PSSHClient = functools.partial(PSSHClient, retry_delay=1)
 
-        self._client = PSSHClient(self.addr_variable,
-                                  user=self.login,
-                                  password=passwd,
-                                  port=self.port,
-                                  pkey=pkey,
-                                  num_retries=self.timeout / 6,
-                                  allow_agent=self.allow_agent,
-                                  timeout=5)
+            self._client = PSSHClient(self.addr_variable,
+                                    user=self.login,
+                                    password=passwd,
+                                    port=self.port,
+                                    pkey=pkey,
+                                    num_retries=self.timeout / 6,
+                                    allow_agent=self.allow_agent,
+                                    timeout=5)
 
         return self._client
 
     def execute(self, cmd, showout=True, die=True):
+        if self._use_paramiko:
+            return self.client.execute(cmd, showout=showout, die=die)
+        
         channel, _, stdout, stderr, _ = self.client.run_command(cmd)
         # self._client.wait_finished(channel)
 
