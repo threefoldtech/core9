@@ -48,7 +48,7 @@ class SSHClientFactory(JSConfigBase):
         cl = self.get(instance=instance, data=data, die=die, use_paramiko=use_paramiko)
         return cl
 
-    def get(self, instance="main", data={}, create=True, die=True, interactive=False, use_paramiko=False):
+    def get(self, instance="main", data={}, create=True, die=True, interactive=False, use_paramiko=None):
         """
         Get an instance of the SSHClient
 
@@ -61,6 +61,9 @@ class SSHClientFactory(JSConfigBase):
                 raise RuntimeError("could not find instance:%s" % (instance))
             else:
                 return None
+
+        if use_paramiko is None and  j.core.platformtype.myplatform.isMac:
+            use_paramiko = True
 
         return SSHClient(instance=instance, data=data, parent=self, interactive=interactive, use_paramiko=use_paramiko)
 
