@@ -38,9 +38,7 @@ class SSHClientParamiko(SSHClientBase):
         SSHClientBase.__init__(self, instance=instance,
                                data=data, parent=parent, interactive=interactive)
 
-
-        key_filename = self.sshkey.path if (
-            self.sshkey and self.sshkey.path) else None
+        key_filename = self.sshkey.path if (self.sshkey and self.sshkey.path) else None
         self._lock = threading.Lock()
         # self.port = self.port
         self.addr = self.addr_variable
@@ -66,10 +64,6 @@ class SSHClientParamiko(SSHClientBase):
         self._transport = None
         self._client = None
         self._prefab = None
-
-
-
-
 
     def _test_local_agent(self):
         """
@@ -99,7 +93,6 @@ class SSHClientParamiko(SSHClientBase):
     @property
     def sftp(self):
         return self.client.open_sftp()
-
 
     def _make_sftp(self):
         """Make SFTP client from open transport"""
@@ -157,7 +150,6 @@ class SSHClientParamiko(SSHClientBase):
             return self.mkdir(sftp, sub_dirs)
         return True
 
-
     def _parent_paths_split(self, file_path, sep=None):
         sep = os.path.sep if sep is None else sep
         try:
@@ -170,7 +162,6 @@ class SSHClientParamiko(SSHClientBase):
             destination = sep + destination
         return destination
 
-
     def _copy_dir(self, local_dir, remote_dir, sftp):
         """Call copy_file on every file in the specified directory, copying
         them to the specified remote directory."""
@@ -180,8 +171,6 @@ class SSHClientParamiko(SSHClientBase):
             remote_path = '/'.join([remote_dir, file_name])
             self.copy_file(local_path, remote_path, recurse=True,
                            sftp=sftp)
-
-
 
     def copy_file(self, local_file, remote_file, recurse=False,
                   sftp=None):
@@ -218,12 +207,11 @@ class SSHClientParamiko(SSHClientBase):
             sftp.put(local_file, remote_file)
         except Exception as error:
             self.logger.error("Error occured copying file %s to remote destination "
-                         "%s:%s - %s",
-                         local_file, self.host, remote_file, error)
+                              "%s:%s - %s",
+                              local_file, self.host, remote_file, error)
             raise error
-        self.logger.info("Copied local file %s to remote destination %s:%s",
-                    local_file, self.host, remote_file)
-
+        self.logger.info("Copied local file %s to remote destination %s",
+                         local_file, remote_file)
 
     @property
     def transport(self):

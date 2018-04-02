@@ -5,6 +5,7 @@ import threading
 from js9 import j
 
 from .SSHClient import SSHClient
+from .SSHClientParamiko import SSHClientParamiko
 
 JSConfigBase = j.tools.configmanager.base_class_configs
 
@@ -48,7 +49,7 @@ class SSHClientFactory(JSConfigBase):
         cl = self.get(instance=instance, data=data, die=die, use_paramiko=use_paramiko)
         return cl
 
-    def get(self, instance="main", data={}, create=True, die=True, interactive=False, use_paramiko=None):
+    def get(self, instance="main", data={}, create=True, die=True, interactive=False, use_paramiko=False):
         """
         Get an instance of the SSHClient
 
@@ -64,8 +65,11 @@ class SSHClientFactory(JSConfigBase):
 
         if use_paramiko is None and  j.core.platformtype.myplatform.isMac:
             use_paramiko = True
-
-        return SSHClient(instance=instance, data=data, parent=self, interactive=interactive, use_paramiko=use_paramiko)
+            return SSHClientParamiko(instance=instance, data=data, interactive=interactive, parent=self)
+        elif use_paramiko is True:
+            return SSHClientParamiko(instance=instance, data=data, interactive=interactive, parent=self)
+        else:
+            return SSHClient(instance=instance, data=data, parent=self, interactive=interactive)
 
     def reset(self):
         """
