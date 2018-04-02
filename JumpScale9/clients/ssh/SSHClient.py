@@ -46,7 +46,6 @@ class SSHClient(SSHClientBase):
             passwd = self.sshkey.passphrase
 
         if self._use_paramiko:
-            print("USING PARAMIKO: ", self._use_paramiko)
             self._client = SSHClientParamiko(**self._paramiko_init_kwargs)
         else:
             from pssh.ssh2_client import SSHClient as PSSHClient
