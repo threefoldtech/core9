@@ -1,8 +1,6 @@
 import io
 import functools
-
 from js9 import j
-
 from .SSHClientBase import SSHClientBase
 
 #THIS IS NOT THE ORIGINAL FILE, IS JUST A COPY FROM SSHCLientBase.TEMPLATE: CHANGE THERE !!!! (and copy here)
@@ -24,13 +22,13 @@ stdout = true
 
 class SSHClient(SSHClientBase):
 
-    def __init__(self, instance, data={}, parent=None, interactive=False, use_paramiko=False):
+    def __init__(self, instance, data={}, parent=None, interactive=False):
         SSHClientBase.__init__(self, instance=instance,
                                data=data, parent=parent, interactive=interactive)
         self._logger = j.logger.get("ssh client: %s:%s(%s)" % (self.addr_variable, self.port, self.login))
         self._client = None
         self._prefab = None
-        self._use_paramiko = use_paramiko
+
 
     @property
     def client(self):
@@ -38,23 +36,21 @@ class SSHClient(SSHClientBase):
         passwd = self.passwd
         if pkey:
             passwd = self.sshkey.passphrase
-        if self._use_paramiko:
-            from pssh.ssh_client import SSHClient as PSSHClient
-            PSSHClient = functools.partial(PSSHClient, forward_ssh_agent=self.forward_agent)
-        else:
-            from pssh.ssh2_client import SSHClient as PSSHClient
-            PSSHClient = functools.partial(PSSHClient, retry_delay=1)
+
+        from pssh.ssh2_client import SSHClient as PSSHClient
+        PSSHClient = functools.partial(PSSHClient, retry_delay=1)
 
         self._client = PSSHClient(self.addr_variable,
-                                  user=self.login,
-                                  password=passwd,
-                                  port=self.port,
-                                  pkey=pkey,
-                                  num_retries=self.timeout / 6,
-                                  allow_agent=self.allow_agent,
-                                  timeout=5)
+                                user=self.login,
+                                password=passwd,
+                                port=self.port,
+                                pkey=pkey,
+                                num_retries=self.timeout / 6,
+                                allow_agent=self.allow_agent,
+                                timeout=5)
 
         return self._client
+
 
     def execute(self, cmd, showout=True, die=True):
         channel, _, stdout, stderr, _ = self.client.run_command(cmd)

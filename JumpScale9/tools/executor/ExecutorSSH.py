@@ -99,7 +99,9 @@ class ExecutorSSH(ExecutorBase):
             path = "/tmp/prefab_{}.sh".format(j.data.idgenerator.generateRandomInt(1, 100000))
         
         j.sal.fs.writeFile(path, content)
-        self.sshclient.client.copy_file(path, path)  # is now always on tmp
+
+        path2 = "/tmp/prefab_{}.sh".format(j.data.idgenerator.generateRandomInt(1, 100000)) # just in case of the same machine.
+        self.sshclient.client.copy_file(path, path2)  # is now always on tmp 
         if sudo and "LEDE" not in j.core.platformtype.get(self).osname:
             passwd = self.sshclient.config.data['passwd_']
             cmd = 'echo \'{}\' | sudo -H -SE -p \'\' bash "{}"'.format(passwd, path)
