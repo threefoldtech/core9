@@ -104,16 +104,16 @@ class ExecutorSSH(ExecutorBase):
         self.sshclient.client.copy_file(path, path2)  # is now always on tmp 
         if sudo and "LEDE" not in j.core.platformtype.get(self).osname:
             passwd = self.sshclient.config.data['passwd_']
-            cmd = 'echo \'{}\' | sudo -H -SE -p \'\' bash "{}"'.format(passwd, path)
+            cmd = 'echo \'{}\' | sudo -H -SE -p \'\' bash "{}"'.format(passwd, path2)
         else:
-            cmd = "bash {}".format(path)
+            cmd = "bash {}".format(path2)
         rc, out, err = self.sshclient.execute(cmd, die=die, showout=showout)
 
         if checkok and die:
             out = self._docheckok(content, out)
 
         j.sal.fs.remove(path)
-        self.sshclient.sftp.unlink(path)
+        self.sshclient.sftp.unlink(path2)
         return rc, out, err
 
     def upload(self, source, dest, dest_prefix="", recursive=True, createdir=True,
