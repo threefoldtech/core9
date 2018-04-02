@@ -22,6 +22,9 @@ class String():
     def toString(self, v):
         return self.clean(v)
 
+    def toHR(self,v):
+        return self.clean(v)
+
     def check(self, value):
         '''Check whether provided value is a string'''
         return isinstance(value, str)
@@ -134,6 +137,10 @@ class Bytes():
         else:
             raise ValueError("Could not convert to bytes:%s" % v)
 
+    def toHR(self,v):
+        return "...BYTES..."
+            
+
     def check(self, value):
         '''Check whether provided value is a array of bytes'''
         return isinstance(value, bytes)
@@ -184,6 +191,10 @@ class Boolean():
             return str(boolean)
         else:
             raise ValueError("Invalid value for boolean: '%s'" % boolean)
+
+    def toHR(self,v):
+        return self.clean(v)
+
 
     def check(self, value):
         '''Check whether provided value is a boolean'''
@@ -256,6 +267,9 @@ class Integer():
         else:
             raise ValueError("Invalid value for integer: '%s'" % value)
 
+    def toHR(self,v):
+        return self.clean(v)
+
     def fromString(self, s):
         return j.data.text.getInt(s)
 
@@ -310,6 +324,9 @@ class Float():
             return str(value)
         else:
             raise ValueError("Invalid value for float: '%s'" % value)
+
+    def toHR(self,v):
+        return self.clean(v)
 
     def fromString(self, s):
         return j.data.text.getFloat(s)
@@ -379,13 +396,15 @@ class Percent(Integer):
         s = self.clean(s)
         return s
 
+    def toHR(self,v):
+        return self.toString(v)        
+
     def toString(self, v):
         v = self.clean(v)
         v = round(value/100,2)
         if int(v) == v:
             v=int(v)
         return "%s/%"%v
-
 
 class Object(Bytes):
     '''
@@ -414,6 +433,9 @@ class Object(Bytes):
         
         """
         return value
+
+    def toHR(self,v):
+        return self.clean(v)        
 
     def python_code_get(self, value):
         raise NotImplemented()

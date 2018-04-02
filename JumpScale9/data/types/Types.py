@@ -133,14 +133,17 @@ class Types(JSBASE):
         elif ttype in ["n", "num","numeric"]:
             res = self._numeric
         elif ttype.startswith("l"):
-            res = self._list
+            tt = self._list() #need to create new instance
+            if return_class:
+                raise RuntimeError("cannot return class if subtype specified")
             if len(ttype)==2:
-                if return_class:
-                    raise RuntimeError("cannot return class if subtype specified")
-                tt = self.list
-                ttsub = self.get(ttype[1],return_class=True)
-                tt.SUBTYPE = ttsub()
+                tt.SUBTYPE  = self.get(ttype[1],return_class=True)()
                 return tt
+            elif len(ttype)==1:
+                assert tt.SUBTYPE == None
+                return tt
+            else:
+                raise RuntimeError("list type len needs to be 1 or 2")                
         elif ttype == "dict":
             res = self._dict
         elif ttype == "yaml":

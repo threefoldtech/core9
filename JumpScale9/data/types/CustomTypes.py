@@ -456,6 +456,30 @@ class Numeric(String):
         # print (self.bytes2cur(self.str2bytes("0.001k"),"eur"))
         # from IPython import embed;embed(colors='Linux')
 
+    def clean(self,data):
+        # print("num:clean:%s"%data)
+        if j.data.types.string.check(data):
+            data=data.strip().strip("'").strip("\"").strip()
+            return self.str2bytes(data)
+        elif j.data.types.bytes.check(data):
+            return data
+        else:
+            return self.str2bytes("%s USD"%data)
+            
+    def fromString(self, txt):
+        return self.clean(txt)
+
+    def toHR(self,v):
+        return self.toString(v)
+
+    def toString(self,val):
+        if j.data.types.string.check(val):
+            return val
+        elif j.data.types.bytes.check(val):
+            return self.bytes2str(val)
+        else:
+            return "%s USD"%val
+
 class Date(String):
     '''    
     internal representation is an epoch (int)
@@ -486,6 +510,9 @@ class Date(String):
     def toString(self,val,local=True):
         val = self.clean(val)
         return j.data.time.epoch2HRDateTime(val,local=local)
+
+    def toHR(self,v):
+        return self.toString(v)
 
     def clean(self, v):
         """
