@@ -25,7 +25,7 @@ stdout = true
 
 class SSHClient(SSHClientBase):
 
-    def __init__(self, instance, data={}, parent=None, interactive=False, use_paramiko=True):
+    def __init__(self, instance, data={}, parent=None, interactive=False, use_paramiko=False):
         SSHClientBase.__init__(self, instance=instance,
                                data=data, parent=parent, interactive=interactive)
         self._logger = j.logger.get("ssh client: %s:%s(%s)" % (self.addr_variable, self.port, self.login))

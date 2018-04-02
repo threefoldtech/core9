@@ -37,7 +37,7 @@ class SSHClientParamiko(SSHClientBase):
     def __init__(self, instance, data={}, parent=None, interactive=False):
         SSHClientBase.__init__(self, instance=instance,
                                data=data, parent=parent, interactive=interactive)
-        # self._logger = j.logger.get("ssh client: %s:%s(%s)" % (self.addr_variable, self.port, self.login))
+
 
         key_filename = self.sshkey.path if (
             self.sshkey and self.sshkey.path) else None
@@ -101,10 +101,11 @@ class SSHClientParamiko(SSHClientBase):
         return self.client.open_sftp()
 
 
-
     def _make_sftp(self):
         """Make SFTP client from open transport"""
-        return paramiko.SFTPClient.from_transport(self.transport)
+        transport = self.transport
+        transport.open_session()
+        return paramiko.SFTPClient.from_transport(transport)
 
     def _mkdir(self, sftp, directory):
         """Make directory via SFTP channel
@@ -120,9 +121,9 @@ class SSHClientParamiko(SSHClientBase):
             sftp.mkdir(directory)
         except IOError as error:
             msg = "Error occured creating directory %s on %s - %s"
-            logger.error(msg, directory, self.host, error)
+            self.logger.error(msg, directory, self.host, error)
             raise IOError(msg, directory, self.host, error)
-        logger.debug("Creating remote directory %s", directory)
+        self.logger.debug("Creating remote directory %s", directory)
         return True
 
     def mkdir(self, sftp, directory):
@@ -156,17 +157,6 @@ class SSHClientParamiko(SSHClientBase):
             return self.mkdir(sftp, sub_dirs)
         return True
 
-    def _copy_dir(self, local_dir, remote_dir, sftp):
-        """Call copy_file on every file in the specified directory, copying
-        them to the specified remote directory."""
-        file_list = os.listdir(local_dir)
-        for file_name in file_list:
-            local_path = os.path.join(local_dir, file_name)
-            remote_path = '/'.join([remote_dir, file_name])
-            self.copy_file(local_path, remote_path, recurse=True,
-                           sftp=sftp)
-
-
 
     def _parent_paths_split(self, file_path, sep=None):
         sep = os.path.sep if sep is None else sep
@@ -179,6 +169,18 @@ class SSHClientParamiko(SSHClientBase):
         if file_path.startswith(sep) or not destination:
             destination = sep + destination
         return destination
+
+
+    def _copy_dir(self, local_dir, remote_dir, sftp):
+        """Call copy_file on every file in the specified directory, copying
+        them to the specified remote directory."""
+        file_list = os.listdir(local_dir)
+        for file_name in file_list:
+            local_path = os.path.join(local_dir, file_name)
+            remote_path = '/'.join([remote_dir, file_name])
+            self.copy_file(local_path, remote_path, recurse=True,
+                           sftp=sftp)
+
 
 
     def copy_file(self, local_file, remote_file, recurse=False,
@@ -298,7 +300,7 @@ class SSHClientParamiko(SSHClientBase):
                 continue
 
             except Exception as e:
-                # j.clients.ssh.removeFromCache(self)
+                j.clients.ssh.removeFromCache(self)
                 msg = "Could not connect to ssh on %s@%s:%s. Error was: %s" % (
                     self.login, self.addr, self.port, e)
                 raise j.exceptions.RuntimeError(msg)
@@ -434,14 +436,8 @@ class SSHClientParamiko(SSHClientBase):
 
     @property
     def prefab(self):
-        if not self.usesproxy and self._prefab is None:
-            executor = j.tools.executor.getSSHBased(
-                addr=self.addr, port=self.port, timeout=self.timeout)
-            self._prefab = executor.prefab
-        if self.usesproxy:
-            ex = j.tools.executor.getSSHViaProxy(self.host)
-            self._prefab = j.tools.prefab.get(self)
-        return self._prefab
+        exc = j.tools.executor.ssh_get(self)
+        return exc.prefab
 
     def ssh_authorize(self, user, key):
         self.prefab.system.ssh.authorize(user, key)

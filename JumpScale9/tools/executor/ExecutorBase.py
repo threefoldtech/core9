@@ -208,8 +208,7 @@ class ExecutorBase(JSBASE):
             echo --TEXT--
             """
             C = j.data.text.strip(C)
-            rc, out, err = self.execute(C, showout=False, sudo=False)
-
+            rc, out, err = self.execute(C, showout=True, sudo=False)
             res = {}
             state = ""
             for line in out.split("\n"):
