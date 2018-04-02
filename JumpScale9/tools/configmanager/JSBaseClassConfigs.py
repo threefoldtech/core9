@@ -26,7 +26,7 @@ class JSBaseClassConfigs(JSBASE):
 
         # self.getall()
 
-    def get(self, instance="main", data={}, create=True, die=True, interactive=True):
+    def get(self, instance="main", data={}, create=True, die=True, interactive=True,**kwargs):
         """
         Get an instance of the child_class set in the constructor
 
@@ -40,7 +40,7 @@ class JSBaseClassConfigs(JSBASE):
             else:
                 return None
 
-        return self._child_class(instance=instance, data=data, parent=self, interactive=interactive)
+        return self._child_class(instance=instance, data=data, parent=self, interactive=interactive,**kwargs)
 
     def exists(self, instance):
         return instance in self.list()
