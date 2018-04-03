@@ -40,7 +40,7 @@ rm ~/js9host/cfg/jumpscale9.toml > /dev/null 2>&1
 
 pip3 uninstall parallel-ssh 2>&1 > /dev/null | echo ""
 pip3 uninstall ssh2-python 2>&1 > /dev/null | echo ""
-pip3 install -—upgrade parallel-ssh
+pip3 install --upgrade parallel-ssh
 pip3 install --upgrade --no-cache-dir ssh2-python
 
 echo "install js9"
@@ -51,4 +51,3 @@ pip3 install Cython
 pip3 install numpy
 # pip3 install tarantool
 pip3 install PyNaCl --upgrade
-
