@@ -38,7 +38,7 @@ class JSBase:
     def cache(self):
         if self._cache is None:
             id = self.__name__
-            for item in ["instance", "_id", "id", "name", "_name"]:
+            for item in ["instance", "_instance", "_id", "id", "name", "_name"]:
                 if item in self.__dict__ and self.__dict__[item]:
                     id += "_" + str(self.__dict__[item])
                     break
