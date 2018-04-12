@@ -1,21 +1,49 @@
 # JumpScale 9
 
-
 [![Join the chat at https://gitter.im/Jumpscale/jumpscale_core9](https://badges.gitter.im/Jumpscale/jumpscale_core9.svg)](https://gitter.im/Jumpscale/jumpscale_core9?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) ![travis](https://travis-ci.org/Jumpscale/core9.svg?branch=master)
 
+JumpScale is a cloud automation product and a branch from what used to be Pylabs. About 9 years ago Pylabs was the basis of a cloud automation product which was acquired by SUN Microsystems from Q-Layer. In the mean time we are 4 versions further and we have rebranded it to JumpScale.
 
-JumpScale is a cloud automation product and a branch from what used to be Pylabs. About 7 years ago Pylabs was the basis of a cloud automation product which was acquired by SUN Microsystems from a company called Q-Layer. In the mean time we are 4 versions further and we have rebranded it to JumpScale.
+- [JumpScale 9](#jumpscale-9)
+    - [About JumpScale9 Core](#about-jumpscale9-core)
+    - [Installing JumpScale9 Core](#installing-jumpscale9-core)
+        - [install using bash tools](#install-using-bash-tools)
+        - [Install using pip3](#install-using-pip3)
+    - [Usage](#usage)
+    - [Tutorials](#tutorials)
 
+## About JumpScale9 Core
 
-## install in development env (RECOMMENDED)
+The core module provides the bare framework into which other modules of JumpScale plug into.
+
+Of these provided tools are, most notably:
+
+* [Config Manager](docs/config/configmanager.md)
+  The config manager is a secure way to manage configuration instances. Anything saved to the file system is NACL encrypted and only decrypted on the fly when accessed.
+
+- [Executors](docs/internals/executors.md)
+  JumpScale comes with its own executors that abstract working locally or remotely.
+  Of these executors:
+
+  * SSH Executor (for remote execution)
+  * Local Executor (for local execution)
+  * Docker Executor (for executing on dockers)
+
+* [JSLoader](docs/JSLoader/JSLoader.md)
+* [Node Manager]()
+
+## Installing JumpScale9 Core
+
+_tested on osx, ubuntu 16.04, ubuntu 17.04
+(will upgrade brew as part of the process on OSX)_
+
+### install using [bash tools](https://github.com/Jumpscale/bash)
 
 ```bash
 #to define branch:
 export JS9BRANCH="development"
-curl https://raw.githubusercontent.com/Jumpscale/core9/master/install.sh?$RANDOM > /tmp/install_js9.sh;bash /tmp/install_js9.sh
+curl https://raw.githubusercontent.com/Jumpscale/core9/$JS9BRANCH/install.sh?$RANDOM > /tmp/install_js9.sh;bash /tmp/install_js9.sh
 ```
-
-tested on osx & ubuntu 16.04 (will upgrade brew as part of the process on OSX)
 
 to follow the install
 
@@ -23,43 +51,31 @@ to follow the install
 tail -f /tmp/zutils.log
 ```
 
-#### to test that it worked:
+to test that it worked:
 
 ```bash
 js9
 ```
 
-## shortcut to install using pip3 (not recommended)
+### Install using pip3
 
 ```
-pip3 install JumpScale9
+pip3 install -e git+https://github.com/Jumpscale/core9@development
 ```
 
-## shortcut to install using pip3 directly from git
+## Usage
 
-```
-pip3 install git+https://github.com/Jumpscale/core9@development
-```
+* The jsshell
+  in your terminal, type `js9`
 
-will checkout in local directory & install
-this will not be in development mode !
+- In Python
 
+  ```bash
+  python3 -c 'from js9 import j;print(j.application.getMemoryUsage())'
+  ```
 
+  the default mem usage < 23 MB and lazy loading of the modules.
 
-## how to use after install from python
+## Tutorials
 
-```bash
- python3 -c 'from js9 import j;print(j.application.getMemoryUsage())'
-```
-
-the default mem usage < 23 MB and lazy loading of the modules.
-
-## autocomplete
-
-in  (ofcourse change yourusername)
-```
-/Users/yourusername/js9host/autocomplete
-```
-
-add this path to your editor
-
+<!TODO>
