@@ -21,7 +21,7 @@ Of these provided tools are, most notably:
 * [Config Manager](docs/config/configmanager.md)
   The config manager is a secure way to manage configuration instances. Anything saved to the file system is NACL encrypted and only decrypted on the fly when accessed.
 
-- [Executors](docs/internals/executors.md)
+- [Executors](docs/Internals/Executors.md)
   JumpScale comes with its own executors that abstract working locally or remotely.
   Of these executors:
 
