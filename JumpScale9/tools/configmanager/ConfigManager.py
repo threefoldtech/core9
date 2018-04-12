@@ -495,6 +495,7 @@ class ConfigFactory(JSBASE):
                 j.tools.myconfig.config.save()
 
     def __str__(self):
+        self.sandbox_check()
         sshagent = j.clients.sshkey.sshagent_available()
         keyloaded = self.keyname in j.clients.sshkey.listnames()
         C="""

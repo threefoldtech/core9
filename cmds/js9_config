@@ -63,9 +63,8 @@ def configure(location, instance):
 @click.option('--instance', '-i', default='main', help='name of the instance, default: main')
 def get(location, instance):
     c = j.tools.configmanager.js9_obj_get(location=location, instance=instance)
-    print("var c has the config management object")
-    from IPython import embed
-    embed(colors='Linux')
+    print(j.tools.configmanager)
+    print(c.config)
 
 
 @click.command()
