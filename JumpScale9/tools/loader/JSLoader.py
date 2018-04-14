@@ -100,7 +100,6 @@ class JSLoader():
         self.__jslocation__ = "j.tools.jsloader"
         self.tryimport = False
 
-
     @property
     def autopip(self):
         return j.core.state.config["system"]["autopip"] in [True, "true", "1", 1]
@@ -235,7 +234,6 @@ class JSLoader():
 
         moduleList = {}
 
-
         for name, path in j.tools.executorLocal.state.configGet('plugins', {}).items():
             self.logger.info("find modules in jumpscale for : '%s'" % path)
             if j.sal.fs.exists(path, followlinks=True):
@@ -285,10 +283,10 @@ class JSLoader():
         contentCC += pystache.render(GEN_END2, **jlocations)
         content += pystache.render(GEN_END, **jlocations)
 
-        self.logger.info("wrote js9 autocompletion file in %s"%outCC)
+        self.logger.info("wrote js9 autocompletion file in %s" % outCC)
         j.sal.fs.writeFile(outCC, contentCC)
 
-        self.logger.info("wrote js9 file in %s"%out)
+        self.logger.info("wrote js9 file in %s" % out)
         j.sal.fs.writeFile(out, content)
 
     def _pip_installed(self):
@@ -438,7 +436,7 @@ class JSLoader():
         if j.dirs.HOSTDIR == "":
             raise RuntimeError("dirs in your jumpscale9.toml not ok, hostdir cannot be empty")
 
-        if autocompletepath == None:
+        if autocompletepath is None:
             autocompletepath = os.path.join(j.dirs.HOSTDIR, "autocomplete")
             j.sal.fs.createDir(autocompletepath)
 
