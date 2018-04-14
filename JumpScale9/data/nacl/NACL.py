@@ -252,30 +252,6 @@ class NACL(JSBASE):
         return self.hash32(signeddata)
 
 
-
-    #IS NOT WHAT WE NEED, we need to sign with a private key and then allow others to verify with public key of the author
-    # def sign(self, data):
-    #     """
-    #     Sign data provided
-    #         :param data: data to be signed, should be of type binary
-    #         @return: tuple of signed data and verification key
-    #     """
-    #     signing_key = nacl.signing.SigningKey.generate()
-    #     signed = signing_key.sign(data)
-    #     verify_key = signing_key.verify_key
-    #     return signed, verify_key.encode(encoder=nacl.encoding.HexEncoder)
-
-    # def verify(self, data, signature):
-    #     """
-    #     verify data provided using the signature
-    #         :param data: signed data to be verified
-    #         :param signature: signature to verify the data
-    #         @return: original data
-    #     """
-    #     verify_key = nacl.signing.VerifyKey(
-    #         signature, encoder=nacl.encoding.HexEncoder)
-    #     return verify_key.verify(data)
-
     def file_write_hex(self, path, content):
         content = binascii.hexlify(content)
         j.sal.fs.writeFile(path, content)

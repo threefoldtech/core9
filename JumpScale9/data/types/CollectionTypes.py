@@ -200,9 +200,8 @@ class List():
         if self.SUBTYPE.BASETYPE in ["string","integer","float","bool"]:
             capnptype = self.SUBTYPE.capnp_schema_get("",0).split(":",1)[1].rstrip(";").strip()
         else:                
-            print("capnpschema_list")
-            from IPython import embed;embed(colors='Linux')
-            s
+            #the sub type is now bytes because that is how the subobjects will be stored
+            capnptype = j.data.types.bytes.capnp_schema_get("",nr=0).split(":",1)[1].rstrip(";").strip()
         return "%s @%s :List(%s);"%(name,nr,capnptype)
 
 class Hash(List):
