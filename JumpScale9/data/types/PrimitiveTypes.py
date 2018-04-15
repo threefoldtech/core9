@@ -420,7 +420,7 @@ class Object(Bytes):
         raise NotImplemented()
 
     def toString(self, v):
-        return isinstance(value, bytes)
+        return "BYTES"
 
     def check(self, value):
         return isinstance(value, bytes)
@@ -440,6 +440,48 @@ class Object(Bytes):
     def python_code_get(self, value):
         raise NotImplemented()
 
+        
+    def capnp_schema_get(self,name,nr):
+        return "%s @%s :Data;"%(name,nr)
+
+    def toml_string_get(self, value, key):
+        raise NotImplemented()
+
+class JSObject(Bytes):
+    '''
+    jumpscale ORM object
+    '''
+
+    NAME = 'jsobject'
+    BASETYPE = ''
+
+    def __init__(self):
+        self.SUBTYPE = None    
+
+    def fromString(self, s):
+        """
+        """
+        return str(s)
+
+    def toString(self, v):
+        return v
+
+    def check(self, value):
+        return "_JSOBJ" in value.__dict__
+
+    def get_default(self):
+        return self.SUBTYPE()
+
+    def clean(self, value):
+        """        
+        """
+        return value
+
+    def toHR(self,v):
+        return str(v)
+
+    def python_code_get(self, value):
+        return ""
         
     def capnp_schema_get(self,name,nr):
         return "%s @%s :Data;"%(name,nr)

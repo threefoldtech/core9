@@ -39,6 +39,7 @@ class Types(JSBASE):
         self.percent = Percent()
         self.hash = Hash()
         self.object = Object()
+        self.jsobject = JSObject()
 
         self._dict = Dictionary
         self._list = List
@@ -63,10 +64,11 @@ class Types(JSBASE):
         self._percent = Percent
         self._hash = Hash
         self._object = Object
+        self._jsobject = JSObject
 
         self.types_list = [self.bool, self.dict, self.list, self.bytes,
                            self.guid, self.float, self.int, self.multiline, 
-                           self.string, self.date, self.numeric, self.percent, self.hash, self.object]
+                           self.string, self.date, self.numeric, self.percent, self.hash, self.object, self.jsobject]
 
     def type_detect(self, val):
         """
@@ -89,7 +91,7 @@ class Types(JSBASE):
         - n, numeric
         - h, hash (set of 2 int)
         - p, percent
-        - o, object
+        - o, jsobject
         - ipaddr, ipaddress
         - ipport, tcpport
         - iprange
@@ -120,6 +122,8 @@ class Types(JSBASE):
             res = self._iprange
         elif ttype in ["ipport", "ipport"]:
             res = self._ipport
+        elif ttype in ["jo", "jsobject"]:
+            res = self._jsobject
         elif ttype == "email":
             res = self._email
         elif ttype == "multiline":

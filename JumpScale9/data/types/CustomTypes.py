@@ -343,7 +343,6 @@ class Numeric(String):
         if "," in value: #is only formatting in US
             value = value.replace(",","").lstrip(",").strip()
 
-
         if "-" in value:
             negative = True
             value = value.replace("-","").lstrip("-")
@@ -391,7 +390,7 @@ class Numeric(String):
             value = int(float(value)*100)
             ttype = 2
         else:
-            if float(value)==int(float(value)):
+            if str(float(value))==str(int(float(value))):
                 value=int(value)
                 ttype = 0
             else:

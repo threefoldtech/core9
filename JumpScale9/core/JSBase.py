@@ -1,5 +1,5 @@
 from JumpScale9 import j
-
+import os
 
 class JSBase:
 
@@ -33,6 +33,8 @@ class JSBase:
         self._logger_force = True
         self._logger = None
         self.logger.level = 20
+
+
 
     @property
     def cache(self):
