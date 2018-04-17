@@ -77,7 +77,6 @@ setup(
         'msgpack-python',
         'npyscreen',
         'pyyaml',
-        'pyserial>=3.4',
         'docker>=3',
         'fakeredis',
         'ssh2-python',
