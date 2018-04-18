@@ -52,8 +52,8 @@ class SSHClient(SSHClientBase):
         return self._client
 
 
-    def execute(self, cmd, showout=True, die=True):
-        channel, _, stdout, stderr, _ = self.client.run_command(cmd)
+    def execute(self, cmd, showout=True, die=True, timeout=None):
+        channel, _, stdout, stderr, _ = self.client.run_command(cmd, timeout=timeout)
         # self._client.wait_finished(channel)
 
         def _consume_stream(stream, printer, buf=None):
