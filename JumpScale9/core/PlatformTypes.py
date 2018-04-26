@@ -137,6 +137,10 @@ class PlatformType(JSBASE):
                 distro_info = platform.linux_distribution()
                 if 'Ubuntu' in distro_info:
                     self._osversion = distro_info[1]
+                elif 'ubuntu' in j.core.platformtype.myplatform.lower():
+                    version = self.executor.execute('lsb_release -r')[1]
+                    # version should be something like: 'Release:\t16.04\n
+                    self._osversion = version.split(':')[-1].strip()
                 else:
                     self._osversion = unn.release
                 self._cpu = unn.machine
