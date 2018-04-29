@@ -390,6 +390,8 @@ class Numeric(String):
             value = int(float(value)*100)
             ttype = 2
         else:
+            if value.strip()=="":
+                value="0"
             if str(float(value))==str(int(float(value))):
                 value=int(value)
                 ttype = 0
@@ -401,7 +403,6 @@ class Numeric(String):
                 else:
                     value=float(value)
                     ttype = 1
-
         curcat = j.clients.currencylayer.cur2id[cur2]
         
         if negative:
@@ -478,6 +479,14 @@ class Numeric(String):
             return self.bytes2str(val)
         else:
             return "%s USD"%val
+
+    def python_code_get(self, value):
+        """
+        produce the python code which represents this value
+        """
+        value = self.clean(value)
+        return "'%s'" % self.toString(value)
+            
 
 class Date(String):
     '''    

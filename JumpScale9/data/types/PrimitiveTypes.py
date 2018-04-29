@@ -39,7 +39,7 @@ class String():
         if value is None:
             value = ""
         value = str(value)
-        return value.strip().strip("'").strip("\"").strip()
+        return value.strip()#.strip("'").strip("\"").strip()
 
     def python_code_get(self, value):
         """
