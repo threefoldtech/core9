@@ -38,11 +38,6 @@ ZDoneReset
 rm ~/js9host/cfg/me.toml > /dev/null 2>&1
 rm ~/js9host/cfg/jumpscale9.toml > /dev/null 2>&1
 
-pip3 uninstall parallel-ssh 2>&1 > /dev/null | echo ""
-pip3 uninstall ssh2-python 2>&1 > /dev/null | echo ""
-pip3 install --upgrade parallel-ssh
-pip3 install --upgrade --no-cache-dir ssh2-python
-
 echo "install js9"
 ZInstall_host_js9 || die "Could not install core9 of js9" || exit 1
 

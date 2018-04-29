@@ -72,16 +72,15 @@ setup(
         'redis>=2.10.5',
         'requests>=2.13.0',
         'future>=0.16.0',
-        'psutil',
         'watchdog',
         'msgpack-python',
         'npyscreen',
         'pyyaml',
-        'pyserial>=3.4',
         'docker>=3',
         'fakeredis',
         'ssh2-python',
         'parallel_ssh>=1.4.0',
+        'psutil>=5.4.3',
 
     ],
     cmdclass={

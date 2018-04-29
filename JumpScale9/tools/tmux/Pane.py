@@ -32,7 +32,7 @@ class Pane(JSBASE):
 
     def _split(self, name, ext="-v"):
         self.select()
-        j.sal.tmux.execute("split-window %s" % ext)
+        j.tools.tmux.execute("split-window %s" % ext)
         # look for pane who is not found yet
         panefound = None
         for pane2 in self.window.mgmt.panes:

@@ -1,4 +1,5 @@
 from JumpScale9 import j
+import pssh.exceptions
 
 JSBASE = j.application.jsbase_get_class()
 
@@ -132,3 +133,5 @@ class Timeout(BaseJSException):
         super().__init__(message, level, source, actionkey, eco, tags, msgpub)
         self.type = "timeout"
         self.codetrace = False
+
+SSHTimeout = pssh.exceptions.Timeout
