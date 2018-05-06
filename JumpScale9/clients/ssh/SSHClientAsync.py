@@ -4,12 +4,16 @@ import sys
 from io import StringIO
 import functools
 from js9 import j
+from .SSHClientBase import SSHClientBase
 
 
-class SSHClientSession(asyncssh.SSHClientSession):
+JSBASE = j.application.jsbase_get_class()
+
+
+class SSHClientSession(asyncssh.SSHClientSession, JSBASE):
 
     def __init__(self, showout):
-        self.logger = j.logger.get('j.client.asyncssh')
+        JSBASE.__init__(self)
         self._showout = showout
         self.exit_status = None
         self._stdout_buf = StringIO()
@@ -31,11 +35,11 @@ class SSHClientSession(asyncssh.SSHClientSession):
         if datatype == asyncssh.EXTENDED_DATA_STDERR:
             self._stderr_buf.write(data)
             if self._showout:
-                print(data, end='', file=sys.stderr)
+                self.logger.info(data, end='', file=sys.stderr)
         else:
             self._stdout_buf.write(data)
             if self._showout:
-                print(data, end='')
+                self.logger.info(data, end='')
 
     def exit_status_received(self, status):
         self.exit_status = status
@@ -45,10 +49,14 @@ class SSHClientSession(asyncssh.SSHClientSession):
             self.logger.error('SSH session error: ' + str(exc))
 
 
-class SSHClient(asyncssh.SSHClient):
+class SSHClientAsync(SSHClientBase):
 
-    def __init__(self):
-        self.logger = j.logger.get('j.client.asyncssh')
+    def __init__(self, instance, data={}, parent=None, interactive=False):
+        self.instance = instance
+        SSHClientBase.__init__(self, instance=instance, data=data, parent=parent, interactive=interactive)
+        self._client = None
+        self.async = True
+
         self.conn = None
 
     def connection_made(self, conn):
@@ -62,36 +70,6 @@ class SSHClient(asyncssh.SSHClient):
 
     def auth_completed(self):
         self.logger.debug('Authentication successful.')
-
-
-class AsyncSSHClient:
-
-    def __init__(
-            self,
-            addr='',
-            port=22,
-            login="root",
-            passwd=None,
-            usesproxy=False,
-            forward_agent=True,
-            allow_agent=True,
-            look_for_keys=True,
-            key_filename=(),
-            passphrase=None,
-            timeout=5.0):
-        self.addr = addr
-        self.port = port
-        self.login = login
-        self.password = passwd
-        self.timeout = timeout
-        self.allow_agent = allow_agent
-        self.forward_agent = forward_agent
-        self.look_for_keys = look_for_keys
-        self.key_filename = key_filename or ()
-        self.passphrase = passphrase
-        self.logger = j.logger.get("j.clients.ssh")
-
-        self._client = None
 
     # def connected(self):
     #     return self._client is not None and self._client.conn is not None

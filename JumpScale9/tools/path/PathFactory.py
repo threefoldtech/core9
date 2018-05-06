@@ -1,9 +1,16 @@
 from path import Path
+from JumpScale9 import j
+
+JSBASE = j.application.jsbase_get_class()
 
 
-class PathFactory:
+class PathFactory(JSBASE):
+
     def __init__(self):
-        self.__jslocation__ = "j.tools.path"
+        if not hasattr(self, '__jslocation__'):
+            self.__jslocation__ = "j.tools.path"
+        JSBASE.__init__(self)
+
     def get(self, startpath):
         """
         example1:

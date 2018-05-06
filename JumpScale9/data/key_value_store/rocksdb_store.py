@@ -19,7 +19,7 @@ class RocksDBKeyValueStore(KeyValueStoreBase):
             cache=None,
             changelog=None):
         if namespace:
-            print("Warning: namespace is not supported with rockdb backend")
+            self.logger.info("Warning: namespace is not supported with rockdb backend")
 
         self.rocksdb = rocksdb.DB(dbpath, rocksdb.Options(create_if_missing=True))
 

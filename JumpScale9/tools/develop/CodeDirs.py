@@ -1,26 +1,29 @@
 from js9 import j
 
+JSBASE = j.application.jsbase_get_class()
 
-class CodeDirs():
+
+class CodeDirs(JSBASE):
     def __init__(self):
+        JSBASE.__init__(self)
         self.path = j.dirs.CODEDIR
 
         self.load()
 
     def load(self):
-        data=j.core.state.stateGetFromDict("develop","codedirs","")
+        data = j.core.state.stateGetFromDict("develop", "codedirs", "")
         self.tree = j.data.treemanager.get(data=data)
-        self.tree.setDeleteState() #set all on deleted state
+        self.tree.setDeleteState()  # set all on deleted state
         types = j.sal.fs.listDirsInDir(j.dirs.CODEDIR, False, True)
         # types2 = []
         for ttype in types:
             self.tree.set(ttype, cat="type")
             # types2.append(currootTree)
-            if ttype[0]=="." or ttype[0]=="_":
+            if ttype[0] == "." or ttype[0] == "_":
                 continue
             accounts = j.sal.fs.listDirsInDir("%s/%s" % (j.dirs.CODEDIR, ttype), False, True)
             for account in accounts:
-                if account[0]=="." or account[0]=="_":
+                if account[0] == "." or account[0] == "_":
                     continue
                 path = "%s.%s" % (ttype, account)
                 self.tree.set(path, cat="account")
@@ -30,7 +33,7 @@ class CodeDirs():
                         path = "%s.%s.%s" % (ttype, account, repo)
                         self.tree.set(path, cat="repo", item=CodeDir(self, ttype, account, repo))
 
-        self.tree.removeDeletedItems() #make sure that the ones no longer there are deleted
+        self.tree.removeDeletedItems()  # make sure that the ones no longer there are deleted
 
     # @property
     # def codedirs(self):
@@ -43,24 +46,28 @@ class CodeDirs():
     #     res.sort()
     #     return res
 
-
     def getActiveCodeDirs(self):
-        res=[]
+        res = []
         for item in self.tree.find(cat="repo"):
             if item.selected:
                 # path=j.dirs.CODEDIR+"/"+item.path.replace(".","/")
-                ttype, account, name=item.path.split(".")
-                res.append(CodeDir(self,ttype=ttype, account=account, name=name))
+                ttype, account, name = item.path.split(".")
+                res.append(CodeDir(self, ttype=ttype, account=account, name=name))
         return res
+
+    def get(self, type, account, reponame):
+        return CodeDir(self, type, account, reponame)
 
     def codeDirGet(self, reponame, account=None, die=True):
         res = []
         for item in self.self.tree.find("", getItems=True):
             if account is None or item.account == account:
                 if item.name == reponame:
-                    print(codedirget in develtools)
-                    from IPython import embed;embed(colors='Linux')
-                    CodeDir(self,ttype,account,reponame)
+                    for codedirget in develtools:
+                        self.logger.debug(codedirget)
+                    from IPython import embed
+                    embed(colors='Linux')
+                    CodeDir(self, ttype, account, reponame)
                     res.append(item)
         if len(res) == 0:
             if die is False:
@@ -72,8 +79,7 @@ class CodeDirs():
         return res[0]
 
     def save(self):
-        j.core.state.stateSetInDict("develop","codedirs", self.tree.dumps())
-
+        j.core.state.stateSetInDict("develop", "codedirs", self.tree.dumps())
 
     # def selectionGet(self):
     #     coderepos = j.core.state.configGetFromDict("developtools", "coderepos", default=[])
@@ -127,11 +133,12 @@ class CodeDirs():
         return self.__str__()
 
     def __str__(self):
-        return ("%s"%self.tree)
+        return ("%s" % self.tree)
 
 
-class CodeDir():
+class CodeDir(JSBASE):
     def __init__(self, codedirs, ttype, account, name):
+        JSBASE.__init__(self)
         self.path = j.sal.fs.joinPaths(codedirs.path, ttype, account, name)
         self.account = account
         self.type = ttype

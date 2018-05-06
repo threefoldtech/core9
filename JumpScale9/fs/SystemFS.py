@@ -14,14 +14,15 @@ from stat import ST_MTIME
 from functools import wraps
 from .SystemFSDecorators import *
 from JumpScale9 import j
+import copy
 
-
-class SystemFS:
+JSBASE = j.application.jsbase_get_class()
+class SystemFS(JSBASE):
 
     def __init__(self):
-        self.__jslocation__ = "j.sal.fs"
-        self.logger = j.logger.get("j.sal.fs")
-        # self.logger.disabled = True
+        if not hasattr(self, '__jslocation__'):
+            self.__jslocation__ = "j.sal.fs"
+        JSBASE.__init__(self)
 
     @path_check(fileFrom={"required", "exists", "file"}, to={"required"})
     def copyFile(self, fileFrom, to, createDirIfNeeded=False, overwriteFile=True):
@@ -98,9 +99,12 @@ class SystemFS:
                 path = path[:-1]
             if os.path.islink(path):
                 os.unlink(path)
-            if self.exists(path):
+            else:
                 os.remove(path)
-                self.logger.debug('Done removing file with path: %s' % path)
+            self.logger.debug('Done removing file with path: %s' % path)
+        elif not self.isDir(path) and self.exists(path):
+            os.remove(path)
+            self.logger.debug('Done removing file with path: %s' % path)
         else:
             return self.removeDirTree(path)
 
@@ -116,7 +120,7 @@ class SystemFS:
             'Empty file %s has been successfully created' % filename)
 
     @path_check(newdir={"required", })
-    def createDir(self, newdir, unlink=True):
+    def createDir(self, newdir, unlink=False):
         """Create new Directory
         @param newdir: string (Directory path/name)
         if newdir was only given as a directory name, the new directory will be created on the default path,
@@ -199,7 +203,7 @@ class SystemFS:
                     if deletefirst and self.exists(dstname):
                         if self.isDir(dstname, False):
                             self.removeDirTree(dstname)
-                        if self.isLink(dstname):
+                        elif self.isLink(dstname):
                             self.unlink(dstname)
 
                     if keepsymlinks and self.isLink(srcname):
@@ -367,7 +371,7 @@ class SystemFS:
         self.logger.debug('Get basename for path: %s' % path)
         return os.path.basename(path.rstrip(os.path.sep))
 
-    #NO DECORATORS HERE
+    # NO DECORATORS HERE
     def pathShorten(self, path):
         """
         Clean path (change /var/www/../lib to /var/lib). On Windows, if the
@@ -380,22 +384,22 @@ class SystemFS:
         """
         return pathShorten(path)
 
-    #NO DECORATORS HERE
+    # NO DECORATORS HERE
     def pathClean(self, path):
         """
         goal is to get a equal representation in / & \ in relation to os.sep
         """
         return pathClean(path)
 
-    #NO DECORATORS HERE
+    # NO DECORATORS HERE
     def pathDirClean(self, path):
         return pathDirClean(path)
 
-    #NO DECORATORS HERE
+    # NO DECORATORS HERE
     def dirEqual(self, path1, path2):
         return dirEqual(path)
 
-    #NO DECORATORS HERE
+    # NO DECORATORS HERE
     def pathNormalize(self, path):
         """
         paths are made absolute & made sure they are in line with os.sep
@@ -458,6 +462,33 @@ class SystemFS:
             return os.sep
         return os.sep.join(parts)
 
+    def getParentWithDirname(self, path="", dirname=".git", die=False):
+        """
+        looks for parent which has $dirname in the parent dir, if found return
+        if not found will return None or die
+
+        Raises:
+            RuntimeError -- if die 
+
+        Returns:
+            string -- the path which has the dirname or None
+
+        """
+        if path == "":
+            path = j.sal.fs.getcwd()
+
+        # first check if there is no .jsconfig in parent dirs
+        curdir = copy.copy(path)
+        while curdir.strip() != "":
+            if j.sal.fs.exists("%s/%s" % (curdir, dirname)):
+                return curdir
+            # look for parent
+            curdir = j.sal.fs.getParent(curdir)
+        if die:
+            raise RuntimeError("Could not find %s dir as parent of:'%s'" % (dirname, path))
+        else:
+            return None
+
     @path_check(path={"required", })
     def getFileExtension(self, path):
         ext = os.path.splitext(path)[1]
@@ -497,7 +528,7 @@ class SystemFS:
         """
         if permissions > 511 or permissions < 0:
             raise ValueError("can't perform chmod, %s is not a valid mode" % oct(permissions))
-           
+
         os.chmod(path, permissions)
         for root, dirs, files in os.walk(path):
             for ddir in dirs:
@@ -603,7 +634,9 @@ class SystemFS:
 
         if res.startswith(".."):
             srcDir = self.getDirName(path)
-            res = self.pathNormalize("%s%s"%(srcDir,res))
+            res = self.pathNormalize("%s%s" % (srcDir, res))
+        elif self.getBaseName(res) == res:
+            res = self.joinPaths(self.getParent(path), res)
         return res
 
     @path_check(path={"required", "exists"})
@@ -706,7 +739,7 @@ class SystemFS:
 
             if followSymlinks:
                 if self.isLink(fullpath):
-                    fullpath=self.readLink(fullpath)
+                    fullpath = self.readLink(fullpath)
 
             if self.isFile(fullpath) and "f" in type:
                 includeFile = False
@@ -907,7 +940,7 @@ class SystemFS:
         for item in items:
             dest2 = "%s/%s" % (dest, self.getBaseName(item))
             dest2 = dest2.replace("//", "/")
-            self.logger.info(("link %s:%s" % (item, dest2)))
+            self.logger.debug("link %s:%s" % (item, dest2))
             self.symlink(item, dest2, overwriteTarget=delete)
             if makeExecutable:
                 # print("executable:%s" % dest2)
@@ -1265,8 +1298,8 @@ class SystemFS:
         Located in temp dir of qbase
         @rtype: string representing the path of the temp file generated
         """
-        # return tempfile.mktemp())
-        tmpdir = j.dirs.TMPDIR
+        tmpdir = j.dirs.TMPDIR+"/js9/"
+        j.sal.fs.createDir(tmpdir)
         fd, path = tempfile.mkstemp(dir=tmpdir)
         try:
             real_fd = os.fdopen(fd)

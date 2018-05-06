@@ -32,13 +32,13 @@ def getNetworkInfo():
         block = m.group('block')
         yield parseBlock(block)
 
-
-class NetTools:
+JSBASE = j.application.jsbase_get_class()
+class NetTools(JSBASE):
 
     def __init__(self):
         self.__jslocation__ = "j.sal.nettools"
         self.__imports__ = "netaddr"
-        self.logger = j.logger.get('j.sal.nettools')
+        JSBASE.__init__(self)
         self._windowsNetworkInfo = None
 
     def tcpPortConnectionTest(self, ipaddr, port, timeout=None):
@@ -135,17 +135,17 @@ class NetTools:
         self.logger.debug(
             'Checking whether a service is running on port %d' % port)
 
-        if j.core.platformtype.myplatform.isLinux:
+        if j.core.platformtype.myplatform.isLinux or j.core.platformtype.myplatform.isMac:
             # netstat: n == numeric, -t == tcp, -u = udp, l= only listening, p = program
             command = "netstat -ntulp | grep ':%s '" % port
             # raise j.exceptions.RuntimeError("stop")
             exitcode, output, err = j.sal.process.execute(
-                command, die=False, showout=False)
+                command, die=True, showout=False)
             return exitcode == 0
-        elif j.core.platformtype.myplatform.isOSX():
+        elif j.core.platformtype.myplatform.isMac():
             command = "netstat -an -f inet"
             exitcode, output, err = j.sal.process.execute(
-                command, die=False, showout=False)
+                command, die=True, showout=False)
             for line in output.splitlines():
                 match = re.match(".*\.%s .*\..*LISTEN" % port, line)
                 if match:
@@ -153,7 +153,7 @@ class NetTools:
             # No ipv4? Then check ipv6
             command = "netstat -an -f inet6"
             exitcode, output, err = j.sal.process.execute(
-                command, die=False, showout=False)
+                command, die=True, showout=False)
             for line in output.splitlines():
                 match = re.match(".*\.%s .*\..*LISTEN" % port, line)
                 if match:
@@ -278,27 +278,27 @@ class NetTools:
         """
         regex = ''
         output = ''
-        if j.core.platformtype.myplatform.isLinux or j.core.platformtype.myplatform.isESX():
+        if j.core.platformtype.myplatform.isLinux:
             return [nic['name'] for nic in getNetworkInfo()]
-        elif j.core.platformtype.myplatform.isSolaris():
-            exitcode, output, err = j.sal.process.execute(
-                "ifconfig -a", showout=False)
-            if up:
-                regex = "^([\w:]+):\sflag.*<.*UP.*>.*$"
-            else:
-                regex = "^([\w:]+):\sflag.*$"
-            nics = set(re.findall(regex, output, re.MULTILINE))
-            exitcode, output, err = j.sal.process.execute(
-                "dladm show-phys", showout=False)
-            lines = output.splitlines()
-            for line in lines[1:]:
-                nic = line.split()
-                if up:
-                    if nic[2] == 'up':
-                        nics.add(nic[0])
-                else:
-                    nics.add(nic[0])
-            return list(nics)
+        # elif j.core.platformtype.myplatform.isSolaris():
+        #     exitcode, output, err = j.sal.process.execute(
+        #         "ifconfig -a", showout=False)
+        #     if up:
+        #         regex = "^([\w:]+):\sflag.*<.*UP.*>.*$"
+        #     else:
+        #         regex = "^([\w:]+):\sflag.*$"
+        #     nics = set(re.findall(regex, output, re.MULTILINE))
+        #     exitcode, output, err = j.sal.process.execute(
+        #         "dladm show-phys", showout=False)
+        #     lines = output.splitlines()
+        #     for line in lines[1:]:
+        #         nic = line.split()
+        #         if up:
+        #             if nic[2] == 'up':
+        #                 nics.add(nic[0])
+        #         else:
+        #             nics.add(nic[0])
+        #     return list(nics)
         elif j.core.platformtype.myplatform.isWindows:
             import wmi
             w = wmi.WMI()
@@ -492,7 +492,7 @@ class NetTools:
         while gwexists():
             removegw()
             time.sleep(1)
-            print("try to delete def gw")
+            self.logger.debug("try to delete def gw")
             counter += 1
             if counter > 10:
                 raise j.exceptions.RuntimeError("cannot delete def gw")
@@ -1010,5 +1010,9 @@ class NetTools:
             j.sal.process.execute('ifdown %s && ifup %s' % (device, device))
         self.logger.info('DONE')
 
-class NetworkZone:
+class NetworkZone(JSBASE):
+
+    def __init__(self):
+        JSBASE.__init__(self)
+
     ipRanges = None  # array(IPRange)

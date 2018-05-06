@@ -16,8 +16,10 @@ import traceback
 
 LEVELMAP = {1: 'CRITICAL', 2: 'WARNING', 3: 'INFO', 4: 'DEBUG'}
 
+JSBASE = j.application.jsbase_get_class()
 
-class ErrorConditionObject(BaseException):
+
+class ErrorConditionObject(BaseException, JSBASE):
     """
     @param type #BUG,INPUT,MONITORING,OPERATIONS,PERFORMANCE,UNKNOWN
     @param level #1:critical, 2:warning, 3:info see j.enumerators.ErrorConditionLevel
@@ -25,12 +27,27 @@ class ErrorConditionObject(BaseException):
 
     def __init__(self, ddict={}, msg="", msgpub="", category="", level=1,
                  type="UNKNOWN", tb=None, data=None, tags="", limit=30):
+        JSBASE.__init__(self)
         if ddict != {}:
-            self.__dict__ = ddict
+            defaults = {
+                "guid": j.data.idgenerator.generateGUID(),
+                "category": category,
+                "errormessage": msg,
+                "errormessagePub": msgpub,
+                "level": level,
+                "data": data,
+                "tags": tags,
+                "_limit": limit,
+                "code": "",
+                "funcname": "",
+                "funcfilename": "",
+                "funclinenr": "",
+            }
+            for k, v in defaults.items():
+                self.__dict__.setdefault(k, v)
+            self.__dict__.update(ddict)
         else:
-
-            btkis, filename0, linenr0, func0 = j.errorhandler.getErrorTraceKIS(
-                tb=tb)
+            btkis, filename0, linenr0, func0 = j.errorhandler.getErrorTraceKIS(tb=tb)
 
             # if len(btkis)>1:
             #     self.backtrace=self.getBacktrace(btkis,filename0,linenr0,func0)
@@ -146,7 +163,7 @@ class ErrorConditionObject(BaseException):
                 try:
                     s = str(s)
                 except Exception as e2:
-                    print("BUG in toascii in ErrorConditionObject")
+                    self.logger.debug("BUG in toascii in ErrorConditionObject")
                     import ipdb
 
         self.errormessage = _toAscii(self.errormessage)
@@ -192,11 +209,17 @@ class ErrorConditionObject(BaseException):
         if res is not None:
             self.__dict__ = res
 
-    def toJson(self):
+
+    @property
+    def json(self):
         self.key  # make sure uniquekey is filled
         data = self.__dict__.copy()
         data.pop('tb', None)
         return j.data.serializer.json.dumps(data)
+
+    @property
+    def info(self):
+        return self.__str__()
 
     def __str__(self):
         self.printTraceback()
@@ -211,7 +234,9 @@ class ErrorConditionObject(BaseException):
         #     content += "errorpub:\n%s\n\n" % self.errormessagePub
         return self.errormessage
 
-    __repr__ = __str__
+    def __repr__(self):
+        return self.__str__()
+        
 
     def log2filesystem(self):
         """

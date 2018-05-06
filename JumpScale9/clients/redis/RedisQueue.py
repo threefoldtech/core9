@@ -1,10 +1,13 @@
+from JumpScale9 import j
+JSBASE = j.application.jsbase_get_class()
 
 
-class RedisQueue:
+class RedisQueue(JSBASE):
     """Simple Queue with Redis Backend"""
 
     def __init__(self, redis, name, namespace='queue'):
         """The default connection parameters are: host='localhost', port=9999, db=0"""
+        JSBASE.__init__(self)
         self.__db = redis
         self.key = '%s:%s' % (namespace, name)
 

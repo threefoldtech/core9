@@ -14,18 +14,20 @@ import os
 import time
 # import sys
 
+from JumpScale9.core.JSBase import JSBase as JSBASE
 
-class RedisFactory:
+class RedisFactory(JSBASE):
 
     """
     """
 
     def __init__(self):
-        self.clearCache()
-        self.redisFound = redisFound
         self.__jslocation__ = "j.clients.redis"
+        JSBASE.__init__(self)
+        self.cache_clear()
+        self._running = None
 
-    def clearCache(self):
+    def cache_clear(self):
         """
         clear the cache formed by the functions get() and getQueue()
         """
@@ -41,6 +43,10 @@ class RedisFactory:
             fromcache=True,
             unixsocket=None,
             ardb_patch=False,
+            set_patch=False,
+            ssl=False,
+            ssl_certfile=None,
+            ssl_keyfile=None,
             **args):
         """
         get an instance of redis client, store it in cache so we could easily retrieve it later
@@ -49,26 +55,40 @@ class RedisFactory:
         :param port: used to form the key when no unixsocket
         :param fromcache: if False, will create a new one instead of checking cache
         :param unixsocket: path of unixsocket to be used while creating Redis
+
+        other arguments to redis: ssl_cert_reqs=None, ssl_ca_certs=None 
+
+        set_patch is needed when using the client for gedis
+
         """
+        
+
         if redisFound == False:
             raise RuntimeError("redis libraries are not installed, please pip3 install them.")
         if unixsocket is None:
             key = "%s_%s" % (ipaddr, port)
         else:
             key = unixsocket
+
         if key not in self._redis or not fromcache:
             if unixsocket is None:
-                self._redis[key] = Redis(ipaddr, port, password=password, **args)  # , unixsocket=unixsocket)
+                self._redis[key] = Redis(ipaddr, port, password=password, ssl=ssl, ssl_certfile=ssl_certfile, ssl_keyfile=ssl_keyfile, **args)
             else:
-                self._redis[key] = Redis(unix_socket_path=unixsocket, password=password, **args)
+                self._redis[key] = Redis(unix_socket_path=unixsocket, password=password,  ssl=ssl, ssl_certfile=ssl_certfile, ssl_keyfile=ssl_keyfile, **args)
 
         if ardb_patch:
             self._ardb_patch(self._redis[key])
+        
+        if set_patch:
+            self._set_patch(self._redis[key])
 
         return self._redis[key]
 
     def _ardb_patch(self, client):
         client.response_callbacks['HDEL'] = lambda r: r and nativestr(r) == 'OK'
+
+    def _set_patch(self, client):
+        client.response_callbacks['SET'] = lambda r: r
 
     def getQueue(self, ipaddr, port, name, namespace="queues", fromcache=True):
         """
@@ -88,39 +108,24 @@ class RedisFactory:
                 self.get(ipaddr, port), name, namespace=namespace)
         return self._redisq[key]
 
-    def get4core(self):
+
+    def core_get(self):
         """
         will try to create redis connection to $tmpdir/redis.sock
         if that doesn't work then will look for std redis port
         if that does not work then will return None
 
-        j.clients.redis.get4core()
+        j.clients.redis.core_get()
 
         """
-        # if "TMPDIR" in os.environ:
-        #     tmpdir = os.environ["TMPDIR"]
-        # else:
-        #     tmpdir = "/tmp"
-
-        # tmpdir= j.core.dirs.TMPDIR
-
-        unix_socket_path = '%s/redis.sock' % j.core.dirs.TMPDIR
+        unix_socket_path = '%s/redis.sock' % j.dirs.TMPDIR
 
         db = None
         if os.path.exists(path=unix_socket_path):
             db = Redis(unix_socket_path=unix_socket_path)
-        # elif j.sal.nettools.tcpPortConnectionTest("localhost", 6379):
-        #     db = Redis()
         else:
-            self.start4core()
+            self.core_start()
             db = Redis(unix_socket_path=unix_socket_path)
-
-        # try:
-        #     j.core.db.set("internal.last", 0)
-        #     return True
-        # except:
-        #     db = None
-
         return db
 
     def kill(self):
@@ -131,8 +136,14 @@ class RedisFactory:
                               j.dirs.TMPDIR, die=False, showout=False)
         j.sal.process.execute("redis-cli shutdown", die=False, showout=False)
         j.sal.process.killall("redis")
+        j.sal.process.killall("redis-server")
 
-    def start4core(self, timeout=20):
+    def core_running(self):
+        if self._running==None:
+            self._running=j.sal.nettools.tcpPortConnectionTest("localhost",6379)
+        return self._running
+
+    def core_start(self, timeout=20):
         """
         starts a redis instance in separate ProcessLookupError
         standard on $tmpdir/redis.sock
@@ -156,13 +167,13 @@ class RedisFactory:
             raise RuntimeError("platform not supported for start redis")
 
         # cmd = "redis-server --port 6379 --unixsocket %s/redis.sock --maxmemory 100000000 --daemonize yes" % tmpdir  # 100MB
-        # print("start redis in background (osx)")
+        # self.logger.info("start redis in background (osx)")
         # os.system(cmd)
-        # print("started")
+        # self.logger.info("started")
         # time.sleep(1)
         # elif j.core.platformtype.myplatform.isCygwin:
         #     cmd = "redis-server --maxmemory 100000000 & "
-        #     print("start redis in background (win)")
+        #     self.logger.info("start redis in background (win)")
         #     os.system(cmd)
 
         cmd = "echo never > /sys/kernel/mm/transparent_hugepage/enabled"
@@ -176,7 +187,7 @@ class RedisFactory:
         else:
             tmpdir = "/tmp"
         cmd = "%s  --port 0 --unixsocket %s/redis.sock --maxmemory 100000000" % (redis_bin, tmpdir)
-        print(cmd)
+        self.logger.info(cmd)
         j.sal.process.execute(
             "redis-server --port 6379 --unixsocket %s/redis.sock --maxmemory 100000000 --daemonize yes" % tmpdir)
         limit_timeout = time.time() + timeout

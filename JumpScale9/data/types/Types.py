@@ -6,51 +6,92 @@ from .CustomTypes import *
 from .CollectionTypes import *
 from .PrimitiveTypes import *
 
+JSBASE = j.application.jsbase_get_class()
 
-class Types:
+
+class Types(JSBASE):
 
     def __init__(self):
+        self.__jslocation__ = "j.data.types"
+        JSBASE.__init__(self)
         self.dict = Dictionary()
         self.list = List()
         self.guid = Guid()
         self.path = Path()
         self.bool = Boolean()
         self.int = Integer()
+        self.integer = self.int
         self.float = Float()
         self.string = String()
+        self.str = self.string
         self.bytes = Bytes()
         self.multiline = StringMultiLine()
         self.set = Set()
         self.ipaddr = IPAddress()
         self.iprange = IPRange()
         self.ipport = IPPort()
-        self.duration = Duration()
         self.tel = Tel()
         self.yaml = YAML()
         self.json = JSON()
         self.email = Email()
         self.date = Date()
-        self.types_list=[self.bool,self.dict,self.list,self.bytes,self.guid,self.float,self.int,self.multiline,self.string]
-        self.__jslocation__ = "j.data.types"
+        self.numeric = Numeric()
+        self.percent = Percent()
+        self.hash = Hash()
+        self.object = Object()
+        self.jsobject = JSObject()
 
-    def type_detect(self,val):
+        self._dict = Dictionary
+        self._list = List
+        self._guid = Guid
+        self._path = Path
+        self._bool = Boolean
+        self._int = Integer
+        self._float = Float
+        self._string = String
+        self._bytes = Bytes
+        self._multiline = StringMultiLine
+        self._set = Set
+        self._ipaddr = IPAddress
+        self._iprange = IPRange
+        self._ipport = IPPort
+        self._tel = Tel
+        self._yaml = YAML
+        self._json = JSON
+        self._email = Email
+        self._date = Date
+        self._numeric = Numeric
+        self._percent = Percent
+        self._hash = Hash
+        self._object = Object
+        self._jsobject = JSObject
+
+        self.types_list = [self.bool, self.dict, self.list, self.bytes,
+                           self.guid, self.float, self.int, self.multiline, 
+                           self.string, self.date, self.numeric, self.percent, self.hash, self.object, self.jsobject]
+
+    def type_detect(self, val):
         """
         check for most common types
         """
         for ttype in self.types_list:
             if ttype.check(val):
                 return ttype
-        raise RuntimeError("did not detect val for :%s"%val)
+        raise RuntimeError("did not detect val for :%s" % val)
 
-
-    def getTypeClass(self, ttype):
+    def get(self, ttype, return_class=False):
         """
         type is one of following
-        - str, string
-        - int, integer
-        - float
-        - bool,boolean
+        - s, str, string
+        - i, int, integer
+        - f, float
+        - b, bool,boolean
         - tel, mobile
+        - d, date
+        - n, numeric
+        - h, hash (set of 2 int)
+        - p, percent
+        - o, jsobject
         - ipaddr, ipaddress
         - ipport, tcpport
         - iprange
@@ -61,65 +102,69 @@ class Types:
         - yaml
         - set
         - guid
-        - duration e.g. 1w, 1d, 1h, 1m, 1
         """
         ttype = ttype.lower().strip()
-        if ttype in ["str", "string"]:
-            return self.string
-        elif ttype in ["int", "integer"]:
-            return self.int
-        elif ttype == "float":
-            return self.float
+        if ttype in ["s", "str", "string"]:
+            res = self._string
+        elif ttype in ["i","int", "integer"]:
+            res = self._int
+        elif ttype in ["f","float"]:
+            res = self._float
+        elif ttype in ["o","obj","object"]:
+            res = self._object
+        elif ttype in ["b","bool", "boolean"]:
+            res = self._bool
         elif ttype in ["tel", "mobile"]:
-            return self.tel
+            res = self._tel
         elif ttype in ["ipaddr", "ipaddress"]:
-            return self.ipaddr
+            res = self._ipaddr
         elif ttype in ["iprange", "ipaddressrange"]:
-            return self.iprange
+            res = self._iprange
         elif ttype in ["ipport", "ipport"]:
-            return self.ipport
-        elif ttype in ["bool", "boolean"]:
-            return self.bool
+            res = self._ipport
+        elif ttype in ["jo", "jsobject"]:
+            res = self._jsobject
         elif ttype == "email":
-            return self.email
+            res = self._email
         elif ttype == "multiline":
-            return self.multiline
-        elif ttype == "list":
-            return self.list
+            res = self._multiline
+        elif ttype in ["d", "date"]:
+            res = self._date
+        elif ttype in ["h", "hash"]:
+            res = self._hash
+        elif ttype in ["p", "perc","percent"]:
+            res = self._percent
+        elif ttype in ["n", "num","numeric"]:
+            res = self._numeric
+        elif ttype.startswith("l"):
+            tt = self._list() #need to create new instance
+            if return_class:
+                raise RuntimeError("cannot return class if subtype specified")
+            if len(ttype)==2:
+                tt.SUBTYPE  = self.get(ttype[1],return_class=True)()
+                return tt
+            elif len(ttype)==1:
+                assert tt.SUBTYPE == None
+                return tt
+            else:
+                raise RuntimeError("list type len needs to be 1 or 2")                
         elif ttype == "dict":
-            return self.dict
+            res = self._dict
         elif ttype == "yaml":
-            return self.yaml
+            res = self._yaml
         elif ttype == "json":
-            return self.json
+            res = self._json
         elif ttype == "set":
-            return self.set
+            res = self._set
         elif ttype == "guid":
-            return self.guid
-        elif ttype == "duration":
-            return self.duration
-        elif ttype == "date":
-            return self.date
+            res = self._guid
+        else:
+            raise j.exceptions.RuntimeError("did not find type:'%s'" % ttype)
 
-        raise j.exceptions.RuntimeError("did not find type:'%s'" % ttype)
+        if return_class:
+            return res
+        else:
+            return res()
 
-    def get(self, ttype, val):
-        """
-        type is one of following
-        - str, string
-        - int, integer
-        - float
-        - tel, mobile
-        - ipaddr, ipaddress
-        - ipport, tcpport
-        - iprange
-        - email
-        - multiline
-        - list
-        - dict
-        - set
-        - guid
-        - duration e.g. 1w, 1d, 1h, 1m, 1
-        """
-        cl = self.getTypeClass(ttype)
-        return cl.get(val)
+
+

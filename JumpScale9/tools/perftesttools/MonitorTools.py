@@ -3,10 +3,13 @@ import time
 
 import psutil
 
+JSBASE = j.application.jsbase_get_class()
 
-class MonitorClient:
+
+class MonitorClient(JSBASE):
 
     def __init__(self, redis):
+        JSBASE.__init__(self)
         self.redis = redis
 
         luapath = "/opt/code/github/jumpscale/jumpscale_core9/lib/JumpScale/lib/perftesttools/stat.lua"
@@ -23,7 +26,7 @@ class MonitorClient:
 
         res = self.redis.evalsha(self._sha, 1, key, measurement, value, str(now), type, tags, self.nodename)
 
-        print("%s %s" % (key, res))
+        self.logger.debug("%s %s" % (key, res))
 
         return res
 
@@ -58,7 +61,7 @@ class MonitorTools(MonitorClient):
         columns = ["readios", "readmerges", "readsectors", "readticks", "writeios",
                    "writemerges", "writesectors", "writeticks", "inflight", "ioticks", "timeinqueue"]
         data = dict(list(zip(columns, split)))
-        print(data)
+        self.logger.debug(data)
 
         tags = "disk:%s node:%s %s" % (dev, self.nodename, self.tags)
 
@@ -107,7 +110,7 @@ class MonitorTools(MonitorClient):
         val = int(data[measurement[0]])
         inflight = self.measureDiff(key, measurement[1], tags, val, aggrkey=measurement[1])
 
-        print("%s: iops:%s mb/sec:%s (R:%s/W:%s)" %
+        self.logger.debug("%s: iops:%s mb/sec:%s (R:%s/W:%s)" %
               (dev, iops, round(kbsec / 1024, 1), round(kbsecr / 1024, 1), round(kbsecw / 1024, 1)))
 
     def cpustat(self):

@@ -4,12 +4,16 @@
 import re
 from JumpScale9 import j
 
+JSBASE = j.application.jsbase_get_class()
 
-class RegexTemplates_FindLines:
+
+class RegexTemplates_FindLines(JSBASE):
     """
     regexexamples which find lines
     """
     # TODO: for all methods do input checking  (id:20)
+    def __init__(self):
+        JSBASE.__init__(self)
 
     def findCommentlines(self):
         return "^( *#).*"
@@ -21,13 +25,16 @@ class RegexTemplates_FindLines:
         return "^def .*"
 
 
-class Empty:
-    pass
-
-
-class RegexMatches:
+class Empty(JSBASE):
 
     def __init__(self):
+        JSBASE.__init__(self)
+
+
+class RegexMatches(JSBASE):
+
+    def __init__(self):
+        JSBASE.__init__(self)
         self.matches = []
 
     def addMatch(self, match):
@@ -49,9 +56,10 @@ class RegexMatches:
         return self.__str__()
 
 
-class RegexMatch:
+class RegexMatch(JSBASE):
 
     def __init__(self):
+        JSBASE.__init__(self)
         self.start = 0
         self.end = 0
         self.founditem = ""
@@ -65,13 +73,14 @@ class RegexMatch:
         return self.__str__()
 
 
-class RegexTools:
+class RegexTools(JSBASE):
     # TODO: doe some propper error handling with re, now obscure errors  (id:21)
 
     def __init__(self):
+        self.__jslocation__ = "j.data.regex"
+        JSBASE.__init__(self)
         self.templates = Empty()
         self.templates.lines = RegexTemplates_FindLines()
-        self.__jslocation__ = "j.data.regex"
 
     def findHtmlElement(self, subject, tofind, path, dieIfNotFound=True):
         match = re.search(r"< *%s *>" % tofind, subject, re.IGNORECASE)

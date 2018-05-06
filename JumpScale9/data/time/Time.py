@@ -13,8 +13,10 @@ TIMES = {'s': 1,
          'w': 3600 * 24 * 7
          }
 
+JSBASE = j.application.jsbase_get_class()
 
-class Time_:
+
+class Time_(JSBASE):
     """
     generic provider of time functions
     lives at j.data.time
@@ -22,9 +24,14 @@ class Time_:
 
     def __init__(self):
         self.timeinterval = TimeInterval
+        JSBASE.__init__(self)
 
     @property
     def epoch(self):
+        """
+        j.data.time.epoch
+        """
+
         return int(time.time())
 
     def getTimeEpoch(self):
@@ -35,6 +42,9 @@ class Time_:
         return timestamp
 
     def getSecondsInHR(self, seconds):
+        """
+        j.data.time.getSecondsInHR(365)
+        """
         minute = 60.
         hour = 3600.
         day = hour * 24
@@ -52,12 +62,16 @@ class Time_:
 
     def getTimeEpochBin(self):
         '''
-        Get epoch timestamp (number of seconds passed since January 1, 1970)
+        Get epoch timestamp (number of seconds passed since January 1, 1970) in binary format of 4 bytes
         '''
         return struct.pack("<I", self.getTimeEpoch())
 
     def getLocalTimeHR(self):
-        '''Get the current local date and time in a human-readable form'''
+        '''
+        Get the current local date and time in a human-readable form
+
+        j.data.time.getLocalTimeHR()
+        '''
         #timestamp = time.asctime(time.localtime(time.time()))
         timestr = self.formatTime(self.getTimeEpoch())
         return timestr
@@ -167,11 +181,11 @@ class Time_:
             raise j.exceptions.RuntimeError(
                 "Cannot find time, needs to be in format have time indicator %s " % list(TIMES.keys()))
         value = float(txt[:-1])
-        return value * TIMES[unit]
+        return int(value * TIMES[unit])
 
-    def getEpochAgo(self, txt):
+    def getEpochDeltaTime(self, txt):
         """
-        only supported now is -3m, -3d and -3h  (ofcourse 3 can be any int)
+        only supported now is + and -3m, -3d and -3h  (ofcourse 3 can be any int)
         and an int which would be just be returned
         means 3 days ago 3 hours ago
         if 0 or '' then is now
@@ -180,30 +194,20 @@ class Time_:
             return self.getTimeEpoch()
         return self.getTimeEpoch() + self.getDeltaTime(txt)
 
-    def getEpochFuture(self, txt):
-        """
-        only supported now is +3d and +3h  (ofcourse 3 can be any int)
-        +3d means 3 days in future
-        and an int which would be just be returned
-        if txt==None or 0 then will be 1 day ago
-        """
-        if txt is None or str(txt).strip() == "0":
-            return self.getTimeEpoch()
-        return self.getTimeEpoch() + self.getDeltaTime(txt)
 
-    def HRDatetoEpoch(self, datestr, local=True):
+    def HRDateToEpoch(self, datestr, local=True):
         """
         convert string date to epoch
-        Date needs to be formatted as 16/06/1988
+        Date needs to be formatted as 1988/06/16  (Y/m/d)
         """
         if datestr.strip() == "":
             return 0
         try:
             datestr = datestr.strip()
-            return time.mktime(time.strptime(datestr, "%d/%m/%Y"))
+            return time.mktime(time.strptime(datestr, "%Y/%m/%d"))
         except BaseException:
             raise ValueError(
-                "Date needs to be formatted as \"16/06/1981\", also check if date is valid, now format = %s" % datestr)
+                "Date needs to be formatted as \" 1988/06/16\", also check if date is valid, now format = %s" % datestr)
 
     def HRDateTime2epoch(self, hrdatetime):
         """
@@ -264,7 +268,7 @@ class Time_:
         epoch = self.any2epoch(val)
         return self.epoch2HRDateTime(epoch)
 
-    def _test(self):
+    def test(self):
         now = self.getTimeEpoch()
         hr = self.epoch2HRDateTime(now)
         assert self.HRDateTime2epoch(hr) == now

@@ -2,6 +2,7 @@ from JumpScale9 import j
 
 import sys
 import os
+import platform
 # import re
 
 
@@ -18,12 +19,14 @@ import os
 #         result = 0
 #     os.close(fd)
 #     return result
+JSBASE = j.application.jsbase_get_class()
 
 
-class PlatformTypes():
+class PlatformTypes(JSBASE):
 
     def __init__(self):
-        # JSBase.__init__(self)
+        self.__jslocation__ = "j.core.platformtype"
+        JSBASE.__init__(self)
         self._myplatform = None
         self._platformParents = {}
         self._platformParents["unix"] = ["generic"]
@@ -67,8 +70,6 @@ class PlatformTypes():
         self._platformParents["debian64"] = ["debian", "linux64"]
         self._cache = {}
 
-        self.__jslocation__ = "j.core.platformtype"
-
     @property
     def myplatform(self):
         if self._myplatform is None:
@@ -88,7 +89,7 @@ class PlatformTypes():
                 res = self._getParents(item, res)
         return res
 
-    def get(self, executor=None):
+    def get(self, executor):
         """
         @param executor is an executor object, None or $hostname:$port or $ipaddr:$port or $hostname or $ipaddr
         """
@@ -98,11 +99,11 @@ class PlatformTypes():
         return self._cache[key]
 
 
-class PlatformType():
+class PlatformType(JSBASE):
 
     def __init__(self, name="", executor=None):
         # print("INIT PLATFORMTYPE:%s" % executor)
-        # JSBase.__init__(self)
+        JSBASE.__init__(self)
         self.myplatform = name
         self._platformtypes = None
         self._is64bit = None
@@ -130,19 +131,35 @@ class PlatformType():
     @property
     def uname(self):
         if self._uname is None:
-            _uname = self.executor.stateOnSystem["uname"]
-            if _uname.find("warning: setlocale") != -1:
-                raise RuntimeError("run js9 'j.tools.prefab.local.bash.locale_check()'")
-            _uname = _uname.split("\n")[0]
-            _tmp, self._hostname, _osversion, self._cpu, self._platform = _uname.split(
-                " ")
-            if self.osname == "darwin":
-                self._osversion = _osversion
+            if  self.executor.type=="local":
+                unn = os.uname()
+                self._hostname = unn.nodename
+                distro_info = platform.linux_distribution()
+                if 'Ubuntu' in distro_info:
+                    self._osversion = distro_info[1]
+                elif 'ubuntu' in j.tools.executorLocal.stateOnSystem['os_type'].lower():
+                    version = self.executor.execute('lsb_release -r')[1]
+                    # version should be something like: 'Release:\t16.04\n
+                    self._osversion = version.split(':')[-1].strip()
+                else:
+                    self._osversion = unn.release
+                self._cpu = unn.machine
+                self._platform = unn.sysname
+
             else:
-                # is for ubuntu
-                if "version_id" in self.executor.stateOnSystem:
-                    self._osversion = self.executor.stateOnSystem["version_id"]
-            self._uname = _uname
+                _uname = self.executor.stateOnSystem["uname"]
+                if _uname.find("warning: setlocale") != -1:
+                    raise RuntimeError("run js9 'j.tools.bash.local.locale_check()'")
+                _uname = _uname.split("\n")[0]
+                _tmp, self._hostname, _osversion, self._cpu, self._platform = _uname.split(
+                    " ")
+                if self.osname == "darwin":
+                    self._osversion = _osversion
+                else:
+                    # is for ubuntu
+                    if "version_id" in self.executor.stateOnSystem:
+                        self._osversion = self.executor.stateOnSystem["version_id"]
+                self._uname = _uname
         return self._uname
 
     @property

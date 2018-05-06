@@ -3,10 +3,11 @@ from js9 import j
 import sys
 import inspect
 
-
-class ZeroRepo():
+JSBASE = j.application.jsbase_get_class()
+class ZeroRepo(JSBASE):
 
     def __init__(self,path,gitrepo):
+        JSBASE.__init__(self)
         self.path=path
         self.gitrepo=gitrepo
 
@@ -17,8 +18,9 @@ class ZeroRepo():
 
 
 
-class ZeroRepos():
+class ZeroRepos(JSBASE):
     def __init__(self):
+        JSBASE.__init__(self)
         self.repos = {}
 
     def load(self, path=None,repo=None):

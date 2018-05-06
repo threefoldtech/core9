@@ -8,11 +8,12 @@ try:
 except:
     pass
 
-
-class HashTool:
+JSBASE = j.application.jsbase_get_class()
+class HashTool(JSBASE):
 
     def __init__(self):
         self.__jslocation__ = "j.data.hash"
+        JSBASE.__init__(self)
         self.__imports__ = "pyblake2"
 
     def hashDir(self, rootpath):
@@ -193,7 +194,7 @@ def crc32_file(path):
         return crc32_fd(fd)
 
 
-def blake2(s):
+def blake2(s,digest_size=32):
     '''Calculate blake2 hash of input string
 
     @param s: String value to hash
@@ -204,7 +205,7 @@ def blake2(s):
     '''
     if j.data.types.string.check(s):
         s = s.encode()
-    h = blake2b(s)
+    h = blake2b(s,digest_size=digest_size)
     return h.hexdigest()
 
 

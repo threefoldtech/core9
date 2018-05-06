@@ -5,11 +5,15 @@ import os.path
 from JumpScale9 import j
 import fnmatch
 
+JSBASE = j.application.jsbase_get_class()
 
-class SystemFSWalker:
+
+class SystemFSWalker(JSBASE):
 
     def __init__(self):
-        self.__jslocation__ = "j.sal.fswalker"
+        if not hasattr(self, '__jslocation__'):
+            self.__jslocation__ = "j.sal.fswalker"
+        JSBASE.__init__(self)
 
     @staticmethod
     def _checkDepth(path, depths, root=""):
@@ -41,7 +45,7 @@ class SystemFSWalker:
 
     @staticmethod
     def _findhelper(arg, path):
-        print(path)
+        self.logger.debug(path)
         arg.append(path)
 
     @staticmethod

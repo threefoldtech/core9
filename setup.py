@@ -97,6 +97,6 @@ setup(
         'cmds/js9',
         'cmds/js9_code',
         'cmds/js9_docker',
-        'cmds/js9_docs',
+        'cmds/js9_doc',
     ],
 )

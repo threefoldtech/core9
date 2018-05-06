@@ -9,45 +9,55 @@ JSConfigBase = j.tools.configmanager.base_class_configs
 class Nodes(JSConfigBase):
 
     def __init__(self):
-        self.__jslocation__ = "j.tools.nodemgr"
+        if not hasattr(self, '__jslocation__'):
+            self.__jslocation__ = "j.tools.nodemgr"
         JSConfigBase.__init__(self, Node)
         self._tree = None
-        res = self.getall()
-        for item in res:
-            self._add2tree(item)
 
     @property
     def tree(self):
         if self._tree is None:
+            res = self.getall()
             self._tree = j.data.treemanager.get()
+            for item in res:
+                self._add2tree(item)
         return self._tree
 
-    def set(self, name, addr, port=22, cat="", description="", selected=False, active=True, clienttype="", secretconfig="", pubconfig=""):
+    def set(self, name, sshclient="", zosclient="", cat="", description="",
+            selected=False, active=True, secretconfig="", pubconfig="", clienttype="ovc"):
+        """[summary]
+
+        clienttype:  "ovh", "packetnet", "ovc", "physical", "docker", "container", "zos"
+
+        """
+
+        assert j.data.types.string.check(sshclient)
+        assert j.data.types.string.check(zosclient)
 
         secretconfig = j.data.serializer.json.dumps(secretconfig)
         pubconfig = j.data.serializer.json.dumps(pubconfig)
 
         data = {}
-        data["addr"] = addr
         data["name"] = name
-        data["port"] = port
+        data["sshclient"] = sshclient
+        data["zosclient"] = zosclient
+        data["clienttype"] = clienttype
         data["active"] = active
         data["selected"] = selected
-        data["clienttype"] = clienttype
         data["secretconfig_"] = secretconfig
         data["pubconfig"] = pubconfig
         data["category"] = cat
         data["description"] = description
-        node = self.get(instance=name, data=data, create=True)
+        node = self.get(instance=name, data=data, create=True, interactive=False)
         node.config.save()
 
-        if self.exists(name):
-            treeitem = self.tree.findByName(name, die=False)
-            if treeitem is not None:
-                tpath = treeitem.path
-                self.tree.items.pop(tpath)
+        # if self.exists(name):
+        #     treeitem = self.tree.findByName(name, die=False)
+        #     if treeitem is not None:
+        #         tpath = treeitem.path
+        #         self.tree.items.pop(tpath)
 
-        self._add2tree(node)
+        # self._add2tree(node)
 
         return node
 
@@ -58,8 +68,8 @@ class Nodes(JSConfigBase):
         else:
             path = "%s.%s" % (n.category, n.name)
 
-        self.tree.set(path=path, data="%s|%s|%s" % (n.name, n.addr, n.port),
-                      description=n.description, cat=n.category, selected=n.selected)
+        self._tree.set(path=path, data="%s|%s|%s" % (n.name, n.addr, n.port),
+                       description=n.description, cat=n.category, selected=n.selected)
 
     def test(self):
         """
@@ -67,7 +77,7 @@ class Nodes(JSConfigBase):
         """
 
         self.delete(prefix="myhost")
-        print("DELETE DONE")
+        self.logger.debug("DELETE DONE")
 
         startnr = len(self.getall())
         assert self.count() == startnr
@@ -107,7 +117,7 @@ class Nodes(JSConfigBase):
         j.data.serializer.toml.fancydumps(
             n.config.data) == j.data.serializer.toml.fancydumps(d2)
 
-        print(self)
+        self.logger.debug(self)
 
         n.selected = True
         assert n.selected == n.config.data["selected"]

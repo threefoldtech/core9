@@ -1,18 +1,17 @@
 #! /usr/bin/env python3
 
 from js9 import *
-j.tools.prefab.local.bash.locale_check()
+j.tools.bash.local.locale_check()
 import os
 os.environ["LC_ALL"] = 'en_US.UTF-8'
 
 print(j.core.state.mascot)
 
-
 #!/usr/bin/env jspython
 import os
 import sys
 from js9 import j
-j.tools.prefab.local.bash.locale_check()
+j.tools.bash.local.locale_check()
 import click
 
 
@@ -22,31 +21,16 @@ ACTIONS = ('get', 'commit', 'push', 'update', 'status', 'list', 'init')
 
 
 def _repo_info(name, accounts):
-    if j.sal.fs.exists("%s/%s" % (j.sal.fs.getcwd(), ".git")):
-        # we are in repo
-        _name = j.sal.fs.getBaseName(j.sal.fs.getcwd())
-        _accounts = j.sal.fs.getBaseName(j.sal.fs.getParent(j.sal.fs.getcwd()))
-        return _name, _accounts
+    if accounts == []:
+        res = j.sal.fs.getParentWithDirname()
+        if res:
+            _name = j.sal.fs.getBaseName(res)
+            _accounts = j.sal.fs.getBaseName(j.sal.fs.getParent(res))
+            return _name, _accounts
     return name, accounts
 
 
 def _init_action():
-    # if "me" not in j.core.state.configMe:
-    #     raise RuntimeError("did not find me in j.core.state.configMe")
-
-    # def check():
-    #     notok = False
-    #     for item in ["fullname", "loginname", "email"]:
-    #         if item not in j.core.state.configMe["me"]:
-    #             print("did not find %s in j.core.state.configMe"%item)
-    #             return True
-    #         if j.core.state.configMe["me"][item].strip() == "":
-    #             print("did not find %s, was empty: in j.core.state.configMe"%item)
-    #             return True
-
-    # while check():
-    #     j.sal.process.executeInteractive("js9_config")
-    #     j.core.state.load(reset=True)
 
     # os.system('git config --global user.name "%s"' %
     #           j.core.state.configMe["me"]["loginname"])
@@ -60,19 +44,17 @@ _init_action()
 
 
 def _search_repos(accounts, name, interactive=True):
-    repos = j.clients.git.find(
-        accounts, name, interactive=interactive, returnGitClient=True)
-    _repos = [(r.type, r.account, r.name, r.branchName, r, r.BASEDIR)
-              for r in repos]
-    if j.core.platformtype.myplatform.isLinux:
-        C = """
-        Host *
-           StrictHostKeyChecking no
-           UserKnownHostsFile=/dev/null
-        """
-        path = j.sal.fs.joinPaths(os.environ["HOME"], ".ssh", "config")
-        if not j.sal.fs.exists(path):
-            j.sal.fs.writeFile(path, C)
+    repos = j.clients.git.find(accounts, name, interactive=interactive, returnGitClient=True)
+    _repos = [(r.type, r.account, r.name, r.branchName, r, r.BASEDIR) for r in repos]
+    # if j.core.platformtype.myplatform.isLinux:
+    #     C = """
+    #     Host *
+    #        StrictHostKeyChecking no
+    #        UserKnownHostsFile=/dev/null
+    #     """
+    #     path = j.sal.fs.joinPaths(os.environ["HOME"], ".ssh", "config")
+    #     if not j.sal.fs.exists(path):
+    #         j.sal.fs.writeFile(path, C)
     return _repos
 
 
@@ -111,6 +93,8 @@ def jscode(action, name, url, message, branch, accounts, update, force=False, de
         raise j.exceptions.RuntimeError(
             "Cannot specify branch when asking status")
 
+    accounts = j.data.types.list.fromString(accounts)
+
     if name is None:
         if action == 'init':
             _init_action()
@@ -123,12 +107,16 @@ def jscode(action, name, url, message, branch, accounts, update, force=False, de
                 j.clients.git.pullGitRepo(url=repository_url, branch=branch)
                 return
             else:
-                name, _accounts = (repository_name, repository_account)
+                name, accounts = (repository_name, repository_account)
         else:
-            name, _accounts = _repo_info(name, accounts)
+            name, accounts = _repo_info(name, accounts)
 
     repos = _search_repos(accounts, name, interactive=not force)
+
+    if name is not None and len(repos) == 0:    
+        print("did not find any repo")
     if name is not None and len(repos) != 1:
+        print(repos)
         raise RuntimeError("found 2 repo's for same name")
 
     if action == 'status':

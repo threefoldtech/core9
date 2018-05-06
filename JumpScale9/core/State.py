@@ -1,7 +1,5 @@
 import pytoml
 from JumpScale9 import j
-import sys
-import os
 
 mascot = '''
                                                         .,,'
@@ -40,24 +38,16 @@ mascot = '''
                                                     .':ldddoooddl
 '''
 
-class ClientConfig():
-
-    def __init__(self, category, instance):
-        self.category = category
-        self.instance = instance
-        self.key = "client_%s_%s" % (self.category, self.instance)
-        self.data = j.core.state.configGet(self.key, defval={})
-
-    def save(self):
-        j.core.state.configSet(self.key, self.data)
+JSBASE = j.application.jsbase_get_class()
 
 
-class State():
+class State(JSBASE):
     """
 
     """
 
     def __init__(self, executor):
+        JSBASE.__init__(self)
         self.readonly = False
         self.executor = executor
         self.load()
@@ -66,7 +56,7 @@ class State():
         if reset:
             self.executor.reset()
 
-        if self.executor.stateOnSystem==None:
+        if self.executor.stateOnSystem is None:
             raise RuntimeError("cannot load state because state on system in executor == None")
 
         self.configJSPath = self.executor.stateOnSystem["path_jscfg"] + "/jumpscale9.toml"
@@ -101,19 +91,6 @@ class State():
     @property
     def mascot(self):
         return mascot
-        # mascotpath = "%s/.mascot.txt" % os.environ["HOME"]
-        # if not j.sal.fs.exists(mascotpath):
-        #     # print("env has not been installed properly (missing mascot which is just the test)\nPlease follow init instructions on https://github.com/Jumpscale/core9")
-        #     # sys.exit(1)
-
-        # return j.sal.fs.readFile(mascotpath)
-
-    @property
-    def db(self):
-        return None
-        if self._db is None and j.clients is not None:
-            self._db = j.clients.redis.get4core()
-        return self._db
 
     def _get(self, key, defval=None, set=False, config=None, path=""):
         """
@@ -242,7 +219,7 @@ class State():
 
         keyword arguments:
         ddict -- 2 level dict(dict of dict)
-        overwrtie -- set to true if you want to overwrite values of old keys
+        overwrite -- set to true if you want to overwrite values of old keys
         """
         for key0, val0 in ddict.items():
             if not j.data.types.dict.check(val0):
@@ -265,6 +242,8 @@ class State():
     def configSave(self, config=None, path=""):
         """
         """
+        if self.executor.state_disabled:
+            return
         if self.readonly:
             raise j.exceptions.Input(
                 message="cannot write config to '%s', because is readonly" %
@@ -274,9 +253,22 @@ class State():
             self.executor.file_write(path, data)
             return
         data = pytoml.dumps(self._configJS)
-        self.executor.file_write(self.configJSPath, data)
+        self.executor.file_write(self.configJSPath, data, sudo=True)
         data = pytoml.dumps(self._configState)
-        self.executor.file_write(self.configStatePath, data)
+        self.executor.file_write(self.configStatePath, data, sudo=True)
+        self.executor.reset()  # make sure all caching is reset
+
+    @property
+    def config_js(self):
+        return self._configJS
+
+    @property
+    def config_my(self):
+        return self._configJS["myconfig"]
+
+    @property
+    def config_system(self):
+        return self._configJS["system"]
 
     def reset(self):
         self._configJS = {}

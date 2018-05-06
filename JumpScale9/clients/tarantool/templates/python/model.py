@@ -13,6 +13,9 @@ class $NameModel(ModelBase):
     '''
     '''
 
+    def __init__(self):
+        ModelBase.__init__(self)
+
     def index(self):
         #no need to put indexes because will be done by capnp
         pass
@@ -39,7 +42,6 @@ class $NameCollection(ModelBaseCollection):
     '''
 
     def __init__(self):
-        self.logger = j.logger.get('model.$name')
         category = '$name'
         namespace = ""
 

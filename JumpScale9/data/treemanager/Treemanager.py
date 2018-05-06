@@ -1,9 +1,12 @@
 from js9 import j
 
+JSBASE = j.application.jsbase_get_class()
 
-class TreeItem():
+
+class TreeItem(JSBASE):
 
     def __init__(self):
+        JSBASE.__init__(self)
         self.id = ""
         self.description = ""
         self.path = ""
@@ -48,9 +51,10 @@ class TreeItem():
         return ("%-60s  %-20s  [%s]" % (self.path, cat, selected))
 
 
-class Tree():
+class Tree(JSBASE):
 
     def __init__(self, data=None):
+        JSBASE.__init__(self)
         self.items = {}
         self.changed = False
         self.set("")  # will set the root
@@ -183,7 +187,7 @@ class Tree():
             self.set(path=path, id=id, cat=cat, description=descr,
                      item=None, selected=selected, data=data)
 
-    def find(self, partOfPath="", maxAmount=200, getItems=False, selected=None, cat=None):
+    def find(self, partOfPath="", maxAmount=400, getItems=False, selected=None, cat=None):
         """
         @param if getItems True then will return the items in the treeobj
         """
@@ -238,10 +242,11 @@ class Tree():
         return (out)
 
 
-class TreemanagerFactory:
+class TreemanagerFactory(JSBASE):
 
     def __init__(self):
         self.__jslocation__ = "j.data.treemanager"
+        JSBASE.__init__(self)
 
     def get(self, data=""):
         return Tree(data=data)
@@ -260,7 +265,7 @@ class TreemanagerFactory:
 
         dumped = t.dumps()
 
-        print(dumped)
+        self.logger.debug(dumped)
 
         t2 = self.get(dumped)
 
@@ -281,4 +286,4 @@ class TreemanagerFactory:
         ee = t2.find("", maxAmount=200, getItems=False, selected=True)
         assert len(ee) == 2
 
-        print("TEST OK")
+        self.logger.debug("TEST OK")

@@ -1,19 +1,22 @@
 from js9 import j
 
 TEMPLATE = """
-addr = ""
 name = ""
-port = 22
 clienttype = ""
+sshclient = ""
 active = false
 selected = false
 category = ""
 description = ""
 secretconfig_ = ""
 pubconfig = ""
+installed = false
+zosclient = ""
 """
 
 FormBuilderBaseClass = j.tools.formbuilder.baseclass_get()
+
+JSBASE = j.application.jsbase_get_class()
 
 
 class MyConfigUI(FormBuilderBaseClass):
@@ -28,7 +31,7 @@ class MyConfigUI(FormBuilderBaseClass):
         self.widget_add_boolean("active", default=False)
         self.widget_add_boolean("selected", default=True)
         self.widget_add_multichoice("clienttype", [
-                                    "ovh", "packetnet", "ovc", "physical", "docker", "container", "zos"])
+                                    "ovh", "packetnet", "ovc", "physical", "docker", "container"])
 
 
 JSConfigBase = j.tools.configmanager.base_class_config
@@ -36,26 +39,36 @@ JSConfigBase = j.tools.configmanager.base_class_config
 
 class Node(JSConfigBase):
 
-    def __init__(self, instance, data={}, parent=None):
-        self._connected = None
+    def __init__(self, instance, data={}, parent=None, interactive=False):
         JSConfigBase.__init__(self, instance=instance, data=data,
-                              parent=parent, template=TEMPLATE, ui=MyConfigUI)
+                              parent=parent, template=TEMPLATE, ui=MyConfigUI, interactive=interactive)
+        self._sshclient = None
+        self._ftpclient = None
+        self._private = None
+
+    @property
+    def private(self):
+        """
+        if private in e.g. ovc space then will return True
+        """
+
+        if self._private is None:
+            self._private = False
+            if self.config.data["sshclient"] != "":
+                if self.config.data["addr_priv"]:
+                    self._private = self.sshclient.isprivate
+        return self._private
 
     @property
     def addr(self):
-        return self.config.data["addr"]
-
-    @addr.setter
-    def addr(self, val):
-        self.config._data["addr"] = val
+        if self.config.data["sshclient"] != "":
+            self.sshclient
+            return self.sshclient.addr
 
     @property
     def port(self):
-        return self.config.data["port"]
-
-    @port.setter
-    def port(self, val):
-        self.config._data["port"] = val
+        if self.config.data["sshclient"] != "":
+            return self.sshclient.port
 
     @property
     def active(self):
@@ -63,7 +76,7 @@ class Node(JSConfigBase):
 
     @active.setter
     def active(self, val):
-        self.config._data["active"] = val
+        self.config.data = {"active": val}
 
     @property
     def clienttype(self):
@@ -71,7 +84,7 @@ class Node(JSConfigBase):
 
     @clienttype.setter
     def clienttype(self, val):
-        self.config._data["clienttype"] = val
+        self.config.data = {"clienttype": val}
 
     @property
     def category(self):
@@ -79,7 +92,7 @@ class Node(JSConfigBase):
 
     @category.setter
     def category(self, val):
-        self.config._data["category"] = val
+        self.config.data = {"category": val}
 
     @property
     def name(self):
@@ -87,7 +100,7 @@ class Node(JSConfigBase):
 
     @name.setter
     def name(self, val):
-        self.config._data["name"] = val
+        self.config.data = {"name": val}
 
     @property
     def description(self):
@@ -95,7 +108,7 @@ class Node(JSConfigBase):
 
     @description.setter
     def description(self, val):
-        self.config._data["description"] = val
+        self.config.data = {"description": val}
 
     @property
     def selected(self):
@@ -103,7 +116,7 @@ class Node(JSConfigBase):
 
     @selected.setter
     def selected(self, val):
-        self.config._data["selected"] = val
+        self.config.data = {"selected": bool(val)}
 
     @property
     def secretconfig(self):
@@ -114,7 +127,7 @@ class Node(JSConfigBase):
     @secretconfig.setter
     def secretconfig(self, data):
         data = j.data.serializer.json.dumps(data)
-        self.config._data["secretconfig_"] = data
+        self.config.data = {"secretconfig_": data}
 
     @property
     def pubconfig(self):
@@ -125,74 +138,112 @@ class Node(JSConfigBase):
     @pubconfig.setter
     def pubconfig(self, data):
         data = j.data.serializer.json.dumps(data)
-        self.config._data["pubconfig"] = data
+        self.config.data = {"pubconfig": data}
 
     @property
     def isconnected(self):
-        if self._connected is None:
-            # lets test tcp on 22 if not then 9022 which are our defaults
-            test = j.sal.nettools.tcpPortConnectionTest(
-                self.addr, self.port, 3)
-            if test is False:
-                print("could not connect to %s:%s, will try port 9022" %
-                      (self.addr, self.port))
-                if self.port == 22:
-                    test = j.sal.nettools.tcpPortConnectionTest(
-                        self.addr, 9022, 1)
-                    if test:
-                        self.port = 9022
-            if test is False:
-                self._connected = False
-            else:
-                self._connected = True
-                self.active = True
-            self._sshclient = None
-            self._ftpclient = None
-        return self._connected
+        if self.config.data["sshclient"] != "":
+            return self.sshclient.isconnected
+        # if self._connected is None:
+        #     # lets test tcp on 22 if not then 9022 which are our defaults
+        #     test = j.sal.nettools.tcpPortConnectionTest(
+        #         self.addr, self.port, 3)
+        #     if test is False:
+        #         self.logger.debug("could not connect to %s:%s, will try port 9022" %
+        #                           (self.addr, self.port))
+        #         if self.port == 22:
+        #             test = j.sal.nettools.tcpPortConnectionTest(
+        #                 self.addr, 9022, 1)
+        #             if test:
+        #                 self.port = 9022
+        #     if test is False:
+        #         self._connected = False
+        #     else:
+        #         self._connected = True
+        #         self.active = True
+            # self._sshclient = None
+            # self._ftpclient = None
+        # return self._connected
 
     @property
-    def ftpclient(self):
+    def sftp(self):
         if self.isconnected:
-            if self._ftpclient is None:
-                print("ftpclient")
-                self._ftpclient = self.executor.sshclient.getSFTP()
-            return self._ftpclient
+            return self.executor.sshclient.sftp
         else:
             raise RuntimeError("node %s cannot be reached, cannot get ftpclient." % self.instance)
 
     @property
+    def sshclient(self):
+        if self._sshclient is None:
+            self.logger.debug("sshclient get")
+            self._sshclient = j.clients.ssh.get(instance=self.config.data["sshclient"])
+            self.clienttype = "ssh"
+        return self._sshclient
+
+    @property
     def executor(self):
-        if self.isconnected:
-            return j.tools.executor.get("%s:%s" % (self.addr, self.port))
-        else:
-            raise RuntimeError("node %s cannot be reached, cannot get executor." % self.instance)
+        if self.config.data["sshclient"] != "":
+            return self.sshclient.prefab.executor
 
     @property
     def prefab(self):
-        if self.isconnected:
-            return j.tools.prefab.get(executor=self.executor)
-        else:
-            raise RuntimeError("node %s cannot be reached, cannot get prefab." % self.instance)
+        return j.tools.prefab.get(executor=self.executor, usecache=True)
 
     def clean(self):
         cmd = """
         rm -f ~/.profile_js
         rm -f ~/env.sh
-        rm -f rm /etc/jumpscale9.toml     
+        rm -f rm /etc/jumpscale9.toml
         """
         self.executor.execute(cmd)
 
     def test_executor(self):
         self.executor.test()
 
-    def sync(self):
-        ddirs = j.tools.develop.codedirs.getActiveCodeDirs()
+    def getActiveCodeDirs(self):
+        res = []
+        done = []
+        repo = j.clients.git.currentDirGitRepo()
+        if repo is not None:
+            res.append(j.tools.develop.codedirs.get(repo.type, repo.account, repo.name))
+            done.append(repo.BASEDIR)
+        # ddirs = j.tools.develop.codedirs.getActiveCodeDirs(): #TODO: *1 broken
+        ddirs = j.clients.git.getGitReposListLocal(account="jumpscale")  # took predefined list
+        for key, path in ddirs.items():
+            self.logger.debug("try to find git dir for:%s" % path)
+            try:
+                repo = j.clients.git.get(path)
+                if path not in done:
+                    res.append(j.tools.develop.codedirs.get(repo.type, repo.account, repo.name))
+            except Exception as e:
+                self.logger.error(e)
+        return res
+
+    def sync(self, monitor=False):
+        if not self.selected:
+            self.selected = True
+        ddirs = self.getActiveCodeDirs()
         for ddir in ddirs:
+            dest = "%s/%s/%s/%s" % (
+                self.executor.dir_paths["CODEDIR"], ddir.type, ddir.account, ddir.name)
             source = ddir.path
-            dest = "%s/%s/%s" % (
-                self.prefab.executor.dir_paths["CODEDIR"], ddir.type, ddir.account)
-            self.prefab.executor.upload(
-                source, dest, dest_prefix='', recursive=True, createdir=True)
+            self.executor.upload(source, dest, dest_prefix='', recursive=True, createdir=True)
+        self.logger.info("SYNC DONE")
+        if monitor:
+            self.monitor()
+
+    def portforward(self, remote, local):
+        self.sshclient.port_forward_local_start(remoteport=remote, localport=local)
+
+    def monitor(self):
+        """
+        will sync all active core dirs
+        """
+        if not self.selected:
+            self.selected = True
+        # paths = [item.path for item in self.getActiveCodeDirs()]
+        paths = self.getActiveCodeDirs()
+        j.tools.develop.sync_active(paths)
 
     def saveToHostfile(self):
         j.tools.prefab.local.system.ns.hostfile_set(self.name, self.addr)
@@ -201,7 +252,7 @@ class Node(JSConfigBase):
         self.config.save()
 
     def ssh(self):
-        cmd = "ssh root@%s -p %s" % (self.addr, self.port)
+        cmd = "ssh -A root@%s -p %s" % (self.sshclient.addr_variable, self.sshclient.port_variable)
         j.sal.process.executeInteractive(cmd)
 
     def __str__(self):

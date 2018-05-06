@@ -5,6 +5,7 @@ import atexit
 import struct
 from collections import namedtuple
 import psutil
+from .JSBase import JSBase
 
 class Application:
 
@@ -17,12 +18,25 @@ class Application:
         self.state = "UNKNOWN"
         self.appname = 'UNKNOWN'
 
-        self._debug = j.core.state.configGetFromDict('system', 'debug')
+        self._debug = None
 
         self._systempid = None
 
         self.interactive = True
         self.__jslocation__ = "j.core.application"
+
+    def jsbase_get_class(self):
+        """
+
+        JSBASE = j.application.jsbase_get_class()
+
+        class myclass(JSBASE):
+
+            def __init__(self):
+                JSBASE.__init__(self)
+
+        """
+        return JSBase
 
     def reset(self):
         """
@@ -38,6 +52,8 @@ class Application:
 
     @property
     def debug(self):
+        if self._debug == None:
+            self._debug = j.core.state.configGetFromDictBool("system","debug",False)
         return self._debug
 
     @debug.setter
@@ -46,33 +62,13 @@ class Application:
 
     def break_into_jshell(self, msg="DEBUG NOW"):
         if self.debug is True:
-            print(msg)
+            self.logger.debug(msg)
             from IPython import embed
             embed()
         else:
             raise j.exceptions.RuntimeError(
                 "Can't break into jsshell in production mode.")
 
-    # def locale_init(self):
-    #     """
-    #     check with locale language variables to load
-    #     """
-    #     # if j.core.platformtype.myplatform.isMac:
-        #     os.environ['LC_ALL'] = 'en_US.UTF-8'
-        #     os.environ['LANG'] = 'en_US.UTF-8'
-        # else:
-        #     os.environ['LC_ALL'] = 'C.UTF-8'
-        #     os.environ['LANG'] = 'C.UTF-8'
-        
-        # rc, out, err = self.executor.execute("locale -a", showout=False)
-        # out = [item for item in out.split(
-        #     "\n") if not item.startswith("locale:")]
-        # if 'C.UTF-8' not in out:
-        #     raise j.exceptions.RuntimeError(
-        #         "Cannot find C.UTF-8 in locale -a, cannot continue.")
-        # from IPython import embed
-        # print("DEBUG NOW fix locale in application")
-        # embed()
 
     def init(self):
         pass
@@ -126,7 +122,7 @@ class Application:
         # Since we call os._exit, the exithandler of IPython is not called.
         # We need it to save command history, and to clean up temp files used by
         # IPython itself.
-        self.logger.info("Stopping Application %s" % self.appname)
+        # self.logger.debug("Stopping Application %s" % self.appname)
         try:
             __IPYTHON__.atexit_operations()
         except BaseException:

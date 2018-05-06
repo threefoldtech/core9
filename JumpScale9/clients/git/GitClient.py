@@ -1,17 +1,26 @@
 from JumpScale9 import j
 import git
+import copy
 
+JSBASE = j.application.jsbase_get_class()
 
-class GitClient:
+class GitClient(JSBASE):
     """
     Client of git services, has all git related operations like push, pull, ...
     """
 
     def __init__(self, baseDir, check_path=True):  # NOQA
 
+        if baseDir==None or baseDir.strip()=="":
+            raise RuntimeError("basedir cannot be empty")
+
+        baseDir_org=copy.copy(baseDir)
+
+        JSBASE.__init__(self)
+
         self._repo = None
         if not j.sal.fs.exists(path=baseDir):
-            raise j.exceptions.Input("git repo on %s not found." % baseDir)
+            raise j.exceptions.Input("git repo on %s not found." % baseDir_org)
 
         # split path to find parts
         baseDir = j.sal.fs.pathClean(baseDir)
@@ -28,7 +37,7 @@ class GitClient:
         baseDir = baseDir.rstrip("/")
 
         if baseDir.strip() == "":
-            raise j.exceptions.RuntimeError("could not find basepath for .git in %s" % baseDir)
+            raise j.exceptions.RuntimeError("could not find basepath for .git in %s" % baseDir_org)
         if check_path:
             if baseDir.find("/code/") == -1:
                 raise j.exceptions.Input(
@@ -50,6 +59,7 @@ class GitClient:
 
         # if len(self.repo.remotes) != 1:
         #     raise j.exceptions.Input("git repo on %s is corrupt could not find remote url" % baseDir)
+
 
     def __repr__(self):
         return str(self.__dict__)
@@ -296,7 +306,7 @@ class GitClient:
         if addremove:
             self.addRemoveFiles()
         if self.hasModifiedFiles() is False:
-            print("no need to commit, no changed files")
+            self.logger.info("no need to commit, no changed files")
             return
         return self.repo.index.commit(message)
 
@@ -443,7 +453,53 @@ docs/_build/
         this method get latest tag or branch
         """
         try:
-            cmd = 'cd {path}; git describe --tags'.format(path=self.baseDir)
+            cmd = 'cd {path}; git describe --tags'.format(path=self.BASEDIR)
             return 'tag', j.tools.executorLocal.execute(cmd)[1]
         except BaseException:
             return 'branch', self.repo.head.ref.name
+
+    def getConfig(self, field):
+        """
+        returns value of provided field name
+        returns empty string if not found
+
+        :param fields: field name of the config to search for 
+        :return: string value of the field name
+        """
+        cmd = "cd %s; git config %s" % (self.BASEDIR, field)
+        rc, output, _ = j.tools.executorLocal.execute(cmd, die=False)
+        if rc != 0:
+            return ""
+
+        return output.strip()
+
+    def setConfig(self, field, value, local=True, die=True):
+        """
+        Sets provided field with value to the git config
+
+        :param field: field name to be set
+        :param value: value of field to be set
+        :param local: Set value as local config, set to false for global config
+        :param die: raise exception on error
+        """
+        flags = ""
+        if not local:
+            flags += "--global "
+        
+        cmd = "cd %s; git config %s %s %s" % (self.BASEDIR, flags, field, value)
+        j.tools.executorLocal.execute(cmd, die=die)
+
+    def unsetConfig(self, field, local=True,  die=True):
+        """
+        Removes/unsets config field
+
+        :param field: fieldname to remove
+        :param local: remove from local config, set to false to remove from global config
+        :param die: raise exception on error
+        """
+        flags = ""
+        if not local:
+            flags += "--global "
+
+        cmd = "cd %s; git config --unset %s %s" % (self.BASEDIR, flags, field)
+        j.tools.executorLocal.execute(cmd, die=die)

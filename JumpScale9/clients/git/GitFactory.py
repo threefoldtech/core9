@@ -2,13 +2,15 @@ from .GitClient import GitClient
 from JumpScale9 import j
 import os
 import re
+import sys
+JSBASE = j.application.jsbase_get_class()
 
 
-class GitFactory:
+class GitFactory(JSBASE):
 
     def __init__(self):
-        self.logger = j.logger.get('j.clients.git')
         self.__jslocation__ = "j.clients.git"
+        JSBASE.__init__(self)
 
     def execute(self, *args, **kwargs):
         executor = None
@@ -18,6 +20,17 @@ class GitFactory:
             executor = j.tools.executorLocal
         return executor.execute(*args, **kwargs)
 
+    def currentDirGitRepo(self):
+        """starting from current path, check if repo, if yes return that one
+
+        Returns:
+            None or gitclient -- None of not in local repo
+        """
+
+        res = j.sal.fs.getParentWithDirname()
+        if res:
+            return self.get(res)
+
     def rewriteGitRepoUrl(self, url="", login=None, passwd=None, ssh="auto"):
         """
         Rewrite the url of a git repo with login and passwd if specified
@@ -26,16 +39,17 @@ class GitFactory:
             url (str): the HTTP URL of the Git repository. ex: 'https://github.com/despiegk/odoo'
             login (str): authentication login name
             passwd (str): authentication login password
-            ssh = if True will build ssh url, if "auto" will check if there is ssh-agent available & keys are loaded,
-                if yes will use ssh
+            ssh = if True will build ssh url, if "auto" or "first" will check if there is ssh-agent available & keys are loaded,
+                if yes will use ssh (True)
+                if no will use http (False)
 
         Returns:
             (repository_host, repository_type, repository_account, repository_name, repository_url, port)
         """
 
-        url=url.strip()
+        url = url.strip()
         if ssh == "auto" or ssh == "first":
-            ssh = j.clients.ssh.ssh_agent_available()
+            ssh = j.clients.sshkey.sshagent_available()
         elif ssh or ssh is False:
             pass
         else:
@@ -43,7 +57,9 @@ class GitFactory:
                 "ssh needs to be auto, first or True or False: here:'%s'" %
                 ssh)
 
-        url = url.replace("ssh://", "")
+        if url.startswith("ssh://"):
+            ssh = True
+            url = url.replace("ssh://", "")
 
         port = None
         if ssh:
@@ -162,7 +178,7 @@ class GitFactory:
         Remark:
             url can be empty, then the git params will be fetched out of the git configuration at that path
         """
-        url=url.strip()
+        url = url.strip()
         if url == "":
             if dest is None:
                 raise RuntimeError("dest cannot be None (url is also '')")
@@ -223,6 +239,7 @@ class GitFactory:
             ssh="auto",
             executor=None,
             codeDir=None,
+            interactive=False,
             timeout=600):
         """
         will clone or update repo
@@ -232,6 +249,21 @@ class GitFactory:
         @param ssh ==True means will checkout ssh
         @param ssh =="first" means will checkout sss first if that does not work will go to http
         """
+
+        def ignorelocalchanges_do():
+            self.logger.info(
+                ("git pull, ignore changes %s -> %s" %
+                    (url, dest)))
+            cmd = "cd %s;git fetch" % dest
+            if depth is not None:
+                cmd += " --depth %s" % depth
+                self.execute(cmd, executor=executor)
+            if branch is not None:
+                self.logger.info("reset branch to:%s" % branch)
+                self.execute(
+                    "cd %s;git fetch; git reset --hard origin/%s" %
+                    (dest, branch), timeout=timeout, executor=executor)
+
         if branch == "":
             branch = None
         if branch is not None and tag is not None:
@@ -251,7 +283,8 @@ class GitFactory:
                     tag=tag,
                     revision=revision,
                     ssh=True,
-                    executor=executor)
+                    executor=executor,
+                    interactive=interactive)
             except Exception as e:
                 base, provider, account, repo, dest, url, port = self.getGitRepoArgs(
                     url, dest, login, passwd, reset=reset, ssh=False, codeDir=codeDir, executor=executor)
@@ -267,7 +300,9 @@ class GitFactory:
                     tag=tag,
                     revision=revision,
                     ssh=False,
-                    executor=executor)
+                    executor=executor,
+                    interactive=interactive)
+            return
 
         base, provider, account, repo, dest, url, port = self.getGitRepoArgs(
             url, dest, login, passwd, reset=reset, ssh=ssh, codeDir=codeDir, executor=executor)
@@ -280,17 +315,13 @@ class GitFactory:
 
         self.logger.info("%s:pull:%s ->%s" % (executor, url, dest))
 
-        existsDir = j.sal.fs.exists(
-            dest) if not executor else executor.exists(dest)
-
-        checkdir = "%s/.git" % (dest)
-        existsGit = j.sal.fs.exists(
-            checkdir) if not executor else executor.exists(checkdir)
+        existsDir = j.sal.fs.exists(dest) if not executor else executor.exists(dest)
+        existsGit = j.sal.fs.exists(dest) if not executor else executor.exists(dest)
 
         if existsDir:
             if not existsGit:
-                raise RuntimeError(
-                    "found directory but .git not found in %s" % dest)
+                raise RuntimeError("found directory but .git not found in %s" % dest)
+
             # if we don't specify the branch, try to find the currently
             # checkedout branch
             cmd = 'cd %s; git rev-parse --abbrev-ref HEAD' % dest
@@ -311,18 +342,7 @@ class GitFactory:
                     (repo, branch, branchFound, branchFound))
 
             if ignorelocalchanges:
-                self.logger.info(
-                    ("git pull, ignore changes %s -> %s" %
-                     (url, dest)))
-                cmd = "cd %s;git fetch" % dest
-                if depth is not None:
-                    cmd += " --depth %s" % depth
-                    self.execute(cmd, executor=executor)
-                if branch is not None:
-                    self.logger.info("reset branch to:%s" % branch)
-                    self.execute(
-                        "cd %s;git fetch; git reset --hard origin/%s" %
-                        (dest, branch), timeout=timeout, executor=executor)
+                ignorelocalchanges_do()
 
             else:
 
@@ -331,23 +351,49 @@ class GitFactory:
 
                 # pull
                 self.logger.info(("git pull %s -> %s" % (url, dest)))
-                if url.find("http") != -1:
-                    cmd = "mkdir -p %s;cd %s;git -c http.sslVerify=false pull origin %s" % (
-                        dest, dest, branch)
-                    self.logger.info(cmd)
-                    self.execute(cmd, timeout=timeout, executor=executor)
-                else:
-                    try:
-                        cmd = "cd %s;git pull origin %s" % (dest, branch)
-                        self.logger.info(cmd)
-                        self.execute(cmd, timeout=timeout, executor=executor)
-                    except Exception as e:
-                        protocol, host, account, repo_name, repo_url, port = self.rewriteGitRepoUrl(
-                            url=url, ssh=False)
-                        cmd = "cd %s;git -c http.sslVerify=false pull %s %s" % (
-                            dest, repo_url, branch)
-                        self.logger.info(cmd)
-                        self.execute(cmd, timeout=timeout, executor=executor)
+
+                rc = 1
+                counter = 0
+                while rc > 0 and counter < 4:
+                    cmd = "cd %s;git pull origin %s" % (dest, branch)
+                    self.logger.debug(cmd)
+                    rc, out, err = self.execute(cmd, timeout=timeout, executor=executor, die=False)
+                    if rc > 0:
+                        if "Please commit your changes" in err or "would be overwritten" in err:
+                            if interactive:
+                                cmsg = j.tools.console.askString(
+                                    "Found changes in: %s, do you want to commit, if yes give message, if you want to discard put '-'." % dest)
+                                if cmsg.lower().strip() == "-":
+                                    ignorelocalchanges_do()
+                                    # cmd="cd %s; git checkout -- ."%dest
+                                    # self.logger.debug(cmd)
+                                    # rc,out,err=self.execute(cmd, timeout=timeout, executor=executor,die=False)
+                                    # if rc>0:
+                                    #     print("ERROR: Could not discard changes in :%s, please do manual."%dest)
+                                    #     sys.exit(1)
+                                else:
+                                    cmd = "cd %s;git add . -A; git commit -m '%s'" % (dest, cmsg)
+                                    self.logger.debug(cmd)
+                                    rc, out, err = self.execute(cmd, timeout=timeout, executor=executor, die=False)
+                                    if rc > 0:
+                                        print("ERROR: Could not add/commit changes in :%s, please do manual." % dest)
+                                        sys.exit(1)
+                            else:
+                                raise RuntimeError("Could not pull git dir because uncommitted changes in:'%s'" % dest)
+                        else:
+                            if "permission denied" in err.lower():
+                                raise j.exceptions.OPERATIONS(
+                                    "prob SSH-agent not loaded, permission denied on git:%s" % url)
+
+                            if "Merge conflict" in out:
+                                raise j.exceptions.OPERATIONS("merge conflict:%s" % out)
+
+                            self.logger.debug(
+                                "git pull rc>0, need to implement further, check what usecase is & build interactivity around")
+                            print(out)
+                            print(err)
+                            print("could not push/pull %s" % url)
+                            sys.exit(1)
 
         else:
             self.logger.info(("git clone %s -> %s" % (url, dest)))
@@ -418,7 +464,7 @@ class GitFactory:
         - https://github.com/Jumpscale/jumpscale_core9/tree/master/lib/JumpScale/tools/docgenerator/macros
 
         """
-        url=url.strip()
+        url = url.strip()
         repository_host, repository_type, repository_account, repository_name, repository_url, port = self.rewriteGitRepoUrl(
             url)
         url_end = ""
@@ -481,7 +527,7 @@ class GitFactory:
         - https://github.com/Jumpscale/jumpscale_core9/tree/master/lib/JumpScale/tools/docgenerator/macros
 
         """
-        url=url.strip()
+        url = url.strip()
         repository_host, repository_type, repository_account, repository_name, repository_url, branch, gitpath, relpath, port = j.clients.git.parseUrl(
             url)
         rpath = j.sal.fs.joinPaths(gitpath, relpath)
@@ -557,13 +603,20 @@ class GitFactory:
             name = ""
         if account is None:
             account = ""
+        if account == []:
+            account = ""
+        if j.data.types.list.check(account):
+            res = []
+            for item in account:
+                res.extend(self.find(account=item, name=name, interactive=interactive, returnGitClient=returnGitClient))
+            return res
 
         accounts = []
         accounttofind = account
 
         def checkaccount(account):
-            # print accounts
-            # print "%s %s"%(account,accounttofind)
+            # self.logger.info accounts
+            # self.logger.info "%s %s"%(account,accounttofind)
             if account not in accounts:
                 if accounttofind.find("*") != -1:
                     if accounttofind == "*" or account.startswith(accounttofind.replace("*", "")):
@@ -573,7 +626,7 @@ class GitFactory:
                         accounts.append(account)
                 else:
                     accounts.append(account)
-            # print accountsunt in accounts
+            # self.logger.info accountsunt in accounts
             return account in accounts
 
         def _getRepos(codeDir, account=None, name=None):  # NOQA
@@ -633,7 +686,7 @@ class GitFactory:
         if interactive:
             result = []
             if len(repos) > 20:
-                print("Select account to choose from, too many choices.")
+                self.logger.info("Select account to choose from, too many choices.")
                 accounts = j.tools.console.askChoiceMultiple(accounts)
 
             repos = [item for item in repos if item[1] in accounts]
@@ -690,6 +743,9 @@ class GitFactory:
                     "]\" ").strip("]\" ").strip("]\" ")
 
     def getGitReposListLocal(self, provider="", account="", name="", errorIfNone=True):
+        """
+        j.clients.git.getGitReposListLocal()
+        """
         repos = {}
         for top in j.sal.fs.listDirsInDir(
                 j.dirs.CODEDIR,
@@ -702,25 +758,29 @@ class GitFactory:
                                                        recursive=False, dirNameOnly=True, findDirectorySymlinks=True):
                 if account != "" and account != accountfound:
                     continue
+                if accountfound[0]==".":
+                    continue
                 accountfounddir = "/%s/%s/%s" % (j.dirs.CODEDIR,
                                                  top, accountfound)
                 for reponame in j.sal.fs.listDirsInDir(
-                    "%s/%s/%s" %
-                    (j.dirs.CODEDIR,
-                     top,
-                     accountfound),
-                    recursive=False,
-                    dirNameOnly=True,
-                        findDirectorySymlinks=True):
-                    if name != "" and name != reponame:
+                                    "%s/%s/%s" %
+                                    (j.dirs.CODEDIR,
+                                    top,
+                                    accountfound),
+                                    recursive=False,
+                                    dirNameOnly=True,
+                                    findDirectorySymlinks=True):
+                    if reponame[0]==".":
+                        continue
+                    if  name !="" and name != reponame:
                         continue
                     repodir = "%s/%s/%s/%s" % (j.dirs.CODEDIR,
                                                top, accountfound, reponame)
-                    if j.sal.fs.exists(path="%s/.git" % repodir):
-                        repos[reponame] = repodir
+                    # if j.sal.fs.exists(path="%s/.git" % repodir): #to get syncer to work
+                    repos[reponame] = repodir
         if len(list(repos.keys())) == 0 and errorIfNone:
             raise RuntimeError(
-                "Cannot find git repo '%s':'%s':'%s'" % (provider, account, name))
+                "Cannot find git repo for search criteria provider:'%s' account:'%s' name:'%s'" % (provider, account, name))
         return repos
 
     def pushGitRepos(self, message, name="", update=True, provider="", account=""):
@@ -732,7 +792,7 @@ class GitFactory:
         # TODO: make sure we use gitlab or github account if properly filled in
         repos = self.getGitReposListLocal(provider, account, name)
         for name, path in list(repos.items()):
-            print(("push git repo:%s" % path))
+            self.logger.info(("push git repo:%s" % path))
             cmd = "cd %s;git add . -A" % (path)
             j.sal.process.executeInteractive(cmd)
             cmd = "cd %s;git commit -m \"%s\"" % (path, message)
@@ -747,7 +807,7 @@ class GitFactory:
     def updateGitRepos(self, provider="", account="", name="", message=""):
         repos = self.getGitReposListLocal(provider, account, name)
         for name, path in list(repos.items()):
-            print(("push git repo:%s" % path))
+            self.logger.info(("push git repo:%s" % path))
             branch = self.getGitBranch(path)
             cmd = "cd %s;git add . -A" % (path)
             j.sal.process.executeInteractive(cmd)
@@ -780,9 +840,9 @@ class GitFactory:
                 change = False
                 for line in text.split("\n"):
                     if line.replace(" ", "").find("url=") != -1:
-                        # print line
+                        # self.logger.info line
                         if line.find("@git") == -1:
-                            # print 'REPLACE'
+                            # self.logger.info 'REPLACE'
                             provider2 = line.split(
                                 "//", 1)[1].split("/", 1)[0].strip()
                             account2 = line.split("//", 1)[1].split("/", 2)[1]
@@ -791,15 +851,15 @@ class GitFactory:
                             line = "\turl = git@%s:%s/%s.git" % (
                                 provider2, account2, name2)
                             change = True
-                        # print line
+                        # self.logger.info line
                     text2 += "%s\n" % line
 
                 if change:
-                    # print text
-                    # print "===="
-                    # print text2
-                    # print "++++"
-                    print(("changed login/passwd/git on %s" % configpath))
+                    # self.logger.info text
+                    # self.logger.info "===="
+                    # self.logger.info text2
+                    # self.logger.info "++++"
+                    self.logger.info(("changed login/passwd/git on %s" % configpath))
                     j.sal.fs.writeFile(configpath, text2)
 
         if pushmessage != "":

@@ -18,7 +18,7 @@ die() {
 
 cd /tmp
 
-export ZUTILSBRANCH=${ZUTILSBRANCH:-master}
+export ZUTILSBRANCH=${ZUTILSBRANCH:-development}
 
 echo "INSTALL BASHTOOLS"
 curl https://raw.githubusercontent.com/Jumpscale/bash/$ZUTILSBRANCH/install.sh?$RANDOM > /tmp/install.sh;bash /tmp/install.sh
@@ -42,8 +42,11 @@ echo "install js9"
 ZInstall_host_js9 || die "Could not install core9 of js9" || exit 1
 
 pip3 install Cython
-pip3 install asyncssh
+# pip3 install asyncssh
 pip3 install numpy
-pip3 install tarantool
+# pip3 install tarantool
 pip3 install PyNaCl --upgrade
 
+
+# install version 3 of docker client
+sudo pip3 install docker==3.*

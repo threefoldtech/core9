@@ -26,9 +26,6 @@ class ExecutorDocker(ExecutorBase):
         self.container = container
         self.type = "docker"
 
-        self.cache = j.data.cache.get(id="executor:%s" % self.id)
-        self.cache.reset()
-
         self._id = None
 
         self._logger = j.logger.get("executordocker%s" % self.container.id)
@@ -101,7 +98,7 @@ class ExecutorDocker(ExecutorBase):
                     return reader.read().decode("utf8")
 
     def file_write(self, path, content, mode=None, owner=None, group=None, append=False,
-                   hide=False):
+                   hide=False, sudo=False):
         """
         Writes a file to the container
 
@@ -166,7 +163,7 @@ class ExecutorDocker(ExecutorBase):
             self.container.exec_run('bash -c "rm %s; rm %s.stderr"' % (cmd_file, cmd_file))
 
     def execute(self, cmds, die=True, checkok=False, showout=True, timeout=0, env=None, # pylint: disable=R0913
-                asScript=False, hide=False): # pylint: disable=W0613
+                asScript=False, hide=False, sudo=False): # pylint: disable=W0613
         """
         Executes command in container
 
@@ -185,16 +182,16 @@ class ExecutorDocker(ExecutorBase):
             showout = False
 
         env = dict() if env is None else env
-        cmds2 = self._transformCmds(cmds, die, checkok=checkok, env=env)
+        # cmds2 = self._transformCmds(cmds, die, checkok=checkok, env=env)
 
         # online command, we use prefab
         if showout:
-            self.logger.info("EXECUTE %s %s", self.id, cmds)
+            self.logger.info("EXECUTE %s %s" % (self.id, cmds))
         else:
             if not hide:
-                self.logger.debug("EXECUTE %s %s", self.id, cmds)
+                self.logger.debug("EXECUTE %s %s" % (self.id, cmds))
 
-        exit_code, out, err = self.executeRaw(cmds2, die=die, showout=showout)
+        exit_code, out, err = self.executeRaw(cmds, die=die, showout=showout)
 
         if hide is False:
             self.logger.debug("EXECUTE OK")

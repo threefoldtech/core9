@@ -3,27 +3,24 @@ from .ExecutorBase import ExecutorBase
 import subprocess
 import os
 import pytoml
+import socket
+import sys
+
+JSBASE = j.application.jsbase_get_class()
 
 
 class ExecutorLocal(ExecutorBase):
 
     def __init__(self, debug=False, checkok=False):
+        if not hasattr(self, '__jslocation__'):
+            self.__jslocation__ = "j.tools.executorLocal"
+        self._cache_expiration = 3600
         ExecutorBase.__init__(self, debug=debug, checkok=debug)
-
         self.type = "local"
         self._id = 'localhost'
-        self._logger = None
-        self.__jslocation__ = "j.tools.executorLocal"
+        self._logger = self.logger
 
-        self.cache = j.data.cache.get(id="executor:%s" % self.id)
-
-        # self.init()
-
-    @property
-    def logger(self):
-        if self._logger is None:
-            self._logger = j.logger.get("executor.localhost")
-        return self._logger
+        # self.cache = j.data.cache.get(id="executor:%s" % self.id,expiration=3600)
 
     def exists(self, path):
         return j.sal.fs.exists(path)
@@ -33,10 +30,22 @@ class ExecutorLocal(ExecutorBase):
         """
         is dict of all relevant param's on system
         """
-        if self._stateOnSystem is None:
+
+        def getenv():
+            res = {}
+            for key, val in os.environ.items():
+                res[key] = val
+            return res
+
+        def do():
+            # print ("INFO: stateonsystem for local")
+
             if "HOMEDIR" in os.environ.keys():
                 homedir = os.environ["HOMEDIR"]
             else:
+                # if os.path.exists("/root/.iscontainer"):
+                #     homedir = "/host"
+                # else:
                 homedir = os.environ["HOME"]
             cfgdir = "%s/js9host/cfg" % homedir
             res = {}
@@ -51,19 +60,22 @@ class ExecutorLocal(ExecutorBase):
             res["cfg_js9"] = load("jumpscale9")
             res["cfg_state"] = load("state")
             res["cfg_me"] = load("me")
-            res["env"] = os.environ
+            res["env"] = getenv()
 
-            res["uname"] = subprocess.Popen("uname -mnprs", stdout=subprocess.PIPE, shell=True).stdout.read().decode().strip()
-            res["hostname"] = subprocess.Popen("hostname", stdout=subprocess.PIPE, shell=True).stdout.read().decode().strip()
+            # res["uname"] = subprocess.Popen("uname -mnprs", stdout=subprocess.PIPE,
+            #                                 shell=True).stdout.read().decode().strip()
+            # res["hostname"] = subprocess.Popen("hostname", stdout=subprocess.PIPE,
+            #                                    shell=True).stdout.read().decode().strip()
+            res["uname"] = None
+            res["hostname"] = socket.gethostname()
 
-            if "darwin" in res["uname"].lower():
+            if "darwin" in sys.platform.lower():
                 res["os_type"] = "darwin"
-            elif "linux" in res["uname"].lower():
+            elif "linux" in sys.platform.lower():
                 res["os_type"] = "ubuntu"  # dirty hack, will need to do something better, but keep fast
             else:
                 print("need to fix for other types (check executorlocal")
-                from IPython import embed
-                embed(colors='Linux')
+                sys.exit(1)
 
             path = path = "%s/.profile_js" % (homedir)
             if os.path.exists(path):
@@ -78,14 +90,20 @@ class ExecutorLocal(ExecutorBase):
             else:
                 res["iscontainer"] = False
 
-            self._stateOnSystem = res
+            return res
+
+        if self._stateOnSystem == None:
+            self._stateOnSystem = do()  # don't use cache
 
         return self._stateOnSystem
 
     def executeRaw(self, cmd, die=True, showout=False):
         return self.execute(cmd, die=die, showout=showout)
 
-    def execute(self, cmds, die=True, checkok=None, showout=False, timeout=1000, env={}, hide=False):
+    def execute(self, cmds, die=True, checkok=None, showout=False, timeout=1000, env={}, sudo=False):
+        """
+        @RETURN rc, out, err
+        """
         if env:
             self.env.update(env)
         # if self.debug:
@@ -94,17 +112,17 @@ class ExecutorLocal(ExecutorBase):
         if checkok is None:
             checkok = self.checkok
 
-        cmds2 = self._transformCmds(cmds, die=die, checkok=checkok, env=env)
+        cmds2 = self.commands_transform(cmds, die=die, checkok=checkok, env=env, sudo=sudo)
 
         rc, out, err = j.sal.process.execute(cmds2, die=die, showout=showout, timeout=timeout)
 
         if checkok:
-            out = self.docheckok(cmds, out)
+            out = self._docheckok(cmds, out)
 
         return rc, out, err
 
     def executeInteractive(self, cmds, die=True, checkok=None):
-        cmds = self._transformCmds(cmds, die, checkok=checkok)
+        cmds = self.commands_transform(cmds, die, checkok=checkok)
         return j.sal.process.executeWithoutPipe(cmds)
 
     def upload(self, source, dest, dest_prefix="", recursive=True):
@@ -150,3 +168,11 @@ class ExecutorLocal(ExecutorBase):
 
     def file_read(self, path):
         return j.sal.fs.readFile(path)
+
+    def file_write(self, path, content, mode=None, owner=None, group=None, append=False, sudo=False):
+        j.sal.fs.createDir(j.sal.fs.getDirName(path))
+        j.sal.fs.writeFile(path, content, append=append)
+        if owner is not None or group is not None:
+            j.sal.fs.chown(path, owner, group)
+        if mode != None:
+            j.sal.fs.chmod(path, mode)

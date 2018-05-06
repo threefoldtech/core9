@@ -5,7 +5,8 @@ import msgpack
 from threading import Lock
 
 import tarantool
-
+from js9 import j
+JSBASE = j.application.jsbase_get_class()
 
 def unpack_long_long(value):
     return struct.unpack("<q", value)[0]
@@ -15,7 +16,7 @@ def unpack_long(value):
     return struct.unpack("<l", value)[0]
 
 
-class Task(object):
+class Task(object, JSBASE):
     """
     Tarantool queue task wrapper.
 
@@ -26,6 +27,7 @@ class Task(object):
 
     def __init__(self, queue, space=0, task_id=0,
                  tube="", status="", raw_data=None):
+        JSBASE.__init__(self)
         self.task_id = task_id
         self.tube = tube
         self.status = status
@@ -167,7 +169,7 @@ class Task(object):
         )
 
 
-class Tube(object):
+class Tube(object, JSBASE):
     """
     Tarantol queue tube wrapper. Pinned to space and tube, but unlike Queue
     it has predefined delay, ttl, ttr, and pri.
@@ -178,6 +180,7 @@ class Tube(object):
     """
 
     def __init__(self, queue, name, **kwargs):
+        JSBASE.__init__(self)
         self.queue = queue
         self.name = name
         self.opt = {
@@ -318,7 +321,7 @@ class Tube(object):
         return self.queue.statistics(tube=self.opt['tube'])
 
 
-class Queue(object):
+class Queue(object, JSBASE):
     """
     Tarantool queue wrapper. Surely pinned to space. May create tubes.
     By default it uses msgpack for serialization, but you may redefine
@@ -337,13 +340,10 @@ class Queue(object):
         >>> tube1.get() # We get task and automaticaly release it
         >>> task1 = tube1.take()
         >>> task2 = tube1.take()
-        >>> print(task1.data)
             [2, 3, 4]
-        >>> print(task2.data)
             [1, 2, 3]
         >>> del task2
         >>> del task1
-        >>> print(tube1.take().data)
             [1, 2, 3]
         # Take task and Ack it
         >>> tube1.take().ack()
@@ -368,6 +368,8 @@ class Queue(object):
         return msgpack.unpackb(data)
 
     def __init__(self, host="localhost", port=33013, space=0):
+        JSBASE.__init__(self)
+
         if not(host and port):
             raise Queue.BadConfigException("host and port params "
                                            "must be not empty")

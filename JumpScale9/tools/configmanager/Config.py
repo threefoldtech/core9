@@ -1,61 +1,76 @@
 from js9 import j
-# import os
-# import copy
+
+JSBASE = j.application.jsbase_get_class()
 
 
-class Config():
+class Config(JSBASE):
 
-    def __init__(self, instance="main", location=None, template={}, sshkey_path=None):
+    def __init__(self, instance="main", location=None, template=None, data={}):
         """
         jsclient_object is e.g. j.clients.packet.net
         """
-        self._nacl = None
+
+        JSBASE.__init__(self)
+
         self.location = location
         self.instance = instance
+        self.error = False #if this is true then need to call the configure part
         self._template = template
-        self.loaded = False
-        self._path = None
-        self._data = {}
+        if not j.data.types.string.check(template):
+            if template is not None:
+                raise RuntimeError("template needs to be None or string:%s"%template)
         if self.instance is None:
             raise RuntimeError("instance cannot be None")
+
+        self.reset()
+        if not j.sal.fs.exists(self.path):
+            j.sal.fs.createDir(j.sal.fs.getDirName(self.path))
+            self.new = True
+            dataOnFS = {}
+        else:
+            self.load()
+            # this is data on disk, because exists, should already apply to template
+            # without decryption so needs to go to self._data
+            dataOnFS = self.data  # now decrypt
+
+        # make sure template has been applied !
+        data2, error = j.data.serializer.toml.merge(tomlsource=self.template, tomlupdate=dataOnFS, listunique=True)
+
+        if data != {}:
+            # update with data given
+            data, error = j.data.serializer.toml.merge(tomlsource=data2, tomlupdate=data, listunique=True)
+            self.data = data
+        else:
+            # now put the data into the object (encryption)
+            self.data = data2
+
+        # do the fancydump to make sure we really look at differences
+        if j.data.serializer.toml.fancydumps(self.data) != j.data.serializer.toml.fancydumps(dataOnFS):
+            self.logger.debug("change of data in config, need to save")
+            self.save()
+
+    def reset(self):
+        self._data = {}
+        self.loaded = False
+        self._path = None
         self._nacl = None
-        self._sshkey_path = sshkey_path
+        self.new = False
 
     @property
     def path(self):
+        self.logger.debug("init getpath:%s" % self._path)
         if not self._path:
-            self._path = j.sal.fs.joinPaths(j.tools.configmanager.path_configrepo, self.location, self.instance + '.toml')
-            j.sal.fs.createDir(j.sal.fs.getParent(self._path))
+            self._path = j.sal.fs.joinPaths(j.tools.configmanager.path, self.location, self.instance + '.toml')
+            self.logger.debug("getpath:%s" % self._path)
         return self._path
-
-    @property
-    def sshkey_path(self):
-        return self._sshkey_path
-
-    @sshkey_path.setter
-    def sshkey_path(self, val):
-        self._sshkey_path = val
 
     @property
     def nacl(self):
         if not self._nacl:
-            j.clients.ssh.ssh_agent_check()
-            if not self._sshkey_path:
-                keys = j.clients.ssh.ssh_keys_list_from_agent()
-                if not keys:
-                    j.clients.ssh.ssh_keys_load()
-                keys = j.clients.ssh.ssh_keys_list_from_agent()
-                if len(keys) >= 1:
-                    key = j.tools.console.askChoice(
-                        [k for k in keys], descr="Please choose which key to pass to the NACL")
-                    sshkeyname = j.sal.fs.getBaseName(key)
-                else:
-                    raise RuntimeError(
-                        "You need to configure at least one sshkey")
+            if j.tools.configmanager.keyname:
+                self._nacl = j.data.nacl.get(sshkeyname=j.tools.configmanager.keyname)
             else:
-                j.clients.ssh.load_ssh_key(path=self._sshkey_path)
-                sshkeyname = j.sal.fs.getBaseName(self._sshkey_path)
-            self._nacl = j.data.nacl.get(sshkeyname=sshkeyname)
+                self._nacl = j.data.nacl.get()
         return self._nacl
 
     def instance_set(self, instance):
@@ -71,43 +86,59 @@ class Config():
         """
         if reset or self._data == {}:
             if not j.sal.fs.exists(self.path):
-                j.sal.fs.touch(self.path)
-                self._data, error = j.data.serializer.toml.merge(
-                    tomlsource=self.template, tomlupdate={}, listunique=True)
-                return 1
+                raise RuntimeError("should exist at this point")
             else:
-                content = j.sal.fs.fileGetContents(self.path)
-                data = j.data.serializer.toml.loads(content)
-                # merge found data into template
-                self._data, error = j.data.serializer.toml.merge(
-                    tomlsource=self.template, tomlupdate=data, listunique=True)
-                return 0
-        return 0
-
-    # def interactive(self):
-    #     print("Did not find config file:%s"%self.location)
-    #     self.instance=j.tools.console.askString("specify name for instance", defaultparam=self.instance)
-    #     self.configure()
-
-    # def configure(self):
-    #     if self.ui is None:
-    #         raise RuntimeError("cannot call configure UI because not defined yet, is None")
-    #     myconfig = self.ui(name=self.path, config=self.data, template=self.template)
-    #     myconfig.run()
-    #     self.data = myconfig.config
-    #     self.save()
+                content = j.sal.fs.fileGetContents(self.path)                
+                try:
+                    self._data = j.data.serializer.toml.loads(content)
+                except Exception as e:
+                    if "deserialization failed" in str(e):
+                        raise RuntimeError("config file:%s is not valid toml.\n%s"%(self.path,content))
+                    raise e                     
+            for key, val in self.template.items():
+                ttype = j.data.types.type_detect(self.template[key])
+                if ttype.BASETYPE == "string":
+                    if key in self._data:
+                        self._data[key] = self._data[key].strip()
 
     def save(self):
         # at this point we have the config & can write (self._data has the encrypted pieces)
         j.sal.fs.writeFile(
             self.path, j.data.serializer.toml.fancydumps(self._data))
 
+    def delete(self):
+        j.sal.fs.remove(self.path)
+
     @property
     def template(self):
         if self._template is None or self._template == '':
-            raise RuntimeError("self._template has to be set")
+            obj = eval(self.location)
+            if hasattr(obj,"_child_class"):
+                obj._child_class
+                myvars={}
+                try:
+                    exec("from %s import TEMPLATE;template=TEMPLATE"%obj._child_class.__module__,myvars)
+                except Exception as e:
+                    if "cannot import name" in str(e):
+                        raise RuntimeError("cannot find TEMPLATE in %s, please call the template: TEMPLATE"%obj._child_class.__module__)
+                    raise e          
+            else:
+                myvars={}
+                try:
+                    exec("from %s import TEMPLATE;template=TEMPLATE"%obj.__module__,myvars)
+                except Exception as e:
+                    if "cannot import name" in str(e):
+                        raise RuntimeError("cannot find TEMPLATE in %s, please call the template: TEMPLATE"%obj._child_class.__module__)
+                    raise e
+            self._template = myvars["template"]
         if j.data.types.string.check(self._template):
-            self._template = j.data.serializer.toml.loads(self._template)
+            try:
+                self._template = j.data.serializer.toml.loads(self._template)
+            except Exception as e:
+                if "deserialization failed" in str(e):
+                    raise RuntimeError("config file:%s is not valid toml.\n%s"%(self.path,self._template))
+                raise e          
+
         return self._template
 
     @property
@@ -116,17 +147,22 @@ class Config():
         if self._data == {}:
             self.load()
         for key, item in self._data.items():
-            ttype = j.data.types.type_detect(self.template[key])
-            if key.endswith("_"):
-                if ttype.BASETYPE == "string":
-                    if item != '' and item != '""':
-                        res[key] = self.nacl.decryptSymmetric(item, hex=True).decode()
+            if key not in self.template:
+                self.logger.warning("could not find key:%s in template, while it was in instance:%s"%(key,self.path))
+                self.logger.debug("template was:%s\n"%self.template)
+                self.error=True
+            else:
+                ttype = j.data.types.type_detect(self.template[key])
+                if key.endswith("_"):
+                    if ttype.BASETYPE == "string":
+                        if item != '' and item != '""':
+                            res[key] = self.nacl.decryptSymmetric(item, hex=True).decode()
+                        else:
+                            res[key] = ''
                     else:
-                        res[key] = ''
+                        res[key] = item
                 else:
                     res[key] = item
-            else:
-                res[key] = item
         return res
 
     @data.setter
@@ -134,26 +170,35 @@ class Config():
         if j.data.types.dict.check(value) is False:
             raise TypeError("value needs to be dict")
 
+        changed = False
         for key, item in value.items():
-            self.data_set(key, item, save=False)
+            ch1 = self.data_set(key, item, save=False)
+            changed = changed or ch1
 
-        self.save()
+        if changed:
+            # raise RuntimeError()
+            self.logger.debug("changed:\n%s" % self)
+            self.save()
 
     def data_set(self, key, val, save=True):
         if key not in self.template:
             raise RuntimeError(
                 "Cannot find key:%s in template for %s" % (key, self))
 
-        if (key in self._data and self._data[key] != val) or key not in self._data:
+        if key not in self._data or self._data[key] != val:
             ttype = j.data.types.type_detect(self.template[key])
             if key.endswith("_"):
                 if ttype.BASETYPE == "string":
                     if val != '' and val != '""':
-                        val = self.nacl.encryptSymmetric(
-                            val, hex=True, salt=val)
+                        val = self.nacl.encryptSymmetric(val, hex=True, salt=val)
+                        if key in self._data and val == self._data[key]:
+                            return False
             self._data[key] = val
             if save:
                 self.save()
+            return True
+        else:
+            return False
 
     @property
     def yaml(self):

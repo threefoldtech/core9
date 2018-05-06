@@ -6,10 +6,13 @@ import time
 # import os
 import psutil
 
+JSBASE = j.application.jsbase_get_class()
 
-class InfluxDumper:
+
+class InfluxDumper(JSBASE):
 
     def __init__(self, testname, redis, server="localhost", port=8086, login="root", passwd="root"):
+        JSBASE.__init__(self)
         self.redis = redis
         self.dbname = testname
         self.influxdb = j.clients.influxdb.get(
@@ -52,12 +55,12 @@ class InfluxDumper:
                 if last < 1000000:
                     data += "%s,%s value=%s %s\n" % (measurement, tags, last, epoch)
                 else:
-                    print("SKIPPED:%s" % "%s,%s value=%s %s\n" % (measurement, tags, last, epoch))
+                    self.logger.info("SKIPPED:%s" % "%s,%s value=%s %s\n" % (measurement, tags, last, epoch))
 
                 if counter > 100 or time.time() > start + 2:
                     start = time.time()
                     counter = 0
-                    print(data)
+                    self.logger.debug(data)
                     j.clients.influxdb.postraw(data, host='localhost', port=8086,
                                                username='root', password='root', database=self.dbname)
                     # print "dump done to db:%s"%self.dbname
