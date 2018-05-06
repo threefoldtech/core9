@@ -92,7 +92,13 @@ class NACL(JSBASE):
 
         if self._agent is None:
             if not j.clients.sshkey.exists(self.sshkeyname):
-                j.clients.sshkey.key_load("%s/.ssh/%s" % (j.dirs.HOMEDIR, self.sshkeyname))
+                keypath = "%s/.ssh/%s" % (j.dirs.HOMEDIR, self.sshkeyname)
+                if j.sal.fs.exists(keypath):
+                    j.clients.sshkey.key_load("%s/.ssh/%s" % (j.dirs.HOMEDIR, self.sshkeyname))
+                else:
+                    # if sshkeyname from state is not reachable delete it and re-init config manager
+                    j.core.state.configSetInDict("myconfig", "sshkeyname", "")
+                    j.tools.configmanager.init()
             self._agent = getagent(self.sshkeyname)
         return self._agent
 
