@@ -79,6 +79,7 @@ setup(
         'fakeredis',
         'ssh2-python',
         'parallel_ssh>=1.4.0',
+        'psutil>=5.4.3',
 
     ],
     cmdclass={
