@@ -8,19 +8,12 @@ import os
 def _post_install(libname, libpath):
     from JumpScale9 import j  # here its still the boostrap JumpScale9
 
-    # NO LONGER NEEDED
-    # # add this plugin to the config
-    # c = {}  # first time need to make sure is empty
-    # c[libname] = libpath
-    # j.core.state.configSet('plugins', c)
-
     # remove leftovers
-    for item in j.sal.fs.find("/usr/local/bin/",fileregex="js9*"):
-         j.sal.fs.remove("/usr/local/bin/%s"%item)
+    for item in j.sal.fs.find("/usr/local/bin/", fileregex="js9*"):
+        j.sal.fs.remove("/usr/local/bin/%s" % item)
 
     j.tools.executorLocal.initEnv()
     j.tools.jsloader.generate()
-
 
 
 class install(_install):
@@ -78,15 +71,15 @@ setup(
         'redis>=2.10.5',
         'requests>=2.13.0',
         'future>=0.16.0',
-        'psutil',
         'watchdog',
         'msgpack-python',
-        'colorlog',
         'npyscreen',
         'pyyaml',
-        'pyserial>=3.4',
         'docker>=3',
-        'parallel_ssh>=1.4.0'
+        'fakeredis',
+        'ssh2-python',
+        'parallel_ssh>=1.4.0',
+
     ],
     cmdclass={
         'install': install,
