@@ -177,7 +177,19 @@ class SSHClient(SSHClientBase):
         self._prefab = executor.prefab
         return self._prefab
 
-    def ssh_authorize(self, user, key):
-        sshkey = j.clients.sshkey.get(key)
-        pubkey = sshkey.pubkey
+    def ssh_authorize(self, user, key=None, pubkey=None):
+        """add key to authorized users, if key is specified will get public key from sshkey client,
+        or can directly specify the public key. If both are specified key name instance will override public key.
+
+        :param user: user to authorize
+        :type user: str
+        :param key: name of sshkey instance to use, defaults to None
+        :param key: str, optional
+        :param pubkey: public key to authorize, defaults to None
+        :param pubkey: str, optional
+        """
+
+        if key:
+            sshkey = j.clients.sshkey.get(key)
+            pubkey = sshkey.pubkey
         self.prefab.system.ssh.authorize(user=user, key=pubkey)
