@@ -276,7 +276,7 @@ class ExecutorBase(JSBASE):
             return res
 
         if self._stateOnSystem is None:
-            self._stateOnSystem = self.cache.get('stateOnSystem:%s' % self.id, do)
+            self._stateOnSystem = self.cache.get('stateOnSystem-%s' % self.id, do)
         return self._stateOnSystem
 
     def enableDebug(self):

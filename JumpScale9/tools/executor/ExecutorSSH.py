@@ -30,7 +30,7 @@ class ExecutorSSH(ExecutorBase):
     @property
     def id(self):
         if self._id is None:
-            self._id = '%s:%s' % (self.sshclient.addr, self.sshclient.port)
+            self._id = '%s-%s' % (self.sshclient.addr, self.sshclient.port)
         return self._id
 
     def executeRaw(self, cmd, die=True, showout=False):
