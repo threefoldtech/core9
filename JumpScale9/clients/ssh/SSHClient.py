@@ -3,7 +3,7 @@ import functools
 from js9 import j
 from .SSHClientBase import SSHClientBase
 
-#THIS IS NOT THE ORIGINAL FILE, IS JUST A COPY FROM SSHCLientBase.TEMPLATE: CHANGE THERE !!!! (and copy here)
+# THIS IS NOT THE ORIGINAL FILE, IS JUST A COPY FROM SSHCLientBase.TEMPLATE: CHANGE THERE !!!! (and copy here)
 TEMPLATE = """
 addr = ""
 port = 22
@@ -29,7 +29,6 @@ class SSHClient(SSHClientBase):
         self._client = None
         self._prefab = None
 
-
     @property
     def client(self):
         pkey = self.sshkey.path if (self.sshkey and self.sshkey.path) else None
@@ -41,16 +40,15 @@ class SSHClient(SSHClientBase):
         PSSHClient = functools.partial(PSSHClient, retry_delay=1)
 
         self._client = PSSHClient(self.addr_variable,
-                                user=self.login,
-                                password=passwd,
-                                port=self.port,
-                                pkey=pkey,
-                                num_retries=self.timeout / 6,
-                                allow_agent=self.allow_agent,
-                                timeout=5)
+                                  user=self.login,
+                                  password=passwd,
+                                  port=self.port,
+                                  pkey=pkey,
+                                  num_retries=self.timeout / 6,
+                                  allow_agent=self.allow_agent,
+                                  timeout=5)
 
         return self._client
-
 
     def execute(self, cmd, showout=True, die=True, timeout=None):
         channel, _, stdout, stderr, _ = self.client.run_command(cmd, timeout=timeout)
@@ -125,6 +123,9 @@ class SSHClient(SSHClientBase):
     def close(self):
         # TODO: make sure we don't need to clean anything
         pass
+
+    def copy_file(self, local_file, remote_file, recurse=False, sftp=None):
+        return self.rsync_up(local_file, remote_file, recursive=recurse)
 
     def rsync_up(self, source, dest, recursive=True):
         if dest[0] != "/":
