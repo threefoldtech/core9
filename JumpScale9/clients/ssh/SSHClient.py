@@ -3,7 +3,7 @@ import functools
 from js9 import j
 from .SSHClientBase import SSHClientBase
 
-#THIS IS NOT THE ORIGINAL FILE, IS JUST A COPY FROM SSHCLientBase.TEMPLATE: CHANGE THERE !!!! (and copy here)
+# THIS IS NOT THE ORIGINAL FILE, IS JUST A COPY FROM SSHCLientBase.TEMPLATE: CHANGE THERE !!!! (and copy here)
 TEMPLATE = """
 addr = ""
 port = 22
@@ -29,7 +29,6 @@ class SSHClient(SSHClientBase):
         self._client = None
         self._prefab = None
 
-
     @property
     def client(self):
         pkey = self.sshkey.path if (self.sshkey and self.sshkey.path) else None
@@ -41,16 +40,15 @@ class SSHClient(SSHClientBase):
         PSSHClient = functools.partial(PSSHClient, retry_delay=1)
 
         self._client = PSSHClient(self.addr_variable,
-                                user=self.login,
-                                password=passwd,
-                                port=self.port,
-                                pkey=pkey,
-                                num_retries=self.timeout / 6,
-                                allow_agent=self.allow_agent,
-                                timeout=5)
+                                  user=self.login,
+                                  password=passwd,
+                                  port=self.port,
+                                  pkey=pkey,
+                                  num_retries=self.timeout / 6,
+                                  allow_agent=self.allow_agent,
+                                  timeout=5)
 
         return self._client
-
 
     def execute(self, cmd, showout=True, die=True, timeout=None):
         channel, _, stdout, stderr, _ = self.client.run_command(cmd, timeout=timeout)
@@ -126,6 +124,9 @@ class SSHClient(SSHClientBase):
         # TODO: make sure we don't need to clean anything
         pass
 
+    def copy_file(self, local_file, remote_file, recurse=False, sftp=None):
+        return self.rsync_up(local_file, remote_file, recursive=recurse)
+
     def rsync_up(self, source, dest, recursive=True):
         if dest[0] != "/":
             raise j.exceptions.RuntimeError("dest path should be absolute")
@@ -177,7 +178,19 @@ class SSHClient(SSHClientBase):
         self._prefab = executor.prefab
         return self._prefab
 
-    def ssh_authorize(self, user, key):
-        sshkey = j.clients.sshkey.get(key)
-        pubkey = sshkey.pubkey
+    def ssh_authorize(self, user, key=None, pubkey=None):
+        """add key to authorized users, if key is specified will get public key from sshkey client,
+        or can directly specify the public key. If both are specified key name instance will override public key.
+
+        :param user: user to authorize
+        :type user: str
+        :param key: name of sshkey instance to use, defaults to None
+        :param key: str, optional
+        :param pubkey: public key to authorize, defaults to None
+        :param pubkey: str, optional
+        """
+
+        if key:
+            sshkey = j.clients.sshkey.get(key)
+            pubkey = sshkey.pubkey
         self.prefab.system.ssh.authorize(user=user, key=pubkey)

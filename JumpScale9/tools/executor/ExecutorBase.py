@@ -160,6 +160,7 @@ class ExecutorBase(JSBASE):
         is dict of all relevant param's on system
         """
 
+
         def do():
 
             self.logger.debug("stateonsystem for non local:%s" % self)
