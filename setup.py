@@ -3,7 +3,6 @@ from distutils.sysconfig import get_python_lib
 from setuptools.command.install import install as _install
 from setuptools.command.develop import develop as _develop
 import os
-import subprocess
 
 
 def _post_install(libname, libpath):
