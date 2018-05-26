@@ -13,7 +13,7 @@ class SerializerBlowfish(SerializerBase):
             from Crypto.Cipher import Blowfish
             from random import randrange
             self.randrange = randrange
-            self.c = Blowfish.new(encrkey)
+            self.c = Blowfish.new(encrkey,mode=Blowfish.MODE_ECB)
             self.encrkey = encrkey
 
     def dumps(self, obj, encrkey):
