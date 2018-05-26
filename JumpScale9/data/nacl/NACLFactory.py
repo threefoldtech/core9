@@ -98,7 +98,7 @@ class NACLFactory(JSBASE):
             message = message.decode('utf8')   
 
         assert msg.strip() == message.strip()         
-        
+
         if interactive:
             print("encrypted text:\n*************\n")
             print(res.decode('utf8'))
@@ -106,10 +106,26 @@ class NACLFactory(JSBASE):
 
         return res
 
-    def decrypt(self,secret,message,words=""):
+    def decrypt(self,secret="",message="",words="",interactive=True):
         """
         use output from encrypt
+
+        js9 'j.data.nacl.decrypt()'
+
         """
+
+        if interactive:
+            if not secret:
+                secret = j.tools.console.askPassword("your secret")
+            if not message:
+                message = j.tools.console.askMultiline("your message to decrypt")
+                message = message.strip()
+            if not words:
+                yn=j.tools.console.askYesNo("do you wan to specify secret key as bip39 words?")
+                if yn:
+                    words= j.tools.console.askString("your bip39 words")
+
+
         secret = j.data.hash.md5_string(secret)
         secret = bytes(secret, 'utf-8')
 
@@ -132,6 +148,12 @@ class NACLFactory(JSBASE):
         box = nacl.secret.SecretBox(secret)
         message =  box.decrypt(message)        
         message = message.decode(encoding='utf-8', errors='strict')
+
+        if interactive:
+            print("decrypted text:\n*************\n")
+            print(message)
+
+
         return message
 
 
