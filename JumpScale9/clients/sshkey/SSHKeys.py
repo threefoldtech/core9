@@ -22,7 +22,6 @@ class SSHKeys(JSConfigBase):
 
     def key_get(self, path, load=True):
         instance = j.sal.fs.getBaseName(path)
-        sshkey = self.get(instance)
         sshkey = self.get(instance, data={'path': path}, interactive=j.tools.configmanager.interactive)
 
         if load:

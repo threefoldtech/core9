@@ -77,15 +77,61 @@ class State(JSBASE):
         return versions
 
     def stateSet(self, key, val, save=True):
+        """Set a section in Jumpscale's state.toml
+
+        :param key: section name
+        :type key: str
+        :param val: value to set
+        :type val: dict
+        :param save: writes to the file if true
+        :param save: bool, optional
+        :return: true if new value is set, false if already exists
+        :rtype: bool
+        """
+
         return self._set(key=key, val=val, save=save, config=self._configState, path=self.configStatePath)
 
     def stateGet(self, key, defval=None, set=False):
+        """gets a section from state.toml
+
+        :param key: section name
+        :type key: str
+        :param defval: value to return if not found if set is true will add it to state, defaults to None
+        :param defval: dict, optional
+        :param set: if true will set the specified defval, defaults to False
+        :param set: bool, optional
+        :return: the section data
+        :rtype: dict
+        """
+
         return self._get(key=key, defval=defval, set=set, config=self._configState, path=self.configStatePath)
 
     def configGet(self, key, defval=None, set=False):
+        """gets a section from jumpscale9.toml
+
+        :param key: section name
+        :type key: str
+        :param defval: value to return if not found if set is true will add it to config, defaults to None
+        :param defval: dict, optional
+        :param set: if true will set the specified defval, defaults to False
+        :param set: bool, optional
+        :return: the section data
+        :rtype: dict
+        """
         return self._get(key=key, defval=defval, set=set, config=self._configJS, path=self.configJSPath)
 
     def configSet(self, key, val, save=True):
+        """Set a section in Jumpscale's jumpscale9.toml
+
+        :param key: section name
+        :type key: str
+        :param val: value to set
+        :type val: dict
+        :param save: writes to the file if true
+        :param save: bool, optional
+        :return: true if new value is set, false if already exists
+        :rtype: bool
+        """
         return self._set(key=key, val=val, save=save, config=self._configJS, path=self.configJSPath)
 
     @property
@@ -127,9 +173,34 @@ class State(JSBASE):
             return False
 
     def configSetInDict(self, key, dkey, dval):
+        """Set a value to a key in a section in the config file
+        For example:
+        [section]
+        key = "value"
+
+        :param key: section name
+        :type key: str
+        :param dkey: key to set its value
+        :type dkey: str
+        :param dval: value to set
+        :type dval: str
+        """
+
         self._setInDict(key=key, dkey=dkey, dval=dval, config=self._configJS, path=self.configJSPath)
 
     def stateSetInDict(self, key, dkey, dval):
+        """Set a value to a key in a section in the state file
+        For example:
+        [section]
+        key = "value"
+
+        :param key: section name
+        :type key: str
+        :param dkey: key to set its value
+        :type dkey: str
+        :param dval: value to set
+        :type dval: str
+        """
         self._setInDict(key=key, dkey=dkey, dval=dval, config=self._configState, path=self.configStatePath)
 
     def _setInDict(self, key, dkey, dval, config, path=""):
@@ -154,9 +225,38 @@ class State(JSBASE):
         self.configSave(path)
 
     def configGetFromDict(self, key, dkey, default=None):
+        """Get value of key in a section in the config file
+        For example:
+        [section]
+        key = "value"
+
+        :param key: section name
+        :type key: str
+        :param dkey: key to get its value
+        :type dkey: str
+        :param default: default value to return if not found, defaults to None
+        :param default: str, optional
+        :return: key value
+        :rtype: str
+        """
+
         return self._getFromDict(key=key, dkey=dkey, default=default, config=self._configJS, path=self.configJSPath)
 
     def stateGetFromDict(self, key, dkey, default=None):
+        """Get value of key in a section in the state file
+        For example:
+        [section]
+        key = "value"
+
+        :param key: section name
+        :type key: str
+        :param dkey: key to get its value
+        :type dkey: str
+        :param default: default value to return if not found, defaults to None
+        :param default: str, optional
+        :return: key value
+        :rtype: str
+        """
         return self._getFromDict(key=key, dkey=dkey, default=default, config=self._configState, path=self.configStatePath)
 
     def _getFromDict(self, key, dkey, default=None, config=None, path=""):
@@ -175,9 +275,37 @@ class State(JSBASE):
         return config[key][dkey]
 
     def configGetFromDictBool(self, key, dkey, default=None):
+        """Get boolean value of key if value is in [1, 0, 'yes', 'no', 'y', 'n']
+        For example:
+        [section]
+        key = "yes"
+
+        :param key: section name
+        :type key: str
+        :param dkey: key to get its value
+        :type dkey: str
+        :param default: default value to return if not found, defaults to None
+        :param default: str, optional
+        :return: key value
+        :rtype: str
+        """
         return self._getFromDictBool(key=key, dkey=dkey, default=default, config=self._configJS)
 
     def stateGetFromDictBool(self, key, dkey, default=None):
+        """Get boolean value of key if value is in [1, 0, 'yes', 'no', 'y', 'n']
+        For example:
+        [section]
+        key = "yes"
+
+        :param key: section name
+        :type key: str
+        :param dkey: key to get its value
+        :type dkey: str
+        :param default: default value to return if not found, defaults to None
+        :param default: str, optional
+        :return: key value
+        :rtype: str
+        """
         self._getFromDictBool(key=key, dkey=dkey, default=default, config=self._configState)
 
     def _getFromDictBool(self, key, dkey, default=None, config=None, path=""):
@@ -197,9 +325,33 @@ class State(JSBASE):
             return False
 
     def configSetInDictBool(self, key, dkey, dval):
+        """Set a value to a key in a section in the config file, value in [1, 0, 'yes', 'no', 'y', 'n']
+        For example:
+        [section]
+        key = "value"
+
+        :param key: section name
+        :type key: str
+        :param dkey: key to set its value
+        :type dkey: str
+        :param dval: value to set
+        :type dval: str
+        """
         self._setInDictBool(key=key, dkey=dkey, dval=dval, config=self._configJS, path=self.configJSPath)
 
     def stateSetInDictBool(self, key, dkey, dval):
+        """Set a value to a key in a section in the state file, value in [1, 0, 'yes', 'no', 'y', 'n']
+        For example:
+        [section]
+        key = "value"
+
+        :param key: section name
+        :type key: str
+        :param dkey: key to set its value
+        :type dkey: str
+        :param dval: value to set
+        :type dval: str
+        """
         self._setInDictBool(key=key, dkey=dkey, dval=dval, config=self._configState, path=self.configStatePath)
 
     def _setInDictBool(self, key, dkey, dval, config, path):
@@ -241,6 +393,7 @@ class State(JSBASE):
 
     def configSave(self, config=None, path=""):
         """
+        Writes config to specified path
         """
         if self.executor.state_disabled:
             return
