@@ -76,7 +76,7 @@ class NACL(JSBASE):
         self._signingkey = ""
         self._signingkey_pub = ""
 
-        self.path_words = "%s/%s.words" % (self.path, self.name)
+        # self.path_words = "%s/%s.words" % (self.path, self.name)
 
         # self.path_privatekey_sign = "%s/%s_sign.priv" % (self.path, self.name)
         # if not j.sal.fs.exists(self.path_privatekey_sign):
@@ -118,18 +118,17 @@ class NACL(JSBASE):
         """
         js9 'print(j.data.nacl.default.words)'
         """        
-        if not j.sal.fs.exists(self.path_words):
-            self.logger.info("GENERATED words")
-            words = j.data.encryption.mnemonic_generate()
-            words = self.encryptSymmetric(words)
-            self.file_write_hex(self.path_words,words)
-        words = self.file_read_hex(self.path_words)
-        words = self.decryptSymmetric(words)
-        return words.decode()
+        return j.data.encryption.mnemonic.to_mnemonic(self.privkey.encode())
+        # if not j.sal.fs.exists(self.path_words):
+        #     self.logger.info("GENERATED words")
+        #     words = j.data.encryption.mnemonic_generate()
+        #     words = self.encryptSymmetric(words)
+        #     self.file_write_hex(self.path_words,words)
+        # words = self.file_read_hex(self.path_words)
+        # words = self.decryptSymmetric(words)
+        # return words.decode()
 
-    def words_reset(self):
-        j.sal.fs.remove(self.path_words)
-        
+
 
     @property
     def pubkey(self):

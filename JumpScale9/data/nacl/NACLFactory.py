@@ -14,7 +14,7 @@ class NACLFactory(JSBASE):
 
     def __init__(self):
         JSBASE.__init__(self)        
-        self.__jslocation__ = "j j.data.nacl.default."
+        self.__jslocation__ = "j.data.nacl"
         self._default = None
 
     def get(self, name="key", secret="", sshkeyname=""):
@@ -38,14 +38,8 @@ class NACLFactory(JSBASE):
         """
         return j.data.nacl.default.words
 
-    def words_reset(self):
-        """
-        js9 'j.data.nacl.default.words_reset()'
-        """
-        j.data.nacl.default.words_reset()
-
     
-    def encrypt(self,secret,message,words=""):
+    def encrypt(self,secret="",message="",words="",interactive=True):
         """
         secret is any size key
         words are bip39 words e.g. see https://iancoleman.io/bip39/#english
@@ -54,36 +48,89 @@ class NACLFactory(JSBASE):
 
         result is base64
 
-        its a combination of nacl symmetric encryption and pgp
-        if no pgp private key given then 
+        its a combination of nacl symmetric encryption using secret and asymetric encryption using the words
+        
+        the result is a super strong encryption
+
+        to use
+
+        js9 'j.data.nacl.encrypt()'
 
         """
+
+        if interactive:
+            if not secret:
+                secret = j.tools.console.askPassword("your secret")
+            if not message:
+                message = j.tools.console.askMultiline("your message to encrypt")
+                message = message.strip()
+            if not words:
+                yn=j.tools.console.askYesNo("do you wan to specify secret key as bip39 words?")
+                if yn:
+                    words= j.tools.console.askString("your bip39 words")
+
         if words == "":
             words = j.data.nacl.default.words
 
         #first encrypt symmetric
-        secret = j.data.hash.md5_string(secret)
-        secret = bytes(secret, 'utf-8')
-        box = nacl.secret.SecretBox(secret)
+        secret1 = j.data.hash.md5_string(secret)
+        secret1 = bytes(secret1, 'utf-8')
+        box = nacl.secret.SecretBox(secret1)
         if j.data.types.str.check(message):
             message = bytes(message, 'utf-8')
         res = box.encrypt(message)
 
-        #now encrypt assymetric using the words
-        from IPython import embed;embed(colors='Linux')
+        #now encrypt asymetric using the words
+        privkeybytes = j.data.encryption.mnemonic.to_entropy(words)
 
-        return base64.encodestring(res)
+        pk = PrivateKey(privkeybytes)
+        sb = SealedBox(pk.public_key)
 
-    def decrypt(self,secret,message):
+        res = sb.encrypt(res)
+
+        res = base64.encodestring(res)
+
+        #LETS VERIFY
+
+        msg = self.decrypt(secret=secret,message=res.decode('utf8'),words=words)
+# self.decrypt(secret=secret,message=res,words=words)
+        if j.data.types.bytes.check(message):
+            message = message.decode('utf8')   
+
+        assert msg.strip() == message.strip()         
+        
+        if interactive:
+            print("encrypted text:\n*************\n")
+            print(res.decode('utf8'))
+
+
+        return res
+
+    def decrypt(self,secret,message,words=""):
         """
         use output from encrypt
         """
         secret = j.data.hash.md5_string(secret)
         secret = bytes(secret, 'utf-8')
+
+        if not j.data.types.bytes.check(message):
+            message = bytes(message,'utf8')
+            
         message = base64.decodestring(message)
+
+        if words == "":
+            words = j.data.nacl.default.words
+
+        privkeybytes = j.data.encryption.mnemonic.to_entropy(words)
+
+        pk = PrivateKey(privkeybytes)
+        sb = SealedBox(pk)
+
+        message = sb.decrypt(message)
+
+        #now decrypt symmetric
         box = nacl.secret.SecretBox(secret)
-        message =  box.decrypt(message)
-        # if j.data.types.bytes.check(message):
+        message =  box.decrypt(message)        
         message = message.decode(encoding='utf-8', errors='strict')
         return message
 
@@ -96,6 +143,18 @@ class NACLFactory(JSBASE):
         res = self.encrypt("1111","something")
         res2 = self.decrypt("1111",res)
         assert "something"==res2
+
+        words = 'oxygen fun inner bachelor cherry pistol knife quarter grass act ceiling wrap another input style profit middle cake slight glance silk rookie caught parade'
+        res3 = self.encrypt("1111","something",words=words)
+        assert res != res3
+
+        try:
+            res4 = self.decrypt("1111",res3)
+        except Exception as e:
+            assert str(e).find("error occurred")!=-1
+
+        res4 = self.decrypt("1111",res3,words=words)
+        assert "something"==res4
 
         cl = self.default  # get's the default location & generate's keys
 
