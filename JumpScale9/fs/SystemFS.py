@@ -41,6 +41,8 @@ class SystemFS(JSBASE):
         @autocomplete
 
         """
+        if os.path.samefile(fileFrom, to):
+            raise j.exceptions.Input('{src} and {dest} are the same file'.format(src=fileFrom, dest=to))
         # Create target folder first, otherwise copy fails
         target_folder = os.path.dirname(to)
         if createDirIfNeeded:
