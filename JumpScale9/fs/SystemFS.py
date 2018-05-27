@@ -46,6 +46,8 @@ class SystemFS(JSBASE):
         if createDirIfNeeded:
             self.createDir(target_folder)
         if self.exists(to):
+            if os.path.samefile(fileFrom, to):
+                raise j.exceptions.Input('{src} and {dest} are the same file'.format(src=fileFrom, dest=to))
             if overwriteFile is False:
                 if os.path.samefile(to, target_folder):
                     destfilename = os.path.join(to, os.path.basename(fileFrom))
