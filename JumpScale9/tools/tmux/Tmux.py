@@ -30,6 +30,15 @@ class Tmux(JSBASE):
             session1 = s.new_session(firstWindow)
         return s
 
+    def killall(self):
+        """
+        js9 'j.tools.tmux.killall()'
+        """
+        for key,item in self.sessions.items():
+            print("kill tmux, implement")
+            from IPython import embed;embed(colors='Linux')
+            s
+
     def session_get(self, name, reset=False, attach=False, firstWindow="ignore"):
         if reset and name in self.sessions:
             self.sessions[name].kill()

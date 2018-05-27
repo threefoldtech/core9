@@ -1,0 +1,50 @@
+#! /usr/bin/env python3
+
+from js9 import *
+j.tools.bash.local.locale_check()
+import os
+os.environ["LC_ALL"] = 'en_US.UTF-8'
+
+from js9 import j
+j.tools.bash.local.locale_check()
+import click
+
+@click.group()
+def cli():
+    pass
+
+
+@click.command()
+@click.option('--reset', '-r', help='reset remembered secrets', is_flag=True, type=bool, default=False)
+def encrypt(reset=False):
+    """encrypt"""
+    j.data.nacl.encrypt(interactive=True)
+
+@click.command()
+@click.option('--reset', '-r', help='reset remembered secrets', is_flag=True, type=bool, default=False)
+def decrypt(reset=False):
+    """encrypt"""
+    j.data.nacl.decrypt(interactive=True)
+
+@click.command()
+def reset():
+    """reset the remembered properties"""
+    if j.core.db.exists("nacl.meta"):
+        data=j.core.db.delete("nacl.meta")
+    
+@click.command()
+def words():
+    """print the words of your default private key"""
+    print(j.data.nacl.words)
+    
+    
+
+cli.add_command(encrypt)
+cli.add_command(decrypt)
+cli.add_command(reset)
+cli.add_command(words)
+
+if __name__ == '__main__':
+    cli()
+    j.application.stop()
+

@@ -1,7 +1,6 @@
 from js9 import j
 
 from .NACL import NACL
-
 import nacl.secret
 import nacl.utils
 import base64
@@ -38,8 +37,42 @@ class NACLFactory(JSBASE):
         """
         return j.data.nacl.default.words
 
-    
-    def encrypt(self,secret="",message="",words="",interactive=True):
+    def remember(self):
+        """
+        will start redis core, this will make sure that the secret & words are remembered for 1h
+
+        js9 'j.data.nacl.remember()'
+
+        """
+        j.clients.redis.core_start()
+
+    def _remember_get(self,secret,words):
+
+        if not "fake" in str(j.core.db):
+            if j.core.db.exists("nacl.meta"):
+                data=j.core.db.get("nacl.meta")
+                data2 = self.default.decryptSymmetric(data)
+                data3 = j.data.serializer.json.loads(data2)
+
+                if "secret" in data3 and not secret:
+                    secret = data3["secret"]
+
+                if "words" in data3 and not words:
+                    words = data3["words"]
+
+        return secret,words
+
+    def _remember_set(self,secret,words):
+        if not "fake" in str(j.core.db):
+            data={}
+            data["secret"] = secret
+            data["words"] = words
+            data2 = j.data.serializer.json.dumps(data)
+            data3 = self.default.encryptSymmetric(data2)
+            self.logger.debug("remember secret,words")
+            j.core.db.set("nacl.meta",data3, ex=3600)
+
+    def encrypt(self,secret="",message="",words="",interactive=False):
         """
         secret is any size key
         words are bip39 words e.g. see https://iancoleman.io/bip39/#english
@@ -58,7 +91,12 @@ class NACLFactory(JSBASE):
 
         """
 
+        message = message.strip()
+
         if interactive:
+            
+            secret,words = self._remember_get(secret,words)
+
             if not secret:
                 secret = j.tools.console.askPassword("your secret")
             if not message:
@@ -68,6 +106,14 @@ class NACLFactory(JSBASE):
                 yn=j.tools.console.askYesNo("do you wan to specify secret key as bip39 words?")
                 if yn:
                     words= j.tools.console.askString("your bip39 words")
+                else:
+                    words = j.data.nacl.default.words
+
+            self._remember_set(secret,words)
+
+        else:
+            if not secret or not message:
+                raise RuntimeError("secret or message needs to be used")                
 
         if words == "":
             words = j.data.nacl.default.words
@@ -75,25 +121,32 @@ class NACLFactory(JSBASE):
         #first encrypt symmetric
         secret1 = j.data.hash.md5_string(secret)
         secret1 = bytes(secret1, 'utf-8')
+        # print("secret1_js9:%s"%secret1)
+
         box = nacl.secret.SecretBox(secret1)
         if j.data.types.str.check(message):
             message = bytes(message, 'utf-8')
+        # print("msg_js9:%s"%message)
         res = box.encrypt(message)
 
         #now encrypt asymetric using the words
         privkeybytes = j.data.encryption.mnemonic.to_entropy(words)
+        # print("privkey_js:%s"%privkeybytes)
 
         pk = PrivateKey(privkeybytes)
+
         sb = SealedBox(pk.public_key)
 
         res = sb.encrypt(res)
 
         res = base64.encodestring(res)
 
+        print("encr_js:%s"%res)
+
         #LETS VERIFY
 
-        msg = self.decrypt(secret=secret,message=res.decode('utf8'),words=words)
-# self.decrypt(secret=secret,message=res,words=words)
+        msg = self.decrypt(secret=secret,message=res.decode('utf8'),words=words,interactive=interactive)
+
         if j.data.types.bytes.check(message):
             message = message.decode('utf8')   
 
@@ -106,7 +159,7 @@ class NACLFactory(JSBASE):
 
         return res
 
-    def decrypt(self,secret="",message="",words="",interactive=True):
+    def decrypt(self,secret="",message="",words="",interactive=False):
         """
         use output from encrypt
 
@@ -115,6 +168,9 @@ class NACLFactory(JSBASE):
         """
 
         if interactive:
+            
+            secret,words = self._remember_get(secret,words)
+
             if not secret:
                 secret = j.tools.console.askPassword("your secret")
             if not message:
@@ -124,6 +180,9 @@ class NACLFactory(JSBASE):
                 yn=j.tools.console.askYesNo("do you wan to specify secret key as bip39 words?")
                 if yn:
                     words= j.tools.console.askString("your bip39 words")
+        else:
+            if not secret or not message:
+                raise RuntimeError("secret or message needs to be used")
 
 
         secret = j.data.hash.md5_string(secret)
@@ -151,7 +210,7 @@ class NACLFactory(JSBASE):
 
         if interactive:
             print("decrypted text:\n*************\n")
-            print(message)
+            print(message.strip()+"\n")
 
 
         return message
@@ -162,20 +221,20 @@ class NACLFactory(JSBASE):
         js9 'j.data.nacl.test()'
         """
 
-        res = self.encrypt("1111","something")
-        res2 = self.decrypt("1111",res)
+        res = self.encrypt("1111","something",interactive=False)
+        res2 = self.decrypt("1111",res,interactive=False)
         assert "something"==res2
 
         words = 'oxygen fun inner bachelor cherry pistol knife quarter grass act ceiling wrap another input style profit middle cake slight glance silk rookie caught parade'
-        res3 = self.encrypt("1111","something",words=words)
+        res3 = self.encrypt("1111","something",words=words,interactive=False)
         assert res != res3
 
         try:
-            res4 = self.decrypt("1111",res3)
+            res4 = self.decrypt("1111",res3,interactive=False)
         except Exception as e:
             assert str(e).find("error occurred")!=-1
 
-        res4 = self.decrypt("1111",res3,words=words)
+        res4 = self.decrypt("1111",res3,words=words,interactive=False)
         assert "something"==res4
 
         cl = self.default  # get's the default location & generate's keys
