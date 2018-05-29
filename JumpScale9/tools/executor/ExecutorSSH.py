@@ -7,7 +7,7 @@ JSBASE = j.application.jsbase_get_class()
 
 class ExecutorSSH(ExecutorBase):
 
-    def __init__(self, sshclient, debug=False, checkok=True):
+    def __init__(self, sshclient, debug=False, checkok=False):
         ExecutorBase.__init__(self, debug=debug, checkok=checkok)
 
         self.sshclient = sshclient
@@ -44,16 +44,13 @@ class ExecutorSSH(ExecutorBase):
         #     raise RuntimeError("JJ")
         # if cmds.find("test -e /root/.bash_profile") != -1:
         #     raise RuntimeError("JJ")
-        # import pdb; pdb.set_trace()
-        # cmds2 = self.commands_transform(cmds, die, checkok=checkok, env=env, sudo=sudo)
-        cmds2 = cmds
-
+        cmds2 = self.commands_transform(cmds, die, checkok=checkok, env=env, sudo=sudo)
         if cmds.find("\n") != -1 and asScript:
             if showout:
                 self.logger.info("EXECUTESCRIPT} %s:%s:\n%s" %
                                  (self.sshclient.addr, self.sshclient.port, cmds))
             # sshkey = self.sshclient.key_filename or ""
-            return self._execute_script(content=cmds2, showout=showout, die=die, checkok=checkok, sudo=sudo)
+            return self._execute_script(content=cmds, showout=showout, die=die, checkok=checkok, sudo=sudo)
 
         if cmds.strip() == "":
             raise RuntimeError("cmds cannot be empty")
