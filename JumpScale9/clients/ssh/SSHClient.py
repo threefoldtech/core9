@@ -125,7 +125,7 @@ class SSHClient(SSHClientBase):
         pass
 
     def copy_file(self, local_file, remote_file, recurse=False, sftp=None):
-        return self.rsync_up(local_file, remote_file, recursive=recurse)
+        return self.client.copy_file(local_file, remote_file, recurse=recurse, sftp=sftp)
 
     def rsync_up(self, source, dest, recursive=True):
         if dest[0] != "/":
