@@ -97,7 +97,7 @@ class ExecutorBase(JSBASE):
 
         if env != {}:
             for key, val in env.items():
-                pre += "%s=%s\n" % (key, val)
+                pre += "export %s=%s\n" % (key, val)
 
         cmds = "%s\n%s" % (pre, cmds)
 
