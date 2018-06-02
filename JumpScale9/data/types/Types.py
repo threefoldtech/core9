@@ -40,6 +40,7 @@ class Types(JSBASE):
         self.hash = Hash()
         self.object = Object()
         self.jsobject = JSObject()
+        self.url = Url()
 
         self._dict = Dictionary
         self._list = List
@@ -65,10 +66,12 @@ class Types(JSBASE):
         self._hash = Hash
         self._object = Object
         self._jsobject = JSObject
+        self._url = Url
 
         self.types_list = [self.bool, self.dict, self.list, self.bytes,
                            self.guid, self.float, self.int, self.multiline, 
-                           self.string, self.date, self.numeric, self.percent, self.hash, self.object, self.jsobject]
+                           self.string, self.date, self.numeric, self.percent, self.hash, self.object, self.jsobject,
+                           self.url]
 
     def type_detect(self, val):
         """
@@ -102,6 +105,7 @@ class Types(JSBASE):
         - yaml
         - set
         - guid
+        - url, u
         """
         ttype = ttype.lower().strip()
         if ttype in ["s", "str", "string"]:
@@ -158,6 +162,8 @@ class Types(JSBASE):
             res = self._set
         elif ttype == "guid":
             res = self._guid
+        elif ttype == "url" or ttype=="u":
+            res = self._url
         else:
             raise j.exceptions.RuntimeError("did not find type:'%s'" % ttype)
 

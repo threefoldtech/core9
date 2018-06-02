@@ -96,7 +96,17 @@ class Path(String):
     def get_default():
         return ""
 
+class Url(String):
+    '''Generic url type'''
+    NAME = 'url'
 
+    def __init__(self):
+        String.__init__(self)        
+        self._RE = re.compile('.*')
+
+    def get_default():
+        return ""
+        
 class Tel(String):
     """
     format is e.g. +32 475.99.99.99x123
