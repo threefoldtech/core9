@@ -361,7 +361,7 @@ class Numeric(String):
 
         def getCur(value):
             value = value.lower()
-            for cur2 in list(j.clients.currencylayer.cur2usd.keys()):
+            for cur2 in list(j.clients.currencylayer.get().cur2usd.keys()):
                 # print(cur2)
                 if value.find(cur2) != -1:
                     # print("FOUND:%s"%cur2)
@@ -413,7 +413,7 @@ class Numeric(String):
                 else:
                     value=float(value)
                     ttype = 1
-        curcat = j.clients.currencylayer.cur2id[cur2]
+        curcat = j.clients.currencylayer.get().cur2id[cur2]
         
         if negative:
             ttype+=128
