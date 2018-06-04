@@ -202,8 +202,8 @@ class Numeric(String):
     def capnp_schema_get(self,name,nr):
         """
         is 5 bytes, 1 for type, 4 for float value
-        - j.clients.currencylayer.cur2id
-        - j.clients.currencylayer.id2cur
+        - j.clients.currencylayer.get().cur2id
+        - j.clients.currencylayer.get().id2cur
 
         struct.pack("B",1)+struct.pack("f",1234234234.0)
 
@@ -240,10 +240,10 @@ class Numeric(String):
         # if curtype0 not in j.clients.currencylayer.id2cur:
         #     raise RuntimeError("need to specify valid curtype, was:%s"%curtype)
 
-        curcode0 = j.clients.currencylayer.id2cur[curtype0]
+        curcode0 = j.clients.currencylayer.get().id2cur[curtype0]
         if not curcode0==curcode: 
-            val = val / j.clients.currencylayer.cur2usd[curcode0] #val now in usd
-            val = val * j.clients.currencylayer.cur2usd[curcode]
+            val = val / j.clients.currencylayer.get().cur2usd[curcode0] #val now in usd
+            val = val * j.clients.currencylayer.get().cur2usd[curcode]
 
 
         if negative:            
@@ -255,6 +255,8 @@ class Numeric(String):
         return val
         
     def bytes2str(self,bindata,roundnr=8,comma=True):
+        if len(bindata) == 0:
+            return '0.0'
         if len(bindata)!=6 and len(bindata)!=10:
             raise j.exceptions.Input("len of data needs to be 6 or 10")
 
@@ -284,8 +286,8 @@ class Numeric(String):
         else:
             mult = ""
             
-        if curtype is not j.clients.currencylayer.cur2id["usd"]:
-            curcode = j.clients.currencylayer.id2cur[curtype]
+        if curtype is not j.clients.currencylayer.get().cur2id["usd"]:
+            curcode = j.clients.currencylayer.get().id2cur[curtype]
         else:
             curcode = ""
 
@@ -342,8 +344,8 @@ class Numeric(String):
         - True if neg nr, otherwise pos nr (in other words if nr < 128 then pos nr)
 
         see for codes in:
-        - j.clients.currencylayer.cur2id
-        - j.clients.currencylayer.id2cur        
+        - j.clients.currencylayer.get().cur2id
+        - j.clients.currencylayer.get().id2cur        
 
         """
         
