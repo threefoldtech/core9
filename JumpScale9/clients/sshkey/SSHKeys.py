@@ -84,7 +84,6 @@ class SSHKeys(JSConfigBase):
                 chmod a+x ap-cat.sh
                 export DISPLAY=1
                 echo {passphrase} | SSH_ASKPASS=./ap-cat.sh ssh-add -t {duration} {path}
-                rm ap-cat.sh
                 """.format(path=path0, passphrase=passphrase, duration=duration)
             try:
                 j.sal.process.executeBashScript(content=C, showout=False)
