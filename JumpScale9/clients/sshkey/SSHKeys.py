@@ -77,27 +77,22 @@ class SSHKeys(JSConfigBase):
 
         self.logger.info("load ssh key: %s" % path0)
         j.sal.fs.chmod(path, 0o600)
-        if passphrase and j.sal.process.checkInstalled("expect"):
+        if passphrase:
             self.logger.debug("load with passphrase")
             C = """
-            expect << EOF
-            spawn ssh-add $path
-            expect "Enter passphrase"
-            send "$pass\\r"
-            expect eof
-            EOF
-            """
-            C = j.data.text.strip(C)
-            C = C.replace("$path", path0)
-            C = C.replace("$pass", passphrase)
+                echo "exec cat" > ap-cat.sh
+                chmod a+x ap-cat.sh
+                export DISPLAY=1
+                echo {passphrase} | SSH_ASKPASS=./ap-cat.sh ssh-add -t {duration} {path}
+                """.format(path=path0, passphrase=passphrase, duration=duration)
             try:
                 j.sal.process.executeBashScript(content=C, showout=False)
             finally:
-                # to make sure we removed the temp file
-                j.sal.fs.remove("/tmp/do.sh")
+                j.sal.fs.remove("ap-cat.sh")
         else:
+            # load without passphrase
             cmd = "ssh-add -t %s %s " % (duration, path0)
-            j.sal.process.executeInteractive(cmd)
+            j.sal.process.execute(cmd)
 
         self._sshagent = None  # to make sure it gets loaded again
 
