@@ -15,6 +15,7 @@ class LoggerFactory():
         self.logger_name = 'j'
         self.handlers = Handlers()
         self.loggers = {}
+        self.exclude = []
 
         self._default = JSLoggerDefault("default")
 
@@ -44,18 +45,17 @@ class LoggerFactory():
 
         return name
 
-    def get(self, name="", force=False):# -> JSLogger:
+    def get(self, name="", force=False):  # -> JSLogger:
         """
         Return a logger with the given name. Name will be prepend with 'j.' so
         every logger return by this function is a child of the jumpscale root logger 'j'
 
         """
-
         name = self._getName(name)
 
         def check_(name):
             # print("check %s"%name)
-            for item in self.exclude:                
+            for item in self.exclude:
                 # print("check exclude:%s"%item)
                 if item == "*":
                     # print("exclude %s:%s" % (item, name))
@@ -63,8 +63,8 @@ class LoggerFactory():
                 if name.find(item) != -1:
                     # print("exclude %s:%s" % (item, name))
                     return False
-            for item in self.filter:   
-                # print("check include:%s"%item)             
+            for item in self.filter:
+                # print("check include:%s"%item)
                 if item == "*":
                     # print("include: %s:%s" % (item, name))
                     return True
@@ -193,7 +193,7 @@ class LoggerFactory():
         @param client: A jumpscale telegram_bot client 
         @param chat_id: Telegram chat id to which logs need to be forwarded
         """
-        self.logger.addHandler(self.handlers.telegramHandler(client, chat_id))     
+        self.logger.addHandler(self.handlers.telegramHandler(client, chat_id))
 
     def handlers_reset(self):
         self.logger.handlers = []
@@ -201,7 +201,7 @@ class LoggerFactory():
     def logger_filters_get(self):
         return j.core.state.config_js["logging"]["filter"]
 
-    def logger_filters_add(self, items=[],exclude=[], level=10, save=False):
+    def logger_filters_add(self, items=[], exclude=[], level=10, save=False):
         """
         items is list or string e.g. prefab, exec
         will add the filters to the logger and save it in the config file
@@ -248,12 +248,11 @@ class LoggerFactory():
                 if item is not None:
                     # if hasattr(item, '__jslocation__'):
                     #     print (item.__jslocation__)
-                    if 'logger' in item.__dict__:                        
+                    if 'logger' in item.__dict__:
                         item.__dict__["logger"] = self.get(item.__jslocation__)
                     item._logger = None
         self.loggers = {}
 
-        
         # print(j.tools.jsloader._logger)
         # print(j.tools.jsloader.logger)
 
@@ -266,7 +265,6 @@ class LoggerFactory():
         self.loggers_level_set(level)
         self.handlers_level_set(level)
         self.filter = []
-        self.exclude = []
         self.loggers = {}
         items = j.core.state.configGetFromDict("logging", "filter", [])
         exclude = j.core.state.configGetFromDict("logging", "exclude", [])
