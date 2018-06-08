@@ -89,10 +89,3 @@ exclude = ["sal.fs"]
 level = 20
 enabled = true
 ```
-
-```
-!!!
-title = "Logging"
-date = "2017-04-08"
-tags = []
-```
