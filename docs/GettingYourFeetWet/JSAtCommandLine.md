@@ -144,24 +144,3 @@ Commands:
   addrole
   deleterole
 ```
-
-```
-!!!
-title = "JSAtCommandLine"
-date = "2017-04-08"
-tags = []
-```
-
-```
-!!!
-title = "JSAtCommandLine"
-date = "2017-04-08"
-tags = []
-```
-
-```
-!!!
-title = "JSAtCommandLine"
-date = "2017-04-08"
-tags = []
-```

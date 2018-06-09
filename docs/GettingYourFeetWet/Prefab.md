@@ -37,10 +37,3 @@ prefab = j.tools.prefab.get(executor)
   ```
 
 For more information on Prefab check the [Prefab documentation](https://github.com/Jumpscale/prefab9/tree/master/docs).
-
-```
-!!!
-title = "Prefab"
-date = "2017-04-08"
-tags = []
-```
