@@ -28,6 +28,7 @@ class Types(JSBASE):
         self.multiline = StringMultiLine()
         self.set = Set()
         self.ipaddr = IPAddress()
+        self.ipaddress = IPAddress()
         self.iprange = IPRange()
         self.ipport = IPPort()
         self.tel = Tel()
