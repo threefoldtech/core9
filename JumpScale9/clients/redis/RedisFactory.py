@@ -143,6 +143,11 @@ class RedisFactory(JSBASE):
             self._running=j.sal.nettools.tcpPortConnectionTest("localhost",6379)
         return self._running
 
+    def core_check(self):
+        if not self.core_running():
+            self.core_start()
+        return self._running        
+
     def core_start(self, timeout=20):
         """
         starts a redis instance in separate ProcessLookupError
@@ -178,18 +183,18 @@ class RedisFactory(JSBASE):
 
         cmd = "echo never > /sys/kernel/mm/transparent_hugepage/enabled"
         os.system(cmd)
-        cmd = "sysctl vm.overcommit_memory=1"
-        os.system(cmd)
+        if not j.core.platformtype.myplatform.isMac:
+            cmd = "sysctl vm.overcommit_memory=1"
+            os.system(cmd)
 
-        redis_bin = "redis-server"
+        # redis_bin = "redis-server"
         if "TMPDIR" in os.environ:
             tmpdir = os.environ["TMPDIR"]
         else:
             tmpdir = "/tmp"
-        cmd = "%s  --port 0 --unixsocket %s/redis.sock --maxmemory 100000000" % (redis_bin, tmpdir)
+        cmd = "redis-server --port 6379 --unixsocket %s/redis.sock --maxmemory 100000000 --daemonize yes" % tmpdir
         self.logger.info(cmd)
-        j.sal.process.execute(
-            "redis-server --port 6379 --unixsocket %s/redis.sock --maxmemory 100000000 --daemonize yes" % tmpdir)
+        j.sal.process.execute(cmd)
         limit_timeout = time.time() + timeout
         while time.time() < limit_timeout:
             if j.core.db:
