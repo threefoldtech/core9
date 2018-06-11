@@ -67,7 +67,7 @@ class SerializerDict(JSBASE):
         elif j.data.types.int.check(dictsource[key]):
             if j.data.types.string.check(val) and val.strip() == "":
                 val = 0
-            if not j.data.types.float.check(val):
+            if not j.data.types.int.check(val):
                 raise RuntimeError("Expected value of \"{}\" should be of type int or a string of int.".format(key))
             dictsource[key] = int(val)
         elif j.data.types.float.check(dictsource[key]):
