@@ -270,7 +270,7 @@ class SerializerTOML(SerializerBase):
                     'telegram': '@virgil_ilian',
                     'title': ['Researcher']}
 
-        result, errors = self.merge(template, toupdate,  keys_replace={
+        result, errors = self.merge(template, toupdate, keys_replace={
             'name': 'first_name'}, add_non_exist=False, die=False, errors=[])
 
         assert [('company_id', [2])] == errors
