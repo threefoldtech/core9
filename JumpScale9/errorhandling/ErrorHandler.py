@@ -62,7 +62,7 @@ class ErrorHandler(JSBASE):
     def _send2Redis(self, eco):
         if self.escalateToRedis:
             self._registerScrips()
-            data = eco.toJson()
+            data = eco.json
             res = self._escalateToRedisFunction(
                 keys=["queues:eco", "eco:incr", "eco:occurrences", "eco:objects", "eco:last"], args=[eco.key, data])
             res = j.data.serializer.json.loads(res)
