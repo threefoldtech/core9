@@ -276,7 +276,7 @@ class Numeric(String):
         String.__init__(self)
 
     def get_default(self):
-        return "0 USD"
+        return self.str2bytes("0 USD")
 
     def capnp_schema_get(self, name, nr):
         """
@@ -334,9 +334,10 @@ class Numeric(String):
 
     def bytes2str(self, bindata, roundnr=8, comma=True):
         if len(bindata) == 0:
-            return '0 USD'
-        if len(bindata)not in [6, 10]:
-            raise j.exceptions.Input("len of data needs to be 6 or 10")
+            bindata = self.get_default()
+
+        elif len(bindata) not in [6, 10]:
+            bindata = self.str2bytes(bindata.decode('utf-8'))
 
         ttype = struct.unpack("B", builtins.bytes([bindata[0]]))[0]
         curtype = struct.unpack("B", builtins.bytes([bindata[1]]))[0]
@@ -588,6 +589,12 @@ class Date(String):
     def get_default(self):
         return 0
 
+    def python_code_get(self, value):
+        """
+        produce the python code which represents this value
+        """
+        return self.clean(value)
+
     def check(self, value):
         '''
         Check whether provided value is a valid date/time representation
@@ -625,7 +632,6 @@ class Date(String):
         - -4h
         in stead of h also supported: s (second) ,m (min) ,h (hour) ,d (day),w (week)
         """
-
         def date_process(dd):
             if "/" not in dd:
                 raise j.exceptions.Input("date needs to have:/, now:%s" % v)
