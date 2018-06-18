@@ -3,7 +3,6 @@ import os
 import sys
 import importlib
 import json
-import re
 
 GEN_START = """
 from JumpScale9.core.JSBase import JSBase
@@ -100,7 +99,6 @@ class JSLoader():
         self.logger = j.logger.get("jsloader")
         self.__jslocation__ = "j.tools.jsloader"
         self.tryimport = False
-        self._modules = set()
 
     @property
     def autopip(self):
@@ -309,15 +307,6 @@ class JSLoader():
         classname = None
         locfound = False
         for line in C.split("\n"):
-            if line.startswith("import ") or line.startswith('from '):
-                # write out
-                x = re.findall('(?m)^(?:from[ ]+(\S+)[ ]+)?import[ ]+(\S+)[ ]*$', line)
-                if not x:
-                    pass
-                elif not x[0][0] and not x[0][1].startswith('.') and not x[0][0].startswith("JumpScale9"):
-                    self._modules.add(x[0][1])
-                elif x[0][0] and not x[0][0].startswith('.') and not x[0][0].startswith("JumpScale9"):
-                    self._modules.add(x[0][0])
             if line.startswith("class "):
                 classname = line.replace("class ", "").split(":")[0].split("(", 1)[0].strip()
                 if classname == "JSBaseClassConfig":
@@ -479,4 +468,3 @@ class JSLoader():
         # j.application.config["system"]["debug"] = True
 
         self._generate()
-        j.sal.fs.writeFile('/tmp/modules', '\n'.join(self._modules))

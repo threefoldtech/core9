@@ -67,19 +67,21 @@ class SerializerDict(JSBASE):
         elif j.data.types.int.check(dictsource[key]):
             if j.data.types.string.check(val) and val.strip() == "":
                 val = 0
-            if not j.data.types.int.check(val):
-                raise RuntimeError("Expected value of \"{}\" should be of type int or a string of int.".format(key))
-            dictsource[key] = int(val)
+            try:
+                dictsource[key] = int(val)
+            except ValueError:
+                raise ValueError("Expected value of \"{}\" should be of type int or a string of int.".format(key))
         elif j.data.types.float.check(dictsource[key]):
-            if not j.data.types.float.check(val):
-                raise RuntimeError("Expected value of \"{}\" should be of type float.".format(key))
-            dictsource[key] = float(val)
+            try:
+                dictsource[key] = float(val)
+            except ValueError:
+                raise ValueError("Expected value of \"{}\" should be of type float or a string of float.".format(key))
         elif j.data.types.string.check(dictsource[key]):
             if not j.data.types.string.check(val):
-                raise RuntimeError("Expected value of \"{}\" should be of type string.".format(key))
+                raise ValueError("Expected value of \"{}\" should be of type string.".format(key))
             dictsource[key] = j.data.text.strip(str(val))
         else:
-            raise RuntimeError("could not find type of:%s" % dictsource[key])
+            raise ValueError("could not find type of:%s" % dictsource[key])
 
         return dictsource, errors
 
