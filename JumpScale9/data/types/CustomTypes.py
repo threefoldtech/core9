@@ -337,7 +337,7 @@ class Numeric(String):
             bindata = self.get_default()
 
         elif len(bindata) not in [6, 10]:
-            bindata = self.str2bytes(bindata.decode('utf-8'))
+            raise j.exceptions.Input("len of data needs to be 6 or 10")
 
         ttype = struct.unpack("B", builtins.bytes([bindata[0]]))[0]
         curtype = struct.unpack("B", builtins.bytes([bindata[1]]))[0]
