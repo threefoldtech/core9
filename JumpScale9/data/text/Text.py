@@ -804,29 +804,6 @@ class Text(JSBASE):
             raise j.exceptions.RuntimeError(
                 "Could not convert %s to string" % obj)
 
-    def hrd2machinetext(self, value, onlyone=False):
-        """
-        'something ' removes ''
-        all spaces & commas & : inside ' '  are converted
-         SPACE -> \\S
-         " -> \\Q
-         , -> \\K
-         : -> \\D
-         \\n -> \\N
-        """
-        for item in re.findall(matchquote, value):
-            item2 = item.replace(",", "\\K")
-            item2 = item2.replace("\"", "\\Q")
-            item2 = item2.replace(" ", "\\S")
-            item2 = item2.replace(":", "\\D")
-            item2 = item2.replace("\\n", "\\N")
-            item2 = item2.replace("\n", "\\N")
-            item2 = item2.replace("'", "")
-            value = value.replace(item, item2)
-            if onlyone:
-                return item2
-        return value
-
     def replaceQuotes(self, value, replacewith):
         for item in re.findall(matchquote, value):
             value = value.replace(item, replacewith)
@@ -1084,7 +1061,7 @@ class Text(JSBASE):
 
     def sanitize_key(self, key):
         """
-        make sure the key of an HRD schema has a valid format for Capnp Schema
+        make sure the key of an schema has a valid format for Capnp Schema
         e.g.:
             ssh.port becomes sshPort
         """
