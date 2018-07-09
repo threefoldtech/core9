@@ -9,7 +9,7 @@ export JS9BRANCH=development
 
 curl https://raw.githubusercontent.com/Jumpscale/bash/$ZUTILSBRANCH/install.sh?$RANDOM > /tmp/install.sh;sudo -E bash /tmp/install.sh
 
-. ~/.bashrc
+. /opt/code/github/jumpscale/bash/zlibs.sh
 
 ZInstall_host_js
 
