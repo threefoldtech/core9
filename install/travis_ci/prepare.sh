@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 
+sudo su -
 sudo ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa
 export SSHKEYNAME=id_rsa
 
@@ -8,6 +9,7 @@ export ZUTILSBRANCH=${ZUTILSBRANCH:-development}
 export JS9BRANCH=development
 
 curl https://raw.githubusercontent.com/Jumpscale/bash/$ZUTILSBRANCH/install.sh?$RANDOM > /tmp/install.sh;sudo -E bash /tmp/install.sh
+
 
 . /opt/code/github/jumpscale/bash/zlibs.sh
 
