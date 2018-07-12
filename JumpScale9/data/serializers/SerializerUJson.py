@@ -1,9 +1,9 @@
 from js9 import j
 
-try:
-    import ujson as json
-except BaseException:
-    import json
+# try:
+#     import ujson as json
+# except BaseException:
+import json
 from .SerializerBase import SerializerBase
 
 
