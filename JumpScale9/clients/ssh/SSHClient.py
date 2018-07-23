@@ -65,6 +65,8 @@ class SSHClient(SSHClientBase):
         out = _consume_stream(stdout, self.logger.debug)
         err = _consume_stream(stderr, self.logger.error)
         self._client.wait_finished(channel)
+        _consume_stream(stdout, self.logger.debug, out)
+        _consume_stream(stderr, self.logger.error, err)
 
         rc = channel.get_exit_status()
         output = out.getvalue()
