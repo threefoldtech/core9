@@ -38,6 +38,8 @@ class Tags(JSBASE):
         @type tagstring: string
         """
 
+        tagstring = j.data.text.hrd2machinetext(tagstring)
+
         if not tagstring:
             return
 
