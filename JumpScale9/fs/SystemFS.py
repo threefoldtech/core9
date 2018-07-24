@@ -1289,12 +1289,16 @@ class SystemFS(JSBASE):
         files = sorted(self.walk(folder, recurse=1))
         return self.md5sum(files)
 
-    def getTmpDirPath(self, create=True):
+    def getTmpDirPath(self, name="",create=True):
         """
         create a tmp dir name and makes sure the dir exists
         """
-        tmpdir = self.joinPaths(
-            j.dirs.TMPDIR, j.data.idgenerator.generateXCharID(10))
+        if name:
+            tmpdir = self.joinPaths(
+                j.dirs.TMPDIR, name)
+        else:
+            tmpdir = self.joinPaths(
+                j.dirs.TMPDIR, j.data.idgenerator.generateXCharID(10))
         if create is True:
             self.createDir(tmpdir)
         return tmpdir
