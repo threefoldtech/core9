@@ -25,13 +25,14 @@ def configure(instance):
 @click.option('--instance', '-i', default="main")
 @click.option('--background', '-b', type=bool, is_flag=True, default=False,
               help='will actively keep monitoring for changes, and send changed files over')
-def start(instance,background):
+@click.option('--debug', '-d', type=bool, is_flag=True, default=False)
+def start(instance,background, debug):
     """
     start webserver from defined instance
     """
     if instance == "main":
         s=j.servers.web.configure(instance=instance)
-    j.servers.web.start(instance=instance,background=background)
+    j.servers.web.start(instance=instance,background=background, debug=debug)
 
 cli.add_command(configure)
 cli.add_command(start)
