@@ -50,9 +50,9 @@
   * [def_config_js9](/docs/config/def_config_js9.png)
   * [init_silent](/docs/config/init_silent.md)
   * [myconfig_default_path](/docs/config/myconfig_default_path.png)
-  * [sb](/docs/config/sb.png)
-  * [sb2](/docs/config/sb2.png)
-  * [sb3](/docs/config/sb3.png)
+  * [sandbox_1](/docs/config/sb.png)
+  * [sandbox_2](/docs/config/sb2.png)
+  * [sandbox_3](/docs/config/sb3.png)
   * [secureconfig_indir](/docs/config/secureconfig_indir.png)
 
 * [how to](docs/howto)
