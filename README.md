@@ -60,7 +60,8 @@ js9
 ### Install using pip3
 
 ```
-pip3 install -e git+https://github.com/Jumpscale/core9@development
+mkdir -p /opt/code/github/jumpscale
+pip3 install -e git+https://github.com/Jumpscale/core9@development#egg=core9 --src /opt/code/github/jumpscale/
 ```
 
 ## Usage
