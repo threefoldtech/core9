@@ -24,16 +24,14 @@ branchname can optionally be specified.
 if specified but repo exists then a pull will be done & branch will be ignored !!!
 
 if reponame not specified then will checkout
-- bash
 - lib9
 - core9
-- ays9
 - prefab
 
 EOF
 }
 
-
+set -ex
 ZCodeGetJS() {
     echo FUNCTION: ${FUNCNAME[0]} >> $ZLogFile
     ZCodeConfig || return 1

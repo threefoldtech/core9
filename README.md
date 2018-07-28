@@ -61,7 +61,7 @@ js9
 
 ```
 mkdir -p /opt/code/github/threefoldtech/jumpscale_
-pip3 install -e git+https://github.com/threefoldtech/jumpscale_/core9@development#egg=core9 --src /opt/code/github/threefoldtech/jumpscale_
+pip3 install -e git+https://github.com/threefoldtech/jumpscale_core9@development#egg=core9 --src /opt/code/github/threefoldtech/jumpscale_
 ```
 
 ## Usage

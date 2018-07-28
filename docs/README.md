@@ -10,7 +10,7 @@
 - GitHub repositories:
 
   - [Bash tools](https://github.com/threefoldtech/jumpscale_/bash)
-  - [JumpScale Core](https://github.com/threefoldtech/jumpscale_/core9)
+  - [JumpScale Core](https://github.com/threefoldtech/jumpscale_core9)
   - [JumpScale Lib](https://github.com/threefoldtech/jumpscale_/lib9)
   - [JumpScale Prefab](https://github.com/threefoldtech/jumpscale_/prefab9)
   - [AtYourService](https://github.com/threefoldtech/jumpscale_/ays9)

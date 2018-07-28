@@ -103,7 +103,7 @@ class TestJCONFIG(TestcasesBase):
         value = self.client.configGetFromDict('new_dict', 'new_dict_key', default='new_dict_value')
         self.assertEqual(value, 'new_dict_value')
 
-    @unittest.skip('https://github.com/threefoldtech/jumpscale_/core9/issues/157')
+    @unittest.skip('https://github.com/threefoldtech/jumpscale_core9/issues/157')
     def test003_config_get_form_dict_bool(self):
         """ JS-018
         **Test Scenario:**
@@ -218,7 +218,7 @@ class TestJCONFIG(TestcasesBase):
         self.lg.info('check that new key, value were added to the config file')
         self.assertEqual(self.get_config().get(key), value)
 
-    @unittest.skip('https://github.com/threefoldtech/jumpscale_/core9/issues/159')
+    @unittest.skip('https://github.com/threefoldtech/jumpscale_core9/issues/159')
     def test08_config_update(self):
         """ JS-023
         **Test Scenario:**

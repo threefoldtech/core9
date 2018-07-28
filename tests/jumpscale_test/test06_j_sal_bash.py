@@ -18,7 +18,7 @@ class TestBASH(TestcasesBase):
         """
         self.assertDictEqual(self.bash.env.__dict__['_data'], os.environ.__dict__['_data'])
     
-    @unittest.skip('https://github.com/threefoldtech/jumpscale_/core9/issues/175')
+    @unittest.skip('https://github.com/threefoldtech/jumpscale_core9/issues/175')
     def test002_get_env(self):
         """ JS-039
 
@@ -34,7 +34,7 @@ class TestBASH(TestcasesBase):
         with self.assertRaises(KeyError):
             self.bash.envGet(self.random_string())
     
-    @unittest.skip('https://github.com/threefoldtech/jumpscale_/core9/issues/175')
+    @unittest.skip('https://github.com/threefoldtech/jumpscale_core9/issues/175')
     def test003_set_env(self):
         """ JS-040
 

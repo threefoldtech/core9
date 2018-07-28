@@ -16,9 +16,9 @@ ZInstall_host_code_jumpscale() {
         branch=${JS9BRANCH}
     fi
     echo "[+] loading or updating jumpscale source code (branch:$branch)"
-    ZCodeGetJS -r core9 -b $branch || return 1
-    ZCodeGetJS -r lib9 -b $branch  || return 1
-    ZCodeGetJS -r prefab9 -b $branch || return 1
+    ZCodeGetJS -r jumpscale_core9 -b $branch || return 1
+    ZCodeGetJS -r jumpscale_lib9 -b $branch  || return 1
+    ZCodeGetJS -r jumpscale_prefab9 -b $branch || return 1
     echo "[+] update jumpscale code done"
     ZDoneSet "ZInstall_host_code_jumpscale"
 }

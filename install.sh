@@ -1,5 +1,5 @@
 #for development mode
-
+unset ZUTILSDIR
 export ZLogFile='/tmp/zutils.log'
 
 die() {

@@ -1,4 +1,4 @@
-* [Home](https://github.com/threefoldtech/jumpscale_/core9)
+* [Home](https://github.com/threefoldtech/jumpscale_core9)
 
 ----
 

@@ -47,7 +47,7 @@ setup(
     version='9.4.0-rc4',
     description='Automation framework for cloud workloads',
     long_description=long_description,
-    url='https://github.com/threefoldtech/jumpscale_/core9',
+    url='https://github.com/threefoldtech/jumpscale_core9',
     author='GreenItGlobe',
     author_email='info@gig.tech',
     license='Apache',

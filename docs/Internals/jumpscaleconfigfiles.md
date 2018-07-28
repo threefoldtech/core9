@@ -96,7 +96,7 @@ url = "https://github.com/threefoldtech/jumpscale_/ays9.git"
 
 [git.js]
 branch = "master"
-url = "https://github.com/threefoldtech/jumpscale_/core9.git"
+url = "https://github.com/threefoldtech/jumpscale_core9.git"
 
 
 [system]
