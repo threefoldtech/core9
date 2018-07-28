@@ -31,7 +31,7 @@ if reponame not specified then will checkout
 EOF
 }
 
-set -ex
+# set -ex
 ZCodeGetJS() {
     echo FUNCTION: ${FUNCNAME[0]} >> $ZLogFile
     ZCodeConfig || return 1
