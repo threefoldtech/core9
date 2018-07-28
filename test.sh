@@ -3,7 +3,7 @@ set -e
 set -x
 
 export JS9MODE=TESTING
-pytest -v /opt/code/github/jumpscale/core9/tests/unittests/
+pytest -v /opt/code/github/threefoldtech/jumpscale_core9/tests/unittests/
 unset JS9MODE
 
 # run integration tests

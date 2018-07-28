@@ -7,7 +7,7 @@ for example, the state of specific module is it installed or not
 ## Getting config
 ```
 In [1]: j.core.state.configGet('plugins')
-Out[1]: {'JumpScale9': '/opt/code/github/jumpscale/core9/JumpScale9/'}
+Out[1]: {'JumpScale9': '/opt/code/github/threefoldtech/jumpscale_core9/JumpScale9/'}
 ```
 
 ## Setting config

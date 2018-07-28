@@ -18,7 +18,7 @@ Usage: ZCodeGet [-r reponame] [-g giturl] [-a account] [-b branch]
    -b branchname: defaults to development
    -h: help
 
-check's out jumpscale repo to $ZCODEDIR/github/jumpscale/$reponame
+check's out jumpscale repo to $ZCODEDIR/github/threefoldtech/$reponame
 branchname can optionally be specified.
 
 if specified but repo exists then a pull will be done & branch will be ignored !!!
@@ -53,14 +53,12 @@ ZCodeGetJS() {
     if [ -z "$reponame" ]; then
         ZCodeGetJS -r core9  -b $branch || return 1
         ZCodeGetJS -r lib9 -b $branch || return 1
-        ZCodeGetJS -r bash -b $branch || return 1
-        ZCodeGetJS -r ays9 -b $branch || return 1
         ZCodeGetJS -r prefab9 -b $branch || return 1
         return 0
     fi
 
     # local giturl="git@github.com:Jumpscale/$reponame.git"
-    local githttpsurl="https://github.com/jumpscale/$reponame.git"
+    local githttpsurl="https://github.com/threefoldtech/jumpscale_$reponame.git"
 
     # check if specificed branch or $JS9BRANCH exist, if not then fallback to development
     JS9BRANCHExists ${githttpsurl} ${branch} || branch=development
@@ -147,134 +145,134 @@ ZCodeGet() {
     Z_popd || return 1
 }
 
-ZCodePushUsage(){
-   cat <<EOF
-Usage: ZCodePush [-r reponame] [-a account] [-m message]
-   -t type: default is github but could be e.g. gitlab, ...
-   -a account: will default to 'varia', but can be account name
-   -r reponame: name or repo
-   -m message for commit: required !
-   -h: help
+# ZCodePushUsage(){
+#    cat <<EOF
+# Usage: ZCodePush [-r reponame] [-a account] [-m message]
+#    -t type: default is github but could be e.g. gitlab, ...
+#    -a account: will default to 'varia', but can be account name
+#    -r reponame: name or repo
+#    -m message for commit: required !
+#    -h: help
 
-   will add/remove files, commit, pull & push
+#    will add/remove files, commit, pull & push
 
-EOF
-}
+# EOF
+# }
 
-ZCodePush() {
-    echo FUNCTION: ${FUNCNAME[0]} >> $ZLogFile
-    ZCodeConfig || return 1
-    local OPTIND
-    local type='github'
-    local account='varia'
-    local reponame=''
-    local message=''
-    while getopts "a:r:m:t:h" opt; do
-        case $opt in
-           t )  type=$OPTARG ;;
-           a )  account=$OPTARG ;;
-           r )  reponame=$OPTARG ;;
-           m )  message=$OPTARG ;;
-           h )  ZCodePushUsage ; return 0 ;;
-           \? )  ZCodePushUsage ; return 1 ;;
-        esac
-    done
-    if [ -z "$message" ]; then
-        ZCodePushUsage
-        return
-    fi
+# ZCodePush() {
+#     echo FUNCTION: ${FUNCNAME[0]} >> $ZLogFile
+#     ZCodeConfig || return 1
+#     local OPTIND
+#     local type='github'
+#     local account='varia'
+#     local reponame=''
+#     local message=''
+#     while getopts "a:r:m:t:h" opt; do
+#         case $opt in
+#            t )  type=$OPTARG ;;
+#            a )  account=$OPTARG ;;
+#            r )  reponame=$OPTARG ;;
+#            m )  message=$OPTARG ;;
+#            h )  ZCodePushUsage ; return 0 ;;
+#            \? )  ZCodePushUsage ; return 1 ;;
+#         esac
+#     done
+#     if [ -z "$message" ]; then
+#         ZCodePushUsage
+#         return
+#     fi
 
-    if [ -z "$account" ]; then
-        ZCodePushUsage
-        return
-    fi
-    if [ -z "$reponame" ]; then
-        echo "[+] walk over directories: $ZCODEDIR/$type/$account"
-        # Z_pushd $ZCODEDIR/$type/$account || return 1
-        ls -d $ZCODEDIR/$type/$account/*/ | {
-        # find . -mindepth 1 -maxdepth 1 -type d | {
-            while read DIRPATH ; do
-                DIRNAME=$(basename $DIRPATH) || die "basename" || return 1
-                ZCodePush -a $account -r $DIRNAME -m $message || return 1
-            done
-        }
-        # Z_popd || return 1
-        return
-    fi
+#     if [ -z "$account" ]; then
+#         ZCodePushUsage
+#         return
+#     fi
+#     if [ -z "$reponame" ]; then
+#         echo "[+] walk over directories: $ZCODEDIR/$type/$account"
+#         # Z_pushd $ZCODEDIR/$type/$account || return 1
+#         ls -d $ZCODEDIR/$type/$account/*/ | {
+#         # find . -mindepth 1 -maxdepth 1 -type d | {
+#             while read DIRPATH ; do
+#                 DIRNAME=$(basename $DIRPATH) || die "basename" || return 1
+#                 ZCodePush -a $account -r $DIRNAME -m $message || return 1
+#             done
+#         }
+#         # Z_popd || return 1
+#         return
+#     fi
 
-    echo "[+] commit-pull-push  code $ZCODEDIR/$type/$account/$reponame"
+#     echo "[+] commit-pull-push  code $ZCODEDIR/$type/$account/$reponame"
 
-    Z_pushd $ZCODEDIR/$type/$account > /dev/null 2>&1 || die || return 1
+#     Z_pushd $ZCODEDIR/$type/$account > /dev/null 2>&1 || die || return 1
 
-    if [ ! -e $ZCODEDIR/$type/$account/$reponame ]; then
-        die "could not find $ZCODEDIR/$type/$account/$reponame" || return 1
-    else
-        Z_pushd $ZCODEDIR/$type/$account/$reponame || return 1
-        echo " [+] add"
-        git add . -A  2>&1 >> $ZLogFile #|| die "ZCodePush (add) $@" || return 1
-        echo " [+] commit"
-        git commit -m '$message'  2>&1 >> $ZLogFile #|| die "ZCodePush (commit) $@" || return 1
-        echo " [+] pull"
-        git pull  2>&1 >> $ZLogFile || die "ZCodePush (pull) $@" || return 1
-        echo " [+] push"
-        git push  2>&1 >> $ZLogFile || die "ZCodePush (push) $@" || return 1
-        Z_popd || return 1
-    fi
-    Z_popd || return 1
-}
+#     if [ ! -e $ZCODEDIR/$type/$account/$reponame ]; then
+#         die "could not find $ZCODEDIR/$type/$account/$reponame" || return 1
+#     else
+#         Z_pushd $ZCODEDIR/$type/$account/$reponame || return 1
+#         echo " [+] add"
+#         git add . -A  2>&1 >> $ZLogFile #|| die "ZCodePush (add) $@" || return 1
+#         echo " [+] commit"
+#         git commit -m '$message'  2>&1 >> $ZLogFile #|| die "ZCodePush (commit) $@" || return 1
+#         echo " [+] pull"
+#         git pull  2>&1 >> $ZLogFile || die "ZCodePush (pull) $@" || return 1
+#         echo " [+] push"
+#         git push  2>&1 >> $ZLogFile || die "ZCodePush (push) $@" || return 1
+#         Z_popd || return 1
+#     fi
+#     Z_popd || return 1
+# }
 
-ZCodePushJSUsage(){
-    cat <<EOF
-Usage: ZCodePushJS [-r reponame] [-a account] [-m message]
-    -r reponame: name or repo
-    -m message for commit: required !
-    -h: help
+# ZCodePushJSUsage(){
+#     cat <<EOF
+# Usage: ZCodePushJS [-r reponame] [-a account] [-m message]
+#     -r reponame: name or repo
+#     -m message for commit: required !
+#     -h: help
 
-    will add/remove files, commit, pull & push
+#     will add/remove files, commit, pull & push
 
-EOF
-}
+# EOF
+# }
 
-ZCodePushJS(){
-    echo FUNCTION: ${FUNCNAME[0]} >> $ZLogFile
-    ZCodeConfig || return 1
-    local OPTIND
-    local reponame=''
-    local message=''
-    while getopts "r:m:h" opt; do
-        case $opt in
-           r )  reponame=$OPTARG ;;
-           m )  message=$OPTARG ;;
-           h )  ZCodePushJSUsage ; return 0 ;;
-           \? )  ZCodePushJSUsage ; return 1 ;;
-        esac
-    done
-    if [ -z "$message" ]; then
-        ZCodePushJSUsage
-        return
-    fi
+# ZCodePushJS(){
+#     echo FUNCTION: ${FUNCNAME[0]} >> $ZLogFile
+#     ZCodeConfig || return 1
+#     local OPTIND
+#     local reponame=''
+#     local message=''
+#     while getopts "r:m:h" opt; do
+#         case $opt in
+#            r )  reponame=$OPTARG ;;
+#            m )  message=$OPTARG ;;
+#            h )  ZCodePushJSUsage ; return 0 ;;
+#            \? )  ZCodePushJSUsage ; return 1 ;;
+#         esac
+#     done
+#     if [ -z "$message" ]; then
+#         ZCodePushJSUsage
+#         return
+#     fi
 
-    if [ "$reponame" = "" ]; then
-        ZCodePush -a jumpscale -m $message || die "$@" || return 1
-    else
-        ZCodePush -a jumpscale -r $reponame -m $message || die "$@" || return 1
-    fi
-}
+#     if [ "$reponame" = "" ]; then
+#         ZCodePush -a jumpscale -m $message || die "$@" || return 1
+#     else
+#         ZCodePush -a jumpscale -r $reponame -m $message || die "$@" || return 1
+#     fi
+# }
 
-JS9BRANCHExists() {
-    local giturl="$1"
-    local branch=${2:-${JS9BRANCH}}
+# JS9BRANCHExists() {
+#     local giturl="$1"
+#     local branch=${2:-${JS9BRANCH}}
 
-    # remove the trailing .git from the giturl if exist
-    giturl=${giturl%.git}
+#     # remove the trailing .git from the giturl if exist
+#     giturl=${giturl%.git}
 
-    echo "[+] Checking if ${giturl}/tree/${branch} exists"
-    httpcode=$(curl -o /dev/null -I -s --write-out '%{http_code}\n' $giturl/tree/${branch})
+#     echo "[+] Checking if ${giturl}/tree/${branch} exists"
+#     httpcode=$(curl -o /dev/null -I -s --write-out '%{http_code}\n' $giturl/tree/${branch})
 
-    if [ "$httpcode" = "200" ]; then
-        return 0
-    else
-      echo "[+] Error: ${giturl}/tree/${branch} does not exist"
-        return 1
-    fi
-}
+#     if [ "$httpcode" = "200" ]; then
+#         return 0
+#     else
+#       echo "[+] Error: ${giturl}/tree/${branch} does not exist"
+#         return 1
+#     fi
+# }

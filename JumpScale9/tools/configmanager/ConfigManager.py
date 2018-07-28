@@ -360,7 +360,7 @@ class ConfigFactory(JSBASE):
             self.logger.error("ERROR: CANNOT INIT JUMPSCALE9")
             self.logger.error("ERROR: %s" % msg)
             self.logger.error(
-                "make sure you did the upgrade procedure: 'cd  ~/code/github/jumpscale/core9/;python3 upgrade.py'")
+                "make sure you did the upgrade procedure: 'cd  ~/code/github/threefoldtech/jumpscale_core9/;python3 upgrade.py'")
             sys.exit(1)
 
         def ssh_init(ssh_silent=False):

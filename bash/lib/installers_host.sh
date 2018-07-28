@@ -46,31 +46,31 @@ ZInstall_host_js9() {
     rm -rf /usr/local/lib/python3.6/site-packages/js9*
 
     echo "[+] install js9"
-    pushd $ZCODEDIR/github/jumpscale/core9
-    cp /$ZCODEDIR/github/jumpscale/core9/mascot $HOMEDIR/.mascot.txt || die "Could not copy mascot" || return 1
+    pushd $ZCODEDIR/github/threefoldtech/core9
+    cp /$ZCODEDIR/github/threefoldtech/core9/mascot $HOMEDIR/.mascot.txt || die "Could not copy mascot" || return 1
     pip3 install -e . > ${ZLogFile} 2>&1 || die "Could not install core9 of js9" || return 1
     popd
-    # pip3 install -e $ZCODEDIR/github/jumpscale/core9 || die "could not install core9 of js9" || return 1
+    # pip3 install -e $ZCODEDIR/github/threefoldtech/core9 || die "could not install core9 of js9" || return 1
 
     echo "[+] load env"
     python3 -c 'from JumpScale9 import j;j.tools.executorLocal.initEnv()' > ${ZLogFile} 2>&1 || die "Could not install core9 of js9, initenv" || return 1
     python3 -c 'from JumpScale9 import j;j.tools.jsloader.generate()'  > ${ZLogFile} 2>&1  || die "Could not install core9 of js9, jsloader" || return 1
 
     echo "[+] installing jumpscale lib9"
-    pushd $ZCODEDIR/github/jumpscale/lib9
+    pushd $ZCODEDIR/github/threefoldtech/lib9
     pip3 install docker
     pip3 install --no-deps -e .  > ${ZLogFile} 2>&1 || die "Coud not install lib9 of js9" || return 1
     popd
 
 
     echo "[+] installing jumpscale prefab9"
-    pushd $ZCODEDIR/github/jumpscale/prefab9
+    pushd $ZCODEDIR/github/threefoldtech/prefab9
     pip3 install -e .  > ${ZLogFile} 2>&1 || die "Coud not install prefab9" || return 1
     popd
-    # pip3 install -e $ZCODEDIR/github/jumpscale/prefab9 || die "could not install prefab9" || return 1
+    # pip3 install -e $ZCODEDIR/github/threefoldtech/prefab9 || die "could not install prefab9" || return 1
 
     # echo "[+] installing binaries files"
-    # find  $ZCODEDIR/github/jumpscale/core9/cmds -exec ln -s {} "/usr/local/bin/" \; || die || return 1
+    # find  $ZCODEDIR/github/threefoldtech/core9/cmds -exec ln -s {} "/usr/local/bin/" \; || die || return 1
     #
     # rm -rf /usr/local/bin/cmds
     # rm -rf /usr/local/bin/cmds_guest
@@ -250,7 +250,7 @@ ZInstall_host_editor() {
 
       echo "[+] install jumpscale python snippets"
       ZCodeGetJS -r python-snippets -b development || return 1
-      RSync ~/code/github/jumpscale/python-snippets/ ~/.vscode/extensions/python-snippets-js9 || return 1
+      RSync ~/code/github/threefoldtech/python-snippets/ ~/.vscode/extensions/python-snippets-js9 || return 1
 
       echo "[+] download sourcetree"
       IPFS_get_install_zip QmYtc2oowycqNXeedNbu9jLyDba4okTmnK5b1MoMuaNj6C sourcetree || return 1
@@ -388,19 +388,19 @@ ZInstall_host_js9_full() {
     ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
 
     echo "[+] install js9"
-    pushd $ZCODEDIR/github/jumpscale/core9
+    pushd $ZCODEDIR/github/threefoldtech/core9
     /bin/bash install.sh || die "Could not install core9 of js9" || return 1
     popd
-    # pip3 install -e $ZCODEDIR/github/jumpscale/core9 || die "could not install core9 of js9" || return 1
+    # pip3 install -e $ZCODEDIR/github/threefoldtech/core9 || die "could not install core9 of js9" || return 1
 
     echo "[+] installing jumpscale lib9"
-    pushd $ZCODEDIR/github/jumpscale/lib9
+    pushd $ZCODEDIR/github/threefoldtech/lib9
     /bin/bash install.sh || die "Coud not install lib9 of js9" || return 1
     popd
-    # pip3 install --no-deps -e $ZCODEDIR/github/jumpscale/lib9 || die "could not install lib9 of js9" || return 1
+    # pip3 install --no-deps -e $ZCODEDIR/github/threefoldtech/lib9 || die "could not install lib9 of js9" || return 1
 
     echo "[+] installing jumpscale prefab9"
-    pushd $ZCODEDIR/github/jumpscale/prefab9
+    pushd $ZCODEDIR/github/threefoldtech/prefab9
     /bin/bash install.sh || die "Coud not install prefab9" || return 1
     popd
 
@@ -425,7 +425,7 @@ ZInstall_host_ays9(){
     ZCodeGetJS -r ays9 || return 1
 
     echo "[+] installing ays"
-    pushd $ZCODEDIR/github/jumpscale/ays9
+    pushd $ZCODEDIR/github/threefoldtech/ays9
     /bin/bash install.sh || die "Coud not install ays9" || return 1
     popd
 
@@ -447,7 +447,7 @@ ZInstall_host_portal9(){
     ZCodeGetJS -r portal9 || return 1
 
     echo "[+] installing portal"
-    pushd $ZCODEDIR/github/jumpscale/portal9
+    pushd $ZCODEDIR/github/threefoldtech/portal9
     /bin/bash install.sh ${JS9BRANCH} || die "Coud not install portal9" || return 1
     popd
 

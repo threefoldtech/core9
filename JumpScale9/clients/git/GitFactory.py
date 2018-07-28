@@ -643,7 +643,7 @@ class GitFactory(JSBASE):
             ```
             #example
             [['github', 'docker', 'docker-py', '/opt/code/github/docker/docker-py'],
-            ['github', 'jumpscale', 'docs', '/opt/code/github/jumpscale/docs']]
+            ['github', 'jumpscale', 'docs', '/opt/code/github/threefoldtech/jumpscale_docs']]
             ```
 
             """

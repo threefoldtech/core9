@@ -12,6 +12,6 @@ rm -rf /optvar/build/
 
 set -ex
 
-rm -rf $CODEDIR/github/jumpscale/ays_jumpscale9/
-rm -rf $CODEDIR/github/jumpscale/jumpscale_core9/
-rm -rf $CODEDIR/github/jumpscale/jumpscale_portal8/
+rm -rf $CODEDIR/github/threefoldtech/jumpscale_ays_jumpscale9/
+rm -rf $CODEDIR/github/threefoldtech/jumpscale_jumpscale_core9/
+rm -rf $CODEDIR/github/threefoldtech/jumpscale_jumpscale_portal8/

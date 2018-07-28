@@ -150,6 +150,6 @@ clean_system
 set -ex
 curl https://raw.githubusercontent.com/Jumpscale/developer/master/jsinit.sh?$RANDOM > $TMPDIR/jsinstall.sh; sh $TMPDIR/jsinstall.sh
 source ~/jsenv.sh
-pip3 install -e $CODEDIR/github/jumpscale/core9 --upgrade
+pip3 install -e $CODEDIR/github/threefoldtech/jumpscale_core9 --upgrade
 
 cd $STARTDIR

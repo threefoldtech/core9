@@ -80,12 +80,6 @@ set +e
 
 pushd $ZUTILSDIR/bash > /dev/null 2>&1
 . lib/code_lib.sh
-. lib/docker_lib.sh
-. lib/restic_lib.sh
-. lib/ssh_lib.sh
-. lib/installers.sh
-. lib/tmux.sh
-. lib/rsync.sh
 . lib/installers_host.sh
 . lib/base_lib.sh
 

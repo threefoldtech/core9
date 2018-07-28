@@ -407,15 +407,15 @@ class ExecutorBase(JSBASE):
     
             self.execute(out, sudo=True)
 
-            if self.exists("%s/github/jumpscale/core9/" % DIRPATHS["CODEDIR"]):
-                TT["plugins"]["JumpScale9"] = "%s/github/jumpscale/core9/JumpScale9/" % DIRPATHS["CODEDIR"]
+            if self.exists("%s/github/threefoldtech/jumpscale_core9/" % DIRPATHS["CODEDIR"]):
+                TT["plugins"]["JumpScale9"] = "%s/github/threefoldtech/jumpscale_core9/JumpScale9/" % DIRPATHS["CODEDIR"]
                 # only check if core exists
-                if self.exists("%s/github/jumpscale/lib9/" % DIRPATHS["CODEDIR"]):
-                    TT["plugins"]["JumpScale9Lib"] = "%s/github/jumpscale/lib9/JumpScale9Lib/" % DIRPATHS["CODEDIR"]
-                if self.exists("%s/github/jumpscale/prefab9/" % DIRPATHS["CODEDIR"]):
-                    TT["plugins"]["JumpScale9Prefab"] = "%s/github/jumpscale/prefab9/JumpScale9Prefab/" % DIRPATHS["CODEDIR"]
+                if self.exists("%s/github/threefoldtech/jumpscale_lib9/" % DIRPATHS["CODEDIR"]):
+                    TT["plugins"]["JumpScale9Lib"] = "%s/github/threefoldtech/jumpscale_lib9/JumpScale9Lib/" % DIRPATHS["CODEDIR"]
+                if self.exists("%s/github/threefoldtech/jumpscale_prefab9/" % DIRPATHS["CODEDIR"]):
+                    TT["plugins"]["JumpScale9Prefab"] = "%s/github/threefoldtech/jumpscale_prefab9/JumpScale9Prefab/" % DIRPATHS["CODEDIR"]
                 if self.type == "local":
-                    src = "%s/github/jumpscale/core9/cmds/" % DIRPATHS["CODEDIR"]
+                    src = "%s/github/threefoldtech/jumpscale_core9/cmds/" % DIRPATHS["CODEDIR"]
                     j.sal.fs.symlinkFilesInDir(src, "/usr/local/bin", delete=True,
                                                includeDirs=False, makeExecutable=True)
 

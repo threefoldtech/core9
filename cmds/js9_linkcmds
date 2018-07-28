@@ -13,13 +13,13 @@ function linkcmds {
         #we are in container
         echo "* link commands to container"
         set -x
-        find  $CODEDIR/github/jumpscale/core9/cmds -exec ln -s {} "/usr/local/bin/" \;
+        find  $CODEDIR/github/threefoldtech/jumpscale_core9/cmds -exec ln -s {} "/usr/local/bin/" \;
         rm -rf /usr/local/bin/cmds
-        find  $CODEDIR/github/jumpscale/developer/cmds_guest -exec ln -s {} "/usr/local/bin/" \;
+        find  $CODEDIR/github/threefoldtech/jumpscale_developer/cmds_guest -exec ln -s {} "/usr/local/bin/" \;
         rm -rf /usr/local/bin/cmds_guest
     else
         echo "* link commands to local environment"
-        find  $CODEDIR/github/jumpscale/developer/cmds_host -exec ln -s {} "/usr/local/bin/" \;
+        find  $CODEDIR/github/threefoldtech/jumpscale_developer/cmds_host -exec ln -s {} "/usr/local/bin/" \;
         rm -rf /usr/local/bin/cmds_host
     fi
 

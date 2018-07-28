@@ -12,7 +12,7 @@ class MonitorClient(JSBASE):
         JSBASE.__init__(self)
         self.redis = redis
 
-        luapath = "/opt/code/github/jumpscale/jumpscale_core9/lib/JumpScale/lib/perftesttools/stat.lua"
+        luapath = "/opt/code/github/threefoldtech/jumpscale_jumpscale_core9/lib/JumpScale/lib/perftesttools/stat.lua"
         lua = j.sal.fs.fileGetContents(luapath)
         self._sha = self.redis.script_load(lua)
 
