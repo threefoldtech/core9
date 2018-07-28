@@ -19,7 +19,6 @@ die() {
 ZUtilsGetCode() {
     mkdir -p $ZUTILSDIR
     #giturl like: git@github.com:mathieuancelin/duplicates.git
-    # local giturl=git@github.com:Jumpscale/bash.git
     local giturl=https://github.com/threefoldtech/jumpscale_core9.git
     local branch=${ZUTILSBRANCH:-development}
     echo "[+] get code $giturl ($branch)"

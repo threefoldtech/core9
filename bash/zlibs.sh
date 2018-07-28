@@ -2,10 +2,10 @@
 
 PS4='(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]} - [${SHLVL},${BASH_SUBSHELL}, $?]'
 
-if [ -d "/opt/code/github.com/threefoldtech/jumpscale_" ] && [ "$(uname)" != "Darwin" ] ; then
-    export ZUTILSDIR='/opt/code/github.com/threefoldtech/jumpscale_'
+if [ -d "/opt/code/github/threefoldtech/jumpscale_" ] && [ "$(uname)" != "Darwin" ] ; then
+    export ZUTILSDIR='/opt/code/github/threefoldtech/jumpscale_'
 else
-    export ZUTILSDIR=${ZUTILSDIR:-~/code/github.com/threefoldtech/jumpscale_}
+    export ZUTILSDIR=${ZUTILSDIR:-~/code/github/threefoldtech/jumpscale_}
 fi
 
 export ZLogFile='/tmp/zutils.log'

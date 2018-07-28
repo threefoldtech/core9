@@ -60,7 +60,7 @@ js9
 ### Install using pip3
 
 ```
-mkdir -p /opt/code/github.com/threefoldtech/jumpscale_
+mkdir -p /opt/code/github/threefoldtech/jumpscale_
 pip3 install -e git+https://github.com/threefoldtech/jumpscale_/core9@development#egg=core9 --src /opt/code/github/threefoldtech/jumpscale_
 ```
 
