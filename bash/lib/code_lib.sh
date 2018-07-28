@@ -38,7 +38,7 @@ ZCodeGetJS() {
     echo FUNCTION: ${FUNCNAME[0]} >> $ZLogFile
     ZCodeConfig || return 1
     local OPTIND
-    local account='jumpscale'
+    local account='threefoldtech'
     local reponame=''
     local branch=${JS9BRANCH:-development}
     while getopts "r:b:h" opt; do
@@ -51,14 +51,14 @@ ZCodeGetJS() {
     done
 
     if [ -z "$reponame" ]; then
-        ZCodeGetJS -r core9  -b $branch || return 1
-        ZCodeGetJS -r lib9 -b $branch || return 1
-        ZCodeGetJS -r prefab9 -b $branch || return 1
+        ZCodeGetJS -r jumpscale_core9  -b $branch || return 1
+        ZCodeGetJS -r jumpscale_lib9 -b $branch || return 1
+        ZCodeGetJS -r jumpscale_prefab9 -b $branch || return 1
         return 0
     fi
 
     # local giturl="git@github.com:Jumpscale/$reponame.git"
-    local githttpsurl="https://github.com/threefoldtech/jumpscale_$reponame.git"
+    local githttpsurl="https://github.com/threefoldtech/$reponame.git"
 
     # check if specificed branch or $JS9BRANCH exist, if not then fallback to development
     JS9BRANCHExists ${githttpsurl} ${branch} || branch=development
