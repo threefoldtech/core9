@@ -46,31 +46,31 @@ ZInstall_host_js9() {
     rm -rf /usr/local/lib/python3.6/site-packages/js9*
 
     echo "[+] install js9"
-    pushd $ZCODEDIR/github/threefoldtech/core9
-    cp /$ZCODEDIR/github/threefoldtech/core9/mascot $HOMEDIR/.mascot.txt || die "Could not copy mascot" || return 1
+    pushd $ZCODEDIR/github/threefoldtech/jumpscale_core9
+    cp /$ZCODEDIR/github/threefoldtech/jumpscale_core9/mascot $HOMEDIR/.mascot.txt || die "Could not copy mascot" || return 1
     pip3 install -e . > ${ZLogFile} 2>&1 || die "Could not install core9 of js9" || return 1
     popd
-    # pip3 install -e $ZCODEDIR/github/threefoldtech/core9 || die "could not install core9 of js9" || return 1
+    # pip3 install -e $ZCODEDIR/github/threefoldtech/jumpscale_core9 || die "could not install core9 of js9" || return 1
 
     echo "[+] load env"
     python3 -c 'from JumpScale9 import j;j.tools.executorLocal.initEnv()' > ${ZLogFile} 2>&1 || die "Could not install core9 of js9, initenv" || return 1
     python3 -c 'from JumpScale9 import j;j.tools.jsloader.generate()'  > ${ZLogFile} 2>&1  || die "Could not install core9 of js9, jsloader" || return 1
 
     echo "[+] installing jumpscale lib9"
-    pushd $ZCODEDIR/github/threefoldtech/lib9
+    pushd $ZCODEDIR/github/threefoldtech/jumpscale_lib9
     pip3 install docker
     pip3 install --no-deps -e .  > ${ZLogFile} 2>&1 || die "Coud not install lib9 of js9" || return 1
     popd
 
 
     echo "[+] installing jumpscale prefab9"
-    pushd $ZCODEDIR/github/threefoldtech/prefab9
+    pushd $ZCODEDIR/github/threefoldtech/jumpscale_prefab9
     pip3 install -e .  > ${ZLogFile} 2>&1 || die "Coud not install prefab9" || return 1
     popd
-    # pip3 install -e $ZCODEDIR/github/threefoldtech/prefab9 || die "could not install prefab9" || return 1
+    # pip3 install -e $ZCODEDIR/github/threefoldtech/jumpscale_prefab9 || die "could not install prefab9" || return 1
 
     # echo "[+] installing binaries files"
-    # find  $ZCODEDIR/github/threefoldtech/core9/cmds -exec ln -s {} "/usr/local/bin/" \; || die || return 1
+    # find  $ZCODEDIR/github/threefoldtech/jumpscale_core9/cmds -exec ln -s {} "/usr/local/bin/" \; || die || return 1
     #
     # rm -rf /usr/local/bin/cmds
     # rm -rf /usr/local/bin/cmds_guest
@@ -200,19 +200,19 @@ ZInstall_host_js9_full() {
     ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
 
     echo "[+] install js9"
-    pushd $ZCODEDIR/github/threefoldtech/core9
+    pushd $ZCODEDIR/github/threefoldtech/jumpscale_core9
     /bin/bash install.sh || die "Could not install core9 of js9" || return 1
     popd
-    # pip3 install -e $ZCODEDIR/github/threefoldtech/core9 || die "could not install core9 of js9" || return 1
+    # pip3 install -e $ZCODEDIR/github/threefoldtech/jumpscale_core9 || die "could not install core9 of js9" || return 1
 
     echo "[+] installing jumpscale lib9"
-    pushd $ZCODEDIR/github/threefoldtech/lib9
+    pushd $ZCODEDIR/github/threefoldtech/jumpscale_lib9
     /bin/bash install.sh || die "Coud not install lib9 of js9" || return 1
     popd
-    # pip3 install --no-deps -e $ZCODEDIR/github/threefoldtech/lib9 || die "could not install lib9 of js9" || return 1
+    # pip3 install --no-deps -e $ZCODEDIR/github/threefoldtech/jumpscale_lib9 || die "could not install lib9 of js9" || return 1
 
     echo "[+] installing jumpscale prefab9"
-    pushd $ZCODEDIR/github/threefoldtech/prefab9
+    pushd $ZCODEDIR/github/threefoldtech/jumpscale_prefab9
     /bin/bash install.sh || die "Coud not install prefab9" || return 1
     popd
 
