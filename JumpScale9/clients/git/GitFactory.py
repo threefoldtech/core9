@@ -458,10 +458,10 @@ class GitFactory(JSBASE):
         @return (repository_host, repository_type, repository_account, repository_name, repository_url,branch,gitpath, relpath,repository_port)
 
         example Input
-        - https://github.com/Jumpscale/NOS/blob/master/specs/NOS_1.0.0.md
-        - https://github.com/Jumpscale/jumpscale_core9/blob/8.1.2/lib/JumpScale/tools/docgenerator/macros/dot.py
-        - https://github.com/Jumpscale/jumpscale_core9/tree/8.2.0/lib/JumpScale/tools/docgenerator/macros
-        - https://github.com/Jumpscale/jumpscale_core9/tree/master/lib/JumpScale/tools/docgenerator/macros
+        - https://github.com/threefoldtech/jumpscale_/NOS/blob/master/specs/NOS_1.0.0.md
+        - https://github.com/threefoldtech/jumpscale_/jumpscale_core9/blob/8.1.2/lib/JumpScale/tools/docgenerator/macros/dot.py
+        - https://github.com/threefoldtech/jumpscale_/jumpscale_core9/tree/8.2.0/lib/JumpScale/tools/docgenerator/macros
+        - https://github.com/threefoldtech/jumpscale_/jumpscale_core9/tree/master/lib/JumpScale/tools/docgenerator/macros
 
         """
         url = url.strip()
@@ -521,10 +521,10 @@ class GitFactory(JSBASE):
         @return (giturl,gitpath,relativepath)
 
         example Input
-        - https://github.com/Jumpscale/NOS/blob/master/specs/NOS_1.0.0.md
-        - https://github.com/Jumpscale/jumpscale_core9/blob/8.1.2/lib/JumpScale/tools/docgenerator/macros/dot.py
-        - https://github.com/Jumpscale/jumpscale_core9/tree/8.2.0/lib/JumpScale/tools/docgenerator/macros
-        - https://github.com/Jumpscale/jumpscale_core9/tree/master/lib/JumpScale/tools/docgenerator/macros
+        - https://github.com/threefoldtech/jumpscale_/NOS/blob/master/specs/NOS_1.0.0.md
+        - https://github.com/threefoldtech/jumpscale_/jumpscale_core9/blob/8.1.2/lib/JumpScale/tools/docgenerator/macros/dot.py
+        - https://github.com/threefoldtech/jumpscale_/jumpscale_core9/tree/8.2.0/lib/JumpScale/tools/docgenerator/macros
+        - https://github.com/threefoldtech/jumpscale_/jumpscale_core9/tree/master/lib/JumpScale/tools/docgenerator/macros
 
         """
         url = url.strip()
@@ -546,10 +546,10 @@ class GitFactory(JSBASE):
         will find the right branch & will do a pull
 
         example Input
-        - https://github.com/Jumpscale/NOS/blob/master/specs/NOS_1.0.0.md
-        - https://github.com/Jumpscale/jumpscale_core9/blob/8.1.2/lib/JumpScale/tools/docgenerator/macros/dot.py
-        - https://github.com/Jumpscale/jumpscale_core9/tree/8.2.0/lib/JumpScale/tools/docgenerator/macros
-        - https://github.com/Jumpscale/jumpscale_core9/tree/master/lib/JumpScale/tools/docgenerator/macros
+        - https://github.com/threefoldtech/jumpscale_/NOS/blob/master/specs/NOS_1.0.0.md
+        - https://github.com/threefoldtech/jumpscale_/jumpscale_core9/blob/8.1.2/lib/JumpScale/tools/docgenerator/macros/dot.py
+        - https://github.com/threefoldtech/jumpscale_/jumpscale_core9/tree/8.2.0/lib/JumpScale/tools/docgenerator/macros
+        - https://github.com/threefoldtech/jumpscale_/jumpscale_core9/tree/master/lib/JumpScale/tools/docgenerator/macros
 
         """
         if not j.sal.fs.exists(urlOrPath, followlinks=True):
@@ -570,10 +570,10 @@ class GitFactory(JSBASE):
         @return path of the content found, will also do a pull to make sure git repo is up to date
 
         example Input
-        - https://github.com/Jumpscale/NOS/blob/master/specs/NOS_1.0.0.md
-        - https://github.com/Jumpscale/jumpscale_core9/blob/8.1.2/lib/JumpScale/tools/docgenerator/macros/dot.py
-        - https://github.com/Jumpscale/jumpscale_core9/tree/8.2.0/lib/JumpScale/tools/docgenerator/macros
-        - https://github.com/Jumpscale/jumpscale_core9/tree/master/lib/JumpScale/tools/docgenerator/macros
+        - https://github.com/threefoldtech/jumpscale_/NOS/blob/master/specs/NOS_1.0.0.md
+        - https://github.com/threefoldtech/jumpscale_/jumpscale_core9/blob/8.1.2/lib/JumpScale/tools/docgenerator/macros/dot.py
+        - https://github.com/threefoldtech/jumpscale_/jumpscale_core9/tree/8.2.0/lib/JumpScale/tools/docgenerator/macros
+        - https://github.com/threefoldtech/jumpscale_/jumpscale_core9/tree/master/lib/JumpScale/tools/docgenerator/macros
 
         """
         if j.sal.fs.exists(urlOrPath, followlinks=True):

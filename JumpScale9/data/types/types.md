@@ -23,8 +23,8 @@ we have then represented as 2 different implementations
 
 for more info see
 
-- https://github.com/Jumpscale/core9/blob/development/JumpScale9/data/numtools/numtools.md
-- https://github.com/Jumpscale/lib9/blob/development/JumpScale9Lib/clients/currencylayer/currencies.md 
+- https://github.com/threefoldtech/jumpscale_/core9/blob/development/JumpScale9/data/numtools/numtools.md
+- https://github.com/threefoldtech/jumpscale_/lib9/blob/development/JumpScale9Lib/clients/currencylayer/currencies.md 
 
 ### numeric as string:  
 

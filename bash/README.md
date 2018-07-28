@@ -44,7 +44,7 @@ This will
 - remove brew
 - reinstall brew
 - remove all content from ~/opt
-- remove all content from ~/code/github/jumpscale
+- remove all content from ~/code/github.com/threefoldtech/jumpscale_
 - remove all old config files
 
 do not forget to reset docker, can do this in preferences and ask hard reset.

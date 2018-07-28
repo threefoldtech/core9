@@ -37,7 +37,7 @@ Of these provided tools are, most notably:
 _tested on osx, ubuntu 16.04, ubuntu 17.04
 (will upgrade brew as part of the process on OSX)_
 
-### install using [bash tools](https://github.com/Jumpscale/bash)
+### install using [bash tools](https://github.com/threefoldtech/jumpscale_/bash)
 
 ```bash
 #to define branch:
@@ -60,8 +60,8 @@ js9
 ### Install using pip3
 
 ```
-mkdir -p /opt/code/github/jumpscale
-pip3 install -e git+https://github.com/Jumpscale/core9@development#egg=core9 --src /opt/code/github/threefoldtech/jumpscale_
+mkdir -p /opt/code/github.com/threefoldtech/jumpscale_
+pip3 install -e git+https://github.com/threefoldtech/jumpscale_/core9@development#egg=core9 --src /opt/code/github/threefoldtech/jumpscale_
 ```
 
 ## Usage

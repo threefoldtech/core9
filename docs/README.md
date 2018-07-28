@@ -9,12 +9,12 @@
 
 - GitHub repositories:
 
-  - [Bash tools](https://github.com/Jumpscale/bash)
-  - [JumpScale Core](https://github.com/Jumpscale/core9)
-  - [JumpScale Lib](https://github.com/Jumpscale/lib9)
-  - [JumpScale Prefab](https://github.com/Jumpscale/prefab9)
-  - [AtYourService](https://github.com/Jumpscale/ays9)
-  - [JumpScale Portal](https://github.com/Jumpscale/portal9)
+  - [Bash tools](https://github.com/threefoldtech/jumpscale_/bash)
+  - [JumpScale Core](https://github.com/threefoldtech/jumpscale_/core9)
+  - [JumpScale Lib](https://github.com/threefoldtech/jumpscale_/lib9)
+  - [JumpScale Prefab](https://github.com/threefoldtech/jumpscale_/prefab9)
+  - [AtYourService](https://github.com/threefoldtech/jumpscale_/ays9)
+  - [JumpScale Portal](https://github.com/threefoldtech/jumpscale_/portal9)
 
 
 ## Known issues

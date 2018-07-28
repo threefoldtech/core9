@@ -92,11 +92,11 @@ smtp_server = ""
 
 [git.ays]
 branch = "master"
-url = "https://github.com/Jumpscale/ays9.git"
+url = "https://github.com/threefoldtech/jumpscale_/ays9.git"
 
 [git.js]
 branch = "master"
-url = "https://github.com/Jumpscale/core9.git"
+url = "https://github.com/threefoldtech/jumpscale_/core9.git"
 
 
 [system]
