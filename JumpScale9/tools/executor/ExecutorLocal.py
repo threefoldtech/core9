@@ -77,7 +77,7 @@ class ExecutorLocal(ExecutorBase):
                 print("need to fix for other types (check executorlocal")
                 sys.exit(1)
 
-            path = path = "%s/.profile_js" % (homedir)
+            path = "%s/.profile_js" % (homedir)
             if os.path.exists(path):
                 res["bashprofile"] = j.sal.fs.fileGetContents(path)
             else:
