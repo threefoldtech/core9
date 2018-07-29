@@ -71,8 +71,8 @@ branchname can optionally be specified.
 if specified but repo exists then a pull will be done & branch will be ignored !!!
 
 if reponame not specified then will checkout
-- lib9
-- core9
+- lib
+- core
 - prefab
 
 EOF
@@ -95,9 +95,9 @@ ZCodeGetJS() {
     done
 
     if [ -z "$reponame" ]; then
-        ZCodeGetJS -r jumpscale_core9  -b $branch || return 1
-        ZCodeGetJS -r jumpscale_lib9 -b $branch || return 1
-        ZCodeGetJS -r jumpscale_prefab9 -b $branch || return 1
+        ZCodeGetJS -r jumpscale_core  -b $branch || return 1
+        ZCodeGetJS -r jumpscale_lib -b $branch || return 1
+        ZCodeGetJS -r jumpscale_prefab -b $branch || return 1
         return 0
     fi
 
@@ -220,36 +220,36 @@ ZInstall_host_js9() {
     rm -rf /usr/local/lib/python3.6/site-packages/js9*
 
     echo "[+] install js9"
-    pushd $ZCODEDIR/github/threefoldtech/jumpscale_core9
-    pip3 install -e . > ${ZLogFile} 2>&1 || die "Could not install core9 of js9" || return 1
+    pushd $ZCODEDIR/github/threefoldtech/jumpscale_core
+    pip3 install -e . > ${ZLogFile} 2>&1 || die "Could not install core of js9" || return 1
     popd
-    # pip3 install -e $ZCODEDIR/github/threefoldtech/jumpscale_core9 || die "could not install core9 of js9" || return 1
+    # pip3 install -e $ZCODEDIR/github/threefoldtech/jumpscale_core || die "could not install core of js9" || return 1
 
     echo "[+] load env"
-    python3 -c 'from JumpScale9 import j;j.tools.executorLocal.initEnv()' > ${ZLogFile} 2>&1 || die "Could not install core9 of js9, initenv" || return 1
-    python3 -c 'from JumpScale9 import j;j.tools.jsloader.generate()'  > ${ZLogFile} 2>&1  || die "Could not install core9 of js9, jsloader" || return 1
+    python3 -c 'from JumpScale9 import j;j.tools.executorLocal.initEnv()' > ${ZLogFile} 2>&1 || die "Could not install core of js9, initenv" || return 1
+    python3 -c 'from JumpScale9 import j;j.tools.jsloader.generate()'  > ${ZLogFile} 2>&1  || die "Could not install core of js9, jsloader" || return 1
 
-    echo "[+] installing jumpscale lib9"
-    pushd $ZCODEDIR/github/threefoldtech/jumpscale_lib9
+    echo "[+] installing jumpscale lib"
+    pushd $ZCODEDIR/github/threefoldtech/jumpscale_lib
     # pip3 install docker
-    pip3 install --no-deps -e .  > ${ZLogFile} 2>&1 || die "Coud not install lib9 of js9" || return 1
+    pip3 install --no-deps -e .  > ${ZLogFile} 2>&1 || die "Coud not install lib of js9" || return 1
     popd
 
 
-    echo "[+] installing jumpscale prefab9"
-    pushd $ZCODEDIR/github/threefoldtech/jumpscale_prefab9
-    pip3 install -e .  > ${ZLogFile} 2>&1 || die "Coud not install prefab9" || return 1
+    echo "[+] installing jumpscale prefab"
+    pushd $ZCODEDIR/github/threefoldtech/jumpscale_prefab
+    pip3 install -e .  > ${ZLogFile} 2>&1 || die "Coud not install prefab" || return 1
     popd
-    # pip3 install -e $ZCODEDIR/github/threefoldtech/jumpscale_prefab9 || die "could not install prefab9" || return 1
+    # pip3 install -e $ZCODEDIR/github/threefoldtech/jumpscale_prefab || die "could not install prefab" || return 1
 
     # echo "[+] installing binaries files"
-    # find  $ZCODEDIR/github/threefoldtech/jumpscale_core9/cmds -exec ln -s {} "/usr/local/bin/" \; || die || return 1
+    # find  $ZCODEDIR/github/threefoldtech/jumpscale_core/cmds -exec ln -s {} "/usr/local/bin/" \; || die || return 1
     #
     # rm -rf /usr/local/bin/cmds
     # rm -rf /usr/local/bin/cmds_guest
 
     echo "[+] initializing jumpscale"
-    python3 -c 'from JumpScale9 import j;j.tools.jsloader.generate()' > ${ZLogFile} 2>&1  || die "Could not install core9 of js9, jsloader" || return 1
+    python3 -c 'from JumpScale9 import j;j.tools.jsloader.generate()' > ${ZLogFile} 2>&1  || die "Could not install core of js9, jsloader" || return 1
 
     pip3 install Cython --upgrade  || die || return 1
     # pip3 install asyncssh
@@ -393,6 +393,6 @@ echo "INSTALL Jumpscale9 on branch $JS9BRANCH"
 
 ZInstall_host_base || die "Could not prepare the base system" || exit 1
 ZCodeGetJS || die "Could not download js9 code" || exit 1
-ZInstall_host_js9 || die "Could not install core9 of js9" || exit 1
+ZInstall_host_js9 || die "Could not install core of js9" || exit 1
 
 
