@@ -5,7 +5,7 @@ Jumpscale is a cloud automation product and a branch from what used to be Pylabs
 - [Jumpscale](#jumpscale)
   - [About Jumpscale Core](#about-jumpscale-core)
   - [Installing Jumpscale Core (NEW, need to test!!!)](#installing-jumpscale-core-new-need-to-test)
-    - [install using bash tools](#install-using-bash-tools)
+    - [install](#install)
     - [Install using pip3](#install-using-pip3)
   - [Usage](#usage)
   - [Tutorials](#tutorials)
@@ -38,7 +38,7 @@ Of these provided tools are, most notably:
 _tested on osx, ubuntu 16.04, ubuntu 17.04
 (will upgrade brew as part of the process on OSX)_
 
-### install using [bash tools](https://github.com/threefoldtech/jumpscale_/bash)
+### install 
 
 ```bash
 curl https://raw.githubusercontent.com/threefoldtech/jumpscale_core/development/install.sh?$RANDOM > /tmp/install_jumpscale.sh;bash /tmp/install_jumpscale.sh

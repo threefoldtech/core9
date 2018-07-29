@@ -81,6 +81,7 @@ else:
         def __init__(self):
             self.tools = Tools()
             self.sal = Sal()
+            self.sal_zos = Sal()
             self.data = Data()
             self.clients = Clients()
             self.core = Core()
