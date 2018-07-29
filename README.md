@@ -10,6 +10,9 @@ Jumpscale is a cloud automation product and a branch from what used to be Pylabs
   - [Usage](#usage)
   - [Tutorials](#tutorials)
 
+
+REMARK: lots of changes have recently being done see [changes.md](changes.md)
+
 ## About Jumpscale Core
 
 The core module provides the bare framework into which other modules of Jumpscale plug into.
