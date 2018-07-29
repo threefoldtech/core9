@@ -41,6 +41,10 @@ _tested on osx, ubuntu 16.04, ubuntu 17.04
 ### install using [bash tools](https://github.com/threefoldtech/jumpscale_/bash)
 
 ```bash
+curl https://raw.githubusercontent.com/threefoldtech/jumpscale_core/development/install.sh?$RANDOM > /tmp/install_jumpscale.sh;bash /tmp/install_jumpscale.sh
+```
+
+```bash
 #to define branch:
 export JumpscaleBRANCH="development"
 curl https://raw.githubusercontent.com/threefoldtech/jumpscale_core/$JUMPSCALEBRANCH/install.sh?$RANDOM > /tmp/install_jumpscale.sh;bash /tmp/install_jumpscale.sh
