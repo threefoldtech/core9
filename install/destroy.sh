@@ -3,8 +3,8 @@ rm -rf /opt/jumpscale9
 rm -rf /JS8/opt/jumpscale9
 rm -rf /JS8/optvar/
 rm -rf /optvar/cfg/
-rm -rf /optvar/cfg/docgenerator/
-rm -rf /optvar/docgenerator_internal/
+rm -rf /optvar/cfg/markdowndocs/
+rm -rf /optvar/markdowndocs_internal/
 rm -rf /optvar/log/
 rm -rf /optvar/portal/
 rm -rf /optvar/capnp/

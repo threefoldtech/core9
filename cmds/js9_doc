@@ -19,7 +19,7 @@ def generate():
     """
     will generate from existing dir
     """
-    j.tools.docgenerator.generate()
+    j.tools.markdowndocs.generate()
 
 cli.add_command(generate)
 
