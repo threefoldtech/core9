@@ -5,7 +5,7 @@ use these install scripts to make your life easy
 
 ```
 #if ubuntu is in recent state & apt get update was done recently
-cd /tmp; rm -f install.sh; curl -k https://raw.githubusercontent.com/Jumpscale/jumpscale_core9/master/install/install.sh > install.sh;bash install.sh
+cd /tmp; rm -f install.sh; curl -k https://raw.githubusercontent.com/Jumpscale/jumpscale_core/master/install/install.sh > install.sh;bash install.sh
 
 ```
 
@@ -13,17 +13,17 @@ to use in sandbox
 -----------------
 allways make sure you have set your env variables by
 ```
-source /opt/jumpscale9/env.sh
+source /opt/jumpscale/env.sh
 ```
 
 to get shell
 ```
-source /opt/jumpscale9/env.sh;python -c "from IPython import embed;embed()"
+source /opt/jumpscale/env.sh;python -c "from IPython import embed;embed()"
 ```
 
 example through ipython
 ```
-source /opt/jumpscale9/env.sh
+source /opt/jumpscale/env.sh
 ipython
-from JumpScale9 import j
+from Jumpscale import j
 ```

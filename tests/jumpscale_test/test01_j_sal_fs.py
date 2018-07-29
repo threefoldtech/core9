@@ -1,7 +1,7 @@
 import os, shutil
 from random import randint
 from testcases_base import TestcasesBase
-from js9 import j
+from jumpscale import j
 from parameterized import parameterized
 
 

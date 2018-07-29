@@ -37,7 +37,7 @@ elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
 
     fi
     if [ -z $JSBASE ]; then
-        export JSBASE='/opt/jumpscale9'
+        export JSBASE='/opt/jumpscale'
     fi
     export TMPDIR=/tmp
     export CODEDIR=/opt/code

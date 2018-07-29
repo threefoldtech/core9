@@ -1,6 +1,6 @@
 # AYS
 
-AYS is a self-healing application management framework for cloud infrastructure and is installed as part of JumpScale.
+AYS is a self-healing application management framework for cloud infrastructure and is installed as part of Jumpscale.
 
 It combines functions such as:
 
@@ -13,7 +13,7 @@ It combines functions such as:
 
 @todo: provide simple examples here that introduce AYS usage
 
-AYS Service Manager (`ays`) is a standalone command line tool that comes with JumpScale:
+AYS Service Manager (`ays`) is a standalone command line tool that comes with Jumpscale:
 ```
 ays
 ```

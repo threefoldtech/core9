@@ -3,14 +3,14 @@
 set -ex
 
 if [ -z"/JS8" ]; then
-    export JSBASE="/JS8/opt/jumpscale9"
+    export JSBASE="/JS8/opt/jumpscale"
     export TMPDIR="/JS8/tmp"
     export CFGDIR="/JS8/optvar/cfg/jumpscale/"
     mkdir -p $JSBASE
 else
     if [ "$(uname)" == "Darwin" ]; then
         export TMPDIR="$HOME/tmp"
-        export JSBASE="$HOME/opt/jumpscale9"
+        export JSBASE="$HOME/opt/jumpscale"
         export CFGDIR="$HOME/optvar/cfg/jumpscale/"
     fi
 fi

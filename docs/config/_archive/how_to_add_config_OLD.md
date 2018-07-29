@@ -1,13 +1,13 @@
 # How to add configurations and states
-All configurations are now in one place `/root/js9host/cfg/jumpscale9.toml`
+All configurations are now in one place `/root/jumpscale/cfg/jumpscale.toml`
 
-All states are also in one place `/root/js9host/cfg/state.toml`
+All states are also in one place `/root/jumpscale/cfg/state.toml`
 for example, the state of specific module is it installed or not
 
 ## Getting config
 ```
 In [1]: j.core.state.configGet('plugins')
-Out[1]: {'JumpScale9': '/opt/code/github/threefoldtech/jumpscale_core9/JumpScale9/'}
+Out[1]: {'Jumpscale': '/opt/code/github/threefoldtech/jumpscale_core/Jumpscale/'}
 ```
 
 ## Setting config

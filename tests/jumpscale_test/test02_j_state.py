@@ -1,6 +1,6 @@
 from testcases_base import TestcasesBase
 import os, random, pytoml, unittest, uuid
-from js9 import j
+from jumpscale import j
 
 class TestJSTATE(TestcasesBase):
 
@@ -103,7 +103,7 @@ class TestJSTATE(TestcasesBase):
         value = self.client.stateGetFromDict('new_dict', 'new_dict_key', default='new_dict_value')
         self.assertEqual(value, 'new_dict_value')
 
-    @unittest.skip('https://github.com/threefoldtech/jumpscale_core9/issues/157')
+    @unittest.skip('https://github.com/threefoldtech/jumpscale_core/issues/157')
     def test003_state_get_form_dict_bool(self):
         """ JS-010
         **Test Scenario:**

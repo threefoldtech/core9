@@ -1,11 +1,11 @@
-## JumpScale Executors
+## Jumpscale Executors
 
-JumpScale comes with its own executors that abstract working locally or remotely.
+Jumpscale comes with its own executors that abstract working locally or remotely.
 
 ### Local Executor
 
 The local executor is used for executing all kinds of commands locally.
-To use a local executor on a `js9` shell
+To use a local executor on a `jumpscale` shell
 
 ```python3
 local_executor = j.tools.executor.local_get()
@@ -21,7 +21,7 @@ This executor is very useful for remote execution. It takes an _SSH Client_ as a
 
 #### SSH Client
 
-JumpScale supports two modes for the ssh client. `paramiko` and `parallel-ssh with ssh2`
+Jumpscale supports two modes for the ssh client. `paramiko` and `parallel-ssh with ssh2`
 
 to use the sshclient, you'll first have to create an **sshkey** instance. For example:
 

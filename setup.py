@@ -6,10 +6,10 @@ import os
 
 
 def _post_install(libname, libpath):
-    from JumpScale9 import j  # here its still the boostrap JumpScale9
+    from Jumpscale import j  # here its still the boostrap Jumpscale
 
     # remove leftovers
-    for item in j.sal.fs.find("/usr/local/bin/", fileregex="js9*"):
+    for item in j.sal.fs.find("/usr/local/bin/", fileregex="js_*"):
         j.sal.fs.remove("/usr/local/bin/%s" % item)
 
     j.tools.executorLocal.initEnv()
@@ -43,11 +43,11 @@ except ImportError:
 
 
 setup(
-    name='JumpScale9',
+    name='Jumpscale',
     version='9.4.0-rc4',
     description='Automation framework for cloud workloads',
     long_description=long_description,
-    url='https://github.com/threefoldtech/jumpscale_core9',
+    url='https://github.com/threefoldtech/jumpscale_core',
     author='GreenItGlobe',
     author_email='info@gig.tech',
     license='Apache',
@@ -90,9 +90,9 @@ setup(
         'developement': develop
     },
     scripts=[
-        'cmds/js9',
-        'cmds/js9_code',
-        'cmds/js9_docker',
-        'cmds/js9_doc',
+        'cmds/js_shell',
+        'cmds/js_code',
+        'cmds/js_docker',
+        'cmds/js_doc',
     ],
 )

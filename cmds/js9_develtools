@@ -1,9 +1,0 @@
-#! /usr/bin/env python3
-from js9 import j
-
-
-try:
-    j.tools.develop.run()
-
-except KeyboardInterrupt:
-    pass

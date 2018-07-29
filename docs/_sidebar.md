@@ -1,4 +1,4 @@
-* [Home](https://github.com/threefoldtech/jumpscale_core9)
+* [Home](https://github.com/threefoldtech/jumpscale_core)
 
 ----
 
@@ -20,7 +20,7 @@
   * [UseAtom](/docs/Installation/UseAtom.md)
   * [autocomplete](/docs/Installation/autocomplete.png)
   * [dot_example](/docs/Installation/dot_example.png)
-  * [js9_autocomplete](/docs/Installation/js9_autocomplete.png)
+  * [js_autocomplete](/docs/Installation/js_autocomplete.png)
   * [mermaid_codeblock](/docs/Installation/mermaid_codeblock.png)
   * [plugins_autocomplete](/docs/Installation/plugins_autocomplete.png)
   
@@ -32,7 +32,7 @@
   * [jumpscaleconfigfiles](docs/Internals/jumpscaleconfigfiles.md)
 
 * [Introduction](docs/Introduction)
-  * [WhyJumpScale](docs/Introduction/WhyJumpScale.md)
+  * [WhyJumpscale](docs/Introduction/WhyJumpscale.md)
   
 * [JSLoader](/docs/JSLoader)
   * [JSLoader](/docs/JSLoader/JSLoader.md)
@@ -47,7 +47,7 @@
   * [cfm](/docs/config/cfm.jpg)
   * [config_file_locations](/docs/config/config_file_locations.md)
   * [configmanager](/docs/config/configmanager.md)
-  * [def_config_js9](/docs/config/def_config_js9.png)
+  * [def_config_jumpscale](/docs/config/def_config_jumpscale.png)
   * [init_silent](/docs/config/init_silent.md)
   * [myconfig_default_path](/docs/config/myconfig_default_path.png)
   * [sandbox_1](/docs/config/sb.png)

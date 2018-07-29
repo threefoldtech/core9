@@ -2,9 +2,9 @@
 set -e
 set -x
 
-export JS9MODE=TESTING
-pytest -v /opt/code/github/threefoldtech/jumpscale_core9/tests/unittests/
-unset JS9MODE
+export JumpscaleMODE=TESTING
+pytest -v /opt/code/github/threefoldtech/jumpscale_core/tests/unittests/
+unset JumpscaleMODE
 
 # run integration tests
 # we need to generate an ssh key

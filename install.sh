@@ -5,7 +5,7 @@ die() {
     rm -f /tmp/sdwfa #to remove temp passwd for restic, just to be sure
     echo
     echo "**** ERRORLOG ****"
-    cat $ZLogFile
+    cat $LogFile
     echo
     echo "[-] something went wrong: $1"
     echo
@@ -16,8 +16,8 @@ die() {
 
 
 Z_pushd(){
-    echo "pushd to: $1" >> $ZLogFile
-    pushd "$1" >> $ZLogFile 2>&1 || die "could not pushd to $1" || return 1
+    echo "pushd to: $1" >> $LogFile
+    pushd "$1" >> $LogFile 2>&1 || die "could not pushd to $1" || return 1
 }
 
 Z_popd(){
@@ -25,8 +25,8 @@ Z_popd(){
 }
 
 Z_mkdir(){
-    echo "mkdir: $1" >> $ZLogFile
-    mkdir -p "$1" >> $ZLogFile 2>&1 || die "could not mkdir $1" || return 1
+    echo "mkdir: $1" >> $LogFile
+    mkdir -p "$1" >> $LogFile 2>&1 || die "could not mkdir $1" || return 1
 }
 
 Z_mkdir_pushd(){
@@ -35,13 +35,13 @@ Z_mkdir_pushd(){
 }
 
 Z_brew_install(){
-    echo "brew install: $@" >> $ZLogFile
-    brew install  $@ >> $ZLogFile 2>&1 || die "could not brew install $@" || return 1
+    echo "brew install: $@" >> $LogFile
+    brew install  $@ >> $LogFile 2>&1 || die "could not brew install $@" || return 1
 }
 
 Z_apt_install(){
-  echo "apt-get install: $@" >> $ZLogFile
-  sudo apt-get -y install $@ >> $ZLogFile 2>&1 || die "could not install package $@" || return 1
+  echo "apt-get install: $@" >> $LogFile
+  sudo apt-get -y install $@ >> $LogFile 2>&1 || die "could not install package $@" || return 1
 }
 
 Z_exists_dir(){
@@ -65,7 +65,7 @@ Usage: ZCodeGet [-r reponame] [-g giturl] [-a account] [-b branch]
    -b branchname: defaults to development
    -h: help
 
-check's out jumpscale repo to $ZCODEDIR/github/threefoldtech/$reponame
+check's out jumpscale repo to $CODEDIR/github/threefoldtech/$reponame
 branchname can optionally be specified.
 
 if specified but repo exists then a pull will be done & branch will be ignored !!!
@@ -79,12 +79,12 @@ EOF
 }
 
 ZCodeGetJS() {
-    echo FUNCTION: ${FUNCNAME[0]} >> $ZLogFile
+    echo FUNCTION: ${FUNCNAME[0]} >> $LogFile
 
     local OPTIND
     local account='threefoldtech'
     local reponame=''
-    local branch=${JS9BRANCH:-development}
+    local branch=${JUMPSCALEBRANCH:-development}
     while getopts "r:b:h" opt; do
         case $opt in
            r )  reponame=$OPTARG ;;
@@ -104,8 +104,8 @@ ZCodeGetJS() {
     # local giturl="git@github.com:Jumpscale/$reponame.git"
     local githttpsurl="https://github.com/threefoldtech/$reponame.git"
 
-    # check if specificed branch or $JS9BRANCH exist, if not then fallback to development
-    JS9BRANCHExists ${githttpsurl} ${branch} || branch=development
+    # check if specificed branch or $JUMPSCALEBRANCH exist, if not then fallback to development
+    JUMPSCALEBRANCHExists ${githttpsurl} ${branch} || branch=development
 
     # ZCodeGet -r $reponame -a $account -u $giturl -b $branch  || ZCodeGet -r $reponame -a $account -u $githttpsurl -b $branch || return 1
     ZCodeGet -r $reponame -a $account -u $githttpsurl -b $branch || return 1
@@ -123,7 +123,7 @@ Usage: ZCodeGet [-r reponame] [-g giturl] [-a account] [-b branch]
    -k sshkey: path to sshkey to use for authorization when connecting to the repository.
    -h: help
 
-check's out any git repo repo to $ZCODEDIR/$type/$account/$reponame
+check's out any git repo repo to $CODEDIR/$type/$account/$reponame
 branchname can optionally be specified.
 
 if specified but repo exists then a pull will be done & branch will be ignored !!!
@@ -132,13 +132,13 @@ EOF
 }
 #to return to original dir do Z_pushd
 ZCodeGet() {
-    echo FUNCTION: ${FUNCNAME[0]} > $ZLogFile
+    echo FUNCTION: ${FUNCNAME[0]} > $LogFile
     local OPTIND
     local type='github'
     local account='varia'
     local reponame=''
     local giturl=''
-    local branch=${JS9BRANCH:-development}
+    local branch=${JUMPSCALEBRANCH:-development}
     local sshkey=''
     while getopts "a:r:u:b:t:k:h" opt; do
         case $opt in
@@ -164,33 +164,33 @@ ZCodeGet() {
 
     echo "[+] get code $giturl ($branch)"
 
-    Z_mkdir_pushd $ZCODEDIR/$type/$account || return 1
+    Z_mkdir_pushd $CODEDIR/$type/$account || return 1
 
     # check if docs.greenitglobe.com (gogs) in the url
     if grep -q docs.greenitglobe.com <<< $giturl; then
-        ssh-keyscan -t rsa docs.greenitglobe.com >> ~/.ssh/known_hosts 2>&1 >> $ZLogFile || die "ssh keyscan" || return 1
+        ssh-keyscan -t rsa docs.greenitglobe.com >> ~/.ssh/known_hosts 2>&1 >> $LogFile || die "ssh keyscan" || return 1
     fi
 
     if ! grep -q ^github.com ~/.ssh/known_hosts 2> /dev/null; then
-        ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts 2>&1 >> $ZLogFile || die "ssh keyscan" || return 1
+        ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts 2>&1 >> $LogFile || die "ssh keyscan" || return 1
     fi
 
-    if [ ! -e $ZCODEDIR/$type/$account/$reponame ]; then
+    if [ ! -e $CODEDIR/$type/$account/$reponame ]; then
         echo " [+] clone"
-        git clone -b ${branch} $giturl $reponame 2>&1 >> $ZLogFile || die "git clone" || return 1
+        git clone -b ${branch} $giturl $reponame 2>&1 >> $LogFile || die "git clone" || return 1
     else
-        Z_pushd $ZCODEDIR/$type/$account/$reponame || return 1
+        Z_pushd $CODEDIR/$type/$account/$reponame || return 1
         echo " [+] pull"
-        echo 'git pull' >> $ZLogFile
-        git pull  2>&1 >> $ZLogFile || die "could not git pull" || return 1
+        echo 'git pull' >> $LogFile
+        git pull  2>&1 >> $LogFile || die "could not git pull" || return 1
         Z_popd || return 1
     fi
     Z_popd || return 1
 }
 
-JS9BRANCHExists() {
+JUMPSCALEBRANCHExists() {
     local giturl="$1"
-    local branch=${2:-${JS9BRANCH}}
+    local branch=${2:-${JUMPSCALEBRANCH}}
 
     # remove the trailing .git from the giturl if exist
     giturl=${giturl%.git}
@@ -206,50 +206,50 @@ JS9BRANCHExists() {
     fi
 }
 
-ZInstall_host_js9() {
+ZInstall_jumpscale() {
 
-    # if ZDoneCheck "ZInstall_host_js9" ; then
+    # if ZDoneCheck "ZInstall_jumpscale" ; then
     #     echo "[+] Host jumpscale installation already done."
     #    return 0
     # fi
 
-    mkdir -p $HOME/js9host
+    mkdir -p $HOME/jumpscale
 
-    echo "[+] clean previous js9 install"
-    rm -rf /usr/local/lib/python3.6/site-packages/JumpScale9*
-    rm -rf /usr/local/lib/python3.6/site-packages/js9*
+    echo "[+] clean previous JS install"
+    rm -rf /usr/local/lib/python3.6/site-packages/Jumpscale*
+    rm -rf /usr/local/lib/python3.6/site-packages/JS*
 
-    echo "[+] install js9"
-    pushd $ZCODEDIR/github/threefoldtech/jumpscale_core
-    pip3 install -e . > ${ZLogFile} 2>&1 || die "Could not install core of js9" || return 1
+    echo "[+] install JS"
+    pushd $CODEDIR/github/threefoldtech/jumpscale_core
+    pip3 install -e . > ${LogFile} 2>&1 || die "Could not install core of JS" || return 1
     popd
-    # pip3 install -e $ZCODEDIR/github/threefoldtech/jumpscale_core || die "could not install core of js9" || return 1
+    # pip3 install -e $CODEDIR/github/threefoldtech/jumpscale_core || die "could not install core of JS" || return 1
 
     echo "[+] load env"
-    python3 -c 'from JumpScale9 import j;j.tools.executorLocal.initEnv()' > ${ZLogFile} 2>&1 || die "Could not install core of js9, initenv" || return 1
-    python3 -c 'from JumpScale9 import j;j.tools.jsloader.generate()'  > ${ZLogFile} 2>&1  || die "Could not install core of js9, jsloader" || return 1
+    python3 -c 'from Jumpscale import j;j.tools.executorLocal.initEnv()' > ${LogFile} 2>&1 || die "Could not install core of jumpscale, initenv" || return 1
+    python3 -c 'from Jumpscale import j;j.tools.jsloader.generate()'  > ${LogFile} 2>&1  || die "Could not install core of jumpscale, jsloader" || return 1
 
     echo "[+] installing jumpscale lib"
-    pushd $ZCODEDIR/github/threefoldtech/jumpscale_lib
+    pushd $CODEDIR/github/threefoldtech/jumpscale_lib
     # pip3 install docker
-    pip3 install --no-deps -e .  > ${ZLogFile} 2>&1 || die "Coud not install lib of js9" || return 1
+    pip3 install --no-deps -e .  > ${LogFile} 2>&1 || die "Coud not install lib of JS" || return 1
     popd
 
 
     echo "[+] installing jumpscale prefab"
-    pushd $ZCODEDIR/github/threefoldtech/jumpscale_prefab
-    pip3 install -e .  > ${ZLogFile} 2>&1 || die "Coud not install prefab" || return 1
+    pushd $CODEDIR/github/threefoldtech/jumpscale_prefab
+    pip3 install -e .  > ${LogFile} 2>&1 || die "Coud not install prefab" || return 1
     popd
-    # pip3 install -e $ZCODEDIR/github/threefoldtech/jumpscale_prefab || die "could not install prefab" || return 1
+    # pip3 install -e $CODEDIR/github/threefoldtech/jumpscale_prefab || die "could not install prefab" || return 1
 
-    # echo "[+] installing binaries files"
-    # find  $ZCODEDIR/github/threefoldtech/jumpscale_core/cmds -exec ln -s {} "/usr/local/bin/" \; || die || return 1
+    echo "[+] installing jumspcale js_ commands"
+    find  $CODEDIR/github/threefoldtech/jumpscale_core/cmds -exec ln -s {} "/usr/local/bin/" \; 2>&1 > /dev/null || die || return 1
     #
     # rm -rf /usr/local/bin/cmds
     # rm -rf /usr/local/bin/cmds_guest
 
     echo "[+] initializing jumpscale"
-    python3 -c 'from JumpScale9 import j;j.tools.jsloader.generate()' > ${ZLogFile} 2>&1  || die "Could not install core of js9, jsloader" || return 1
+    python3 -c 'from Jumpscale import j;j.tools.jsloader.generate()' > ${LogFile} 2>&1  || die "Could not install core of jumpscale, jsloader" || return 1
 
     pip3 install Cython --upgrade  || die || return 1
     # pip3 install asyncssh
@@ -258,9 +258,9 @@ ZInstall_host_js9() {
     pip3 install PyNaCl --upgrade || die || return 1
 
 
-    echo "[+] js9 installed (OK)"
+    echo "[+] jumpscale installed (OK)"
 
-    # ZDoneSet "ZInstall_host_js9"
+    # ZDoneSet "ZInstall_jumpscale"
 
 }
 
@@ -288,17 +288,17 @@ ZInstall_host_base(){
         fi
 
         # echo "[+] upgrade brew"
-        # brew upgrade  >> ${ZLogFile} 2>&1 || die "could not upgrade all brew installed components" || return 1
+        # brew upgrade  >> ${LogFile} 2>&1 || die "could not upgrade all brew installed components" || return 1
 
         echo "[+] installing git, python3, mc, tmux, curl"
         Z_brew_install mc wget python3 git unzip rsync tmux curl || return 1
 
         echo "[+] set system config params"
-        echo kern.maxfiles=65536 | sudo tee -a /etc/sysctl.conf >> ${ZLogFile} 2>&1 || die || return 1
-        echo kern.maxfilesperproc=65536 | sudo tee -a /etc/sysctl.conf >> ${ZLogFile} 2>&1 || die || return 1
-        sudo sysctl -w kern.maxfiles=65536 >> ${ZLogFile} 2>&1 || die || return 1
-        sudo sysctl -w kern.maxfilesperproc=65536 >> ${ZLogFile} 2>&1 || die || return 1
-        ulimit -n 65536 >> ${ZLogFile} 2>&1 || die || return 1
+        echo kern.maxfiles=65536 | sudo tee -a /etc/sysctl.conf >> ${LogFile} 2>&1 || die || return 1
+        echo kern.maxfilesperproc=65536 | sudo tee -a /etc/sysctl.conf >> ${LogFile} 2>&1 || die || return 1
+        sudo sysctl -w kern.maxfiles=65536 >> ${LogFile} 2>&1 || die || return 1
+        sudo sysctl -w kern.maxfilesperproc=65536 >> ${LogFile} 2>&1 || die || return 1
+        ulimit -n 65536 >> ${LogFile} 2>&1 || die || return 1
 
         if [ -n "$JSFULL" ] ; then
             echo "[+] installing development tools: build essential & pythondev"
@@ -310,7 +310,7 @@ ZInstall_host_base(){
         dist=`grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}'`
         if [ "$dist" == "Ubuntu" ]; then
             echo "[+] updating packages"
-            sudo apt-get update >> ${ZLogFile} 2>&1 || die "could not update packages" || return 1
+            sudo apt-get update >> ${LogFile} 2>&1 || die "could not update packages" || return 1
 
             echo "[+] installing git, python, mc, tmux, curl"
             Z_apt_install mc wget python3 git unzip rsync tmux curl || return 1
@@ -329,12 +329,12 @@ ZInstall_host_base(){
         echo "no need to install pip, should be installed already"
     else
         curl -sk https://bootstrap.pypa.io/get-pip.py > /tmp/get-pip.py || die "could not download pip" || return 1
-        python3 /tmp/get-pip.py  >> ${ZLogFile} 2>&1 || die "pip install" || return 1
+        python3 /tmp/get-pip.py  >> ${LogFile} 2>&1 || die "pip install" || return 1
         rm -f /tmp/get-pip.py
     fi
 
     echo "[+] upgrade pip"
-    pip3 install --upgrade pip >> ${ZLogFile} 2>&1 || die "pip upgrade" || return 1
+    pip3 install --upgrade pip >> ${LogFile} 2>&1 || die "pip upgrade" || return 1
 
     # ZDoneSet "ZInstall_host_base"
 }
@@ -346,32 +346,17 @@ ZInstall_host_base(){
 #########################################################
 #########################################################
 
-#remove old stuff
-rm -rf /usr/local/bin/js9_*
-rm -f ~/jsenv.sh
-rm -f ~/jsinit.sh
-sed -i.bak '/jsenv.sh/d' $HOMEDIR/.profile
-sed -i.bak '/export SSHKEYNAME/d' $HOMEDIR/.bashrc
-sed -i.bak '/jsenv.sh/d' $HOMEDIR/.bashrc
-sed -i.bak '/jsenv.sh/d' $HOMEDIR/.bash_profile
-sed -i.bak '/.*zlibs.sh/d' $HOMEDIR/.bashrc
-sed -i.bak '/.*zlibs.sh/d' $HOMEDIR/.bash_profile
-rm ~/js9host/cfg/me.toml > /dev/null 2>&1
-rm ~/js9host/cfg/jumpscale9.toml > /dev/null 2>&1
-sudo rm -rf $TMPDIR/zutils_done > /dev/null 2>&1
-sudo rm -rf /tmp/zutils_done > /dev/null 2>&1
-
 #check if branch given, if not set do development
-export JS9BRANCH=${JS9BRANCH:-development}
-# export JS9FULL=1 #if set will install in developer mode
+export JUMPSCALEBRANCH=${JUMPSCALEBRANCH:-development}
+# export JSFULL=1 #if set will install in developer mode
 
-export ZLogFile='/tmp/zutils.log'
-echo "init" > $ZLogFile
+export LogFile='/tmp/jumpscale_install.log'
+echo "init" > $LogFile
 
 if [ -e /opt/code ] && [ "$(uname)" != "Darwin" ] ; then
-    export ZCODEDIR=${ZCODEDIR:-/opt/code}
+    export CODEDIR=${CODEDIR:-/opt/code}
 else
-    export ZCODEDIR=${ZCODEDIR:-~/code}
+    export CODEDIR=${CODEDIR:-~/code}
 fi
 
 if [ -z "$HOMEDIR" ] ; then
@@ -388,11 +373,32 @@ if [ -z "$HOMEDIR" ] || [ ! -d "$HOMEDIR" ]; then
 fi
 
 cd /tmp
+#remove old stuff
+rm -rf /usr/local/bin/js9*
+rm -rf /usr/local/bin/js_*
+rm -f ~/jsenv.sh
+rm -f ~/jsinit.sh
+sed -i.bak '/jsenv.sh/d' $HOMEDIR/.profile
+sed -i.bak '/export SSHKEYNAME/d' $HOMEDIR/.bashrc
+sed -i.bak '/jsenv.sh/d' $HOMEDIR/.bashrc
+sed -i.bak '/jsenv.sh/d' $HOMEDIR/.bash_profile
+sed -i.bak '/.*zlibs.sh/d' $HOMEDIR/.bashrc
+sed -i.bak '/.*zlibs.sh/d' $HOMEDIR/.bash_profile
+rm ~/opt/jumpscale/cfg/me.toml > /dev/null 2>&1
+rm ~/opt/jumpscale/cfg/jumpscale.toml > /dev/null 2>&1
+rm -rf ~/JShost* > /dev/null 2>&1
+rm -rf ~/jumpscalehost* > /dev/null 2>&1
+rm -rf ~/jumpscale_host* > /dev/null 2>&1
+rm -rf ~/jumpscale* > /dev/null 2>&1
+sudo rm -rf $TMPDIR/zutils_done > /dev/null 2>&1
+sudo rm -rf /tmp/zutils_done > /dev/null 2>&1
 
-echo "INSTALL Jumpscale9 on branch $JS9BRANCH"
+
+
+echo "INSTALL Jumpscale on branch $JUMPSCALEBRANCH"
 
 ZInstall_host_base || die "Could not prepare the base system" || exit 1
-ZCodeGetJS || die "Could not download js9 code" || exit 1
-ZInstall_host_js9 || die "Could not install core of js9" || exit 1
+ZCodeGetJS || die "Could not download jumpscale code" || exit 1
+ZInstall_jumpscale || die "Could not install core of jumpscale" || exit 1
 
 

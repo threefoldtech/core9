@@ -1,7 +1,7 @@
-# Ways to Use JumpScale
+# Ways to Use Jumpscale
 
-- [JumpScale Interactive Shell](JShell.md)
-- [JumpScale at the Command Line](JSAtCommandLine.md)
+- [Jumpscale Interactive Shell](JShell.md)
+- [Jumpscale at the Command Line](JSAtCommandLine.md)
 
 ```
 !!!

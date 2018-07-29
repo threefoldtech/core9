@@ -6,13 +6,13 @@ it will mount the those dirs from host to docker
 |============================================================|
 |host                        |             docker            |
 |============================================================|
-|/root/js9host               |             /host             |
+|/root/jumpscale               |             /host             |
 |------------------------------------------------------------|
-|/root/js9host/cfg           |             /hostcfg          |
+|/root/jumpscale/cfg           |             /hostcfg          |
 |------------------------------------------------------------|
 |/opt/code                   |             /opt/code         |
 |------------------------------------------------------------|
-|/root/js9host/.cache/pip    |            /root/.cache/pip   |
+|/root/jumpscale/.cache/pip    |            /root/.cache/pip   |
 |============================================================|
 
 ```
@@ -21,7 +21,7 @@ it will mount the those dirs from host to docker
 ```python
 
 BASEDIR              : /opt
-BASEDIRJS            : /opt/jumpscale9
+BASEDIRJS            : /opt/jumpscale
 BINDIR               : /opt/bin
 BUILDDIR             : /host/var/build
 CFGDIR               : /hostcfg
@@ -30,7 +30,7 @@ DATADIR              : /host/var/data
 HOMEDIR              : /root
 HOSTCFGDIR           : /hostcfg
 HOSTDIR              : /host
-JSAPPSDIR            : /opt/jumpscale9/apps/
+JSAPPSDIR            : /opt/jumpscale/apps/
 LIBDIR               : /opt/lib/
 LOGDIR               : /host/var/log
 TEMPLATEDIR          : /host/var/templates/
@@ -42,16 +42,16 @@ VARDIR               : /host/var
 
 ```python
 BASEDIR              : /opt
-BASEDIRJS            : /opt/jumpscale9
+BASEDIRJS            : /opt/jumpscale
 BINDIR               : /opt/bin
 BUILDDIR             : /opt/var/build
 CFGDIR               : /opt/cfg
 CODEDIR              : /opt/code
 DATADIR              : /opt/var/data
 HOMEDIR              : /root
-HOSTCFGDIR           : /root/js9host/cfg/
-HOSTDIR              : /root/js9host/
-JSAPPSDIR            : /opt/jumpscale9/apps/
+HOSTCFGDIR           : /root/jumpscale/cfg/
+HOSTDIR              : /root/jumpscale/
+JSAPPSDIR            : /opt/jumpscale/apps/
 LIBDIR               : /opt/lib/
 LOGDIR               : /opt/var/log
 TEMPLATEDIR          : /opt/var/templates/

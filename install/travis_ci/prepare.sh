@@ -6,8 +6,8 @@ export SSHKEYNAME=id_rsa
 
 export ZUTILSBRANCH=${ZUTILSBRANCH:-development}
 
-curl https://raw.githubusercontent.com/threefoldtech/jumpscale_core9/bash/$ZUTILSBRANCH/install.sh?$RANDOM > /tmp/install.sh;sudo -E bash /tmp/install.sh
+curl https://raw.githubusercontent.com/threefoldtech/jumpscale_core/bash/$ZUTILSBRANCH/install.sh?$RANDOM > /tmp/install.sh;sudo -E bash /tmp/install.sh
 
 sudo -HE bash -c "source /opt/code/github/threefoldtech/jumpscale_bash/zlibs.sh; ZKeysLoad; ZCodeGetJS"
 sudo -HE bash -c "source /opt/code/github/threefoldtech/jumpscale_bash/zlibs.sh; ZKeysLoad; ZDockerInstallLocal"
-sudo -HE bash -c "source /opt/code/github/threefoldtech/jumpscale_bash/zlibs.sh; ZKeysLoad; ZInstall_js9_full"
+sudo -HE bash -c "source /opt/code/github/threefoldtech/jumpscale_bash/zlibs.sh; ZKeysLoad; ZInstall_js_full"

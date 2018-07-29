@@ -1,4 +1,4 @@
-# Installation of JumpScale
+# Installation of Jumpscale
 
 - [Installation for Development Purposes](JSDevelopment.md)
 - [Use Of Atom](UseAtom.md)

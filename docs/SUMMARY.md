@@ -1,20 +1,20 @@
 # Summary
 
 * [Introduction](README.md)
-  - [Why Using JumpScale](Introduction/WhyJumpScale.md)
-  - [Solutions Built with JumpScale](Introduction/JumpScaleSolutions.md)
+  - [Why Using Jumpscale](Introduction/WhyJumpscale.md)
+  - [Solutions Built with Jumpscale](Introduction/JumpscaleSolutions.md)
 
 * [Installation](Installation/Installation.md)
-  - [Installation of the JumpScale Sandbox](Installation/JS8.md)
+  - [Installation of the Jumpscale Sandbox](Installation/JS8.md)
   - [Installation for Development Purposes](Installation/JSDevelopment.md)
   - [More Details about the Installation Process](Installation/JSInstaller.md)
-  - [Installing the JumpScale Docker Container](Installation/JSDocker.md)
+  - [Installing the Jumpscale Docker Container](Installation/JSDocker.md)
 
 * [Getting Your Feet Wet](GettingYourFeetWet/GettingYourFeetWet.md)
-  - [Ways to Use JumpScale](GettingYourFeetWet/WaysToUseJS.md)
-    - [JumpScale Interactive Shell](GettingYourFeetWet/JShell.md)
-    - [JumpScale at the Command Line](GettingYourFeetWet/JSAtCommandLine.md)
-  - [JumpScale Core Components](GettingYourFeetWet/Components.md)
+  - [Ways to Use Jumpscale](GettingYourFeetWet/WaysToUseJS.md)
+    - [Jumpscale Interactive Shell](GettingYourFeetWet/JShell.md)
+    - [Jumpscale at the Command Line](GettingYourFeetWet/JSAtCommandLine.md)
+  - [Jumpscale Core Components](GettingYourFeetWet/Components.md)
     - [Various Tools](GettingYourFeetWet/Tools.md)
     - [System Abstraction Layers](GettingYourFeetWet/SALs.md)
     - [Prefab](GettingYourFeetWet/Prefab.md)
@@ -35,7 +35,7 @@
 * [Internals](Internals/Internals.md)
   - [Redis](Internals/Redis.md)
   - [Logging](Internals/Logging.md)
-  - [JumpScale Config Files](Internals/jumpscaleconfigfiles.md)
+  - [Jumpscale Config Files](Internals/jumpscaleconfigfiles.md)
 
 * [SALs](SAL/SAL.md)
   - [DiskLayout](SAL/Disklayout.md)
@@ -134,4 +134,4 @@
   - [Migrating Data Models](Walkthrough/Models/Migrating_data_from_gogs.md)
   - [displaying kanban in portal](Walkthrough/Kanban/Displaying_kanban_in_portal.md)
 
-* [JumpScale API](JumpscaleAPI/SUMMARY.md)
+* [Jumpscale API](JumpscaleAPI/SUMMARY.md)

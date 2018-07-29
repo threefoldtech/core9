@@ -1,4 +1,4 @@
-# Why Using JumpScale
+# Why Using Jumpscale
 
 ## Main features
 
@@ -11,7 +11,7 @@
 
 ```
 !!!
-title = "WhyJumpScale"
+title = "WhyJumpscale"
 date = "2017-04-08"
 tags = []
 ```

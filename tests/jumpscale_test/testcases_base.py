@@ -27,7 +27,7 @@ class TestcasesBase(TestCase):
         self.lg.info('Testcase [{}] is ended, Duration: {} seconds'.format(self._testID, self._duration))
 
     def logger(self):
-        logger = logging.getLogger('JumpScale')
+        logger = logging.getLogger('Jumpscale')
         if not logger.handlers:
             fileHandler = logging.FileHandler('testsuite.log', mode='w')
             formatter = logging.Formatter(' %(asctime)s - %(name)s - [%(levelname)s] - %(message)s')

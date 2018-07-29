@@ -29,12 +29,12 @@ node = j.clients.zero_os.sal.get_node(instance="node1")
 ```
 then create a container on that machine
 ```bash
-container = node.containers.create(name='js9_sandbox',
+container = node.containers.create(name='js_sandbox',
                     flist="<flist-url>",
                     hostname='js', nics=[{"type": "default"}], ports={2200: 22})
 ```
 you can now use jumpscale functionality
 ```bash
-container.client.bash('. /env.sh; js9 "print(\'works\')"').get()
+container.client.bash('. /env.sh; js_shell "print(\'works\')"').get()
 ```
 

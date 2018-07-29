@@ -5,8 +5,8 @@ import time
 import argparse
 
 
-if "JSBRANCH" in os.environ:
-    branch = os.environ["JSBRANCH"]
+if "JUMPSCALEBRANCH" in os.environ:
+    branch = os.environ["JUMPSCALEBRANCH"]
 else:
     branch = "master"
 
@@ -39,7 +39,7 @@ InstallTools = spec.loader.load_module()
 
 do = InstallTools.do
 
-# look at methods in https://github.com/threefoldtech/jumpscale_/jumpscale_core9/blob/master/install/InstallTools.py to see what can be used
+# look at methods in https://github.com/threefoldtech/jumpscale_/jumpscale_core/blob/master/install/InstallTools.py to see what can be used
 # there are some easy methods to allow git manipulation, copy of files, execution of items
 
 # there are many more functions available in jumpscale
@@ -47,8 +47,8 @@ do = InstallTools.do
 # FROM now on there is a do. variable which has many features, please investigate
 
 
-print("install jumpscale9")
+print("install jumpscale")
 do.installer.prepare()
 do.installer.installJS()
 
-from JumpScale9 import j
+from Jumpscale import j

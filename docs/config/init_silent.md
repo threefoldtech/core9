@@ -7,10 +7,10 @@ the silent configuration will
 
 - check that ssh-agent has 1 key loaded & if so use that one
 - will try to find config git directory, if 1 found will use that one
-- if no git config dir found will put in '~/js9host/cfg/myconfig/'
+- if no git config dir found will put in '~/jumpscale/cfg/myconfig/'
 
 
 ```bash
-js9_config init -s
+js_config init -s
 ```
 
