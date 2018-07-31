@@ -232,7 +232,7 @@ ZInstall_jumpscale() {
     echo "[+] installing jumpscale lib"
     pushd $CODEDIR/github/threefoldtech/jumpscale_lib
     # pip3 install docker
-    pip3 install --no-deps -e .  > ${LogFile} 2>&1 || die "Coud not install lib of JS" || return 1
+    pip3 install -e .  > ${LogFile} 2>&1 || die "Coud not install lib of JS" || return 1
     popd
 
 
@@ -400,5 +400,3 @@ echo "INSTALL Jumpscale on branch $JUMPSCALEBRANCH"
 ZInstall_host_base || die "Could not prepare the base system" || exit 1
 ZCodeGetJS || die "Could not download jumpscale code" || exit 1
 ZInstall_jumpscale || die "Could not install core of jumpscale" || exit 1
-
-
