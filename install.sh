@@ -300,10 +300,10 @@ ZInstall_host_base(){
         sudo sysctl -w kern.maxfilesperproc=65536 >> ${LogFile} 2>&1 || die || return 1
         ulimit -n 65536 >> ${LogFile} 2>&1 || die || return 1
 
-        if [ -n "$JSFULL" ] ; then
-            echo "[+] installing development tools: build essential & pythondev"
-            Z_apt_install  build-essential python3-dev
-        fi
+#        if [ -n "$JSFULL" ] ; then
+        echo "[+] installing development tools: build essential & pythondev"
+        Z_apt_install  build-essential python3-dev
+#        fi
 
     elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         dist=''
@@ -315,10 +315,10 @@ ZInstall_host_base(){
             echo "[+] installing git, python, mc, tmux, curl"
             Z_apt_install mc wget python3 git unzip rsync tmux curl || return 1
 
-            if [ -n "$JSFULL" ] ; then
-                echo "[+] installing development tools: build essential & pythondev"
-                Z_apt_install  build-essential python3-dev
-            fi
+#            if [ -n "$JSFULL" ] ; then
+            echo "[+] installing development tools: build essential & pythondev"
+            Z_apt_install  build-essential python3-dev
+#            fi
 
         fi
     else
