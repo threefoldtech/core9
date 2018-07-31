@@ -46,7 +46,7 @@ curl https://raw.githubusercontent.com/threefoldtech/jumpscale_core/development/
 
 ```bash
 #to define branch:
-export JumpscaleBRANCH="development"
+export JUMPSCALEBRANCH="development"
 curl https://raw.githubusercontent.com/threefoldtech/jumpscale_core/$JUMPSCALEBRANCH/install.sh?$RANDOM > /tmp/install_jumpscale.sh;bash /tmp/install_jumpscale.sh
 ```
 
