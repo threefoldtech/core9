@@ -28,6 +28,10 @@ else:
         def __init__(self):
             pass
 
+    class SALZos():
+        def __init__(self):
+            pass
+
     class Tools():
         def __init__(self):
             pass
@@ -81,7 +85,7 @@ else:
         def __init__(self):
             self.tools = Tools()
             self.sal = Sal()
-            self.sal_zos = Sal()
+            self.sal_zos = SALZos()
             self.data = Data()
             self.clients = Clients()
             self.core = Core()
