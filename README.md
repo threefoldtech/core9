@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/threefoldtech/jumpscale_core.svg?branch=development)](https://travis-ci.org/threefoldtech/jumpscale_core)
+
 # Jumpscale
 
 Jumpscale is a cloud automation product and a branch from what used to be Pylabs. About 9 years ago Pylabs was the basis of a cloud automation product which was acquired by SUN Microsystems from Q-Layer. In the mean time we are 4 versions further and we have rebranded it to Jumpscale.
@@ -38,7 +40,7 @@ Of these provided tools are, most notably:
 _tested on osx, ubuntu 16.04, ubuntu 17.04
 (will upgrade brew as part of the process on OSX)_
 
-### install 
+### install
 
 ```bash
 curl https://raw.githubusercontent.com/threefoldtech/jumpscale_core/development/install.sh?$RANDOM > /tmp/install_jumpscale.sh;bash /tmp/install_jumpscale.sh
