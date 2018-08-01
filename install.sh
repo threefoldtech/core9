@@ -357,7 +357,7 @@ export JUMPSCALEBRANCH=${JUMPSCALEBRANCH:-development}
 export LogFile='/tmp/jumpscale_install.log'
 echo "init" > $LogFile
 
-if [ -e /opt/code ] && [ "$(uname)" != "Darwin" ] ; then
+if [ "$(uname)" != "Darwin" ] ; then
     export CODEDIR=${CODEDIR:-/opt/code}
 else
     export CODEDIR=${CODEDIR:-~/code}
