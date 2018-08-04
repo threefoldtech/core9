@@ -48,8 +48,8 @@ setup(
     description='Automation framework for cloud workloads',
     long_description=long_description,
     url='https://github.com/threefoldtech/jumpscale_core',
-    author='GreenItGlobe',
-    author_email='info@gig.tech',
+    author='ThreeFoldTech',
+    author_email='info@threefold.tech',
     license='Apache',
     packages=find_packages(),
 

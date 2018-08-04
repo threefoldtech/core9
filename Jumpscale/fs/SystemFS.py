@@ -372,10 +372,14 @@ class SystemFS(JSBASE):
         return dname + os.sep if dname else dname
 
     @path_check(path={"required", })
-    def getBaseName(self, path):
+    def getBaseName(self, path, removeExtension = False):
         """Return the base name of pathname path."""
         self.logger.debug('Get basename for path: %s' % path)
-        return os.path.basename(path.rstrip(os.path.sep))
+        name =  os.path.basename(path.rstrip(os.path.sep))
+        if removeExtension:
+            if "." in name:
+                name = ".".join(name.split(".")[:-1])
+        return name
 
     # NO DECORATORS HERE
     def pathShorten(self, path):

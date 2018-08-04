@@ -131,7 +131,7 @@ def jscode(action, name, url, message, branch, accounts, update, force=False, de
 
         if not client.remoteUrl.startswith("git"):
             newUrl = j.clients.git.rewriteGitRepoUrl(client.remoteUrl)[-2]
-            if "jumpscale" in newUrl.lower() or "itsyouonline" in newUrl or "greenitglobe" in newUrl or "g8os" in newUrl or "greenitglobe" in newUrl:
+            if "jumpscale" in newUrl.lower() or "itsyouonline" in newUrl or "g8os" in newUrl:
                 client.setRemoteURL(newUrl)
 
         if action == "update" and deletechanges:

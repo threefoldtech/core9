@@ -166,9 +166,9 @@ ZCodeGet() {
 
     Z_mkdir_pushd $CODEDIR/$type/$account || return 1
 
-    # check if docs.greenitglobe.com (gogs) in the url
-    if grep -q docs.greenitglobe.com <<< $giturl; then
-        ssh-keyscan -t rsa docs.greenitglobe.com >> ~/.ssh/known_hosts 2>&1 >> $LogFile || die "ssh keyscan" || return 1
+    # check if docs.grid.tf (gogs) in the url
+    if grep -q docs.grid.tf <<< $giturl; then
+        ssh-keyscan -t rsa docs.grid.tf >> ~/.ssh/known_hosts 2>&1 >> $LogFile || die "ssh keyscan" || return 1
     fi
 
     if ! grep -q ^github.com ~/.ssh/known_hosts 2> /dev/null; then

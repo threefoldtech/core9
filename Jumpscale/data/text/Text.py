@@ -38,29 +38,36 @@ class Text(JSBASE):
         return "".join([char for char in str(text) if ((ord(char) > 31 and ord(char) < 127) or ord(char) == 10)])
 
     def strip_to_ascii_dense(self, text):
-        text=unidecode(text)
-        text=self.strip_to_ascii(text)
-        text=text.replace("_","-")
-        text=text.replace(" ","-")
-        text=text.replace(".","-")
-        text=text.replace(":","-")
-        text=text.replace(";","-")
+        """
+        convert to ascii converting as much as possibe to ascii
+        replace -,:... to _
+        lower the text
+        remove all the other parts
+        
+        """
+        text=unidecode(text) #convert to ascii letters
+        # text=self.strip_to_ascii(text) #happens later already
         text=text.lower()
-        def check(char):
+        def replace(char):
+            if char in "-/\\= ;!+()":
+                return "_"
+            return char
+        def check(char):                
             charnr = ord(char)
-            if charnr==45:
+            if char in "._":
                 return True
             if charnr>47 and charnr<58:
                 return True
             if charnr>96 and charnr<123:
                 return True
             return False
-
-        text =  "".join([char for char in str(text) if check(char)])
-        while "--" in text:
-            text = text.replace("--","-")
+        res = [replace(char) for char in str(text)]
+        res = [char for char in res if check(char)]        
+        text =  "".join(res)
+        while "__" in text:
+            text = text.replace("__","_")
+        text = text.strip("_")
         return text
-
 
     def pad(self, text, length):
         while len(text) < length:
@@ -1049,52 +1056,52 @@ class Text(JSBASE):
                 res2[key] = val
         return res2
 
-    def getTemplateVars(self, text):
-        """
-        template vars are in form of $(something)
-        @return [("something1","$(Something)"),...
-        """
-        import re
-        p = re.compile(r'\$\(([\w\.\-\_]+)\)')
-        result = set()
-        for m in re.finditer(p, text):
-            result.add((m.group(1).lower(), m.group(0)))
-        return list(result)
+    # def getTemplateVars(self, text):
+    #     """
+    #     template vars are in form of $(something)
+    #     @return [("something1","$(Something)"),...
+    #     """
+    #     import re
+    #     p = re.compile(r'\$\(([\w\.\-\_]+)\)')
+    #     result = set()
+    #     for m in re.finditer(p, text):
+    #         result.add((m.group(1).lower(), m.group(0)))
+    #     return list(result)
 
-    def existsTemplateVars(self, text):
-        """
-        return True if they exist
-        """
-        import re
-        p = re.compile(r'\$\([\w\.\-\_]*\)')
-        res = re.findall(p, text)
-        return len(res) > 0
+    # def existsTemplateVars(self, text):
+    #     """
+    #     return True if they exist
+    #     """
+    #     import re
+    #     p = re.compile(r'\$\([\w\.\-\_]*\)')
+    #     res = re.findall(p, text)
+    #     return len(res) > 0
 
-    def replaceTemplateVars(self, text, args={}):
-        """
-        @return changes,text
-        changes = {key:newval, ...}
-        """
-        changes = {}
-        for key, match in self.getTemplateVars(text):
-            if key in args:
-                text = text.replace(match, args[key])
-                changes[key] = args[key]
-        return changes, text
+    # def replaceTemplateVars(self, text, args={}):
+    #     """
+    #     @return changes,text
+    #     changes = {key:newval, ...}
+    #     """
+    #     changes = {}
+    #     for key, match in self.getTemplateVars(text):
+    #         if key in args:
+    #             text = text.replace(match, args[key])
+    #             changes[key] = args[key]
+    #     return changes, text
 
-    def sanitize_key(self, key):
-        """
-        make sure the key of an HRD schema has a valid format for Capnp Schema
-        e.g.:
-            ssh.port becomes sshPort
-        """
-        separator = ['_', '.']
-        for sep in separator:
-            if key.find(sep) != -1:
-                ss = key.split(sep)
-                key = ss[0]
-                for s in ss[1:]:
-                    key += s[0].upper()
-                    if len(s) > 1:
-                        key += s[1:]
-        return key
+    # def sanitize_key(self, key):
+    #     """
+    #     make sure the key of an HRD schema has a valid format for Capnp Schema
+    #     e.g.:
+    #         ssh.port becomes sshPort
+    #     """
+    #     separator = ['_', '.']
+    #     for sep in separator:
+    #         if key.find(sep) != -1:
+    #             ss = key.split(sep)
+    #             key = ss[0]
+    #             for s in ss[1:]:
+    #                 key += s[0].upper()
+    #                 if len(s) > 1:
+    #                     key += s[1:]
+    #     return key
