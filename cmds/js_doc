@@ -8,6 +8,16 @@ import sys
 
 logger = j.logger.get("js_doc", force=True)
 
+def path_name_get():
+    path=j.sal.fs.getcwd()
+    name = j.sal.fs.getBaseName(path)
+    if name in ["docs","doc"]:
+        path2=j.sal.fs.getParent(path)
+        name = j.sal.fs.getBaseName(path)
+        
+    return path,name
+    
+
 
 @click.group()
 def cli():
@@ -15,13 +25,18 @@ def cli():
 
 
 @click.command()
-def generate():
+def verify():
     """
-    will generate from existing dir
+    verify current directory, will create errors.md
     """
-    j.tools.markdowndocs.generate()
+    # j.data.cache.resetAll()
+    path,name=path_name_get()
+    j.tools.markdowndocs.load(path=path,name=name)
+    for key,ds in j.tools.markdowndocs.docsites.items():
+        ds.verify()
+        
 
-cli.add_command(generate)
+cli.add_command(verify)
 
 if __name__ == '__main__':
     cli()

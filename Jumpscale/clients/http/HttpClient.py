@@ -78,6 +78,28 @@ class Connection(JSBASE):
             url, headers=headers, method='GET', **params)  # TODO: P1 fix & check
         return response
 
+    def get_head(self,url):
+        """
+        get head only, this to make sure you don't have to download everything
+        """
+        response = self._http_request(url, method='HEAD')  
+        return response        
+
+    def ping(self,url):
+        """
+        """
+        try:
+            r=self.get_head(url)
+        except Exception as e:
+            # check=[401,402,403,404,405]
+            # for tocheck in check:
+            #     str_e=str(e)                
+            #     if str(tocheck) in str(e):
+            #         return False
+            return False
+        return r.status == 200
+        
+
     def post(self, url, data=None, headers=None, **params):
         """
         @data is the raw aata which will be posted, if not params will be converted to json
@@ -226,3 +248,24 @@ class HttpClient(JSBASE):
         """
         connection = Connection()
         return connection
+
+    def ping(self,url):
+        c=self.getConnection()
+        return c.ping(url)
+
+    def download(self,url,dest):
+        c=self.getConnection()
+        return c.download(url,dest)
+
+    def get(self,url,dest):
+        c=self.getConnection()
+        return c.get(url)
+
+    def test(self):
+        """
+        js_shell 'j.clients.http.test()'
+        """
+        c=self.getConnection()
+        assert c.ping("https://github.com/Jumpscale")==True
+
+        assert c.ping("https://docs.grid.tf/threefold/data_team/src/branch/master/team/varia/xxxx")==False
