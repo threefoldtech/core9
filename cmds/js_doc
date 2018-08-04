@@ -11,9 +11,10 @@ logger = j.logger.get("js_doc", force=True)
 def path_name_get():
     path=j.sal.fs.getcwd()
     name = j.sal.fs.getBaseName(path)
+    
     if name in ["docs","doc"]:
         path2=j.sal.fs.getParent(path)
-        name = j.sal.fs.getBaseName(path)
+        name = j.sal.fs.getBaseName(path2)
         
     return path,name
     
@@ -32,6 +33,8 @@ def verify():
     # j.data.cache.resetAll()
     path,name=path_name_get()
     j.tools.markdowndocs.load(path=path,name=name)
+    # ds = j.tools.markdowndocs.docsite_get("info_foundation")
+    # ds.doc_get("wallet.md")
     for key,ds in j.tools.markdowndocs.docsites.items():
         ds.verify()
         

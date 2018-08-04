@@ -96,6 +96,8 @@ class Connection(JSBASE):
             #     str_e=str(e)                
             #     if str(tocheck) in str(e):
             #         return False
+            if "401" in str(e): #means unauthorized so could be there, cannot check
+                return True
             return False
         return r.status == 200
         
@@ -268,4 +270,9 @@ class HttpClient(JSBASE):
         c=self.getConnection()
         assert c.ping("https://github.com/Jumpscale")==True
 
-        assert c.ping("https://docs.grid.tf/threefold/data_team/src/branch/master/team/varia/xxxx")==False
+        assert c.ping("https://something/j")==False
+
+        assert c.ping("https://docs.grid.tf/dividi/values/src/branch/master/veda_values.md") == True #authentication error
+
+        # assert c.ping("https://www.linkedin.com/in/babenkonickolay/") == False
+        
