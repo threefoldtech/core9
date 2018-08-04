@@ -166,6 +166,7 @@ ZCodeGet() {
 
     Z_mkdir_pushd $CODEDIR/$type/$account || return 1
 
+    touch ~/.ssh/known_hosts
     # check if docs.grid.tf (gogs) in the url
     if grep -q docs.grid.tf <<< $giturl; then
         ssh-keyscan -t rsa docs.grid.tf >> ~/.ssh/known_hosts 2>&1 >> $LogFile || die "ssh keyscan" || return 1
