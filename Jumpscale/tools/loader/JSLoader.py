@@ -149,17 +149,19 @@ class JSLoader():
         # import a specific location sub (e.g. j.clients.git)
 
         def removeDirPart(path):
-            "only keep part after jumpscale"
+            "only keep part after jumpscale or digitalme"
             state = 0
             res = []
             for item in path.split("/"):
-                if state == 0 and item.find("Jumpscale") != -1:
-                    state = 1
+                if state == 0:
+                    if item.find("Jumpscale") != -1 or item.find("DigitalMe") != -1 :
+                        state = 1
                 if state == 1:
                     res.append(item)
 
-            if res[0] == res[1] and res[0].casefold().find("jumpscale") != -1:
-                res.pop(0)
+            if res[0] == res[1]:
+                if res[0].casefold().find("jumpscale") != -1 or res[0].casefold().find("digitalme") != -1:
+                    res.pop(0)
             return "/".join(res)
 
         classfile, classname, importItems = jlocationSubList
@@ -171,35 +173,6 @@ class JSLoader():
         generationParamsSub["importlocation"] = importlocation
 
         rc = 0
-
-        # TO BE FIXED TO DO THE IMPORT PROPERLY AND PASS RIGHT DETAILS
-        # try:
-        #     if self.try_import:
-        #         exec("from %s import %s" % (importlocation, classname))
-        # except ImportError as e:
-        #     print("\n\nCOULD NOT IMPORT:%s (%s)\n" % (importlocation, classname))
-        #     print("import error:\n%s\n" % e)
-        #     if importItems == []:
-        #         exec("from %s import %s" % (importlocation, classname))
-        #     else:
-        #         if not self.autopip:
-        #             return
-
-        #         if j.application.config['system']['debug']:
-        #             pip_installed = self._pip_installed()
-        #             for item in importItems:
-        #                 if item not in pip_installed:
-        #                     rc = self._pip(item)
-        #                     if rc > 0:
-        #                         if res3 not in generationParams["locationerr"]:
-        #                             generationParams["locationerr"].append(res3)
-        #                     else:
-        #                         print("pip install ok")
-        #                         if res3 not in generationParams["location"]:
-        #                             generationParams["location"].append(res3)
-        #             else:
-        #                 if res3 not in generationParams["locationerr"]:
-        #                     generationParams["locationerr"].append(res3)
 
         return rc, generationParamsSub
 
