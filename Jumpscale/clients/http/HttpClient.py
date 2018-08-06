@@ -252,8 +252,13 @@ class HttpClient(JSBASE):
         return connection
 
     def ping(self,url):
-        c=self.getConnection()
-        return c.ping(url)
+        # Use unverified ssl context for pinging websites
+        import ssl
+        ssl._create_default_https_context = ssl._create_unverified_context
+        c = self.getConnection()
+        res = c.ping(url)
+        ssl._create_default_https_context = ssl.create_default_context
+        return res
 
     def download(self,url,dest):
         c=self.getConnection()
