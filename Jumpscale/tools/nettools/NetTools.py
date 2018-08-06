@@ -7,30 +7,7 @@ import re
 
 from jumpscale import j
 
-IPBLOCKS = re.compile("(^|\n)(?P<block>\d+:.*?)(?=(\n\d+)|$)", re.S)
-IPMAC = re.compile("^\s+link/\w+\s+(?P<mac>(\w+:){5}\w{2})", re.M)
-IPIP = re.compile("^\s+inet\s(?P<ip>(\d+\.){3}\d+)/(?P<cidr>\d+)", re.M)
-IPNAME = re.compile("^\d+: (?P<name>.*?)(?=:)", re.M)
 
-
-def parseBlock(block):
-    result = {'ip': [], 'cidr': [], 'mac': '', 'name': ''}
-    for rec in (IPMAC, IPNAME):
-        match = rec.search(block)
-        if match:
-            result.update(match.groupdict())
-    for mrec in (IPIP, ):
-        for m in mrec.finditer(block):
-            for key, value in list(m.groupdict().items()):
-                result[key].append(value)
-    return result
-
-
-def getNetworkInfo():
-    exitcode, output, err = j.sal.process.execute("ip a", showout=False)
-    for m in IPBLOCKS.finditer(output):
-        block = m.group('block')
-        yield parseBlock(block)
 
 JSBASE = j.application.jsbase_get_class()
 class NetTools(JSBASE):
@@ -278,7 +255,7 @@ class NetTools(JSBASE):
         """
         regex = ''
         output = ''
-        if j.core.platformtype.myplatform.isLinux:
+        if j.core.platformtype.myplatform.isLinux or j.core.platformtype.myplatform.isMac:
             return [nic['name'] for nic in getNetworkInfo()]
         # elif j.core.platformtype.myplatform.isSolaris():
         #     exitcode, output, err = j.sal.process.execute(
@@ -500,35 +477,39 @@ class NetTools(JSBASE):
         cmd = 'route add default gw %s' % gw
         j.sal.process.execute(cmd)
 
-    def getNetworkInfo(self):
-        """
-        returns {macaddr_name:[ipaddr,ipaddr],...}
 
-        REMARK: format changed because there was bug which could not work with bridges
+
+
+    def getNetworkInfo(self,device=None,usecache=True):
+        """
+        returns network info like
+
+        [{'cidr': 8, 'ip': ['127.0.0.1'], 'mac': '00:00:00:00:00:00', 'name': 'lo'},
+         {'cidr': 24,
+          'ip': ['192.168.0.105'],
+          'ip6': ['...','...],
+          'mac': '80:ee:73:a9:19:05',
+          'name': 'enp2s0'},
+         {'cidr': 0, 'ip': [], 'mac': '80:ee:73:a9:19:06', 'name': 'enp3s0'},
+         {'cidr': 16,
+          'ip': ['172.17.0.1'],
+          'mac': '02:42:97:63:e6:ba',
+          'name': 'docker0'}]        
 
         TODO: change for windows
+        TODO: test for osx
 
         """
-        netaddr = {}
-        if j.core.platformtype.myplatform.isLinux:
-            return [item for item in getNetworkInfo()]
-            # ERROR: THIS DOES NOT WORK FOR BRIDGED INTERFACES !!! because macaddr is same as host interface
-            # for ipinfo in getNetworkInfo():
-            #     print ipinfo
-            #     ip = ','.join(ipinfo['ip'])
-            #     netaddr[ipinfo['mac']] = [ ipinfo['name'], ip ]
-        else:
-            nics = self.getNics()
-            for nic in nics:
-                mac = self.getMacAddress(nic)
-                ips = [item[0] for item in self.getIpAddress(nic)]
-                if nic.lower() != "lo":
-                    netaddr[mac] = [nic.lower(), ",".join(ips)]
-        return netaddr
+        #TODO: use caching feature from jumpscale to keep for e.g. 1 min, if not usecache needs to reset cache to make sure we load again
+        return j.tools.prefab.local.system.net.getInfo(device=device)
+        
 
     def getIpAddress(self, interface):
         """Return a list of ip addresses and netmasks assigned to this interface"""
-        if j.core.platformtype.myplatform.isLinux or j.core.platformtype.myplatform.isESX():
+
+        #TODO: use getNetworkInfo to return info
+
+        if j.core.platformtype.myplatform.isLinux:
             command = "ip a s %s" % interface
             exitcode, output, err = j.sal.process.execute(
                 command, showout=False, die=False)
