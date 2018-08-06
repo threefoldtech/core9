@@ -44,11 +44,12 @@ class SSHKeys(JSConfigBase):
             self.key_load(path, passphrase=passphrase, returnObj=False, duration=3600)
 
         if returnObj:
-
+            
             data = {}
             data["path"] = path
             data["passphrase_"] = passphrase
-
+            data["pubkey"] = j.sal.fs.fileGetContents(path+".pub")
+            data["privkey_"] = j.sal.fs.fileGetContents(path)
             instance = j.sal.fs.getBaseName(path)
 
             sshkeyobj = self.get(instance=instance, data=data, interactive=False)
