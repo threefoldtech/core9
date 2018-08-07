@@ -66,7 +66,7 @@ class Text(JSBASE):
         text =  "".join(res)
         while "__" in text:
             text = text.replace("__","_")
-        text = text.strip("_")
+        text = text.rstrip("_")
         return text
 
     def pad(self, text, length):
