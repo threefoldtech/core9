@@ -74,7 +74,16 @@ def container():
     sshclient = j.clients.ssh.new(addr=node.addr, port=2222, instance="builder", die=True, login="root", passwd="rooter",
                                   stdout=True, allow_agent=False, addr_priv="", port_priv=22, use_paramiko=True)
 
-    sshclient.ssh_authorize(user="root", key=j.clients.sshkey.list()[0])
+    # wait for ssh server to be running
+    for i in range(3):
+        try:
+            sshclient.ssh_authorize(user="root", key=j.clients.sshkey.list()[0])
+            authorized = True
+            break
+        except j.exceptions.RuntimeError:
+            if i == 2:
+                raise
+            time.sleep(1)
 
     j.tools.nodemgr.set(cat="container", name="builder", sshclient="builder", selected=True)
 
