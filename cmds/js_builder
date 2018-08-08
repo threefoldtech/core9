@@ -7,6 +7,7 @@ This container is used to build flist, it contains already preinstalled tools li
 
 """
 
+import time
 
 import click
 from jumpscale import j
@@ -83,41 +84,47 @@ def container():
 
 
 @click.command()
-@click.option('--name', '-n', default='zdb_main', help='name of the zdb instance')
-@click.option('--port', '-p', default='3333', help='port which will be exposed for the zerodb container, there is no admin passwd!')
+@click.option('--name', '-n', default='main', help='name of the digitalme container')
+@click.option('--port', '-p', default=3333, help='port which will be exposed for ssh')
 def digitalme(name, port):
     """
     create a digital me container
-    connect to zerotier network 1d7193940435f485  TODO:*1, this is an ipv6 zerotier network which connects all digitalme's
+    connect to zerotier network 1d7193940435f485, this is an ipv6 zerotier network which connects all digitalme's
     """
 
     node = j.clients.zos.get('builder')
 
-    print('creating builder container...')
-    container = node.containers.create(name='builder',
+    print('creating digitalme container...')
+    name = "dm_"+name
+    container = node.containers.create(name=name,
                                        flist='https://hub.gig.tech/gig-official-apps/ubuntu-bionic-build.flist',
-                                       nics=[{'type': 'default'}],
+                                       nics=[{'type': 'default'}, {'type': 'zerotier', 'id': '1d7193940435f485'}],
                                        ports={port: 22})
 
-    # TODO: *1 we will need a new flist but just to show how to get the right container and get it in ipv6
-    # TODO: *1 this container should run on local ip with ssh forwarded and then on zerotier
-
-    name2 = "dm_"+name
-
-    sshclient = j.clients.ssh.new(addr=node.addr, port=2222, instance=name2, die=True, login="root", passwd="rooter",
+    sshclient = j.clients.ssh.new(addr=node.addr, port=port, instance=name, die=True, login="root", passwd="rooter",
                                   stdout=True, allow_agent=False, addr_priv="", port_priv=22, use_paramiko=True)
 
-    sshclient.ssh_authorize(user="root", key=j.clients.sshkey.list()[0])
+    # wait for ssh server to be running
+    for i in range(3):
+        try:
+            sshclient.ssh_authorize(user="root", key=j.clients.sshkey.list()[0])
+            authorized = True
+            break
+        except j.exceptions.RuntimeError:
+            if i == 2:
+                raise
+            time.sleep(1)
 
-    j.tools.nodemgr.set(cat="container", name=name2, sshclient=name2, selected=True)
+    j.tools.nodemgr.set(cat="container", name=name, sshclient=name, selected=True)
 
     print('digitalme container deployed (in debug mode)')
-    print("can also connect using js_node toolset, recommended: 'js_node ssh -i %s'" % name2)
+    print("can also connect using js_node toolset, recommended: 'js_node ssh -i %s'" % name)
 
 
 cli.add_command(configure)
 cli.add_command(zdb)
 cli.add_command(container)
+cli.add_command(digitalme)
 
 if __name__ == '__main__':
     cli()
