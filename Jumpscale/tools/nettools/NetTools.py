@@ -232,8 +232,8 @@ class NetTools(JSBASE):
             result = {'ip': [],'ip6': []}
             for ipinfo in self.getNetworkInfo():
                 if ipinfo!=[] : # if empty array skip
-                    result.extend(ipinfo['ip'])
-                    result.extend(ipinfo['ip6'])
+                    result['ip'].extend(ipinfo['ip'])
+                    result['ip6'].extend(ipinfo['ip6'])
             return result
         else:
             raise j.exceptions.RuntimeError("Not supported on this platform!")
