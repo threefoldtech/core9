@@ -1,0 +1,137 @@
+#! /usr/bin/env python3
+
+"""
+This script is used to quickly deploy a ubuntu container on a 0-OS node and allow you to ssh into it
+
+This container is used to build flist, it contains already preinstalled tools like git, mc, build-essential.
+
+"""
+
+import time
+
+import click
+from jumpscale import j
+
+
+@click.group()
+def cli():
+    pass
+
+
+@click.command()
+@click.argument('ip')
+def configure(ip):
+    """
+    configure the zero-os, also make sure partitions are done for zerodb, need ip addr
+    """
+    node = j.clients.zos.get('builder', data={'host': ip})
+    node.zerodbs.partition_and_mount_disks()
+
+
+@click.command()
+@click.option('--name', '-n', default='zdb_main', help='name of the zdb instance')
+@click.option('--mode', '-m', default='seq', help='seq or user mode')
+@click.option('--port', '-p', default=3333, help='port which will be exposed for the zerodb container, there is no admin passwd!')
+@click.option('--size', '-s', default=50, help='maximum amount of storage for the zerodb in GiB')
+def zdb(name, mode, port, size):
+    """
+    create a zdb container
+    """
+    node = j.clients.zos.get('builder')
+
+    print("finding best disk where to deploy zdb...")
+    # find best disk where to deploy zdb
+    storage_pools = node.storagepools.list()
+    storage_pools = sorted(storage_pools, key=lambda sp: sp.info['used'], reverse=True)
+    # used the disk with the more space available
+    mountpoint, _ = node.zerodbs.create_and_mount_subvolume(
+        storagepool=storage_pools[0],
+        name="builder_zdb%s " % j.data.idgenerator.generateXCharID(8),
+        size=size)
+
+    zdb = node.zerodbs.create(name=name, path=mountpoint, mode=mode, node_port=port)
+    zdb.flist = "https://hub.gig.tech/gig-autobuilder/threefoldtech-0-db-development.flist"
+    print('deploying zdb on %s' % mountpoint)
+    zdb.deploy()
+
+    print('zdb deployed')
+    print('reach it at %s:%s' % (node.addr, zdb.node_port))
+
+
+@click.command()
+def container():
+    """
+    create a build container in zero-os and launch ubuntu with lots of tools pre-installed to make building easy
+    """
+    node = j.clients.zos.get('builder')
+
+    print('creating builder container...')
+    container = node.containers.create(name='builder',
+                                       flist='https://hub.gig.tech/gig-official-apps/ubuntu-bionic-build.flist',
+                                       nics=[{'type': 'default'}],
+                                       ports={2222: 22})
+
+    sshclient = j.clients.ssh.new(addr=node.addr, port=2222, instance="builder", die=True, login="root", passwd="rooter",
+                                  stdout=True, allow_agent=False, addr_priv="", port_priv=22, use_paramiko=True)
+
+    # wait for ssh server to be running
+    for i in range(3):
+        try:
+            sshclient.ssh_authorize(user="root", key=j.clients.sshkey.list()[0])
+            break
+        except j.exceptions.RuntimeError:
+            if i == 2:
+                raise
+            time.sleep(1)
+
+    j.tools.nodemgr.set(cat="container", name="builder", sshclient="builder", selected=True)
+
+    print('builder container deployed')
+    print("to connect to it do: 'ssh root@%s -p 2222' (password: rooter)" % node.addr)
+    print("can also connect using js_node toolset, recommended: 'js_node ssh -i builder'")
+
+
+@click.command()
+@click.option('--name', '-n', default='main', help='name of the digitalme container')
+@click.option('--port', '-p', default=3333, help='port which will be exposed for ssh')
+def digitalme(name, port):
+    """
+    create a digital me container
+    connect to zerotier network 1d7193940435f485, this is an ipv6 zerotier network which connects all digitalme's
+    """
+
+    node = j.clients.zos.get('builder')
+
+    print('creating digitalme container...')
+    name = "dm_"+name
+    container = node.containers.create(name=name,
+                                       flist='https://hub.gig.tech/gig-official-apps/ubuntu-bionic-build.flist',
+                                       nics=[{'type': 'default'}, {'type': 'zerotier', 'id': '1d7193940435f485'}],
+                                       ports={port: 22})
+
+    sshclient = j.clients.ssh.new(addr=node.addr, port=port, instance=name, die=True, login="root", passwd="rooter",
+                                  stdout=True, allow_agent=False, addr_priv="", port_priv=22, use_paramiko=True)
+
+    # wait for ssh server to be running
+    for i in range(3):
+        try:
+            sshclient.ssh_authorize(user="root", key=j.clients.sshkey.list()[0])
+            break
+        except j.exceptions.RuntimeError:
+            if i == 2:
+                raise
+            time.sleep(1)
+
+    j.tools.nodemgr.set(cat="container", name=name, sshclient=name, selected=True)
+
+    print('digitalme container deployed (in debug mode)')
+    print("can also connect using js_node toolset, recommended: 'js_node ssh -i %s'" % name)
+
+
+cli.add_command(configure)
+cli.add_command(zdb)
+cli.add_command(container)
+cli.add_command(digitalme)
+
+if __name__ == '__main__':
+    cli()

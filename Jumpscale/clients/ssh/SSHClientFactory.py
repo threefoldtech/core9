@@ -47,6 +47,7 @@ class SSHClientFactory(JSConfigBase):
         #         usecache = not (self.cache[key]._client is None)
         #     except j.exceptions.RuntimeError:
         #         usecache = False
+
         cl = self.get(instance=instance, data=data, die=die, use_paramiko=use_paramiko)
         return cl
 
