@@ -229,10 +229,11 @@ class NetTools(JSBASE):
 
     def getIpAddresses(self, up=False):
         if j.core.platformtype.myplatform.isLinux or j.core.platformtype.myplatform.isMac:
-            result = list()
+            result = {'ip': [],'ip6': []}
             for ipinfo in self.getNetworkInfo():
                 if ipinfo!=[] : # if empty array skip
                     result.extend(ipinfo['ip'])
+                    result.extend(ipinfo['ip6'])
             return result
         else:
             raise j.exceptions.RuntimeError("Not supported on this platform!")
@@ -505,12 +506,12 @@ class NetTools(JSBASE):
         if j.core.platformtype.myplatform.isLinux or j.core.platformtype.myplatform.isMac:
             output =list()
             output = j.tools.prefab.local.system.net.getInfo()
-            result=list()
+            result = {'ip': [],'ip6': []}
             for nic in output:
                 if nic['name']== interface:
                     result.append(nic['ip'])
-                    break
-            return result
+                    result.append(nic['ip6'])
+                    return result
         elif j.core.platformtype.myplatform.isWindows:
             import wmi
             ipv4Pattern = '^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$'
@@ -614,6 +615,9 @@ class NetTools(JSBASE):
 
             for nic in output:
                 if nic['ip']== IpAdress:
+                    result.append(nic['mac'])
+                    return result
+                elif nic['ip6']== IpAdress:
                     result.append(nic['mac'])
                     return result
             return "no MAC found for %s" %ipaddress
