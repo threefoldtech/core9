@@ -77,7 +77,8 @@ def container():
 @click.option('--port', '-p', default='3333', help='port which will be exposed for the zerodb container, there is no admin passwd!')
 def digitalme(name,port):
     """
-    create a build container in zero-os and launch ubuntu with lots of tools pre-installed to make building easy
+    create a digital me container
+    connect to zerotier network 1d7193940435f485  TODO:*1, this is an ipv6 zerotier network which connects all digitalme's
     """
 
     node = j.clients.zos.get('builder')
@@ -86,19 +87,22 @@ def digitalme(name,port):
     container = node.containers.create(name='builder',
                                        flist='https://hub.gig.tech/gig-official-apps/ubuntu-bionic-build.flist',
                                        nics=[{'type': 'default'}],
-                                       ports={2222: 22})
+                                       ports={port: 22})
 
-    sshclient=j.clients.ssh.new(addr=ip, port=2222, instance="builder", die=True, login="root", passwd="rooter",
+    #TODO: *1 we will need a new flist but just to show how to get the right continer and get it in ipv6
+    #TODO: *1 this container should run on local ip with ssh forwarded and then on zerotier
+
+    name2="dm_"+name
+
+    sshclient=j.clients.ssh.new(addr=ip, port=2222, instance=name2, die=True, login="root", passwd="rooter",
                 stdout=True, allow_agent=False, addr_priv="", port_priv=22, use_paramiko=True)
 
     sshclient.ssh_authorize(user="root",key=j.clients.sshkey.list()[0])
 
+    j.tools.nodemgr.set(cat="container",name=name2,sshclient=name2,selected=True)
 
-    j.tools.nodemgr.set(cat="container",name="builder",sshclient="builder",selected=True)
-
-    print('builder container deployed')
-    print("to connect to it do: 'ssh root@%s -p 2222' (password: rooter)" % node.addr)
-    print("can also connect using js_node toolset, recommended: 'js_node ssh -i builder'")
+    print('digitalme container deployed (in debug mode)')
+    print("can also connect using js_node toolset, recommended: 'js_node ssh -i %s'"%name2)
 
 cli.add_command(configure)
 cli.add_command(zdb)
