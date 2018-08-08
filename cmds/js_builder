@@ -78,7 +78,6 @@ def container():
     for i in range(3):
         try:
             sshclient.ssh_authorize(user="root", key=j.clients.sshkey.list()[0])
-            authorized = True
             break
         except j.exceptions.RuntimeError:
             if i == 2:
@@ -117,7 +116,6 @@ def digitalme(name, port):
     for i in range(3):
         try:
             sshclient.ssh_authorize(user="root", key=j.clients.sshkey.list()[0])
-            authorized = True
             break
         except j.exceptions.RuntimeError:
             if i == 2:
