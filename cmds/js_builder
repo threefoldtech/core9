@@ -72,6 +72,33 @@ def container():
     print("to connect to it do: 'ssh root@%s -p 2222' (password: rooter)" % node.addr)
     print("can also connect using js_node toolset, recommended: 'js_node ssh -i builder'")
 
+@click.command()
+@click.option('--name', '-n', default='zdb_main', help='name of the zdb instance')
+@click.option('--port', '-p', default='3333', help='port which will be exposed for the zerodb container, there is no admin passwd!')
+def digitalme(name,port):
+    """
+    create a build container in zero-os and launch ubuntu with lots of tools pre-installed to make building easy
+    """
+
+    node = j.clients.zos.get('builder')
+
+    print('creating builder container...')
+    container = node.containers.create(name='builder',
+                                       flist='https://hub.gig.tech/gig-official-apps/ubuntu-bionic-build.flist',
+                                       nics=[{'type': 'default'}],
+                                       ports={2222: 22})
+
+    sshclient=j.clients.ssh.new(addr=ip, port=2222, instance="builder", die=True, login="root", passwd="rooter",
+                stdout=True, allow_agent=False, addr_priv="", port_priv=22, use_paramiko=True)
+
+    sshclient.ssh_authorize(user="root",key=j.clients.sshkey.list()[0])
+
+
+    j.tools.nodemgr.set(cat="container",name="builder",sshclient="builder",selected=True)
+
+    print('builder container deployed')
+    print("to connect to it do: 'ssh root@%s -p 2222' (password: rooter)" % node.addr)
+    print("can also connect using js_node toolset, recommended: 'js_node ssh -i builder'")
 
 cli.add_command(configure)
 cli.add_command(zdb)
