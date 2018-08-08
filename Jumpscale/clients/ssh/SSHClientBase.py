@@ -25,7 +25,7 @@ class SSHClientBase(JSConfigBase):
     def __init__(self, instance, data={}, parent=None, interactive=False):
         JSConfigBase.__init__(self, instance=instance, data=data,
                               parent=parent, template=TEMPLATE, interactive=interactive)
-        self.async = False
+        self.async_ = False
         self._private = None
         self._connected = None
 
@@ -153,3 +153,21 @@ class SSHClientBase(JSConfigBase):
             self._sshclient = None
             self._ftpclient = None
         return self._connected
+
+    def ssh_authorize(self, user, key=None, pubkey=None):
+        """add key to authorized users, if key is specified will get public key from sshkey client,
+        or can directly specify the public key. If both are specified key name instance will override public key.
+
+        :param user: user to authorize
+        :type user: str
+        :param key: name of sshkey instance to use, defaults to None
+        :param key: str, optional
+        :param pubkey: public key to authorize, defaults to None
+        :param pubkey: str, optional
+        """
+        if key:
+            sshkey = j.clients.sshkey.get(key)
+            pubkey = sshkey.pubkey
+        if pubkey in [None,""]:
+            raise RuntimeError("pubkey not given")
+        self.prefab.system.ssh.authorize(user=user, key=pubkey)

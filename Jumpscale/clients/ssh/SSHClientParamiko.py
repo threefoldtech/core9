@@ -427,9 +427,6 @@ class SSHClientParamiko(SSHClientBase):
         exc = j.tools.executor.ssh_get(self)
         return exc.prefab
 
-    def ssh_authorize(self, user, key):
-        self.prefab.system.ssh.authorize(user, key)
-
     def portforwardToLocal(self, remoteport, localport):
         self.portforwardKill(localport)
         C = "ssh -L %s:localhost:%s root@%s -p %s" % (
@@ -448,30 +445,30 @@ class SSHClientParamiko(SSHClientBase):
         pm = j.tools.prefab.local.system.processmanager.get()
         pm.processmanager.stop('ssh_%s' % localport)
 
-    def SSHAuthorizeKey(
-            self,
-            keyname=None, keydata=None):
-        """
-        @keyname name of the key as loaded in ssh-agent if set keydata will be ignored(this requires ssh-agent to be loaded)
-        @keydata actual data of private key if set keyname will be ignored
-        """
-        if keydata:
-            key_des = StringIO(keydata)
-            p = paramiko.RSAKey.from_private_key(key_des)
-            key = '%s ' % p.get_name() + p.get_base64()
-        elif not keyname:
-            raise j.exceptions.Input("keyname and keydata can't be both empty")
-        else:
-            key = j.clients.ssh.SSHKeyGetFromAgentPub(keyname)
+    # def SSHAuthorizeKey(
+    #         self,
+    #         keyname=None, keydata=None):
+    #     """
+    #     @keyname name of the key as loaded in ssh-agent if set keydata will be ignored(this requires ssh-agent to be loaded)
+    #     @keydata actual data of private key if set keyname will be ignored
+    #     """
+    #     if keydata:
+    #         key_des = StringIO(keydata)
+    #         p = paramiko.RSAKey.from_private_key(key_des)
+    #         key = '%s ' % p.get_name() + p.get_base64()
+    #     elif not keyname:
+    #         raise j.exceptions.Input("keyname and keydata can't be both empty")
+    #     else:
+    #         key = j.clients.ssh.SSHKeyGetFromAgentPub(keyname)
 
-        rc, _, _ = self.execute(
-            "echo '%s' | sudo -S bash -c 'test -e /root/.ssh'" % self.passwd, die=False)
-        mkdir_cmd = ''
-        if rc > 0:
-            mkdir_cmd = 'mkdir -p /root/.ssh;'
+    #     rc, _, _ = self.execute(
+    #         "echo '%s' | sudo -S bash -c 'test -e /root/.ssh'" % self.passwd, die=False)
+    #     mkdir_cmd = ''
+    #     if rc > 0:
+    #         mkdir_cmd = 'mkdir -p /root/.ssh;'
 
-        cmd = '''echo '%s' | sudo -S bash -c "%s echo '\n%s' >> /root/.ssh/authorized_keys; chmod 644 /root/.ssh/authorized_keys;chown root:root /root/.ssh/authorized_keys"''' % (
-            self.passwd, mkdir_cmd, key)
-        self.execute(cmd, showout=False)
+    #     cmd = '''echo '%s' | sudo -S bash -c "%s echo '\n%s' >> /root/.ssh/authorized_keys; chmod 644 /root/.ssh/authorized_keys;chown root:root /root/.ssh/authorized_keys"''' % (
+    #         self.passwd, mkdir_cmd, key)
+    #     self.execute(cmd, showout=False)
 
-        j.clients.ssh.remove_item_from_known_hosts(self.addr)
+    #     j.clients.ssh.remove_item_from_known_hosts(self.addr)

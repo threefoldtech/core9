@@ -28,6 +28,7 @@ class Nodes(JSConfigBase):
         """[summary]
 
         clienttype:  "ovh", "packetnet", "ovc", "physical", "docker", "container", "zos"
+        @PARAM sshclient is the instance name to the sshclient 
 
         """
 

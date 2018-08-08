@@ -1,0 +1,81 @@
+#! /usr/bin/env python3
+
+"""
+This script is used to quickly deploy a ubuntu container on a 0-OS node and allow you to ssh into it
+
+This container is used to build flist, it contains already preinstalled tools like git, mc, build-essential.
+
+"""
+
+
+from jumpscale import j
+import click
+
+
+
+@click.group()
+def cli():
+    pass
+
+
+@click.command()
+@click.argument('ip')
+def configure(ip):
+    """
+    configure the zero-os, also make sure partitions are done for zerodb, need ip addr
+    """
+    node = j.clients.zos.get('builder', data={'host': ip})
+    node.zerodbs.partition_and_mount_disks()
+
+
+@click.command()
+@click.option('--name', '-n', default='zdb_main', help='name of the zdb instance')
+@click.option('--mode', '-m', default='seq', help='seq or user mode')
+@click.option('--port', '-p', default='3333', help='port which will be exposed for the zerodb container, there is no admin passwd!')
+def zdb(name,mode,port):
+    """
+    create a zdb container
+    """
+    node = j.clients.zos.get('builder')
+    
+    zdb=node.zerodbs.create(name)
+    zdb.flist="https://hub.gig.tech/gig-autobuilder/threefoldtech-0-db-development.flist"
+    zdb.mode=mode
+    zdb.deploy()
+
+    #TODO: how to do the port
+
+
+@click.command()
+def container():
+    """
+    create a build container in zero-os and launch ubuntu with lots of tools pre-installed to make building easy
+    """
+
+    node = j.clients.zos.get('builder')
+
+    print('creating builder container...')
+    container = node.containers.create(name='builder',
+                                       flist='https://hub.gig.tech/gig-official-apps/ubuntu-bionic-build.flist',
+                                       nics=[{'type': 'default'}],
+                                       ports={2222: 22})
+
+    sshclient=j.clients.ssh.new(addr=ip, port=2222, instance="builder", die=True, login="root", passwd="rooter",
+                stdout=True, allow_agent=False, addr_priv="", port_priv=22, use_paramiko=True)
+
+    sshclient.ssh_authorize(user="root",key=j.clients.sshkey.list()[0])
+
+
+    j.tools.nodemgr.set(cat="container",name="builder",sshclient="builder",selected=True)
+
+    print('builder container deployed')
+    print("to connect to it do: 'ssh root@%s -p 2222' (password: rooter)" % node.addr)
+    print("can also connect using js_node toolset, recommended: 'js_node ssh -i builder'")
+
+
+cli.add_command(configure)
+cli.add_command(zdb)
+cli.add_command(container)
+
+if __name__ == '__main__':
+    cli()

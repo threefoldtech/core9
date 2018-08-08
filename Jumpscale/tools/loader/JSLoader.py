@@ -158,7 +158,8 @@ class JSLoader():
                         state = 1
                 if state == 1:
                     res.append(item)
-
+            if len(res)<2:
+                raise RuntimeError("could not split path in jsloader")
             if res[0] == res[1]:
                 if res[0].casefold().find("jumpscale") != -1 or res[0].casefold().find("digitalme") != -1:
                     res.pop(0)
