@@ -8,9 +8,8 @@ This container is used to build flist, it contains already preinstalled tools li
 """
 
 
-from jumpscale import j
 import click
-
+from jumpscale import j
 
 
 @click.group()
@@ -31,19 +30,31 @@ def configure(ip):
 @click.command()
 @click.option('--name', '-n', default='zdb_main', help='name of the zdb instance')
 @click.option('--mode', '-m', default='seq', help='seq or user mode')
-@click.option('--port', '-p', default='3333', help='port which will be exposed for the zerodb container, there is no admin passwd!')
-def zdb(name,mode,port):
+@click.option('--port', '-p', default=3333, help='port which will be exposed for the zerodb container, there is no admin passwd!')
+@click.option('--size', '-s', default=50, help='maximum amount of storage for the zerodb in GiB')
+def zdb(name, mode, port, size):
     """
     create a zdb container
     """
     node = j.clients.zos.get('builder')
-    
-    zdb=node.zerodbs.create(name)
-    zdb.flist="https://hub.gig.tech/gig-autobuilder/threefoldtech-0-db-development.flist"
-    zdb.mode=mode
+
+    print("finding best disk where to deploy zdb...")
+    # find best disk where to deploy zdb
+    storage_pools = node.storagepools.list()
+    storage_pools = sorted(storage_pools, key=lambda sp: sp.info['used'], reverse=True)
+    # used the disk with the more space available
+    mountpoint, _ = node.zerodbs.create_and_mount_subvolume(
+        storagepool=storage_pools[0],
+        name="builder_zdb%s " % j.data.idgenerator.generateXCharID(8),
+        size=size)
+
+    zdb = node.zerodbs.create(name=name, path=mountpoint, mode=mode, node_port=port)
+    zdb.flist = "https://hub.gig.tech/gig-autobuilder/threefoldtech-0-db-development.flist"
+    print('deploying zdb on %s' % mountpoint)
     zdb.deploy()
 
-    #TODO: how to do the port
+    print('zdb deployed')
+    print('reach it at %s:%s' % (node.addr, zdb.node_port))
 
 
 @click.command()
@@ -51,7 +62,6 @@ def container():
     """
     create a build container in zero-os and launch ubuntu with lots of tools pre-installed to make building easy
     """
-
     node = j.clients.zos.get('builder')
 
     print('creating builder container...')
@@ -60,22 +70,22 @@ def container():
                                        nics=[{'type': 'default'}],
                                        ports={2222: 22})
 
-    sshclient=j.clients.ssh.new(addr=ip, port=2222, instance="builder", die=True, login="root", passwd="rooter",
-                stdout=True, allow_agent=False, addr_priv="", port_priv=22, use_paramiko=True)
+    sshclient = j.clients.ssh.new(addr=node.addr, port=2222, instance="builder", die=True, login="root", passwd="rooter",
+                                  stdout=True, allow_agent=False, addr_priv="", port_priv=22, use_paramiko=True)
 
-    sshclient.ssh_authorize(user="root",key=j.clients.sshkey.list()[0])
+    sshclient.ssh_authorize(user="root", key=j.clients.sshkey.list()[0])
 
-
-    j.tools.nodemgr.set(cat="container",name="builder",sshclient="builder",selected=True)
+    j.tools.nodemgr.set(cat="container", name="builder", sshclient="builder", selected=True)
 
     print('builder container deployed')
     print("to connect to it do: 'ssh root@%s -p 2222' (password: rooter)" % node.addr)
     print("can also connect using js_node toolset, recommended: 'js_node ssh -i builder'")
 
+
 @click.command()
 @click.option('--name', '-n', default='zdb_main', help='name of the zdb instance')
 @click.option('--port', '-p', default='3333', help='port which will be exposed for the zerodb container, there is no admin passwd!')
-def digitalme(name,port):
+def digitalme(name, port):
     """
     create a digital me container
     connect to zerotier network 1d7193940435f485  TODO:*1, this is an ipv6 zerotier network which connects all digitalme's
@@ -89,20 +99,21 @@ def digitalme(name,port):
                                        nics=[{'type': 'default'}],
                                        ports={port: 22})
 
-    #TODO: *1 we will need a new flist but just to show how to get the right continer and get it in ipv6
-    #TODO: *1 this container should run on local ip with ssh forwarded and then on zerotier
+    # TODO: *1 we will need a new flist but just to show how to get the right container and get it in ipv6
+    # TODO: *1 this container should run on local ip with ssh forwarded and then on zerotier
 
-    name2="dm_"+name
+    name2 = "dm_"+name
 
-    sshclient=j.clients.ssh.new(addr=ip, port=2222, instance=name2, die=True, login="root", passwd="rooter",
-                stdout=True, allow_agent=False, addr_priv="", port_priv=22, use_paramiko=True)
+    sshclient = j.clients.ssh.new(addr=node.addr, port=2222, instance=name2, die=True, login="root", passwd="rooter",
+                                  stdout=True, allow_agent=False, addr_priv="", port_priv=22, use_paramiko=True)
 
-    sshclient.ssh_authorize(user="root",key=j.clients.sshkey.list()[0])
+    sshclient.ssh_authorize(user="root", key=j.clients.sshkey.list()[0])
 
-    j.tools.nodemgr.set(cat="container",name=name2,sshclient=name2,selected=True)
+    j.tools.nodemgr.set(cat="container", name=name2, sshclient=name2, selected=True)
 
     print('digitalme container deployed (in debug mode)')
-    print("can also connect using js_node toolset, recommended: 'js_node ssh -i %s'"%name2)
+    print("can also connect using js_node toolset, recommended: 'js_node ssh -i %s'" % name2)
+
 
 cli.add_command(configure)
 cli.add_command(zdb)
