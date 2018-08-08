@@ -509,8 +509,8 @@ class NetTools(JSBASE):
             result = {'ip': [],'ip6': []}
             for nic in output:
                 if nic['name']== interface:
-                    result.append(nic['ip'])
-                    result.append(nic['ip6'])
+                    result['ip'].append(nic['ip'])
+                    result['ip6'].append(nic['ip6'])
                     return result
         elif j.core.platformtype.myplatform.isWindows:
             import wmi
