@@ -20,6 +20,7 @@ allow_agent = true
 stdout = true
 """
 
+
 class SSHClient(SSHClientBase):
 
     def __init__(self, instance, data={}, parent=None, interactive=False):
@@ -28,7 +29,6 @@ class SSHClient(SSHClientBase):
         self._logger = j.logger.get("ssh client: %s:%s(%s)" % (self.addr_variable, self.port, self.login))
         self._client = None
         self._prefab = None
-        import pudb; pudb.set_trace()
 
     @property
     def client(self):
@@ -178,4 +178,3 @@ class SSHClient(SSHClientBase):
             executor.state_disabled = True
         self._prefab = executor.prefab
         return self._prefab
-
