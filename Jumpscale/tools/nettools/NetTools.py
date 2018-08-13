@@ -112,14 +112,14 @@ class NetTools(JSBASE):
         self.logger.debug(
             'Checking whether a service is running on port %d' % port)
 
-        if j.core.platformtype.myplatform.isLinux or j.core.platformtype.myplatform.isMac:
+        if j.core.platformtype.myplatform.isLinux:
             # netstat: n == numeric, -t == tcp, -u = udp, l= only listening, p = program
             command = "netstat -ntulp | grep ':%s '" % port
             # raise j.exceptions.RuntimeError("stop")
             exitcode, output, err = j.sal.process.execute(
                 command, die=True, showout=False)
             return exitcode == 0
-        elif j.core.platformtype.myplatform.isMac():
+        elif j.core.platformtype.myplatform.isMac:
             command = "netstat -an -f inet"
             exitcode, output, err = j.sal.process.execute(
                 command, die=True, showout=False)
@@ -475,9 +475,6 @@ class NetTools(JSBASE):
 
         cmd = 'route add default gw %s' % gw
         j.sal.process.execute(cmd)
-
-
-
 
     def getNetworkInfo(self,device=None,usecache=True):
         """
