@@ -84,7 +84,7 @@ ZCodeGetJS() {
     local OPTIND
     local account='threefoldtech'
     local reponame=''
-    local branch=${JUMPSCALEBRANCH:-development}
+    local branch=${JUMPSCALEBRANCH:-development}  #this is being set elsewhere too
     while getopts "r:b:h" opt; do
         case $opt in
            r )  reponame=$OPTARG ;;
@@ -98,6 +98,8 @@ ZCodeGetJS() {
         ZCodeGetJS -r jumpscale_core  -b $branch || return 1
         ZCodeGetJS -r jumpscale_lib -b $branch || return 1
         ZCodeGetJS -r jumpscale_prefab -b $branch || return 1
+        ZCodeGetJS -r digital_me -b $branch || return 1
+        ZCodeGetJS -r digital_me_recipes -b $branch || return 1
         return 0
     fi
 
@@ -374,7 +376,7 @@ fi
 
 cd /tmp
 #remove old stuff
-rm -rf /usr/local/bin/js9*
+rm -rf /usr/local/bin/js9_*
 rm -rf /usr/local/bin/js_*
 rm -f ~/jsenv.sh
 rm -f ~/jsinit.sh
