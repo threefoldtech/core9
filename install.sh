@@ -402,3 +402,5 @@ echo "INSTALL Jumpscale on branch $JUMPSCALEBRANCH"
 ZInstall_host_base || die "Could not prepare the base system" || exit 1
 ZCodeGetJS || die "Could not download jumpscale code" || exit 1
 ZInstall_jumpscale || die "Could not install core of jumpscale" || exit 1
+
+
