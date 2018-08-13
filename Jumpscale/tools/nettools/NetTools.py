@@ -112,14 +112,14 @@ class NetTools(JSBASE):
         self.logger.debug(
             'Checking whether a service is running on port %d' % port)
 
-        if j.core.platformtype.myplatform.isLinux or j.core.platformtype.myplatform.isMac:
+        if j.core.platformtype.myplatform.isLinux:
             # netstat: n == numeric, -t == tcp, -u = udp, l= only listening, p = program
             command = "netstat -ntulp | grep ':%s '" % port
             # raise j.exceptions.RuntimeError("stop")
             exitcode, output, err = j.sal.process.execute(
                 command, die=True, showout=False)
             return exitcode == 0
-        elif j.core.platformtype.myplatform.isMac():
+        elif j.core.platformtype.myplatform.isMac:
             command = "netstat -an -f inet"
             exitcode, output, err = j.sal.process.execute(
                 command, die=True, showout=False)
@@ -476,23 +476,31 @@ class NetTools(JSBASE):
         cmd = 'route add default gw %s' % gw
         j.sal.process.execute(cmd)
 
+<<<<<<< Updated upstream
 
 
 
     def getNetworkInfo(self,device=None,usecache=True):
+=======
+    def getNetworkInfo(self, device=None):
+>>>>>>> Stashed changes
         """
         returns network info like
 
         [{'cidr': 8, 'ip': ['127.0.0.1'], 'mac': '00:00:00:00:00:00', 'name': 'lo'},
          {'cidr': 24,
           'ip': ['192.168.0.105'],
+<<<<<<< Updated upstream
           'ip6': ['...','...],
+=======
+>>>>>>> Stashed changes
           'mac': '80:ee:73:a9:19:05',
           'name': 'enp2s0'},
          {'cidr': 0, 'ip': [], 'mac': '80:ee:73:a9:19:06', 'name': 'enp3s0'},
          {'cidr': 16,
           'ip': ['172.17.0.1'],
           'mac': '02:42:97:63:e6:ba',
+<<<<<<< Updated upstream
           'name': 'docker0'}]        
 
         TODO: change for windows
@@ -501,6 +509,12 @@ class NetTools(JSBASE):
         #TODO: use caching feature from jumpscale to keep for e.g. 1 min, if not usecache needs to reset cache to make sure we load again
         return j.tools.prefab.local.system.net.getInfo(device=device)
         
+=======
+          'name': 'docker0'}]
+
+        """
+        return j.tools.prefab.local.system.net.getInfo(device=device)
+>>>>>>> Stashed changes
 
     def getIpAddress(self, interface):
         """Return a list of ip addresses and netmasks assigned to this interface"""
