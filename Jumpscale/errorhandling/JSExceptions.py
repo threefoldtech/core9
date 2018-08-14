@@ -1,137 +1,141 @@
 from Jumpscale import j
 import pssh.exceptions
 
-JSBASE = j.application.jsbase_get_class()
 
 
-class BaseJSException(Exception, JSBASE):
+import copy
+import unicodedata
+from Jumpscale import j
+import sys
 
-    def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
-        JSBASE.__init__(self)
-        if j.data.types.string.check(level):
-            level = 1
-            tags = "cat:%s" % level
+LEVELMAP = {1: 'CRITICAL', 2: 'WARNING', 3: 'INFO', 4: 'DEBUG'}
+
+
+class BaseJSException(Exception):
+
+    def __init__(self, message="", level=1, cat="", msgpub=""):
+        if not j.data.types.int.check(level):
+            level=1
         super().__init__(message)
-        j.errorhandler.setExceptHook()
         self.message = message
-        self.level = level
-        self.source = source
-        self.type = ""
-        self.actionkey = actionkey
-        self.eco = eco
-        self.codetrace = True
-        self._tags_add = tags
         self.msgpub = msgpub
+        self.level = level
+        self.cat = cat                      #is a dot notation category, to make simple no more tags
+        self.trace_do = False
+        self._trace = ""                     #info to find back where it was
 
     @property
-    def tags(self):
+    def trace(self):
+        return self._trace
+
+    @property
+    def type(self):
+        return j.data.text.strip_to_ascii_dense(str(self.__class__))
+
+
+    @property
+    def str_1_line(self):
+        """
+        1 line representation of error
+
+        """
         msg = ""
-        if self.level != 1:
+        if self.level > 1:
             msg += "level:%s " % self.level
-        if self.source != "":
-            msg += "source:%s " % self.source
         if self.type != "":
             msg += "type:%s " % self.type
-        if self.actionkey != "":
-            msg += "actionkey:%s " % self.actionkey
-        if self._tags_add != "":
-            msg += " %s " % self._tags_add
+        # if self._tags_add != "":
+        #     msg += " %s " % self._tags_add
         return msg.strip()
 
-    @property
-    def msg(self):
-        return "%s ((%s))" % (self.message, self.tags)
 
     def __str__(self):
-        out = "ERROR: %s ((%s)" % (self.message, self.tags)
-        return out
+        if self.cat is not "":
+            out = "ERROR: %s ((%s)\n" % (self.message, self.cat)
+        else:
+            out = "ERROR: %s\n" % (self.message)
+        if self._trace is not "":
+            j.errorhandler._trace_print(self._trace)
+            return ""
+        else:
+            return out
 
     __repr__ = __str__
 
 
+
+    def trace_print(self):
+        j.core.errorhandler._trace_print(self._trace)
+
+
+
 class HaltException(BaseJSException):
-    def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
-        super().__init__(message, level, source, actionkey, eco, tags, msgpub)
-        self.type = "halt.error"
+    def __init__(self, message="", level=1, cat="", msgpub=""):
+        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub)
+        self.trace_do = True
 
 
 class RuntimeError(BaseJSException):
 
-    def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
-        super().__init__(message, level, source, actionkey, eco, tags, msgpub)
-        self.type = "runtime.error"
-        self.codetrace = True
+    def __init__(self, message="", level=1, cat="", msgpub=""):
+        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub)
+        self.trace_do = True
 
 
 class Input(BaseJSException):
 
-    def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
-        super().__init__(message, level, source, actionkey, eco, tags, msgpub)
-        self.type = "input.error"
-        self.codetrace = True
+    def __init__(self, message="", level=1, cat="", msgpub=""):
+        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub)
+        self.trace_do = True
 
 
 class NotImplemented(BaseJSException):
 
-    def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
-        super().__init__(message, level, source, actionkey, eco, tags, msgpub)
-        self.type = "notimplemented"
-        self.codetrace = True
+    def __init__(self, message="", level=1, cat="", msgpub=""):
+        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub)
+        self.trace_do = True
 
 
 class BUG(BaseJSException):
 
-    def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
-        super().__init__(message, level, source, actionkey, eco, tags, msgpub)
-        self.type = "bug.js"
-        self.codetrace = True
+    def __init__(self, message="", level=1, cat="", msgpub=""):
+        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub)
+        self.trace_do = True
 
 
 class JSBUG(BaseJSException):
 
-    def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
-        super().__init__(message, level, source, actionkey, eco, tags, msgpub)
-        self.type = "bug.js"
-        self.codetrace = True
+    def __init__(self, message="", level=1, cat="", msgpub=""):
+        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub)
+        self.trace_do = True
 
 
 class OPERATIONS(BaseJSException):
 
-    def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
-        super().__init__(message, level, source, actionkey, eco, tags, msgpub)
-        self.type = "operations"
-        self.codetrace = True
+    def __init__(self, message="", level=1, cat="", msgpub=""):
+        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub)
+        self.trace_do = False
 
 
 class IOError(BaseJSException):
 
-    def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
-        super().__init__(message, level, source, actionkey, eco, tags, msgpub)
-        self.type = "ioerror"
-        self.codetrace = False
+    def __init__(self, message="", level=1, cat="", msgpub=""):
+        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub)
+        self.trace_do = True
 
-
-class AYSNotFound(BaseJSException):
-
-    def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
-        super().__init__(message, level, source, actionkey, eco, tags, msgpub)
-        self.type = "ays.notfound"
-        self.codetrace = False
 
 
 class NotFound(BaseJSException):
 
-    def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
-        super().__init__(message, level, source, actionkey, eco, tags, msgpub)
-        self.type = "notfound"
-        self.codetrace = False
+    def __init__(self, message="", level=1, cat="", msgpub=""):
+        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub)
+        self.trace_do = True
 
 
 class Timeout(BaseJSException):
 
-    def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
-        super().__init__(message, level, source, actionkey, eco, tags, msgpub)
-        self.type = "timeout"
-        self.codetrace = False
+    def __init__(self, message="", level=1, cat="", msgpub=""):
+        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub)
+        self.trace_do = True
 
 SSHTimeout = pssh.exceptions.Timeout

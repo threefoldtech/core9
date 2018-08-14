@@ -28,7 +28,7 @@ JSBASE = j.application.jsbase_get_class()
 class Text(JSBASE):
 
     def __init__(self):
-        self.__jslocation__ = "j.data.text"
+        self._location = "j.data.text"
         JSBASE.__init__(self)
 
     def unicodedata(self, text):

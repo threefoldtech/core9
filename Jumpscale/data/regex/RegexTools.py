@@ -77,7 +77,7 @@ class RegexTools(JSBASE):
     # TODO: doe some propper error handling with re, now obscure errors  (id:21)
 
     def __init__(self):
-        self.__jslocation__ = "j.data.regex"
+        self._location = "j.data.regex"
         JSBASE.__init__(self)
         self.templates = Empty()
         self.templates.lines = RegexTemplates_FindLines()

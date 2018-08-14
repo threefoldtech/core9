@@ -97,7 +97,7 @@ class JSLoader():
 
     def __init__(self):
         self.logger = j.logger.get("jsloader")
-        self.__jslocation__ = "j.tools.jsloader"
+        self.__location__ = "j.tools.jsloader"
         self.tryimport = False
 
     @property

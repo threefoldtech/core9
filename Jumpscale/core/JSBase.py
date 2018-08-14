@@ -6,22 +6,34 @@ class JSBase:
     def __init__(self):
         self._logger = None
         self._cache = None
+        self._name = None
         self._cache_expiration = 3600
         self._logger_force = False
 
+        if "_location" not in self.__dict__:
+            self._location=None
+
     @property
     def __name__(self):
-        self.___name__ = str(self.__class__).split(".")[-1].split("'")[0]
-        return self.___name__
+        if self._name is None:
+            self._name = j.data.text.strip_to_ascii_dense(str(self.__class__))
+        return self._name
+
+    @property
+    def __location__(self):
+        if self._location is None:
+            if '__jslocation__' in self.__dict__:
+                self._location = self.__jslocation__
+            else:
+                self._location = self.__name__
+        return self._location
+
+
 
     @property
     def logger(self):
         if self._logger is None:
-            if '__jslocation__' in self.__dict__:
-                name = self.__jslocation__
-            else:
-                name = self.__name__
-            self._logger = j.logger.get(name, force=self._logger_force)
+            self._logger = j.logger.get(self.__location__, force=self._logger_force)
             self._logger._parent = self
         return self._logger
 
@@ -39,7 +51,7 @@ class JSBase:
     @property
     def cache(self):
         if self._cache is None:
-            id = self.__name__
+            id = self.__location__
             for item in ["instance", "_instance", "_id", "id", "name", "_name"]:
                 if item in self.__dict__ and self.__dict__[item]:
                     id += "_" + str(self.__dict__[item])

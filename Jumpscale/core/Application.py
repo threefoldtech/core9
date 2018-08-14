@@ -23,7 +23,8 @@ class Application:
         self._systempid = None
 
         self.interactive = True
-        self.__jslocation__ = "j.core.application"
+        self._location = "j.core.application"
+        self.schemas = False #to know if schema's can be used or not
 
     def jsbase_get_class(self):
         """

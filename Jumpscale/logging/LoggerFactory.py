@@ -11,7 +11,7 @@ import sys
 class LoggerFactory():
 
     def __init__(self):
-        self.__jslocation__ = "j.core.logger"
+        self._location = "j.core.logger"
         self.logger_name = 'j'
         self.handlers = Handlers()
         self.loggers = {}
@@ -47,8 +47,7 @@ class LoggerFactory():
 
     def get(self, name="", force=False):  # -> JSLogger:
         """
-        Return a logger with the given name. Name will be prepend with 'j.' so
-        every logger return by this function is a child of the jumpscale root logger 'j'
+        Return a logger with the given name.
 
         """
         name = self._getName(name)
@@ -116,6 +115,7 @@ class LoggerFactory():
             self.enabled = True
             self.filter = []
             self.init()
+            self.logger_soft_reset()
 
     # def set_quiet(self, quiet):
     #     self._quiet = quiet
@@ -237,24 +237,23 @@ class LoggerFactory():
 
         self.handlers_level_set(level)
 
-        # make sure all loggers are empty again
+        self.logger_soft_reset()
+
+    def logger_soft_reset(self):
+        """
+        make sure all loggers are empty again
+        """
         j.dirs._logger = None
         j.core.platformtype._logger = None
         j.core.state._logger = None
         j.core.dirs._logger = None
         j.core.application._logger = None
-        for cat in [j.data, j.clients, j.tools, j.sal]:
+        for cat in [j.data, j.clients, j.tools, j.sal,j.portal,j.sal_zos,j.servers]:
             for key, item in cat.__dict__.items():
                 if item is not None:
-                    # if hasattr(item, '__jslocation__'):
-                    #     print (item.__jslocation__)
-                    if 'logger' in item.__dict__:
-                        item.__dict__["logger"] = self.get(item.__jslocation__)
                     item._logger = None
         self.loggers = {}
 
-        # print(j.tools.jsloader._logger)
-        # print(j.tools.jsloader.logger)
 
     def init(self):
         """

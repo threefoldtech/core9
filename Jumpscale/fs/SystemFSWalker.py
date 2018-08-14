@@ -11,8 +11,6 @@ JSBASE = j.application.jsbase_get_class()
 class SystemFSWalker(JSBASE):
 
     def __init__(self):
-        if not hasattr(self, '__jslocation__'):
-            self.__jslocation__ = "j.sal.fswalker"
         JSBASE.__init__(self)
 
     @staticmethod

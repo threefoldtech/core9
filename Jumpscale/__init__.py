@@ -76,9 +76,9 @@ else:
         def __init__(self):
             pass
 
-    class AtYourService():
-        def __init__(self):
-            pass
+    # class AtYourService():
+    #     def __init__(self):
+    #         pass
 
     class Jumpscale():
 
@@ -92,7 +92,7 @@ else:
             self.servers = Servers()
             self.data_units = DataUnits()
             self.portal = Portal()
-            self.atyourservice = AtYourService()
+            # self.atyourservice = AtYourService()
             self.exceptions = None
 
     j = Jumpscale()
@@ -192,15 +192,19 @@ else:
     j.dirs = Dirs()
     j.core.dirs = j.dirs
 
+    #need to load errorhandling as soon as we can
+    from .errorhandling.ErrorHandler import ErrorHandler
+    j.errorhandler = ErrorHandler()
+    j.core.errorhandler = j.errorhandler
+    from Jumpscale.errorhandling import JSExceptions
+    j.exceptions = JSExceptions
+
+
+
     from .data.idgenerator.IDGenerator import IDGenerator
 
     j.data.idgenerator = IDGenerator()
 
-    from .errorhandling.ErrorHandler import ErrorHandler
-
-    j.errorhandler = ErrorHandler()
-
-    j.core.errorhandler = j.errorhandler
 
     from .fs.SystemFSWalker import SystemFSWalker
 
@@ -226,8 +230,10 @@ else:
 
     j.tools.console = Console()
 
-    from Jumpscale.errorhandling import JSExceptions
-
-    j.exceptions = JSExceptions
 
     j.logger.init()  # will reconfigure the logging to use the config file
+
+    #check if schema's are available (digitalme, if yes, use that in error handler)
+    if "DigitalMeLib" in j.core.state.config_js["plugins"]:
+        #means we can use schema's
+        j.application.schemas = True

@@ -14,7 +14,7 @@ from .Session import Session
 class Tmux(JSBASE):
 
     def __init__(self):
-        self.__jslocation__ = "j.tools.tmux"
+        self._location = "j.tools.tmux"
         JSBASE.__init__(self)
         self.__imports__ = "libtmux"
         self.sessions = {}

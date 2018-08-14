@@ -25,7 +25,7 @@ JSBASE = j.application.jsbase_get_class()
 class PlatformTypes(JSBASE):
 
     def __init__(self):
-        self.__jslocation__ = "j.core.platformtype"
+        self._location = "j.core.platformtype"
         JSBASE.__init__(self)
         self._myplatform = None
         self._platformParents = {}

@@ -39,7 +39,7 @@ class Console(JSBASE):
     """
 
     def __init__(self):
-        self.__jslocation__ = "j.tools.console"
+        self._location = "j.tools.console"
         JSBASE.__init__(self)
         self.width = 230
         self.indent = 0  # current indentation of messages send to console

@@ -20,8 +20,7 @@ JSBASE = j.application.jsbase_get_class()
 class SystemFS(JSBASE):
 
     def __init__(self):
-        if not hasattr(self, '__jslocation__'):
-            self.__jslocation__ = "j.sal.fs"
+        self._location = "j.sal.fs"
         JSBASE.__init__(self)
 
     @path_check(fileFrom={"required", "exists", "file"}, to={"required"})

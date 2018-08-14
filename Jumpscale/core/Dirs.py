@@ -23,7 +23,7 @@ class Dirs(JSBASE):
 
     def __init__(self):
         '''jumpscale sandbox base folder'''
-        self.__jslocation__ = "j.core.dirs"
+        self._location = "j.core.dirs"
         JSBASE.__init__(self)
         self.reload()
 

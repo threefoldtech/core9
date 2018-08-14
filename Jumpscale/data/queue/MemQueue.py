@@ -8,6 +8,7 @@ class MemQueueFactory(JSBASE):
 
     def __init__(self):
         JSBASE.__init__(self)
+
     def get(self):
         """
         """

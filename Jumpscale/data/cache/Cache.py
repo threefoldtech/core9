@@ -9,7 +9,7 @@ JSBASE = j.application.jsbase_get_class()
 class Cache(JSBASE):
 
     def __init__(self):
-        self.__jslocation__ = "j.data.cache"
+        self._location = "j.data.cache"
         JSBASE.__init__(self)
         self._cache = {}
 

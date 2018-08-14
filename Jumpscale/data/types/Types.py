@@ -12,7 +12,7 @@ JSBASE = j.application.jsbase_get_class()
 class Types(JSBASE):
 
     def __init__(self):
-        self.__jslocation__ = "j.data.types"
+        self._location = "j.data.types"
         JSBASE.__init__(self)
         self.dict = Dictionary()
         self.list = List()

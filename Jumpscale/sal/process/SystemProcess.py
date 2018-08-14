@@ -25,8 +25,7 @@ JSBASE = j.application.jsbase_get_class()
 class SystemProcess(JSBASE):
 
     def __init__(self):
-        if not hasattr(self, '__jslocation__'):
-            self.__jslocation__ = "j.sal.process"
+        self._location = "j.sal.process"
         JSBASE.__init__(self)
         self._isunix=None
 

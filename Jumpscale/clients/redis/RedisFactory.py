@@ -23,7 +23,7 @@ class RedisFactory(JSBASE):
     """
 
     def __init__(self):
-        self.__jslocation__ = "j.clients.redis"
+        self._location = "j.clients.redis"
         JSBASE.__init__(self)
         self.cache_clear()
         self._running = None
