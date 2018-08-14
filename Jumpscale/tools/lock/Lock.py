@@ -5,7 +5,7 @@ import re
 
 from jumpscale import j
 
-logger = j.core.logger.get('Jumpscale.core.logger')
+logger = j.logger.get('Jumpscale.core.logger')
 _LOCKDICTIONARY = dict()
 
 JSBASE = j.application.jsbase_get_class()

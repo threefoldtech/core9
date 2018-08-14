@@ -18,8 +18,10 @@ class BaseJSException(Exception):
             level=1
         super().__init__(message)
         self.message = message
-        self.msgpub = msgpub
+        self.message_pub = msgpub
         self.level = level
+        if level not in LEVELMAP:
+            raise RuntimeError("level needs to be 1-4")
         self.cat = cat                      #is a dot notation category, to make simple no more tags
         self.trace_do = False
         self._trace = ""                     #info to find back where it was

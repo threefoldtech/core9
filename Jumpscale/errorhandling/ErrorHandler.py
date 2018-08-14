@@ -23,6 +23,8 @@ import traceback
 JSBASE = j.application.jsbase_get_class()
 
 
+
+
 class ErrorHandler(JSBASE):
 
     def __init__(self):
@@ -32,23 +34,9 @@ class ErrorHandler(JSBASE):
         self.exceptions = JSExceptions
         j.exceptions = JSExceptions
         self.redis = False
+        self.exit_on_error = True
 
-    def redis_enable(self):
-        luapath = "%s/errorhandling/eco.lua" % j.dirs.JSLIBDIR
-        lua = j.sal.fs.fileGetContents(luapath)
-        self._escalateToRedisFunction = j.core.db.register_script(lua)
-        self._scriptsInRedis = True
 
-    def _send2Redis(self, eco):
-        if self.escalateToRedis:
-            self._registerScrips()
-            data = eco.json
-            res = self._escalateToRedisFunction(
-                keys=["queues:eco", "eco:incr", "eco:occurrences", "eco:objects", "eco:last"], args=[eco.key, data])
-            res = j.data.serializer.json.loads(res)
-            return res
-        else:
-            return None
 
 
     def setExceptHook(self):
@@ -57,24 +45,26 @@ class ErrorHandler(JSBASE):
 
 
 
-    def try_except_error_process(self, err):
+    def try_except_error_process(self, err,die=True):
         """
         how to use
 
         try:
             ##do something
         except Exception,e:
-            j.errorhandler.try_except_error_process(e)
+            j.errorhandler.try_except_error_process(e,die=False) #if you want to continue
 
         """
-        ttype, msg, tb = sys.exc_info()
-        self.excepthook(ttype, msg, tb)
 
-    def _error_process(self, err):
-        #TODO: needs to work with digital me alert manager
+        ttype, msg, tb = sys.exc_info()
+        self.excepthook(ttype, err, tb,die=die)
+
+    def _error_process(self, err,tb_text=""):
+        if j.application.schemas:
+            j.tools.alerthandler.log(err,tb_text=tb_text)
         return err
 
-    def excepthook(self, ttype, err, tb):
+    def excepthook(self, ttype, err, tb,die=False):
         """ every fatal error in jumpscale or by python itself will result in an exception
         in this function the exception is caught.
         @ttype : is the description of the error
@@ -93,15 +83,17 @@ class ErrorHandler(JSBASE):
                 err._trace = self._trace_get(ttype, err, tb)
                 # err.trace_print()
                 print(err)
+                tb_text=err._trace
         else:
             tb_text = self._trace_get(ttype, err, tb)
             self._trace_print(tb_text)
 
         self.inException = True
-        self._error_process(err)
+        self._error_process(err,tb_text=tb_text)
         self.inException = False
 
-        sys.exit(1)
+        if die:
+            sys.exit(1)
 
 
     def _filterLocals(self, k, v):

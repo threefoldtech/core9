@@ -11,7 +11,7 @@ import sys
 class LoggerFactory():
 
     def __init__(self):
-        self._location = "j.core.logger"
+        self._location = "j.logger"
         self.logger_name = 'j'
         self.handlers = Handlers()
         self.loggers = {}
@@ -289,14 +289,19 @@ class LoggerFactory():
     #     self.logger.addHandler(self.handlers.fileRotateHandler)
 
     def test(self):
+        """
+        js_shell 'j.logger.test()'
+        """
 
+
+
+        self.handlers_reset()
+        self.memhandler_enable()
+        
         logger = self.get("loggerTest")
-
-        self.enableConsoleMemHandler()
 
         logger.info("a test")
 
-        self.enableMemHandler()
 
         def perftest(logger):
             print("start perftest logger")
@@ -309,6 +314,6 @@ class LoggerFactory():
             print("nr of logs per sec:%s" % int(nr / (stop - start)))
 
         perftest(logger)
+        
+        import bpython; bpython.embed(locals(), banner='')
 
-        # FOLLOWING PROVES THAT THE LOOKING FOR FILE & PATH INFO IS THE SLOWING DOWN FACTOR
-        # j.tools.performancetrace.profile("perftest(logger)", globals=locals())  # {"perftest": perftest}
