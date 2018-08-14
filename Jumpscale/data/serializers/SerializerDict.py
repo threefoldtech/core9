@@ -18,7 +18,17 @@ class SerializerDict(JSBASE):
             res.sort()
         return res
 
-    def set_value(self, dictsource, key, val, add_non_exist=False, die=True, errors=[], listunique=False, listsort=True, liststrip=True):
+    def set_value(
+            self,
+            dictsource,
+            key,
+            val,
+            add_non_exist=False,
+            die=True,
+            errors=[],
+            listunique=False,
+            listsort=True,
+            liststrip=True):
         """
         start from a dict template (we only go 1 level deep)
 

@@ -20,7 +20,12 @@ class SerializerYAML(SerializerBase):
         SerializerBase.__init__(self)
 
     def dumps(self, obj):
-        return yaml.dump(obj, default_flow_style=False, default_style='',indent=4,line_break="\n")
+        return yaml.dump(
+            obj,
+            default_flow_style=False,
+            default_style='',
+            indent=4,
+            line_break="\n")
 
     def loads(self, s):
         # out=cStringIO.StringIO(s)

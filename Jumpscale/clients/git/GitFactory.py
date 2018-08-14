@@ -67,7 +67,7 @@ class GitFactory(JSBASE):
             try:
                 port = int(url.split(":")[1].split("/")[0])
                 url = url.replace(":%s/" % (port), ":")
-            except:
+            except BaseException:
                 pass
 
         url_pattern_ssh = re.compile('^(git@)(.*?):(.*?)/(.*?)/?$')
@@ -97,7 +97,7 @@ class GitFactory(JSBASE):
         if not repository_name.endswith('.git'):
             repository_name += '.git'
 
-        if (login == 'ssh' or url_ssh) and ssh != False:
+        if (login == 'ssh' or url_ssh) and ssh:
             if port is None:
                 repository_url = 'ssh://git@%(host)s/%(account)s/%(name)s' % {
                     'host': repository_host,
@@ -659,9 +659,10 @@ class GitFactory(JSBASE):
                             raise j.exceptions.RuntimeError(
                                 "there should be no .git at %s level" % accountdir)
                         else:
-                            for reponame in j.sal.fs.listDirsInDir("%s/%s/%s" % (j.dirs.CODEDIR, top, account),
-                                                                   recursive=False, dirNameOnly=True,
-                                                                   findDirectorySymlinks=True):
+                            for reponame in j.sal.fs.listDirsInDir(
+                                "%s/%s/%s" % (j.dirs.CODEDIR, top, account),
+                                recursive=False, dirNameOnly=True,
+                                    findDirectorySymlinks=True):
                                 repodir = "%s/%s/%s/%s" % (
                                     j.dirs.CODEDIR, top, account, reponame)
                                 if j.sal.fs.exists(path="%s/.git" % repodir):
