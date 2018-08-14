@@ -16,7 +16,8 @@ if len(args) == 1:
     toexec = toexec.strip("'\" ").strip("'\" ")
     exec(toexec)
 else:
-    from IPython import embed
-    embed()  # colors='Linux')
+    # from IPython import embed
+    # embed()  # colors='Linux')
+    import bpython; bpython.embed(locals(), banner='shell') 
 
     j.application.stop()
