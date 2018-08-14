@@ -480,16 +480,17 @@ class Numeric(String):
         else:
             if value.strip() == "":
                 value = "0"
-            if str(float(value)) == str(int(float(value))):
-                value = int(value)
+            fv = float(value)
+            if fv.is_integer(): # check floated val fits into an int
+                # ok, we now know str->float->int will actually be an int
+                value = int(fv)
                 ttype = 0
             else:
-                value = float(value)
-                if value > 10000:
-                    value = int(value)
+                value = fv
+                if fv > 10000:
+                    value = int(value) # doesn't look safe.  issue #72
                     ttype = 3
                 else:
-                    value = float(value)
                     ttype = 1
         curcat = j.clients.currencylayer.cur2id[cur2]
 
@@ -543,6 +544,14 @@ class Numeric(String):
 
         # print (self.bytes2cur(self.str2bytes("0.001k"),"eur"))
         # from IPython import embed;embed(colors='Linux')
+
+        # test that encoding currencies that fit in an int are only
+        # 6 bytes (1 for type, 1 for currency code, 4 for int)
+        # and those that fit into a float are 10 bytes
+        # (1 for type, 1 for currency code, 8 for float)
+        assert len(self.str2bytes("10 usd")) == 6
+        assert len(self.str2bytes("10.0 usd")) == 6
+        assert len(self.str2bytes("10.1 usd")) == 10
 
     def clean(self, data):
         # print("num:clean:%s"%data)
