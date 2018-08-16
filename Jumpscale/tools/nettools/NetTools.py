@@ -442,11 +442,17 @@ class NetTools(JSBASE):
                     return item["name"], ipaddr
 
     def bridgeExists(self, bridgename):
-        cmd = "brctl show"
-        rc, out, err = j.sal.process.execute(cmd, showout=False)
-        for line in out.split("\n"):
-            if line.lower().startswith(bridgename):
+        if j.core.platformtype.myplatform.isMac:
+            cmd = "ifconfig bridge0"
+            rc, out, err = j.sal.process.execute(cmd, showout=False)
+            if bridgename in out:
                 return True
+        else:
+            cmd = "brctl show"
+            rc, out, err = j.sal.process.execute(cmd, showout=False)
+            for line in out.split("\n"):
+                if line.lower().startswith(bridgename):
+                    return True
         return False
 
     def resetDefaultGateway(self, gw):
@@ -605,12 +611,12 @@ class NetTools(JSBASE):
             if netinfo['ip']:
                 if j.core.platformtype.myplatform.isLinux:
                     if ipaddress in netaddr.IPNetwork('{}/{}'.format(netinfo['ip'][0], netinfo['cidr'])):
-                        return True
+                        return False
                 elif j.core.platformtype.myplatform.isMac:
-                    if ipaddress in netaddr.IPNetwork('{}'.format(netinfo['ip'][0])):
-                        return True
+                    if ipaddress in netaddr.IPNetwork('{}/{}'.format(netinfo['ip'][0], netinfo['cidr'][0])):
+                        return False
 
-        return False
+        return True
 
     def getMacAddressForIp(self, ipaddress):
         """Search the MAC address of the given IP address in the ARP table
@@ -920,7 +926,7 @@ class NetTools(JSBASE):
         elif j.core.platformtype.myplatform.isMac:
 
             if inet == 'dhcp':
-                content = 'ipconfig set %s inet dhcp' % device
+                content = 'ipconfig set %s dhcp' % device
             else:
                 content = 'ifconfig %s %s netmask %s ' % (device, ip, netmask)
                 if gw:
