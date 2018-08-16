@@ -4,7 +4,7 @@ import time
 import socket
 import netaddr
 import re
-
+import os
 from jumpscale import j
 
 
@@ -787,9 +787,9 @@ class NetTools(JSBASE):
             else:
                 # It exists but no checksum is provided so any existence of the local file suffices.
                 return
-
+        path, filename = os.path.split(destination_file_path)
         # If reached here then downloading is inevitable
-        self.download(url, localpath=destination_file_path,
+        self.download(url, localpath=path,
                       username=http_auth_username, passwd=http_auth_password)
 
         # Now check if the downloaded file matches the provided checksum
