@@ -26,10 +26,11 @@ def configure(ip):
     """
     node = j.clients.zos.get('builder', data={'host': ip})
     node.zerodbs.partition_and_mount_disks()
+    print("zero-os node configured")
 
 
 @click.command()
-@click.option('--name', '-n', default='zdb_main', help='name of the zdb instance')
+@click.option('--name', '-n', default='zdb_builder', help='name of the zdb instance')
 @click.option('--mode', '-m', default='seq', help='seq or user mode')
 @click.option('--port', '-p', default=3333, help='port which will be exposed for the zerodb container, there is no admin passwd!')
 @click.option('--size', '-s', default=50, help='maximum amount of storage for the zerodb in GiB')
@@ -50,12 +51,13 @@ def zdb(name, mode, port, size):
         size=size)
 
     zdb = node.zerodbs.create(name=name, path=mountpoint, mode=mode, node_port=port)
-    zdb.flist = "https://hub.gig.tech/gig-autobuilder/threefoldtech-0-db-development.flist"
+    zdb.flist = "https://hub.grid.tf/tf-autobuilder/threefoldtech-0-db-development.flist"
     print('deploying zdb on %s' % mountpoint)
     zdb.deploy()
 
     print('zdb deployed')
-    print('reach it at %s:%s' % (node.addr, zdb.node_port))
+    print('reach it publicly at %s:%s' % (node.addr, zdb.node_port))
+    print('reach it internally at %s:9900' % str(zdb.container.default_ip().ip))
 
 
 @click.command()
@@ -67,7 +69,7 @@ def container():
 
     print('creating builder container...')
     container = node.containers.create(name='builder',
-                                       flist='https://hub.gig.tech/gig-official-apps/ubuntu-bionic-build.flist',
+                                       flist='https://hub.grid.tf/tf-official-apps/ubuntu-bionic-build.flist',
                                        nics=[{'type': 'default'}],
                                        ports={2222: 22})
 
@@ -82,7 +84,8 @@ def container():
         except j.exceptions.RuntimeError:
             if i == 2:
                 raise
-            time.sleep(1)
+            print("waiting for ssh to start")
+            time.sleep(5)
 
     j.tools.nodemgr.set(cat="container", name="builder", sshclient="builder", selected=True)
 
@@ -105,7 +108,7 @@ def digitalme(name, port):
     print('creating digitalme container...')
     name = "dm_"+name
     container = node.containers.create(name=name,
-                                       flist='https://hub.gig.tech/gig-official-apps/ubuntu-bionic-build.flist',
+                                       flist='https://hub.grid.tf/tf-official-apps/ubuntu-bionic-build.flist',
                                        nics=[{'type': 'default'}, {'type': 'zerotier', 'id': '1d7193940435f485'}],
                                        ports={port: 22})
 
@@ -120,7 +123,8 @@ def digitalme(name, port):
         except j.exceptions.RuntimeError:
             if i == 2:
                 raise
-            time.sleep(1)
+            print("waiting for ssh to start")
+            time.sleep(5)
 
     j.tools.nodemgr.set(cat="container", name=name, sshclient=name, selected=True)
 
