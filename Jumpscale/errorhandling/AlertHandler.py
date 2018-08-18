@@ -67,9 +67,9 @@ class AlertHandler(JSBASE):
 
     def set(self,key,err):
         if self.serialize_json:
-            self.db.set(key, err.json,ex=24*3600)  #expires in 24h
+            self.db.set(key, err._json,ex=24*3600)  #expires in 24h
         else:
-            self.db.set(key, err.data, ex=24 * 3600)  # expires in 24h
+            self.db.set(key, err._data, ex=24 * 3600)  # expires in 24h
 
     def get(self,key,new=False,die=True):
         res = self.db.get(key)
@@ -151,7 +151,7 @@ class AlertHandler(JSBASE):
         for (key,obj) in self.list():
             tb_text = obj.trace
             j.core.errorhandler._trace_print(tb_text)
-            print(obj.hr_get(exclude=["trace"]))
+            print(obj._hr_get(exclude=["trace"]))
             print("\n############################\n")
 
     def test(self,delete=True):

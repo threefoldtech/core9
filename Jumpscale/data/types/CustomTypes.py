@@ -513,6 +513,7 @@ class Numeric(String):
         assert self.bytes2str(self.str2bytes("1000")) == "1,000"
         assert self.bytes2str(self.str2bytes("100")) == "100"
 
+
         assert self.bytes2cur(self.str2bytes("10usd"), "eur") < 10
         assert self.bytes2cur(self.str2bytes("10usd"), "eur") > 7
         assert self.bytes2cur(self.str2bytes("10eur"), "eur") == 10
@@ -552,6 +553,8 @@ class Numeric(String):
         assert len(self.str2bytes("10 usd")) == 6
         assert len(self.str2bytes("10.0 usd")) == 6
         assert len(self.str2bytes("10.1 usd")) == 10
+
+        print ("test ok")
 
     def clean(self, data):
         # print("num:clean:%s"%data)
@@ -619,6 +622,8 @@ class Date(String):
         return self.clean(txt)
 
     def toString(self, val, local=True):
+        if val==0:
+            return ""
         val = self.clean(val)
         return j.data.time.epoch2HRDateTime(val, local=local)
 

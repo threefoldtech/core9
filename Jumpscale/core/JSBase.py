@@ -6,7 +6,7 @@ class JSBase:
     def __init__(self):
         self._logger = None
         self._cache = None
-        self._name = None
+        self._classname = None
         self._cache_expiration = 3600
         self._logger_force = False
 
@@ -15,9 +15,9 @@ class JSBase:
 
     @property
     def __name__(self):
-        if self._name is None:
-            self._name = j.data.text.strip_to_ascii_dense(str(self.__class__))
-        return self._name
+        if self._classname is None:
+            self._classname = j.data.text.strip_to_ascii_dense(str(self.__class__))
+        return self._classname
 
     @property
     def __location__(self):

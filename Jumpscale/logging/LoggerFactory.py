@@ -314,6 +314,5 @@ class LoggerFactory():
             print("nr of logs per sec:%s" % int(nr / (stop - start)))
 
         perftest(logger)
-        
-        import bpython; bpython.embed(locals(), banner='')
+
 

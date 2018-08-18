@@ -125,7 +125,7 @@ class ErrorHandler(JSBASE):
         tblist = traceback.format_exception(ttype, err, tb)
 
 
-        ignore = ["click/core.py", "ipython", "bpython","loghandler","errorhandler"]
+        ignore = ["click/core.py", "ipython", "bpython","loghandler","errorhandler","importlib._bootstrap"]
 
         # if self._limit and len(tblist) > self._limit:
         #     tblist = tblist[-self._limit:]
@@ -148,75 +148,6 @@ class ErrorHandler(JSBASE):
         else:
             sys.stderr.write(tb_text)
 
-    # def frames_get(self, tb=None):
-    #
-    #     def _getitem_from_frame(f_locals, key, default=None):
-    #         """
-    #         f_locals is not guaranteed to have .get(), but it will always
-    #         support __getitem__. Even if it doesnt, we return ``default``.
-    #         """
-    #         try:
-    #             return f_locals[key]
-    #         except Exception:
-    #             return default
-    #
-    #     if tb is None:
-    #         ttype, msg, tb = sys.exc_info()
-    #
-    #     if tb is None:
-    #         frames = [(item[0], item[2]) for item in inspect.stack()]
-    #     else:
-    #         frames = []
-    #         while tb:  # copied from sentry raven lib (BSD license)
-    #             # support for __traceback_hide__ which is used by a few libraries
-    #             # to hide internal frames.
-    #             f_locals = getattr(tb.tb_frame, 'f_locals', {})
-    #             if not _getitem_from_frame(f_locals, '__traceback_hide__'):
-    #                 frames.append(
-    #                     (tb.tb_frame, getattr(tb, 'tb_lineno', None)))
-    #             tb = tb.tb_next
-    #         frames.reverse()
-    #
-    #     result = []
-    #     ignore = ["ipython", "errorcondition", "loghandler", "errorhandling"]
-    #     for frame, linenr in frames:
-    #         name = frame.f_code.co_filename
-    #         # print "RRR:%s %s"%(name,linenr)
-    #         name = name.lower()
-    #         toignore = False
-    #         for check in ignore:
-    #             if name.find(check) != -1:
-    #                 toignore = True
-    #         if not toignore:
-    #             result.append((frame, linenr))
-    #
-    #     return result
-
-    # def error_trace_kis_get(self, tb=None):
-    #     out = []
-    #     nr = 1
-    #     filename0 = "unknown"
-    #     linenr0 = 0
-    #     func0 = "unknown"
-    #     frs = self.getFrames(tb=tb)
-    #     frs.reverse()
-    #     for f, linenr in frs:
-    #         try:
-    #             code, linenr2 = inspect.findsource(f)
-    #         except Exception:
-    #             continue
-    #         start = max(linenr - 10, 0)
-    #         stop = min(linenr + 4, len(code))
-    #         code2 = "".join(code[start:stop])
-    #         finfo = inspect.getframeinfo(f)
-    #         linenr3 = linenr - start - 1
-    #         out.append((finfo.filename, finfo.function, linenr3, code2, linenr))
-    #         if nr == 1:
-    #             filename0 = finfo.filename
-    #             linenr0 = linenr
-    #             func0 = finfo.function
-    #
-    #     return out, filename0, linenr0, func0
 
     def bug_escalate_developer(self, errorConditionObject, tb=None):
 
@@ -307,17 +238,5 @@ class ErrorHandler(JSBASE):
             #j.tools.console.echo( "Tracefile in %s" % tracefile)
             j.application.stop(1)
 
-    def halt(self, msg, eco):
-        if eco is not None:
-            eco = eco.__dict__
-        raise HaltException(msg, eco)
 
-    def raiseWarning(self, message, msgpub="", tags="", level=4):
-        """
-        @param message is the error message which describes the state
-        @param msgpub is message we want to show to endcustomers (can include a solution)
-        """
-        eco = j.errorhandler.getErrorConditionObject(
-            ddict={}, msg=message, msgpub=msgpub, category='', level=level, type='WARNING')
 
-        eco.process()

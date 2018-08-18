@@ -18,6 +18,8 @@ if len(args) == 1:
 else:
     # from IPython import embed
     # embed()  # colors='Linux')
-    import bpython; bpython.embed(locals(), banner='shell') 
+    # import bpython; bpython.embed(locals(), banner='shell')
+    from IPython import embed;
+    embed()
 
     j.application.stop()
