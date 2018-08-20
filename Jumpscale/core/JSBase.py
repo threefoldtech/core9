@@ -44,7 +44,7 @@ class JSBase:
     def logger_enable(self):
         self._logger_force = True
         self._logger = None
-        self.logger.level = 20
+        self.logger.level = 0
 
 
 
