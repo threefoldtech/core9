@@ -4,7 +4,7 @@ import time
 import socket
 import netaddr
 import re
-
+import os
 from jumpscale import j
 
 
@@ -69,7 +69,7 @@ class NetTools(JSBASE):
         start = j.data.time.getTimeEpoch()
         now = start
         while now < start + timeout:
-            if j.sal.nettools.tcpPortConnectionTest(ipaddr, port, 1) is False:
+            if j.sal.nettools.tcpPortConnectionTest(ipaddr, port, 1) is True:
                 return True
             now = j.data.time.getTimeEpoch()
         return False
@@ -442,16 +442,25 @@ class NetTools(JSBASE):
                     return item["name"], ipaddr
 
     def bridgeExists(self, bridgename):
-        cmd = "brctl show"
-        rc, out, err = j.sal.process.execute(cmd, showout=False)
-        for line in out.split("\n"):
-            if line.lower().startswith(bridgename):
+        if j.core.platformtype.myplatform.isMac:
+            cmd = "ifconfig bridge0"
+            rc, out, err = j.sal.process.execute(cmd, showout=False)
+            if bridgename in out:
                 return True
+        else:
+            cmd = "brctl show"
+            rc, out, err = j.sal.process.execute(cmd, showout=False)
+            for line in out.split("\n"):
+                if line.lower().startswith(bridgename):
+                    return True
         return False
 
     def resetDefaultGateway(self, gw):
         def gwexists():
-            cmd = "ip r"
+            if j.core.platformtype.myplatform.isMac:
+                cmd = "netstat -r"
+            else:
+                cmd = "ip r"
             rc, out, err = j.sal.process.execute(cmd, showout=False)
             for line in out.split("\n"):
                 if line.lower().startswith("default"):
@@ -459,9 +468,12 @@ class NetTools(JSBASE):
             return False
 
         def removegw():
-            cmd = "ip route del 0/0"
+            if j.core.platformtype.myplatform.isMac:
+                cmd = "route -n delete default"
+            else:
+                cmd = "ip route del 0/0"
             rc, out, err = j.sal.process.execute(
-                cmd, showout=False, ignoreErrorOutput=False, die=False)
+                cmd, showout=False, die=False)
 
         removegw()
         couter = 0
@@ -472,11 +484,14 @@ class NetTools(JSBASE):
             counter += 1
             if counter > 10:
                 raise j.exceptions.RuntimeError("cannot delete def gw")
-
-        cmd = 'route add default gw %s' % gw
+        if j.core.platformtype.myplatform.isMac:
+            cmd = 'route add default %s' % gw
+        else:
+            cmd = 'route add default gw %s' % gw
         j.sal.process.execute(cmd)
+        return "added %s default gw" % gw
 
-    def getNetworkInfo(self,device=None,usecache=True):
+    def getNetworkInfo(self,device=None):
         """
         returns network info like
 
@@ -589,14 +604,19 @@ class NetTools(JSBASE):
     def isIpLocal(self, ipaddress):
         if ipaddress == "127.0.0.1" or ipaddress == "localhost":
             return True
-        return ipaddress in self.getIpAddresses()
+        return ipaddress in self.getIpAddresses()['ip']
 
     def isIpInDifferentNetwork(self, ipaddress):
         for netinfo in self.getNetworkInfo():
-            for ip, cidr in zip(netinfo['ip'], netinfo['cidr']):
-                if ipaddress in netaddr.IPNetwork('{}/{}'.format(ip, cidr)):
-                    return True
-        return False
+            if netinfo['ip']:
+                if j.core.platformtype.myplatform.isLinux:
+                    if ipaddress in netaddr.IPNetwork('{}/{}'.format(netinfo['ip'][0], netinfo['cidr'])):
+                        return False
+                elif j.core.platformtype.myplatform.isMac:
+                    if ipaddress in netaddr.IPNetwork('{}/{}'.format(netinfo['ip'][0], netinfo['cidr'][0])):
+                        return False
+
+        return True
 
     def getMacAddressForIp(self, ipaddress):
         """Search the MAC address of the given IP address in the ARP table
@@ -773,9 +793,9 @@ class NetTools(JSBASE):
             else:
                 # It exists but no checksum is provided so any existence of the local file suffices.
                 return
-
+        path, filename = os.path.split(destination_file_path)
         # If reached here then downloading is inevitable
-        self.download(url, localpath=destination_file_path,
+        self.download(url, localpath=path,
                       username=http_auth_username, passwd=http_auth_password)
 
         # Now check if the downloaded file matches the provided checksum
@@ -890,18 +910,28 @@ class NetTools(JSBASE):
         if inet == 'static' and (not ip or not netmask):
             raise ValueError('ip, and netmask, are required in static inet.')
 
-        file = j.tools.path.get('/etc/network/interfaces.d/%s' % device)
-        content = 'auto %s\n' % device
+        if j.core.platformtype.myplatform.isLinux:
+            file = j.tools.path.get('/etc/network/interfaces.d/%s' % device)
+            content = 'auto %s\n' % device
 
-        if inet == 'dhcp':
-            content += 'iface %s inet dhcp\n' % device
-        else:
-            content += 'iface %s inet static\naddress %s\nnetmask %s\n' % (device, ip, netmask)
-            if gw:
-                content += 'gateway %s\n' % gw
+            if inet == 'dhcp':
+                content += 'iface %s inet dhcp\n' % device
+            else:
+                content += 'iface %s inet static\naddress %s\nnetmask %s\n' % (device, ip, netmask)
+                if gw:
+                    content += 'gateway %s\n' % gw
 
-        file.write_text(content)
+            file.write_text(content)
 
+        elif j.core.platformtype.myplatform.isMac:
+
+            if inet == 'dhcp':
+                content = 'ipconfig set %s dhcp' % device
+            else:
+                content = 'ifconfig %s %s netmask %s ' % (device, ip, netmask)
+                if gw:
+                    content += '%s' % gw
+            j.sal.process.execute(content)
         if commit:
             self.commit(device)
         else:
@@ -909,13 +939,18 @@ class NetTools(JSBASE):
 
     def commit(self, device=None):
         #- make sure loopback exist
-        content = 'auto lo\niface lo inet loopback\n'
-        j.tools.path.get('/etc/network/interfaces.d/lo').write_text(content)
+        if j.core.platformtype.myplatform.isMac:
+            if device:
+                self.logger.info('Restarting interface %s' % device)
+                j.sal.process.execute('ifconfig %s down && ifconfig %s up' % (device, device))
+        elif j.core.platformtype.myplatform.isLinux:
+            content = 'auto lo\niface lo inet loopback\n'
+            j.tools.path.get('/etc/network/interfaces.d/lo').write_text(content)
 
-        j.sal.process.execute('service networking restart')
-        if device:
-            self.logger.info('Restarting interface %s' % device)
-            j.sal.process.execute('ifdown %s && ifup %s' % (device, device))
+            j.sal.process.execute('service networking restart')
+            if device:
+                self.logger.info('Restarting interface %s' % device)
+                j.sal.process.execute('ifdown %s && ifup %s' % (device, device))
         self.logger.info('DONE')
 
 class NetworkZone(JSBASE):
