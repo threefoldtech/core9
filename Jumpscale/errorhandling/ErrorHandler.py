@@ -23,8 +23,6 @@ import traceback
 JSBASE = j.application.jsbase_get_class()
 
 
-
-
 class ErrorHandler(JSBASE):
 
     def __init__(self):
@@ -36,16 +34,11 @@ class ErrorHandler(JSBASE):
         self.redis = False
         self.exit_on_error = True
 
-
-
-
     def setExceptHook(self):
         sys.excepthook = self.excepthook
         self.inException = False
 
-
-
-    def try_except_error_process(self, err,die=True):
+    def try_except_error_process(self, err, die=True):
         """
         how to use
 
@@ -57,14 +50,14 @@ class ErrorHandler(JSBASE):
         """
 
         ttype, msg, tb = sys.exc_info()
-        self.excepthook(ttype, err, tb,die=die)
+        self.excepthook(ttype, err, tb, die=die)
 
-    def _error_process(self, err,tb_text=""):
+    def _error_process(self, err, tb_text=""):
         if j.application.schemas:
-            j.tools.alerthandler.log(err,tb_text=tb_text)
+            j.tools.alerthandler.log(err, tb_text=tb_text)
         return err
 
-    def excepthook(self, ttype, err, tb,die=False):
+    def excepthook(self, ttype, err, tb, die=False):
         """ every fatal error in jumpscale or by python itself will result in an exception
         in this function the exception is caught.
         @ttype : is the description of the error
@@ -83,18 +76,17 @@ class ErrorHandler(JSBASE):
                 err._trace = self._trace_get(ttype, err, tb)
                 # err.trace_print()
                 print(err)
-                tb_text=err._trace
+                tb_text = err._trace
         else:
             tb_text = self._trace_get(ttype, err, tb)
             self._trace_print(tb_text)
 
         self.inException = True
-        self._error_process(err,tb_text=tb_text)
+        self._error_process(err, tb_text=tb_text)
         self.inException = False
 
         if die:
             sys.exit(1)
-
 
     def _filterLocals(self, k, v):
         try:
@@ -124,8 +116,7 @@ class ErrorHandler(JSBASE):
 
         tblist = traceback.format_exception(ttype, err, tb)
 
-
-        ignore = ["click/core.py", "ipython", "bpython","loghandler","errorhandler","importlib._bootstrap"]
+        ignore = ["click/core.py", "ipython", "bpython", "loghandler", "errorhandler", "importlib._bootstrap"]
 
         # if self._limit and len(tblist) > self._limit:
         #     tblist = tblist[-self._limit:]
@@ -138,7 +129,7 @@ class ErrorHandler(JSBASE):
                 tb_text += "%s" % item
         return tb_text
 
-    def _trace_print(self,tb_text):
+    def _trace_print(self, tb_text):
         if pygmentsObj:
             formatter = pygments.formatters.Terminal256Formatter(style=pygments.styles.get_style_by_name("vim"))
             lexer = pygments.lexers.get_lexer_by_name("pytb", stripall=True)  # pytb
@@ -147,7 +138,6 @@ class ErrorHandler(JSBASE):
             # print(tb_colored)
         else:
             sys.stderr.write(tb_text)
-
 
     def bug_escalate_developer(self, errorConditionObject, tb=None):
 
@@ -237,6 +227,3 @@ class ErrorHandler(JSBASE):
             # print errorConditionObject
             #j.tools.console.echo( "Tracefile in %s" % tracefile)
             j.application.stop(1)
-
-
-
