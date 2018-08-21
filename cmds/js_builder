@@ -47,6 +47,7 @@ def init():
     j.clients.virtualbox.zero_os_get(name="builder", redis_port=4445)
 
 
+@click.command()
 @click.option('--name', '-n', default='zdb_builder', help='name of the zdb instance')
 @click.option('--mode', '-m', default='seq', help='seq or user mode')
 @click.option('--port', '-p', default=3333, help='port which will be exposed for the zerodb container, there is no admin passwd!')
