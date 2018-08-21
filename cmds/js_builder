@@ -19,7 +19,7 @@ def cli():
 
 
 @click.command()
-@click.argument('ip')
+@click.argument('ip', default=None, required=False)
 def configure(ip):
     """
     configure the zero-os, also make sure partitions are done for zerodb, need ip addr
