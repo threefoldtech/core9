@@ -534,8 +534,7 @@ class GitFactory(JSBASE):
         if not j.sal.fs.exists(rpath, followlinks=True) and pull:
             j.clients.git.pullGitRepo(repository_url, branch=branch)
         if not j.sal.fs.exists(rpath, followlinks=True):
-            raise j.exceptions.Input(message="Did not find path in git:%s" %
-                                     rpath, level=1, source="", tags="", msgpub="")
+            raise j.exceptions.Input(message="Did not find path in git:%s" % rpath)
 
         return (repository_url, gitpath, relpath)
 
@@ -719,7 +718,7 @@ class GitFactory(JSBASE):
             path = j.sal.fs.getParent(path)
         if die:
             raise j.exceptions.Input("Cannot find git path in:%s" % path)
-        
+
 
     def parseGitConfig(self, repopath):
         """

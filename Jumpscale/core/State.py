@@ -150,8 +150,7 @@ class State(JSBASE):
                 return defval
             else:
                 raise j.exceptions.Input(
-                    message="could not find config key:%s in executor:%s" %
-                    (key, self), level=1, source="", tags="", msgpub="")
+                    message="could not find config key:%s in executor:%s" % (key, self))
 
     def _set(self, key, val, save=True, config=None, path=""):
         """
@@ -399,8 +398,7 @@ class State(JSBASE):
             return
         if self.readonly:
             raise j.exceptions.Input(
-                message="cannot write config to '%s', because is readonly" %
-                self, level=1, source="", tags="", msgpub="")
+                message="cannot write config to '%s', because is readonly" % self)
         if config and path:
             data = pytoml.dumps(config)
             self.executor.file_write(path, data)

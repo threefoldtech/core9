@@ -3,7 +3,7 @@ from collections import OrderedDict
 from jumpscale import j
 from .SerializerBase import SerializerBase
 
-testtoml="""
+testtoml = """
 name = 'something'
 multiline = '''
     these are multiple lines
@@ -34,7 +34,7 @@ class SerializerYAML(SerializerBase):
         except Exception as e:
             error = "error:%s\n" % e
             error += "\nyaml could not parse:\n%s\n" % s
-            raise j.exceptions.Input(message=error, level=1, source="", tags="", msgpub="")
+            raise j.exceptions.Input(message=error)
 
     def load(self, path):
         try:
@@ -42,14 +42,14 @@ class SerializerYAML(SerializerBase):
         except Exception as e:
             error = "error:%s\n" % e
             error += '\npath:%s\n' % path
-            raise j.exceptions.Input(message=error, level=1, source="", tags="", msgpub="")
+            raise j.exceptions.Input(message=error)
 
         try:
             return yaml.load(s)
         except Exception as e:
             error = "error:%s\n" % e
             error += "\nyaml could not parse:\n%s\n" % s
-            raise j.exceptions.Input(message=error, level=1, source="", tags="", msgpub="")
+            raise j.exceptions.Input(message=error)
 
     def ordered_load(self, stream, Loader=yaml.Loader, object_pairs_hook=OrderedDict):
         """
@@ -82,8 +82,8 @@ class SerializerYAML(SerializerBase):
         return yaml.dump(data, stream, OrderedDumper, **kwds)
 
     def test(self):
-        ddict=j.data.serializer.toml.loads(testtoml)
-        #TODO:*3 write some test
+        ddict = j.data.serializer.toml.loads(testtoml)
+        # TODO:*3 write some test
 
 # from jumpscale import j
 
@@ -107,4 +107,3 @@ class SerializerYAML(SerializerBase):
 #         """
 #         return dump(obj, width=width, default_flow_style=False)
 #
-

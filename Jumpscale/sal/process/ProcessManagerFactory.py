@@ -53,6 +53,8 @@ The stdout and stderr variable contains the full buffer:
 """
 
 JSBASE = j.application.jsbase_get_class()
+
+
 class StdDuplicate(object, JSBASE):
 
     def __init__(self, original):
@@ -128,7 +130,7 @@ class Process(JSBASE):
         """
         if self.method is None:
             msg = "Cannot start process, method not set."
-            raise j.exceptions.Input(message=msg, level=1, source="", tags="", msgpub="")
+            raise j.exceptions.Input(message=msg)
 
         # saving output
         oldout = sys.stdout
@@ -177,7 +179,7 @@ class Process(JSBASE):
         """
         if self.method is None:
             msg = "Cannot start process, method not set."
-            raise j.exceptions.Input(message=msg, level=1, source="", tags="", msgpub="")
+            raise j.exceptions.Input(message=msg)
         self.started_at = datetime.datetime.now()
         rpipe, wpipe = os.pipe()
         self._stdout['read'], self._stdout['write'] = os.pipe()
@@ -372,8 +374,7 @@ class ProcessManagerFactory(JSBASE):
 
             if autowait:
                 if not autoclear:
-                    raise j.exceptions.Input(message="cannot wait if autoclear=False",
-                                             level=1, source="", tags="", msgpub="")
+                    raise j.exceptions.Input(message="cannot wait if autoclear=False")
                 while True:
                     print("too many subprocesses, am waiting")
                     time.sleep(1)
@@ -382,8 +383,7 @@ class ProcessManagerFactory(JSBASE):
                     if len(self.processes) < 100:
                         break
             else:
-                raise j.exceptions.Input(message="cannot launch more than 100 sub processes",
-                                         level=1, source="", tags="", msgpub="")
+                raise j.exceptions.Input(message="cannot launch more than 100 sub processes")
 
         p = Process(name, method, timeout, args)
         self.processes[p.name] = p

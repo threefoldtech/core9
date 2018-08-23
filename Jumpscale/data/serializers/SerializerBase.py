@@ -1,6 +1,8 @@
 from jumpscale import j
 
 JSBASE = j.application.jsbase_get_class()
+
+
 class SerializerBase(JSBASE):
 
     def __init__(self):
@@ -18,7 +20,7 @@ class SerializerBase(JSBASE):
             error = "error:%s\n" % e
             error += "\could not parse:\n%s\n" % b
             error += '\npath:%s\n' % path
-            raise j.exceptions.Input(message=error, level=1, source="", tags="", msgpub="")
+            raise j.exceptions.Input(message=error)
         return r
 
     def dumps(self, val):
@@ -38,8 +40,9 @@ class SerializerBase(JSBASE):
             data = j.data.serializer.serializers.types[key].loads(data)
         return data
 
+
 class SerializerHalt(JSBASE):
-    
+
     def __init__(self):
         JSBASE.__init__(self)
 
