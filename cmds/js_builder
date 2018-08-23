@@ -152,7 +152,7 @@ def digitalme(name, port):
 
 cli.add_command(init)
 cli.add_command(configure)
-# cli.add_command(zdb)
+cli.add_command(zdb)
 cli.add_command(container)
 cli.add_command(digitalme)
 
