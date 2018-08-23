@@ -9,6 +9,8 @@ import msgpack
 
 import re
 JSBASE = j.application.jsbase_get_class()
+
+
 class KeyValueStoreBase(JSBASE):  # , metaclass=ABCMeta):
     '''KeyValueStoreBase defines a store interface.'''
 
@@ -65,10 +67,9 @@ class KeyValueStoreBase(JSBASE):  # , metaclass=ABCMeta):
         if len(val) == 32:
             val = j.data.hash.hex2bin(val)
         elif len(val) != 16:
-            raise j.exceptions.Input(message="schema needs to be 32 or 16 bytes",
-                                     level=1, source="", tags="", msgpub="")
+            raise j.exceptions.Input(message="schema needs to be 32 or 16 bytes")
         if not j.data.types.bytes.check(val):
-            raise j.exceptions.Input(message="schema needs to be in bytes", level=1, source="", tags="", msgpub="")
+            raise j.exceptions.Input(message="schema needs to be in bytes")
         self._schema = val
 
     @property
@@ -89,10 +90,9 @@ class KeyValueStoreBase(JSBASE):  # , metaclass=ABCMeta):
         if len(val) == 32:
             val = j.data.hash.hex2bin(val)
         elif len(val) != 16:
-            raise j.exceptions.Input(message="owner needs to be 32 or 16 bytes",
-                                     level=1, source="", tags="", msgpub="")
+            raise j.exceptions.Input(message="owner needs to be 32 or 16 bytes")
         if not j.data.types.bytes.check(val):
-            raise j.exceptions.Input(message="owner needs to be in bytes", level=1, source="", tags="", msgpub="")
+            raise j.exceptions.Input(message="owner needs to be in bytes")
 
         self._owner = val
 
@@ -229,8 +229,7 @@ class KeyValueStoreBase(JSBASE):  # , metaclass=ABCMeta):
 
         else:
             if value is None:
-                raise j.exceptions.Input(message="value needs to be set (not None), key:%s" %
-                                                 key, level=1, source="", tags="", msgpub="")
+                raise j.exceptions.Input(message="value needs to be set (not None), key:%s" % key)
 
         value2 = self.serialize(value)
 
@@ -247,8 +246,7 @@ class KeyValueStoreBase(JSBASE):  # , metaclass=ABCMeta):
             if "not allowed" in str(e):
                 # exists but no access, should just return False
                 # return False
-                # raise j.exceptions.Input(message="Object '%s' does exist but I have not rights." %
-                #  key, level=1, source="", tags="", msgpub="")
+                # raise j.exceptions.Input(message="Object '%s' does exist but I have not rights." % key)
                 return True
             if "Cannot find" in str(e):
                 return False
@@ -292,7 +290,7 @@ class KeyValueStoreBase(JSBASE):  # , metaclass=ABCMeta):
 
         if data is None:
             if die:
-                raise j.exceptions.Input(message="Cannot find object: %s" % key, level=1, source="", tags="", msgpub="")
+                raise j.exceptions.Input(message="Cannot find object: %s" % key)
             else:
                 return (None, "", "", 0, {})
 
@@ -302,8 +300,7 @@ class KeyValueStoreBase(JSBASE):  # , metaclass=ABCMeta):
         (val, owner, schema, expire, acl) = self._decode(data)
 
         if j.data.kvs._aclCheck(acl, owner, secret, modecheck) is False:
-            raise j.exceptions.Input(message="cannot get obj with key '%s' because mode '%s' is not allowed." % (
-                key, modecheck), level=1, source="", tags="", msgpub="")
+            raise j.exceptions.Input(message="cannot get obj with key '%s' because mode '%s' is not allowed." % (key, modecheck))
 
         val = self.unserialize(val)
 
@@ -315,7 +312,7 @@ class KeyValueStoreBase(JSBASE):  # , metaclass=ABCMeta):
 
         if secret is not None and secret != '' and owner != secret:
             raise j.exceptions.Input(message="Cannot delete object, only owner can delete an object",
-                                     level=1, source="", tags="", msgpub="")
+                                     )
 
         self._delete(key=key)
 

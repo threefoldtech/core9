@@ -229,8 +229,7 @@ class SystemProcess(JSBASE):
 
         if cwd is not None:
             if not useShell:
-                raise j.exceptions.Input(message="when using cwd, useshell needs to be used",
-                                         level=1, source="", tags="", msgpub="")
+                raise j.exceptions.Input(message="when using cwd, useshell needs to be used")
             if "cd %s;" % cwd not in command:
                 command = "cd %s;%s" % (cwd, command)
 

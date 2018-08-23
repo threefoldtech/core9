@@ -286,8 +286,7 @@ class GitClient(JSBASE):
         :raises Exception when there are files waiting for commit
         """
         if self.checkFilesWaitingForCommit():
-            raise j.exceptions.Input(message="Cannot pull:%s, files waiting to commit" %
-                                     self, level=1, source="", tags="", msgpub="")
+            raise j.exceptions.Input(message="Cannot pull:%s, files waiting to commit" % self)
         self.repo.git.pull()
 
     def fetch(self):
