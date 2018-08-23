@@ -41,7 +41,7 @@ def configure(ip):
 @click.command()
 def init():
     """
-    use virtualbox to launch a zero-os on your machine (now only tested on OSX)
+    use virtualbox to launch a zero-os on your machine (tested on linux and osx)
     the name of the machine is builder
     """
     j.clients.virtualbox.zero_os_get(name="builder", redis_port=4445)
@@ -57,6 +57,14 @@ def zdb(name, mode, port, size):
     create a zdb container
     """
     node = j.clients.zos.get('builder')
+    logger = j.logger.get()
+
+    if node.addr == 'localhost':
+        # assume that if remote is localhost
+        # we try to reach a virtual machine with port forwarding
+        # from localhost to the machine, let's grab the reachable
+        # address of the virtual machine
+        node = j.clients.virtualbox.zero_os_private(node)
 
     print("finding best disk where to deploy zdb...")
     # find best disk where to deploy zdb
@@ -84,6 +92,10 @@ def container():
     create a build container in zero-os and launch ubuntu with lots of tools pre-installed to make building easy
     """
     node = j.clients.zos.get('builder')
+
+    if node.addr == 'localhost':
+        # cf zdb
+        node = j.clients.virtualbox.zero_os_private(node)
 
     print('creating builder container...')
     container = node.containers.create(name='builder',
