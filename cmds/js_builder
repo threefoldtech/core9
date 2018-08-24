@@ -268,7 +268,7 @@ def digitalme(name, port):
 
     n.prefab.jumpscale.jumpscalecore.install(full=False) #full does not seem to be needed
 
-    from IPython import embed; embed()
+    print ("OK: digital me is installed")
 
 
 cli.add_command(init)

@@ -343,12 +343,14 @@ class SSHClientParamiko(SSHClientBase):
                 if chan == 'O':
                     if showout:
                         with self._lock:
-                            self.logger.debug(line.rstrip())
+                            # self.logger.debug(line.rstrip())
+                            print(line.rstrip())
                     out.write(line)
                 elif chan == 'E':
                     if showout:
                         with self._lock:
                             self.logger.error(line.rstrip())
+                            print(line.rstrip())
                     err.write(line)
             except queue.Empty:
                 pass
