@@ -8,6 +8,7 @@ import pytoml
 import pystache
 import hashlib
 import base64
+import os
 
 JSBASE = j.application.jsbase_get_class()
 
@@ -20,6 +21,7 @@ class ExecutorBase(JSBASE):
         self.checkok = checkok
         self.type = None
         self._id = None
+        self._isBuildEnv = None
         self.readonly = False
         self.state_disabled = False
         self.CURDIR = ""
@@ -155,6 +157,17 @@ class ExecutorBase(JSBASE):
         return self.stateOnSystem["iscontainer"]
 
     @property
+    def isBuildEnv(self):
+        """
+        means we are building python and we are in the build-dir
+        """
+        if self._isBuildEnv == None:
+            #env arg is set by the env.sh script in the build dir
+            self._isBuildEnv = "PBASE" in os.environ
+        return self._isBuildEnv
+
+
+    @property
     def stateOnSystem(self):
         """
         is dict of all relevant param's on system
@@ -209,7 +222,7 @@ class ExecutorBase(JSBASE):
             echo --TEXT--
             """
             C = j.data.text.strip(C)
-            rc, out, err = self.execute(C, showout=True, sudo=False)
+            rc, out, err = self.execute(C, showout=False, sudo=False)
             res = {}
             state = ""
             for line in out.split("\n"):
@@ -275,6 +288,7 @@ class ExecutorBase(JSBASE):
             res["env"] = envdict
             return res
 
+
         if self._stateOnSystem is None:
             self._stateOnSystem = self.cache.get("stateOnSystem", do)
         return self._stateOnSystem
@@ -286,8 +300,19 @@ class ExecutorBase(JSBASE):
 
     def _getDirPathConfig(self):
 
-        if self.isContainer:
+        if self.isBuildEnv:
+            T = "BASEDIR = \"%s\"\n"%os.environ["PBASE"]
+            T += '''
+            HOMEDIR = "{{TMPDIR}}"
+            CODEDIR = "{{BASEDIR}}/code"
+            HOSTDIR = "{{TMPDIR}}/host"
+            HOSTCFGDIR = "{{TMPDIR}}/hostcfg"
+            CFGDIR = "{{BASEDIR}}/cfg"
+            VARDIR = "{{TMPDIR}}/var"
+            '''
+        elif self.isContainer:
             T = '''
+            HOMEDIR = "~"
             BASEDIR = "/opt"
             CODEDIR = "/opt/code"
             HOSTDIR = "/host"
@@ -295,8 +320,10 @@ class ExecutorBase(JSBASE):
             CFGDIR = "{{BASEDIR}}/cfg"
             VARDIR = "/var"
             '''
+
         elif self.platformtype.isMac:
             T = '''
+            HOMEDIR = "~"
             BASEDIR = "{{HOMEDIR}}/opt/"
             CODEDIR = "{{HOMEDIR}}/code"
             HOSTDIR = "{{HOMEDIR}}/opt/"
@@ -306,6 +333,7 @@ class ExecutorBase(JSBASE):
             '''
         else:
             T = '''
+            HOMEDIR = "~"
             BASEDIR = "/opt"
             CODEDIR = "/opt/code"
             HOSTDIR = "{{HOMEDIR}}/jumpscale/"
@@ -314,9 +342,8 @@ class ExecutorBase(JSBASE):
             VARDIR = "{{BASEDIR}}/var"
             '''
 
-        BASE = '''
-        HOMEDIR = "~"
-        TMPDIR = "{{TMPDIR}}/jumpscale/"
+        BASE = '''        
+        TMPDIR = "{{TMPDIRSYSTEM}}/jumpscale/"
         BASEDIRJS = "{{BASEDIR}}/jumpscale"
         JSAPPSDIR= "{{BASEDIRJS}}/apps"
         TEMPLATEDIR ="{{VARDIR}}/templates"
@@ -333,9 +360,8 @@ class ExecutorBase(JSBASE):
 
     def _replaceInToml(self, T):
         T = T.replace("~", self.env["HOME"])
-        # T = T.replace("{{TMPDIR}}", self.env["TMPDIR"])
         # need to see if this works well on mac
-        T = T.replace("{{TMPDIR}}", "/tmp")
+        T = T.replace("{{TMPDIRSYSTEM}}", "/tmp")
         # will replace  variables in itself
         counter = 0
         while "{{" in T and counter < 10:
@@ -359,10 +385,11 @@ class ExecutorBase(JSBASE):
         T = T.replace("//", "/")
         DIRPATHS = pytoml.loads(T)
 
-        # get env dir arguments & overrule them in jumpscale config
-        for key, val in self.env.items():
-            if "DIR" in key and key in DIRPATHS:
-                DIRPATHS[key] = val
+        if not self.isBuildEnv:
+            # get env dir arguments & overrule them in jumpscale config
+            for key, val in self.env.items():
+                if "DIR" in key and key in DIRPATHS:
+                    DIRPATHS[key] = val
 
         TSYSTEM = '''
 
@@ -401,11 +428,29 @@ class ExecutorBase(JSBASE):
 
         if not self.state_disabled:
 
-            out = ""
-            for key, val in DIRPATHS.items():
-                out += "mkdir -p %s\n" % val
-    
-            self.execute(out, sudo=True)
+            if self.isBuildEnv:
+                for key, val in DIRPATHS.items():
+                    j.sal.fs.createDir(val)
+                githubpath="%s/github/threefoldtech"%DIRPATHS["CODEDIR"]
+
+                #link code dir from host to build dir if it exists
+                if not j.sal.fs.exists(githubpath):
+                    sdir1 = "%s/code/github/threefoldtech"%os.environ["HOME"]
+                    sdir2 = "/opt/code/github/threefoldtech"
+                    if j.sal.fs.exists(sdir1):
+                        sdir = sdir1
+                    elif j.sal.fs.exists(sdir2):
+                        sdir = sdir2
+                    else:
+                        sdir = None
+                    if sdir is not None:
+                        j.sal.fs.symlink(sdir, githubpath, overwriteTarget=True)
+
+            else:
+                out = ""
+                for key, val in DIRPATHS.items():
+                    out += "mkdir -p %s\n" % val
+                self.execute(out, sudo=True,showout=False)
 
             if self.exists("%s/github/threefoldtech/jumpscale_core/" % DIRPATHS["CODEDIR"]):
                 TT["plugins"]["Jumpscale"] = "%s/github/threefoldtech/jumpscale_core/Jumpscale/" % DIRPATHS["CODEDIR"]
@@ -414,9 +459,18 @@ class ExecutorBase(JSBASE):
                     TT["plugins"]["JumpscaleLib"] = "%s/github/threefoldtech/jumpscale_lib/JumpscaleLib/" % DIRPATHS["CODEDIR"]
                 if self.exists("%s/github/threefoldtech/jumpscale_prefab/" % DIRPATHS["CODEDIR"]):
                     TT["plugins"]["JumpscalePrefab"] = "%s/github/threefoldtech/jumpscale_prefab/JumpscalePrefab/" % DIRPATHS["CODEDIR"]
+                if self.exists("%s/github/threefoldtech/digital_me/" % DIRPATHS["CODEDIR"]):
+                    TT["plugins"]["DigitalMeLib"] = "%s/github/threefoldtech/digital_me/DigitalMeLib/" % DIRPATHS["CODEDIR"]
+                if self.exists("%s/github/threefoldtech/0-robot/" % DIRPATHS["CODEDIR"]):
+                    TT["plugins"]["JumpscaleZrobot"] = "%s/github/threefoldtech/0-robot/JumpscaleZrobot/" % DIRPATHS["CODEDIR"]
+
                 if self.type == "local":
                     src = "%s/github/threefoldtech/jumpscale_core/cmds/" % DIRPATHS["CODEDIR"]
-                    j.sal.fs.symlinkFilesInDir(src, "/usr/local/bin", delete=True,
+                    if self.isBuildEnv:
+                        dest = DIRPATHS["BINDIR"]
+                    else:
+                        dest = "/usr/local/bin"
+                    j.sal.fs.symlinkFilesInDir(src,dest, delete=True,
                                                includeDirs=False, makeExecutable=True)
 
         if TT["system"]["container"] is True:
@@ -477,7 +531,7 @@ class ExecutorBase(JSBASE):
         cmd = 'echo %s | sudo -H -SE -p \'\' bash -c "%s"' % (passwd, command.replace('"', '\\"'))
         return cmd
 
-    def file_write(self, path, content, mode=None, owner=None, group=None, append=False, sudo=False):
+    def file_write(self, path, content, mode=None, owner=None, group=None, append=False, sudo=False, showout=True):
         """
         @param append if append then will add to file
 
@@ -485,13 +539,14 @@ class ExecutorBase(JSBASE):
 
         """
 
-        self.logger.debug("file write:%s" % path)
+        if showout:
+            self.logger.debug("file write:%s" % path)
 
         if len(content) > 100000:
             # when contents are too big, bash will crash
             temp = j.sal.fs.getTempFileName()
             j.sal.fs.writeFile(filename=temp, contents=content, append=False)
-            self.upload(temp, path)
+            self.upload(temp, path,showout=showout)
             j.sal.fs.remove(temp)
         else:
             content2 = content.encode('utf-8')

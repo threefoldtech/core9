@@ -39,14 +39,18 @@ class ExecutorLocal(ExecutorBase):
         def do():
             # print ("INFO: stateonsystem for local")
 
-            if "HOMEDIR" in os.environ.keys():
-                homedir = os.environ["HOMEDIR"]
+            if self.isBuildEnv:
+                homedir = os.environ["PBASE"]
+                cfgdir = "%s/cfg" % homedir
             else:
-                # if os.path.exists("/root/.iscontainer"):
-                #     homedir = "/host"
-                # else:
-                homedir = os.environ["HOME"]
-            cfgdir = "%s/jumpscale/cfg" % homedir
+                if "HOMEDIR" in os.environ.keys():
+                    homedir = os.environ["HOMEDIR"]
+                else:
+                    # if os.path.exists("/root/.iscontainer"):
+                    #     homedir = "/host"
+                    # else:
+                    homedir = os.environ["HOME"]
+                cfgdir = "%s/jumpscale/cfg" % homedir
             res = {}
 
             def load(name):
@@ -168,7 +172,7 @@ class ExecutorLocal(ExecutorBase):
     def file_read(self, path):
         return j.sal.fs.readFile(path)
 
-    def file_write(self, path, content, mode=None, owner=None, group=None, append=False, sudo=False):
+    def file_write(self, path, content, mode=None, owner=None, group=None, append=False, sudo=False,showout=True):
         j.sal.fs.createDir(j.sal.fs.getDirName(path))
         j.sal.fs.writeFile(path, content, append=append)
         if owner is not None or group is not None:

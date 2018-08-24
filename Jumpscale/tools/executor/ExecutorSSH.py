@@ -114,7 +114,7 @@ class ExecutorSSH(ExecutorBase):
         return rc, out, err
 
     def upload(self, source, dest, dest_prefix="", recursive=True, createdir=True,
-               rsyncdelete=True, ignoredir=['.egg-info', '.dist-info', '__pycache__', ".git"], keepsymlinks=False):
+               rsyncdelete=True, ignoredir=['.egg-info', '.dist-info', '__pycache__', ".git"], keepsymlinks=False,showout=False):
 
         if dest_prefix != "":
             dest = j.sal.fs.joinPaths(dest_prefix, dest)
