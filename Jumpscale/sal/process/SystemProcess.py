@@ -130,7 +130,8 @@ class SystemProcess(JSBASE):
                     # Add data to cache
                     data.append(line)
                     if showout:
-                        self.logger.debug(line)
+                        # self.logger.debug(line)
+                        print(line)
 
                 # Fold cache and return
                 return ''.join(data)
@@ -140,7 +141,8 @@ class SystemProcess(JSBASE):
                 def readout(stream):
                     line= stream.read().decode()
                     if showout:
-                        self.logger.debug(line)
+                        # self.logger.debug(line)
+                        print(line)
 
         if timeout < 0:
             out, err = p.communicate()

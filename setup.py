@@ -9,8 +9,10 @@ def _post_install(libname, libpath):
     from Jumpscale import j  # here its still the boostrap Jumpscale
 
     # remove leftovers
-    for item in j.sal.fs.find("/usr/local/bin/", fileregex="js_*"):
-        j.sal.fs.remove("/usr/local/bin/%s" % item)
+    if not "PBASE" in os.environ:
+        #should only be done when not in build dir
+        for item in j.sal.fs.find("/usr/local/bin/", fileregex="js_*"):
+            j.sal.fs.remove("/usr/local/bin/%s" % item)
 
     j.tools.executorLocal.initEnv()
     j.tools.jsloader.generate()
