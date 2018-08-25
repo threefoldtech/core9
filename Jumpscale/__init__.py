@@ -94,6 +94,22 @@ else:
             self.portal = Portal()
             # self.atyourservice = AtYourService()
             self.exceptions = None
+            self._shell = None
+
+        def shell(self,name="",loc=True):
+            if self._shell == None:
+                from IPython.terminal.embed import InteractiveShellEmbed
+                if name is not "":
+                    name = "SHELL:%s" % name
+                self._shell = InteractiveShellEmbed(banner1= name, exit_msg="")
+            if loc:
+                import inspect
+                curframe = inspect.currentframe()
+                calframe = inspect.getouterframes(curframe, 2)
+                f = calframe[1]
+                print("\n*** file: %s"%f.filename)
+                print("*** function: %s [linenr:%s]\n" % (f.function,f.lineno))
+            return self._shell(stack_depth=2)
 
     j = Jumpscale()
 
@@ -237,3 +253,5 @@ else:
     if "DigitalMeLib" in j.core.state.config_js["plugins"]:
         #means we can use schema's
         j.application.schemas = True
+
+

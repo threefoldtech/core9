@@ -111,6 +111,9 @@ class JSLoader():
         j.sal.process.execute("pip3 install pudb")
 
     def _findSitePath(self):
+        if "PBASE" in os.environ:
+            #means we are in sandbox
+            return "%s/lib/pythonbin"%(os.environ["PBASE"])
         res = ""
         for item in sys.path:
             if "/site-packages" in item:

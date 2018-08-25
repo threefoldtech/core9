@@ -143,12 +143,13 @@ class SystemFS(JSBASE):
             if head and (not self.exists(head) or not self.isDir(head)):
                 self.createDir(head, unlink=False)
             if tail:
-                try:
-                    os.mkdir(newdir)
-                    # print "mkdir:%s"%newdir
-                except OSError as e:
-                    if e.errno != os.errno.EEXIST:  # File exists
-                        raise
+                os.mkdir(newdir)
+                # try:
+                #     os.mkdir(newdir)
+                #     # print "mkdir:%s"%newdir
+                # except OSError as e:
+                #     if e.errno != os.errno.EEXIST:  # File exists
+                #         raise
 
             self.logger.debug(
                 'Created the directory [%s]' % j.data.text.toStr(newdir))
@@ -217,7 +218,7 @@ class SystemFS(JSBASE):
                     if self.isDir(srcname):
                         # print "1:%s %s"%(srcname,dstname)
                         self.copyDirTree(srcname, dstname, keepsymlinks, deletefirst,
-                                         overwriteFiles=overwriteFiles)
+                                         overwriteFiles=overwriteFiles,ignoredir=ignoredir,ignorefiles=ignorefiles)
                     if self.isFile(srcname):
                         # print "2:%s %s"%(srcname,dstname)
                         self.copyFile(
@@ -238,12 +239,12 @@ class SystemFS(JSBASE):
             excl += "--exclude '*__pycache__*' "
 
             dstpath = dst.split(':')[1] if ':' in dst else dst
-            cmd = "rsync "
+            cmd = "rsync --no-owner --no-group"
             if keepsymlinks:
                 #-l is keep symlinks, -L follow
-                cmd += " -rlptgo --partial %s" % excl
+                cmd += " -rlt --partial %s" % excl
             else:
-                cmd += " -rLptgo --partial %s" % excl
+                cmd += " -rLt --partial %s" % excl
             if not recursive:
                 cmd += " --exclude \"*/\""
             if rsyncdelete:
