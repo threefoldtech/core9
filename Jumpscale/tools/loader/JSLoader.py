@@ -105,10 +105,10 @@ class JSLoader():
         return j.core.state.config["system"]["autopip"] in [
             True, "true", "1", 1]
 
-    def _installDevelopmentEnv(self):
-        cmd = "apt-get install python3-dev libssl-dev -y"
-        j.sal.process.execute(cmd)
-        j.sal.process.execute("pip3 install pudb")
+    # def _installDevelopmentEnv(self):
+    #     cmd = "apt-get install python3-dev libssl-dev -y"
+    #     j.sal.process.execute(cmd)
+    #     j.sal.process.execute("pip3 install pudb")
 
     def _findSitePath(self):
         if "PBASE" in os.environ:
