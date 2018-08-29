@@ -117,7 +117,7 @@ class NetTools(JSBASE):
             command = "netstat -ntulp | grep ':%s '" % port
             # raise j.exceptions.RuntimeError("stop")
             exitcode, output, err = j.sal.process.execute(
-                command, die=True, showout=False)
+                command, die=False, showout=False)
             return exitcode == 0
         elif j.core.platformtype.myplatform.isMac:
             command = "netstat -an -f inet"
