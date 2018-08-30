@@ -36,6 +36,10 @@ class RedisFactory(JSBASE):
         self._redisq = {}
         self._config = {}
 
+    @property
+    def REDIS_CLIENT_CLASS(self):
+        return Redis
+
     def get(
             self,
             ipaddr="localhost",
