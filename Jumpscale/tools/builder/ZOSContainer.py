@@ -30,7 +30,7 @@ class ZOSContainer(JSBASE):
         self._container = None
         self._node_connected = False
         self._redis_key="containers:%s"%node.name
-        self._schema = j.data.schema.schema_from_text(schema)
+        self._schema = j.data.schema.schema_add(schema)
 
         if self._zos_redis.get(self._redis_key) is None:
             #does not exist in redis yet
@@ -141,7 +141,7 @@ class ZOSContainer(JSBASE):
             self.logger.info("can also connect using js_node toolset, recommended: 'js_node ssh -i %s'"%self.name)
 
         sshclient = j.clients.ssh.new(addr=self.zos_private_address, port=self.model.port, instance=self.name,
-                                      die=True, login="root",
+                                      die=True, login="root", passwd="rooter",
                                       stdout=True, allow_agent=True, use_paramiko=True)
         self._node_connected = True
 
