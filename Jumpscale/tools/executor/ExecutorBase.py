@@ -303,7 +303,7 @@ class ExecutorBase(JSBASE):
         if self.isBuildEnv:
             T = "BASEDIR = \"%s\"\n"%os.environ["PBASE"]
             T += '''
-            HOMEDIR = "{{TMPDIR}}"
+            HOMEDIR = "{{HOME}}"
             CODEDIR = "{{BASEDIR}}/code"
             HOSTDIR = "{{TMPDIR}}/host"
             HOSTCFGDIR = "{{TMPDIR}}/hostcfg"
@@ -360,6 +360,10 @@ class ExecutorBase(JSBASE):
 
     def _replaceInToml(self, T):
         T = T.replace("~", self.env["HOME"])
+        if "HOMEDIR" in self.env:
+            T = T.replace("{{HOME}}", self.env["HOMEDIR"])
+        else:
+            T = T.replace("{{HOME}}", "{{TMPDIR}}")
         # need to see if this works well on mac
         T = T.replace("{{TMPDIRSYSTEM}}", "/tmp")
         # will replace  variables in itself
