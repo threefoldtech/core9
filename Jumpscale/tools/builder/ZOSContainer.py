@@ -68,15 +68,16 @@ class ZOSContainer(JSBASE):
         self.model.progress=[] #make sure we don't remember old stuff
         self.model_save()
         self._container = self.zosclient.containers.create(name=self.name,
+                                           hostname=self.name,
                                            flist='https://hub.grid.tf/tf-official-apps/ubuntu-bionic-build.flist',
                                            nics=[{'type': 'default'}],
                                            ports={self.model.port: 22})
-
-        while "pid" not in self._container.info['container']:
+        info = self._container.info['container']
+        while "pid" not in info:
             time.sleep(0.1)
             self.logger.debug("waiting for container to start")
-        self.model.pid = self._container.info['container']["pid"]
-        self.model.container_id = self._container.info['container']["id"]
+        self.model.pid = info["pid"]
+        self.model.container_id = info["id"]
         self.model_save()
         assert self._container.is_running()
 
@@ -145,9 +146,11 @@ class ZOSContainer(JSBASE):
             keyname = keyname_paths[len(keyname_paths)-1]
         else:
             keyname =''
-        sshclient = j.clients.ssh.new(addr=self.zos_private_address, port=self.model.port, instance=self.name,
+        sshclient = j.clients.ssh.new(addr=self.zos_private_address,
+                                      port=self.model.port, instance=self.name,
                                       die=True, login="root", keyname=keyname,
-                                      stdout=True, allow_agent=True, use_paramiko=True)
+                                      stdout=True, allow_agent=True,
+                                      use_paramiko=True)
         self._node_connected = True
 
         return self._node
