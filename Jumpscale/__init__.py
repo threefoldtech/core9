@@ -140,7 +140,7 @@ else:
 
     from .logging.LoggerFactory import LoggerFactory
 
-    j.logger = LoggerFactory()
+    j.logger = j.logging = LoggerFactory()
 
     # IF YOU WANT TO DEBUG THE STARTUP, YOU NEED TO CHANGE THIS ONE
     j.logger.enabled = False
