@@ -62,7 +62,7 @@ setup(
         'colored_traceback',
         'colorlog>=2.10.0',
         'httplib2>=0.10.3',
-        'ipython>=6.0.0',
+        'ipython<6.5.0,>=6.0.0',
         'libtmux>=0.7.1',
         'netaddr>=0.7.19',
         'path.py>=10.3.1',
