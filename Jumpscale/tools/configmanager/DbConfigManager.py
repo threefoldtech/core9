@@ -103,7 +103,7 @@ class DbConfigManager(IConfigManager):
         if namespace == "default":
             self.logger.warning("Using default namespace.")
         self._namespace = namespace
-        if j.core.state.configGetFromDict("myconfig", "backend") == "db":
+        if j.core.state.configGetFromDict("myconfig", "backend", "file") == "db":
             backend_addr = j.core.state.configGetFromDict("myconfig", "backend_addr", "localhost:9900")
             adminsecret = j.core.state.configGetFromDict("myconfig", "adminsecret", "")
             secrets = j.core.state.configGetFromDict("myconfig", "secrets", "")

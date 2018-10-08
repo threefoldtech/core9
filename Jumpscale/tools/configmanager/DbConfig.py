@@ -138,7 +138,7 @@ class DbConfig(JSBASE):
 
         JSBASE.__init__(self)
         self._zdbsimplecl = None
-        if j.core.state.configGetFromDict("myconfig", "backend") == "db":
+        if j.core.state.configGetFromDict("myconfig", "backend", "file") == "db":
             backend_addr = j.core.state.configGetFromDict("myconfig", "backend_addr", "localhost:9900")
             adminsecret = j.core.state.configGetFromDict("myconfig", "adminsecret", "")
             secrets = j.core.state.configGetFromDict("myconfig", "secrets", "")
@@ -151,6 +151,8 @@ class DbConfig(JSBASE):
                 else:
                     raise RuntimeError("port is expected to be a number, but got {}".format(port))
                 self._zdbsimplecl = j.clients.zdbsimple.get(host, port, adminsecret, secrets, namespace)
+        else:
+            raise RuntimeError("can't create DbConfig with file backend.")
         data = data or {}
         self.location = j.data.text.toStr(location)
         self.instance = j.data.text.toStr(instance)
