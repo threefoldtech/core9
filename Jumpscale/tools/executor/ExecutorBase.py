@@ -406,6 +406,7 @@ class ExecutorBase(JSBASE):
         [myconfig]
         #giturl = "ssh://git@docs.agitsystem.com:7022/myusername/myconfig.git"
         giturl = ""
+        backend = "file"
         sshkeyname = ""
         path = ""
 

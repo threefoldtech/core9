@@ -34,7 +34,13 @@ class ConfigFactory(JSBASE):
     def __init__(self):
         self.__jslocation__ = "j.tools.configmanager"
         JSBASE.__init__(self)
-        configbackend = j.core.state.configGetFromDict("myconfig", "backend", "file") # file is the default
+    
+        configbackend = j.core.state.configGetFromDict("myconfig", "backend", "")
+        if not configbackend: 
+            # if not configured let's set it to file.
+            j.core.state.configSetInDict("myconfig", "backend", "file")
+            configbackend = "file"
+
         self._impl = None
         if configbackend == "file":
             self._impl = FileConfigManager()
