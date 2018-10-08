@@ -11,7 +11,6 @@ class JSBaseClassConfig(JSBASE):
             self.__jslocation__ = parent.__jslocation__
         JSBASE.__init__(self)
         self._single_item = True
-
         if ui is None:
             self._ui = j.tools.formbuilder.baseclass_get()  # is the default class
         else:

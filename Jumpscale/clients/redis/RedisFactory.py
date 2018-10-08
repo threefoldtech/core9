@@ -49,6 +49,7 @@ class RedisFactory(JSBASE):
             unixsocket=None,
             ardb_patch=False,
             set_patch=False,
+            del_patch=False,
             ssl=False,
             ssl_certfile=None,
             ssl_keyfile=None,
@@ -109,6 +110,9 @@ class RedisFactory(JSBASE):
                 else:
                     raise e
 
+        if del_patch:
+            self._del_patch(self._redis[key])
+    
         return self._redis[key]
 
     def _ardb_patch(self, client):
@@ -116,6 +120,9 @@ class RedisFactory(JSBASE):
 
     def _set_patch(self, client):
         client.response_callbacks['SET'] = lambda r: r
+
+    def _del_patch(self, client):
+        client.response_callbacks['DEL'] = lambda r: r
 
     def getQueue(self, ipaddr, port, name, namespace="queues", fromcache=True):
         """
