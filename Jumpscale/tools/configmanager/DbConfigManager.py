@@ -101,7 +101,9 @@ class DbConfigManager(IConfigManager):
     def set_namespace(self, namespace):
         self._zdbsimplecl = None
         if namespace == "default":
-            self.logger.warning("Using default namespace.")
+            self.logger.warning("using default namespace.")
+        else:
+            self.logger.info("using namespace {}".format(namespace))
         self._namespace = namespace
         if j.core.state.configGetFromDict("myconfig", "backend", "file") == "db":
             backend_addr = j.core.state.configGetFromDict("myconfig", "backend_addr", "localhost:9900")
