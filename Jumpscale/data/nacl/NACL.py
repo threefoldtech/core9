@@ -32,7 +32,6 @@ class NACL(JSBASE):
             
 
         self.sshkeyname = sshkeyname
-        self._agent = None
 
         if isinstance(secret, str):
             secret = secret.encode()
@@ -83,32 +82,6 @@ class NACL(JSBASE):
         #     self._keys_generate_sign()
 
 
-    @property
-    def agent(self):
-
-        def getagent(name):
-            for item in j.clients.sshkey.sshagent.get_keys():
-                if j.sal.fs.getBaseName(item.keyname) == name:
-                    return item
-            raise RuntimeError("Could not find agent for key with name:%s" % name)
-
-        if self._agent is None:
-            # Should we let keypath set in both DbConfigManager and FileConfigManager? What would be the behavior?
-            if not j.clients.sshkey.exists(self.sshkeyname):
-                keypath = j.tools.configmanager.keypath
-                if not j.sal.fs.exists(keypath):
-                    keypath = "%s/.ssh/%s" % (j.dirs.HOMEDIR, self.sshkeyname)
-                
-                if j.sal.fs.exists(keypath):
-                    j.clients.sshkey.key_load(keypath)
-                else:
-                    # if sshkeyname from state is not reachable delete it and re-init config manager
-                    j.core.state.configSetInDict("myconfig", "sshkeyname", "")
-                    j.tools.configmanager.init()
-            
-            self._agent = getagent(self.sshkeyname)
-
-        return self._agent
 
     @property
     def privkey(self):
@@ -279,7 +252,7 @@ class NACL(JSBASE):
 
         """
         hash = hashlib.sha1(data).digest()
-        signeddata = self.agent.sign_ssh_data(hash)
+        signeddata = j.data.nacl.agent.sign_ssh_data(hash)
         return self.hash32(signeddata)
 
 
