@@ -15,6 +15,7 @@ class NACLFactory(JSBASE):
         JSBASE.__init__(self)        
         self.__jslocation__ = "j.data.nacl"
         self._default = None
+        self._agent = None
 
     def get(self, name="key", secret="", sshkeyname=""):
         """
@@ -215,6 +216,29 @@ class NACLFactory(JSBASE):
 
         return message
 
+    @property
+    def agent(self):
+
+        def getagent(name):
+            for item in j.clients.sshkey.sshagent.get_keys():
+                if j.sal.fs.getBaseName(item.keyname) == name:
+                    return item
+            raise RuntimeError("Could not find agent for key with name:%s" %
+                                name)
+
+        if self._agent is None:
+            ssh_key_name = j.tools.configmanager.keyname
+            if not j.clients.sshkey.exists(ssh_key_name):
+                key_path = "%s/.ssh/%s" % (j.dirs.HOMEDIR, ssh_key_name)
+                if j.sal.fs.exists(key_path):
+                    j.clients.sshkey.key_load(key_path)
+                else:
+                    # if sshkeyname from state is not reachable delete it and
+                    # re-init config manager
+                    j.core.state.configSetInDict("myconfig", "sshkeyname", "")
+                    j.tools.configmanager.init()
+            self._agent = getagent(ssh_key_name)
+        return self._agent
 
     def test(self):
         """
