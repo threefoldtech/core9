@@ -25,7 +25,7 @@ class SSHKeys(JSConfigBase):
         sshkey = self.get(instance, data={'path': path}, interactive=j.tools.configmanager.interactive)
 
         if load:
-            sshkey.load()
+            sshkey.load(duration=None)
         return sshkey
 
     def key_generate(self, path, passphrase="", overwrite=False, load=False, returnObj=True):
@@ -78,21 +78,25 @@ class SSHKeys(JSConfigBase):
 
         self.logger.info("load ssh key: %s" % path0)
         j.sal.fs.chmod(path, 0o600)
+        if duration:
+            ttl_path = '{} {}'.format(duration, path0)
+        else:
+            ttl_path = path0
         if passphrase:
             self.logger.debug("load with passphrase")
             C = """
                 echo "exec cat" > ap-cat.sh
                 chmod a+x ap-cat.sh
                 export DISPLAY=1
-                echo {passphrase} | SSH_ASKPASS=./ap-cat.sh ssh-add -t {duration} {path}
-                """.format(path=path0, passphrase=passphrase, duration=duration)
+                echo {passphrase} | SSH_ASKPASS=./ap-cat.sh ssh-add {ttl_path}
+                """.format(passphrase=passphrase, ttl_path=ttl_path)
             try:
                 j.sal.process.executeBashScript(content=C, showout=False)
             finally:
                 j.sal.fs.remove("ap-cat.sh")
         else:
             # load without passphrase
-            cmd = "ssh-add -t %s %s " % (duration, path0)
+            cmd = "ssh-add %s " % (ttl_path)
             j.sal.process.execute(cmd)
 
         self._sshagent = None  # to make sure it gets loaded again
