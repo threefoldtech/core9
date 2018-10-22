@@ -41,7 +41,7 @@ class SSHKeys(JSConfigBase):
 
         # make sure key is loaded
         if load:
-            self.key_load(path, passphrase=passphrase, returnObj=False, duration=3600)
+            self.key_load(path, passphrase=passphrase, returnObj=False, duration=None)
 
         if returnObj:
             

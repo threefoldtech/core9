@@ -133,7 +133,7 @@ class IConfigManager(JSBASE):
             j.tools.configmanager._keyname = sshkeyname
             self._init = True
             self.sandbox = True
-            return j.clients.sshkey.key_load(path=kpath_full)
+            return j.clients.sshkey.key_load(path=kpath_full, duration=None)
         
         if die:
             raise RuntimeError("did not find sandbox on this path:%s" % path)
@@ -176,9 +176,9 @@ class IConfigManager(JSBASE):
                                            "make sure you have only one key in ~/.ssh")
                     msg("found ssh keys in your ~/.ssh directory, do you want to load one is ssh-agent?")
                     key_chosen = j.tools.console.askChoice(keys)
-                    j.clients.sshkey.key_load(path=key_chosen)
+                    j.clients.sshkey.key_load(path=key_chosen, duration=None)
                 else:
-                    j.clients.sshkey.key_load(path=keys[0])
+                    j.clients.sshkey.key_load(path=keys[0], duration=None)
                 return ssh_init()
 
             elif len(keys) > 1:

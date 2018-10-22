@@ -231,7 +231,7 @@ class NACLFactory(JSBASE):
             if not j.clients.sshkey.exists(ssh_key_name):
                 key_path = "%s/.ssh/%s" % (j.dirs.HOMEDIR, ssh_key_name)
                 if j.sal.fs.exists(key_path):
-                    j.clients.sshkey.key_load(key_path)
+                    j.clients.sshkey.key_load(key_path, duration=None)
                 else:
                     # if sshkeyname from state is not reachable delete it and
                     # re-init config manager
