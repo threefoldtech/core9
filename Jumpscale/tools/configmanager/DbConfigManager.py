@@ -41,10 +41,8 @@ class DbConfigManager(IConfigManager):
         self._keypath = ""
         self._init = False
         self._zdbsimplecl = None
-        self._namespace = "default"
+        self._namespace = j.core.state.configGetFromDict("myconfig", "namespace", "default")
         self.set_namespace(self._namespace)
-
-    
 
     @property
     def namespace(self):
@@ -53,8 +51,8 @@ class DbConfigManager(IConfigManager):
         return self._namespace
 
     def init(self, data={}, silent=False, configpath="", keypath=""):
-        privkeypath = keypath 
-        pubkeypath = keypath + ".pub" 
+        privkeypath = keypath
+        pubkeypath = keypath + ".pub"
         self._keypath = keypath
 
         self.configure_keys_from_paths(privkeypath, pubkeypath)
@@ -65,7 +63,7 @@ class DbConfigManager(IConfigManager):
         self._zdbsimplecl.namespace.set(seed, "key.seed")
         self._zdbsimplecl.namespace.set(keyprivencoded, "key.priv.encoded")
         self.prepare_mgmt_repo()
-    
+
     def configure_keys_from_paths(self, keypriv_path, keypub_path, seed_path=None, priv_key_encoded_path=None):
         seed_data = "NULL"
         if seed_path:
@@ -123,8 +121,9 @@ class DbConfigManager(IConfigManager):
                 raise ValueError("Can't instantiate configmanager with db backend without specifying that in jumpscale state.")
         # try to populate sandbox if namespace has the keys
         if self._zdbsimplecl.namespace.exists('key.priv') and self._zdbsimplecl.namespace.exists('key.pub'):
-            self.configure_keys(self._zdbsimplecl.namespace.get('key.priv'), self._zdbsimplecl.namespace.get('key.pub'), self._zdbsimplecl.namespace.get('key.seed'), self._zdbsimplecl.namespace.get('key.seed'))
-        
+            self.configure_keys(self._zdbsimplecl.namespace.get('key.priv'), self._zdbsimplecl.namespace.get('key.pub'),
+                                self._zdbsimplecl.namespace.get('key.seed'), self._zdbsimplecl.namespace.get('key.seed'))
+
         self._keypath = j.sal.fs.joinPaths(self.path, "keys", "key")
 
     def reset(self, location=None, instance=None, force=False):
@@ -137,7 +136,7 @@ class DbConfigManager(IConfigManager):
             location = '.+'
         if instance is None:
             instance = '.+'
-        
+
         hsetname = mk_hsetname(configrepo='.+', instance=instance, clientpath=location)
 
         configs_keys = iselect_all(self._zdbsimplecl, hsetname)
@@ -171,9 +170,9 @@ class DbConfigManager(IConfigManager):
 
         os.makedirs(keyspath, exist_ok=True)
         os.makedirs(secureconfigpath, exist_ok=True)
-        
+
         self._keypath = j.sal.fs.joinPaths(keyspath, "key")
-        j.sal.fs.writeFile( j.sal.fs.joinPaths(keyspath, "key"), priv)
+        j.sal.fs.writeFile(j.sal.fs.joinPaths(keyspath, "key"), priv)
         j.sal.fs.writeFile(j.sal.fs.joinPaths(keyspath, "key.pub"), pub)
         if seed.decode() != "NULL":
             j.sal.fs.writeFile(j.sal.fs.joinPaths(mgmtpath, "key.seed"), seed)
@@ -183,7 +182,6 @@ class DbConfigManager(IConfigManager):
             # put the seed in the db
             self._zdbsimplecl.namespace.set(j.sal.fs.readFile(j.sal.fs.joinPaths(mgmtpath, "key.seed")), "key.seed")
             self._zdbsimplecl.namespace.set(j.sal.fs.readFile(j.sal.fs.joinPaths(mgmtpath, "key.priv")), "key.priv.encoded")
-
 
     def _findConfigRepo(self, die=False):
         """
@@ -230,7 +228,6 @@ class DbConfigManager(IConfigManager):
         return JSBaseClassConfigs
 
     def _get_for_obj(self, jsobj, template, ui=None, instance="main", data={}):
-
         """
         return a secret config
         """
@@ -244,9 +241,9 @@ class DbConfigManager(IConfigManager):
             jsobj.ui = ui
         sc = DbConfig(instance=instance, location=location, template=template, data=data)
         return sc
-    
 
     # FIXME: not sure how it works..
+
     def js_obj_get(self, location="", instance="main", data={}):
         """
         will look for jumpscale module on defined location & return this object
@@ -312,7 +309,7 @@ class DbConfigManager(IConfigManager):
         sshkeyobj = j.clients.sshkey.get(instance=sshkeyname, data=data, interactive=False)
 
         self.sandbox = True
-        #WE SHOULD NOT CONFIGURE THE HOST CONFIGMMANAGER ALL SHOULD BE ALREADY DONE
+        # WE SHOULD NOT CONFIGURE THE HOST CONFIGMMANAGER ALL SHOULD BE ALREADY DONE
         #j.tools.configmanager.init(configpath=cpath, keypath=kpath_full, silent=False)
 
         return sshkeyobj
@@ -328,7 +325,6 @@ class DbConfigManager(IConfigManager):
             raise RuntimeError("instance cannot be empty")
 
         return DbConfig(instance=instance, location=location)
-
 
     def list(self, location=""):
         """
@@ -348,9 +344,8 @@ class DbConfigManager(IConfigManager):
         for k in iselect_all(self._zdbsimplecl, pattern):
             kinfo = get_key_info(k)
             instances.append(kinfo['instance'])
-        
-        return instances
 
+        return instances
 
     def delete(self, location, instance="*"):
         pattern = mk_hsetname(configrepo=".*", instance=instance, clientpath=location)
@@ -361,8 +356,8 @@ class DbConfigManager(IConfigManager):
         self.sandbox_check()
         sshagent = j.clients.sshkey.sshagent_available()
         keyloaded = self.keyname in j.clients.sshkey.listnames()
-        C="""
-        
+        C = """
+
         configmanager:
         - backend: db
         - path: {path}
@@ -371,18 +366,16 @@ class DbConfigManager(IConfigManager):
         - sshagent loaded: {sshagent}
         - key in sshagent: {keyloaded}
 
-        """.format(**{"path":self.path,
-            "sshagent":sshagent,
-            "keyloaded":keyloaded,
-            "keyname":self.keyname,
-            "sandbox":self.sandbox_check()})
-        C=j.data.text.strip(C)
-        
+        """.format(**{"path": self.path,
+                      "sshagent": sshagent,
+                      "keyloaded": keyloaded,
+                      "keyname": self.keyname,
+                      "sandbox": self.sandbox_check()})
+        C = j.data.text.strip(C)
+
         return C
-        
 
     __repr__ = __str__
-
 
     def test(self):
         """

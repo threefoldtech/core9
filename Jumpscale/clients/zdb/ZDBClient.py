@@ -30,23 +30,22 @@ class ZDBClient(JSBASE):
         self.mode = mode
         self._namespace = namespace
         self.namespaces = {}
-        #default namespace should always exist
-
+        # default namespace should always exist
 
     @property
     def secrets(self):
-        res={}
+        res = {}
         if "," in self._secrets:
             items = self._secrets.split(",")
             for item in items:
-                if item.strip()=="":
+                if item.strip() == "":
                     continue
-                nsname,secret = item.split(":")
-                res[nsname.lower().strip()]=secret.strip()
+                nsname, secret = item.split(":")
+                res[nsname.lower().strip()] = secret.strip()
         else:
-            res["default"]=self._secrets.strip()
+            res["default"] = self._secrets.strip()
         return res
-                
+
     def namespace_exists(self, name):
         try:
             self.namespace_system.redis.execute_command("NSINFO", name)
@@ -56,11 +55,11 @@ class ZDBClient(JSBASE):
                 raise RuntimeError("could not check namespace:%s, error:%s" % (name, e))
             return False
 
-    def namespace_get(self,name):
+    def namespace_get(self, name):
         if not name in self.namespaces:
-            self.namespaces[name] = ZDBClientNS(self,name)
+            self.namespaces[name] = ZDBClientNS(self, name)
         return self.namespaces[name]
-    
+
     @property
     def namespace(self):
         return self.namespace_get(self._namespace)
@@ -70,13 +69,13 @@ class ZDBClient(JSBASE):
         go to default namespace & ping
         :return:
         """
-        d=self.namespace_get("default")
+        d = self.namespace_get("default")
         return d.redis.ping()
 
     @property
     def namespace_system(self):
         return self.namespace_get("default")
-        
+
     def namespace_new(self, name, secret="", maxsize=0, die=False):
         if self.namespace_exists(name):
             if die:
@@ -85,7 +84,7 @@ class ZDBClient(JSBASE):
 
         if secret is "" and "default" in self.secrets.keys():
             secret = self.secrets["default"]
-        
+
         cl = self.namespace_system
         cl.redis.execute_command("NSNEW", name)
         if secret is not "":
