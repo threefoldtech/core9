@@ -343,7 +343,8 @@ class DbConfigManager(IConfigManager):
         instances = []
         for k in iselect_all(self._zdbsimplecl, pattern):
             kinfo = get_key_info(k)
-            instances.append(kinfo['instance'])
+            if kinfo:
+                instances.append(kinfo['instance'])
 
         return instances
 
