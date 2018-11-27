@@ -1,9 +1,12 @@
-from gevent import monkey
-monkey.patch_all()
+import sys
+if '--gevent' in sys.argv:
+    from gevent import monkey, pool
+    monkey.patch_all()
 
 import os
+import pytest
 from jumpscale import j
-from gevent import pool
+
 
 SECRET = '123456789012345678901234'
 SIZE = 1024*500
@@ -17,6 +20,7 @@ def worker(name):
     assert clear == decrypted
 
 
+@pytest.mark.gevent
 def test_concurrence():
     N = 2000
     p = pool.Pool()
