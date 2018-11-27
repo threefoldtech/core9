@@ -16,11 +16,12 @@ before_install:
 
 install:
   - sudo ./install/travis_ci/prepare.sh
-  - sudo pip3 install pytest pytest-cov codecov
+  - sudo pip3 install pytest pytest-cov codecov pylint
 
 script:
   - sudo python3 -c 'from jumpscale import j;print(j.application.getMemoryUsage())'
   - sudo pytest -v --cov=Jumpscale Jumpscale
+  - sudo pylint --rcfile=.pylintrc Jumpscale
 
 after_success:
   - codecov
