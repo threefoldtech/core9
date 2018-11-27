@@ -9,7 +9,7 @@ HSET_NAME = "cfg::{configrepo}::{instance}::{clientpath}"
 
 
 def get_key_info(k):
-    m = re.match("cfg::(?P<configrepo>\w+)::(?P<instance>\w+)::(?P<clientpath>.+)", k)
+    m = re.match("cfg::(?P<configrepo>\w+)::(?P<instance>.+)::(?P<clientpath>.+)", k)
     if m:
         return m.groupdict()
     return None
