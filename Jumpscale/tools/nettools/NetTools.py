@@ -31,7 +31,7 @@ class NetTools(JSBASE):
         finally:
             if conn:
                 conn.close()
-        return True    
+        return True
 
     def ip_to_num(self, ip="127.0.0.1"):
         """
@@ -503,14 +503,14 @@ class NetTools(JSBASE):
          {'cidr': 16,
           'ip': ['172.17.0.1'],
           'mac': '02:42:97:63:e6:ba',
-          'name': 'docker0'}]        
+          'name': 'docker0'}]
 
         TODO: change for windows
 
         """
         #TODO: use caching feature from jumpscale to keep for e.g. 1 min, if not usecache needs to reset cache to make sure we load again
         return j.tools.prefab.local.system.net.getInfo(device=device)
-        
+
 
     def getIpAddress(self, interface):
         """Return a list of ip addresses and netmasks assigned to this interface"""
@@ -549,7 +549,7 @@ class NetTools(JSBASE):
         if interface not in self.getNics():
             raise LookupError(
                 "Interface %s not found on the system" % interface)
-        if j.core.platformtype.myplatform.isLinux or j.core.platformtype.myplatform.isMac:               
+        if j.core.platformtype.myplatform.isLinux or j.core.platformtype.myplatform.isMac:
             output =list()
             output = j.tools.prefab.local.system.net.getInfo()
             result=list()
@@ -741,34 +741,31 @@ class NetTools(JSBASE):
         self.logger.debug('pingMachine %s, timeout=%d, recheck=%s' %
                           (ip, pingtimeout, str(recheck)))
 
+        cmd = None
+        if j.core.platformtype.myplatform.isLinux:
+            cmd = 'ping -c 1 -W 2 -w 2 %s' % ip
+        elif j.core.platformtype.myplatform.isMac:
+            cmd = 'ping -c 1 %s' % ip
+        elif j.core.platformtype.myplatform.isWindows:
+            cmd = 'ping -w 2 %s' % ip
+        else:
+            raise j.exceptions.RuntimeError('Platform is not supported')
+
         start = time.time()
         pingsucceeded = False
-        while time.time() - start < pingtimeout:
-            # if j.core.platformtype.myplatform.isSolaris():
-            #     #ping -c 1 IP 1
-            #     #Last 1 is timeout in seconds
-            #     exitcode, output, err = j.sal.process.execute(
-            #                         'ping -c 1 %s 1' % ip, False, False)
-            if j.core.platformtype.myplatform.isLinux:
-                # ping -c 1 -W 1 IP
-                exitcode, output, err = j.sal.process.execute(
-                    'ping -c 1 -W 1 -w 1 %s' % ip, False, True)
-            elif j.core.platformtype.myplatform.isMac:
-                exitcode, output, err = j.sal.process.execute(
-                    'ping -c 1 %s' % ip, False, True)
-            elif j.core.platformtype.myplatform.isWindows:
-                exitcode, output, err = j.sal.process.execute(
-                    'ping -w %d %s' % (pingtimeout, ip), False, True)
-            else:
-                raise j.exceptions.RuntimeError('Platform is not supported')
-            if exitcode == 0:
-                pingsucceeded = True
-                self.logger.debug('Machine with ip:[%s] is pingable' % ip)
-                return True
+        while (time.time() - start) < pingtimeout and not pingsucceeded:
+            exitcode, _, _ = j.sal.process.execute(cmd, showout=False, useShell=True, die=False, timeout=3)
+            pingsucceeded = (exitcode == 0)
+            if pingsucceeded:
+                break
             time.sleep(1)
-        if not pingsucceeded:
+
+        if pingsucceeded:
+            self.logger.debug('Machine with ip:[%s] is pingable' % ip)
+        else:
             self.logger.debug("Could not ping machine with ip:[%s]" % ip)
-            return False
+
+        return pingsucceeded
 
     def downloadIfNonExistent(self, url, destination_file_path, md5_checksum=None,
                               http_auth_username=None, http_auth_password=None):
@@ -889,7 +886,7 @@ class NetTools(JSBASE):
         _, domainName, _ = j.sal.process.execute(cmd, showout=False)
 
         if not domainName:
-            raise ValueError("There's no Domain Name") 
+            raise ValueError("There's no Domain Name")
 
         domainName = domainName.splitlines()[0]
 
