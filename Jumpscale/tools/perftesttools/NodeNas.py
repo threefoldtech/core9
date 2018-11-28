@@ -110,7 +110,8 @@ class NodeNas(NodeBase):
             # create backend file
             count = int(size) / 4
             cmd = 'dd if=/dev/zero of=%s bs=4MB count=%d' % (backend_file, int(count))
-            self.logger.debug("creation of the backend file %s, size %sMB. This can takes a while" % (backend_file, size))
+            self.logger.debug("creation of the backend file %s, size %sMB. This can takes a while" %
+                              (backend_file, size))
             self.execute(cmd, env={}, dieOnError=False, report=True)
 
             # create loop device

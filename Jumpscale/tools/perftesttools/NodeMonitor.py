@@ -3,7 +3,6 @@ from jumpscale import j
 from .NodeBase import NodeBase
 
 
-
 class NodeMonitor(NodeBase):
 
     def __init__(self, ipaddr, sshport, name=""):

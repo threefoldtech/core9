@@ -43,7 +43,7 @@ class TreeItem(JSBASE):
         return self.__str__()
 
     def __str__(self):
-        if self.selected == True:
+        if self.selected is True:
             selected = "X"
         else:
             selected = " "
@@ -271,17 +271,17 @@ class TreemanagerFactory(JSBASE):
 
         ee = t2.findOne("root.test.sub")
         assert ee.id == "2"
-        assert ee.selected == True
+        assert ee.selected is True
         assert ee.description == "my description2"
 
         ee = t2.find("root.test.sub", maxAmount=200,
                      getItems=False, selected=None)[0]
         assert ee.id == "2"
-        assert ee.selected == True
+        assert ee.selected is True
 
         ee = t2.findOne("root.test")
         assert ee.id == "1"
-        assert ee.selected == False
+        assert ee.selected is False
 
         ee = t2.find("", maxAmount=200, getItems=False, selected=True)
         assert len(ee) == 2

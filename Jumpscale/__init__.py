@@ -96,19 +96,19 @@ else:
             self.exceptions = None
             self._shell = None
 
-        def shell(self,name="",loc=True):
-            if self._shell == None:
+        def shell(self, name="", loc=True):
+            if self._shell is None:
                 from IPython.terminal.embed import InteractiveShellEmbed
                 if name is not "":
                     name = "SHELL:%s" % name
-                self._shell = InteractiveShellEmbed(banner1= name, exit_msg="")
+                self._shell = InteractiveShellEmbed(banner1=name, exit_msg="")
             if loc:
                 import inspect
                 curframe = inspect.currentframe()
                 calframe = inspect.getouterframes(curframe, 2)
                 f = calframe[1]
-                print("\n*** file: %s"%f.filename)
-                print("*** function: %s [linenr:%s]\n" % (f.function,f.lineno))
+                print("\n*** file: %s" % f.filename)
+                print("*** function: %s [linenr:%s]\n" % (f.function, f.lineno))
             return self._shell(stack_depth=2)
 
     j = Jumpscale()
@@ -208,19 +208,16 @@ else:
     j.dirs = Dirs()
     j.core.dirs = j.dirs
 
-    #need to load errorhandling as soon as we can
+    # need to load errorhandling as soon as we can
     from .errorhandling.ErrorHandler import ErrorHandler
     j.errorhandler = ErrorHandler()
     j.core.errorhandler = j.errorhandler
     from Jumpscale.errorhandling import JSExceptions
     j.exceptions = JSExceptions
 
-
-
     from .data.idgenerator.IDGenerator import IDGenerator
 
     j.data.idgenerator = IDGenerator()
-
 
     from .fs.SystemFSWalker import SystemFSWalker
 
@@ -246,12 +243,9 @@ else:
 
     j.tools.console = Console()
 
-
     j.logger.init()  # will reconfigure the logging to use the config file
 
-    #check if schema's are available (digitalme, if yes, use that in error handler)
+    # check if schema's are available (digitalme, if yes, use that in error handler)
     if "DigitalMeLib" in j.core.state.config_js["plugins"]:
-        #means we can use schema's
+        # means we can use schema's
         j.application.schemas = True
-
-

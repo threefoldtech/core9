@@ -14,13 +14,13 @@ login = "root"
 password_ = ""
 """
 
+
 class Models():
     pass
 
 
 class TarantoolClient(JSConfigClient):
 
-    
     def __init__(self, instance, data={}, parent=None, interactive=False):
         JSConfigClient.__init__(self, instance=instance,
                                 data=data, parent=parent, template=TEMPLATE, interactive=interactive)
@@ -29,7 +29,7 @@ class TarantoolClient(JSConfigClient):
         port = c['port']
         login = c['login']
         password = c['password_']
-        
+
         self.db = tarantool.connect(ip, user=login, port=port, password=password)
         self.call = self.db.call
         self.models = Models()
@@ -101,8 +101,8 @@ class TarantoolClient(JSConfigClient):
 
         if not j.sal.fs.exists(path):
             j.sal.fs.writeFile(path, lcontent)
-        path=path[:-3]
-        path+="_template.py"
+        path = path[:-3]
+        path += "_template.py"
         j.sal.fs.writeFile(path, lcontent)
 
     def _luaModelFix(self, path, name, dbtype, login, passwd):
@@ -197,18 +197,17 @@ class TarantoolClient(JSConfigClient):
 
         if @path empty then path = testscripts subdir of this extension
         """
-        if path == None:
+        if path is None:
             path = "%s/testscripts" % self._path
         for path0 in j.sal.fs.listFilesInDir(path, recursive=False, filter="*.lua"):
             self.addScript(path0, require=require)
 
-
     def reloadSystemScripts(self):
         systempath = "%s/systemscripts" % self._path
         for path0 in j.sal.fs.listFilesInDir(systempath, recursive=False, filter="*.lua"):
-            name=j.sal.fs.getBaseName(path0)[:-4]
-            self.eval("package.loaded['%s']=nil"%name)
-            self.eval("require ('%s')"%name)        
+            name = j.sal.fs.getBaseName(path0)[:-4]
+            self.eval("package.loaded['%s']=nil" % name)
+            self.eval("require ('%s')" % name)
 
     def addScript(self, path, name="", require=True):
         self.logger.debug("addscript %s %s" % (path, name))
@@ -218,8 +217,8 @@ class TarantoolClient(JSConfigClient):
         # write the lua script to the location on server
         self.db.call("add_lua_script", (name, C))
         if require:
-            self.eval("package.loaded['%s']=nil"%name)
-            self.eval("require ('%s')"%name)                    
+            self.eval("package.loaded['%s']=nil" % name)
+            self.eval("require ('%s')" % name)
             cmd = "%s=require('%s')" % (name, name)
             self.logger.debug(cmd)
             self.eval(cmd)

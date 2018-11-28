@@ -193,8 +193,8 @@ class Profile(JSBASE):
         self.bash.reset()  # do not remove !
 
     def getLocaleItems(self, force=False, showout=False):
-        if  self.executor.type=="local":
-            return [item for key,item in locale.locale_alias.items()]
+        if self.executor.type == "local":
+            return [item for key, item in locale.locale_alias.items()]
         else:
             out = self.executor.execute("locale -a")[1]
             return out.split("\n")

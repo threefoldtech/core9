@@ -22,7 +22,7 @@ class SSHKey(JSConfigBase):
         JSConfigBase.__init__(self, instance=instance, data=data,
                               parent=parent, template=TEMPLATE, interactive=interactive)
 
-        keyspath="%s/keys"%(j.sal.fs.getcwd())
+        keyspath = "%s/keys" % (j.sal.fs.getcwd())
         if j.sal.fs.exists(keyspath):
             # means we are in directory where keys dir is found
             kpath = self.config.data["path"]

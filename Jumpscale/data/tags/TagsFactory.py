@@ -4,6 +4,8 @@ from jumpscale import j
 from .Tags import Tags
 
 JSBASE = j.application.jsbase_get_class()
+
+
 class TagsFactory(JSBASE):
     """
     Factory Class of dealing with TAGS

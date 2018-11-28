@@ -3,6 +3,7 @@ from .ExecutorBase import *
 import time
 import serial
 
+
 class ExecutorSerial(ExecutorBase):
     """
     This executor is primary made to communicate with devices (routers, switch, ...) over
@@ -10,6 +11,7 @@ class ExecutorSerial(ExecutorBase):
 
     Please note that default mode attempt to recognize a device with cisco like commands.
     """
+
     def __init__(self, device, baudrate=9600, type="serial", parity="N", stopbits=1, bytesize=8, timeout=1):
         ExecutorBase.__init__(self, checkok=False)
         self.device = device
@@ -38,7 +40,6 @@ class ExecutorSerial(ExecutorBase):
         )
 
         return True
-
 
     @property
     def id(self):

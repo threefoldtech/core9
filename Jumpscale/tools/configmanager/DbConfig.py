@@ -127,7 +127,8 @@ def template_from_object(obj):
             module = getmodule(obj._child_class)
         except Exception as e:
             if "cannot import name" in str(e):
-                raise RuntimeError("cannot find TEMPLATE in %s, please call the template: TEMPLATE" % obj._child_class.__module__)
+                raise RuntimeError("cannot find TEMPLATE in %s, please call the template: TEMPLATE" %
+                                   obj._child_class.__module__)
             raise e
     else:
         try:
@@ -210,7 +211,8 @@ class DbConfig(JSBASE):
     def path(self):
         self.logger.debug("init getpath:%s" % self._path)
         if not self._path:
-            self._path = self.location  # j.sal.fs.joinPaths(j.data.text.toStr(j.tools.configmanager.path), self.location, self.instance + '.toml')
+            # j.sal.fs.joinPaths(j.data.text.toStr(j.tools.configmanager.path), self.location, self.instance + '.toml')
+            self._path = self.location
             self.logger.debug("getpath:%s" % self._path)
         return self._path
 

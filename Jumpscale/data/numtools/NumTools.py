@@ -4,6 +4,8 @@ import struct
 import math
 
 JSBASE = j.application.jsbase_get_class()
+
+
 class NumTools(JSBASE):
 
     def __init__(self):
@@ -142,8 +144,7 @@ class NumTools(JSBASE):
                 result.append(item)
         return result
 
-
-    def text2val(self, value,curcode="usd"):
+    def text2val(self, value, curcode="usd"):
         """
         value can be 10%,0.1,100,1m,1k  m=million
         USD/EUR/CH/EGP/GBP are also understood
@@ -157,7 +158,7 @@ class NumTools(JSBASE):
 
         """
         d = j.data.types.numeric.str2bytes(value)
-        return j.data.types.numeric.bin2cur(d,curcode=curcode)
+        return j.data.types.numeric.bin2cur(d, curcode=curcode)
 
     def int_to_bitstring(self, val):
         """
@@ -280,13 +281,13 @@ class NumTools(JSBASE):
         assert self.bitstring_set_bit("00000000", 7) == 128
         assert self.bitstring_set_bit("00000000", 0) == 1
 
-        assert self.bitstring_get_bit("00000000", 0) == False
-        assert self.bitstring_get_bit(128, 7) == True
-        assert self.bitstring_get_bit("00000001", 0) == True
-        assert self.bitstring_get_bit("00000011", 1) == True
-        assert self.bitstring_get_bit("00000011", 2) == False
-        assert self.bitstring_get_bit("10000011", 7) == True
-        assert self.bitstring_get_bit("00000011", 7) == False
+        assert self.bitstring_get_bit("00000000", 0) is False
+        assert self.bitstring_get_bit(128, 7) is True
+        assert self.bitstring_get_bit("00000001", 0) is True
+        assert self.bitstring_get_bit("00000011", 1) is True
+        assert self.bitstring_get_bit("00000011", 2) is False
+        assert self.bitstring_get_bit("10000011", 7) is True
+        assert self.bitstring_get_bit("00000011", 7) is False
 
         llist0 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         bbin = self.listint_to_bin(llist0)

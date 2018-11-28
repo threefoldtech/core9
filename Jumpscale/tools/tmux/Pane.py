@@ -6,6 +6,7 @@ import os
 
 JSBASE = j.application.jsbase_get_class()
 
+
 class Pane(JSBASE):
 
     def __init__(self, window, pane):

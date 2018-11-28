@@ -2,6 +2,8 @@ from jumpscale import j
 import copy
 
 JSBASE = j.application.jsbase_get_class()
+
+
 class SerializerDict(JSBASE):
 
     def __init__(self):

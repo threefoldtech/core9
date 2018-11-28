@@ -1,3 +1,4 @@
+from .ZOSContainer import ZOSContainer
 from jumpscale import j
 import re
 from io import StringIO
@@ -6,7 +7,6 @@ import locale
 
 JSBASE = j.application.jsbase_get_class()
 
-from .ZOSContainer import ZOSContainer
 
 class Builder(JSBASE):
 
@@ -14,13 +14,11 @@ class Builder(JSBASE):
         self.__jslocation__ = "j.tools.builder"
         JSBASE.__init__(self)
         self._zos_client = None
-        self._clients={}
-        self._containers={}
+        self._clients = {}
+        self._containers = {}
         self.logger_enable()
 
-
-
-    def zos_client_get(self,name="builder",vb=True):
+    def zos_client_get(self, name="builder", vb=True):
         """
         if vb is True then it means we will create the zos virtualmachine locally using virtualbox
 
@@ -31,23 +29,23 @@ class Builder(JSBASE):
             if name not in j.clients.zos.list():
                 if vb:
                     self.zos_vb_create(name=name)
-            cl = j.clients.zos.get(name,interactive=False)
+            cl = j.clients.zos.get(name, interactive=False)
 
-            if not j.sal.nettools.tcpPortConnectionTest(cl.addr,cl.port,timeout=1) or not cl.is_running():
+            if not j.sal.nettools.tcpPortConnectionTest(cl.addr, cl.port, timeout=1) or not cl.is_running():
                 if vb:
                     port = cl.client.config.data["port"]
                     host = cl.client.config.data["host"]
                     if not host == "localhost":
-                        raise RuntimeError("could not autostart container because the used zos client is not on localhost")
-                    self.zos_vb_create(name=name,redis_port=port)
+                        raise RuntimeError(
+                            "could not autostart container because the used zos client is not on localhost")
+                    self.zos_vb_create(name=name, redis_port=port)
                 else:
-                    raise RuntimeError("cannot connect to:%s"%(cl.addr,cl.port))
+                    raise RuntimeError("cannot connect to:%s" % (cl.addr, cl.port))
 
             self._clients[name] = j.clients.zos.get(name)
         return self._clients[name]
 
-
-    def zos_iso_download(self, zerotierinstance="",overwrite=True):
+    def zos_iso_download(self, zerotierinstance="", overwrite=True):
 
         if zerotierinstance:
             ztcl = j.clients.zerotier.get(zerotierinstance)
@@ -82,11 +80,11 @@ class Builder(JSBASE):
             vm.start()
         else:
             self.logger.info("will create zero-os:%s on redis port:%s" % (name, redis_port))
-            #VM DOES NOT EXIST, Need to create the redis port should be free
+            # VM DOES NOT EXIST, Need to create the redis port should be free
             if j.sal.nettools.checkListenPort(redis_port):
                 raise RuntimeError("cannot use port:%s is already in use" % redis_port)
             isopath = self.zos_iso_download(zerotierinstance)
-            vm.create(isopath=isopath, reset=reset, redis_port=redis_port,memory=memory)
+            vm.create(isopath=isopath, reset=reset, redis_port=redis_port, memory=memory)
             vm.start()
 
         from time import sleep
@@ -123,8 +121,8 @@ class Builder(JSBASE):
 
         self._redis = r
 
-        if r.get("zos:active")==None:
-            #means is not active yet
+        if r.get("zos:active") is None:
+            # means is not active yet
             zcl = j.clients.zos.get(name, data={"host": "localhost", "port": redis_port})
             retries = 200
             self.logger.info("internal files in ZOS are now downloaded for first time, this can take a while.")
@@ -155,8 +153,7 @@ class Builder(JSBASE):
             self.logger.info("partition first time")
             zcl.zerodbs.partition_and_mount_disks()
 
-            r.set("zos:active",1)
-
+            r.set("zos:active", 1)
 
     def zos_vb_delete_all(self):
         """
@@ -165,15 +162,13 @@ class Builder(JSBASE):
         """
         self.vb_client.reset_all()
 
-
-    def get(self,name="builder",zosclient=None):
+    def get(self, name="builder", zosclient=None):
         if name not in self._containers:
             node = j.tools.nodemgr.set(cat="container", name=name, sshclient=name, selected=False)
             if not zosclient:
                 zosclient = self.zos_client_get()
-            self._containers[name]=ZOSContainer(zosclient=zosclient,node=node)
+            self._containers[name] = ZOSContainer(zosclient=zosclient, node=node)
         return self._containers[name]
-
 
     def test(self):
         """
@@ -182,7 +177,7 @@ class Builder(JSBASE):
         # self.zos_vb_delete_all()
         container = self.get()
         print(container.node)
-        rc,out,err = container.node.executor.execute("ls /")
-        assert "coreX\n" in out  #is a file on the root
+        rc, out, err = container.node.executor.execute("ls /")
+        assert "coreX\n" in out  # is a file on the root
 
         container.build_python_jumpscale()

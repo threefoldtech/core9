@@ -4,21 +4,20 @@ import sys
 
 JSBASE = j.application.jsbase_get_class()
 
+
 class IConfigManager(JSBASE):
 
     def __init__(self):
         JSBASE.__init__(self)
-
 
     def reset(self, location, instance=None, force=False):
         pass
 
     def reset_all(self):
         pass
-    
+
     def set_namespace(self, namespace):
         pass
-
 
     @property
     def path(self):
@@ -38,28 +37,23 @@ class IConfigManager(JSBASE):
     def _findConfigRepo(self, die=False):
         pass
 
-
     def configure(self, location="", instance="main", data={}, interactive=True):
         pass
 
     def update(self, location, instance="main", updatedict={}):
         pass
 
-
     def _get_for_obj(self, jsobj, template, ui=None, instance="main", data={}):
-        pass 
-    
-    def js_obj_get(self, location="", instance="main", data={}):
         pass
 
+    def js_obj_get(self, location="", instance="main", data={}):
+        pass
 
     def get(self, location, instance="main"):
         pass
 
-
     def list(self, location="j.tools.myconfig"):
         pass
-
 
     def delete(self, location, instance="*"):
         pass
@@ -67,7 +61,7 @@ class IConfigManager(JSBASE):
     def sandbox_init(self, path="", systemssh=False, passphrase="", reset=False, sshkeyname=""):
         """
         Will use specified dir as sandbox for config management (will not use system config dir)
-        looks for $path/secureconfig & $path/sshkeys (if systemssh == False)
+        looks for $path/secureconfig & $path/sshkeys (if systemssh is False)
         if not found will create
         Keyword Arguments:
             systemssh {Bool} -- if True will use the configured sshkey on system (default: {False})
@@ -105,13 +99,13 @@ class IConfigManager(JSBASE):
         sshkeyobj = j.clients.sshkey.get(instance=sshkeyname, data=data, interactive=False)
 
         self.sandbox = True
-        #WE SHOULD NOT CONFIGURE THE HOST CONFIGMMANAGER ALL SHOULD BE ALREADY DONE
+        # WE SHOULD NOT CONFIGURE THE HOST CONFIGMMANAGER ALL SHOULD BE ALREADY DONE
         #j.tools.configmanager.init(configpath=cpath, keypath=kpath_full, silent=False)
 
         return sshkeyobj
 
     def sandbox_check(self, path="", die=False):
-        if self._init and path == "" and die == False:
+        if self._init and path == "" and die is False:
             return self.sandbox
         if not path:
             path = j.sal.fs.getcwd()
@@ -134,12 +128,12 @@ class IConfigManager(JSBASE):
             self._init = True
             self.sandbox = True
             return j.clients.sshkey.key_load(path=kpath_full, duration=None)
-        
+
         if die:
             raise RuntimeError("did not find sandbox on this path:%s" % path)
         self._init = True
         return self.sandbox
-        
+
     def init(self, data={}, silent=False, configpath="", keypath=""):
         """
         @param data is data for myconfig
@@ -287,9 +281,7 @@ class IConfigManager(JSBASE):
                 j.tools.myconfig.configure()
                 j.tools.myconfig.config.save()
 
-
     def __str__(self):
         return "IConfigManager..."
 
     __repr__ = __str__
-        

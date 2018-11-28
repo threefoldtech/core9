@@ -211,7 +211,7 @@ class SSHClientParamiko(SSHClientBase):
                               local_file, self.host, remote_file, error)
             raise error
         self.logger.debug("Copied local file %s to remote destination %s",
-                         local_file, remote_file)
+                          local_file, remote_file)
 
     @property
     def transport(self):

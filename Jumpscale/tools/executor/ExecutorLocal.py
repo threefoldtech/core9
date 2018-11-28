@@ -95,7 +95,7 @@ class ExecutorLocal(ExecutorBase):
 
             return res
 
-        if self._stateOnSystem == None:
+        if self._stateOnSystem is None:
             self._stateOnSystem = do()  # don't use cache
 
         return self._stateOnSystem
@@ -172,7 +172,7 @@ class ExecutorLocal(ExecutorBase):
     def file_read(self, path):
         return j.sal.fs.readFile(path)
 
-    def file_write(self, path, content, mode=None, owner=None, group=None, append=False, sudo=False,showout=True):
+    def file_write(self, path, content, mode=None, owner=None, group=None, append=False, sudo=False, showout=True):
         j.sal.fs.createDir(j.sal.fs.getDirName(path))
         j.sal.fs.writeFile(path, content, append=append)
         if owner is not None or group is not None:

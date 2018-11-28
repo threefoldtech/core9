@@ -81,7 +81,8 @@ class ExecutorSSH(ExecutorBase):
             raise RuntimeError(content)
 
         if showout:
-            self.logger.info("EXECUTESCRIPT {}:{}:\n'''\n{}\n'''\n".format(self.sshclient.addr, self.sshclient.port, content))
+            self.logger.info("EXECUTESCRIPT {}:{}:\n'''\n{}\n'''\n".format(
+                self.sshclient.addr, self.sshclient.port, content))
 
         if content[-1] != "\n":
             content += "\n"
@@ -94,10 +95,11 @@ class ExecutorSSH(ExecutorBase):
             path = "/tmp/tmp_prefab_removeme_{}.sh".format(login)
         else:
             path = "/tmp/prefab_{}.sh".format(j.data.idgenerator.generateRandomInt(1, 100000))
-        
+
         j.sal.fs.writeFile(path, content)
 
-        path2 = "/tmp/prefab_{}.sh".format(j.data.idgenerator.generateRandomInt(1, 100000)) # just in case of the same machine.
+        # just in case of the same machine.
+        path2 = "/tmp/prefab_{}.sh".format(j.data.idgenerator.generateRandomInt(1, 100000))
         self.sshclient.copy_file(path, path2)  # is now always on tmp
         if sudo and "LEDE" not in j.core.platformtype.get(self).osname:
             passwd = self.sshclient.config.data['passwd_']
@@ -114,7 +116,7 @@ class ExecutorSSH(ExecutorBase):
         return rc, out, err
 
     def upload(self, source, dest, dest_prefix="", recursive=True, createdir=True,
-               rsyncdelete=True, ignoredir=['.egg-info', '.dist-info', '__pycache__', ".git"], keepsymlinks=False,showout=False):
+               rsyncdelete=True, ignoredir=['.egg-info', '.dist-info', '__pycache__', ".git"], keepsymlinks=False, showout=False):
 
         if dest_prefix != "":
             dest = j.sal.fs.joinPaths(dest_prefix, dest)

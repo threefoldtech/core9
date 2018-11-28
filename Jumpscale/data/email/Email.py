@@ -5,6 +5,8 @@ import Jumpscale.data.email.Sender as Sender
 from .utils import get_msg_path, get_json_msg
 
 JSBASE = j.application.jsbase_get_class()
+
+
 class EmailTool(JSBASE):
 
     def __init__(self):
@@ -63,7 +65,7 @@ class EmailTool(JSBASE):
 
         :return: Sender instance
         """
-        #BAD SHOULD NOT BE DONE LIKE THIS !
-        
+        # BAD SHOULD NOT BE DONE LIKE THIS !
+
         # cfg = j.data.serializer.yaml.load(j.sal.fs.joinPaths(j.dirs.JSCFGDIR, 'smtp.yaml'))
         # return self.getSender(cfg['username'], cfg['password'], cfg['host'], cfg['port'])

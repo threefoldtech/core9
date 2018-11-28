@@ -387,17 +387,17 @@ class Numeric(String):
         res = res.replace(" %", "%")
         # print(res)
         return res.strip()
-        
+
     def getCur(self, value):
-            value = value.lower()
-            for cur2 in list(j.clients.currencylayer.cur2usd.keys()):
+        value = value.lower()
+        for cur2 in list(j.clients.currencylayer.cur2usd.keys()):
                 # print(cur2)
-                if value.find(cur2) != -1:
+            if value.find(cur2) != -1:
                     # print("FOUND:%s"%cur2)
-                    value = value.lower().replace(cur2, "").strip()
-                    return value, cur2
-            cur2 = "usd"
-            return value, cur2
+                value = value.lower().replace(cur2, "").strip()
+                return value, cur2
+        cur2 = "usd"
+        return value, cur2
 
     def str2bytes(self, value):
         """
@@ -481,14 +481,14 @@ class Numeric(String):
             if value.strip() == "":
                 value = "0"
             fv = float(value)
-            if fv.is_integer(): # check floated val fits into an int
+            if fv.is_integer():  # check floated val fits into an int
                 # ok, we now know str->float->int will actually be an int
                 value = int(fv)
                 ttype = 0
             else:
                 value = fv
                 if fv > 10000:
-                    value = int(value) # doesn't look safe.  issue #72
+                    value = int(value)  # doesn't look safe.  issue #72
                     ttype = 3
                 else:
                     ttype = 1
@@ -512,7 +512,6 @@ class Numeric(String):
         assert self.bytes2str(self.str2bytes("10000")) == "10,000"
         assert self.bytes2str(self.str2bytes("1000")) == "1,000"
         assert self.bytes2str(self.str2bytes("100")) == "100"
-
 
         assert self.bytes2cur(self.str2bytes("10usd"), "eur") < 10
         assert self.bytes2cur(self.str2bytes("10usd"), "eur") > 7
@@ -554,7 +553,7 @@ class Numeric(String):
         assert len(self.str2bytes("10.0 usd")) == 6
         assert len(self.str2bytes("10.1 usd")) == 10
 
-        print ("test ok")
+        print("test ok")
 
     def clean(self, data):
         # print("num:clean:%s"%data)
@@ -622,7 +621,7 @@ class Date(String):
         return self.clean(txt)
 
     def toString(self, val, local=True):
-        if val==0:
+        if val == 0:
             return ""
         val = self.clean(val)
         return j.data.time.epoch2HRDateTime(val, local=local)

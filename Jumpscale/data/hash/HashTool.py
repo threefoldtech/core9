@@ -1,4 +1,5 @@
 
+import zlib
 from jumpscale import j
 
 import hashlib
@@ -9,6 +10,8 @@ except:
     pass
 
 JSBASE = j.application.jsbase_get_class()
+
+
 class HashTool(JSBASE):
 
     def __init__(self):
@@ -55,9 +58,6 @@ class HashTool(JSBASE):
         output of the hash functions are string representation, when you need a smaller representation you can go to binary
         """
         return binascii.hexlify(bin)
-
-
-import zlib
 
 
 def _hash_funcs(alg):
@@ -194,7 +194,7 @@ def crc32_file(path):
         return crc32_fd(fd)
 
 
-def blake2(s,digest_size=32):
+def blake2(s, digest_size=32):
     '''Calculate blake2 hash of input string
 
     @param s: String value to hash
@@ -205,7 +205,7 @@ def blake2(s,digest_size=32):
     '''
     if j.data.types.string.check(s):
         s = s.encode()
-    h = blake2b(s,digest_size=digest_size)
+    h = blake2b(s, digest_size=digest_size)
     return h.hexdigest()
 
 

@@ -129,7 +129,7 @@ class KeyValueStoreBase(JSBASE):  # , metaclass=ABCMeta):
         if j.data.types.string.check(val):
             val = val.encode()
             ttype += 0b0000100
-        elif j.data.types.bytes.check(val) == False:
+        elif j.data.types.bytes.check(val) is False:
             val = j.data.serializer.msgpack.dumps(val)
             ttype += 0b0010000
 
@@ -300,7 +300,8 @@ class KeyValueStoreBase(JSBASE):  # , metaclass=ABCMeta):
         (val, owner, schema, expire, acl) = self._decode(data)
 
         if j.data.kvs._aclCheck(acl, owner, secret, modecheck) is False:
-            raise j.exceptions.Input(message="cannot get obj with key '%s' because mode '%s' is not allowed." % (key, modecheck))
+            raise j.exceptions.Input(
+                message="cannot get obj with key '%s' because mode '%s' is not allowed." % (key, modecheck))
 
         val = self.unserialize(val)
 
@@ -494,7 +495,7 @@ class KeyValueStoreBase(JSBASE):  # , metaclass=ABCMeta):
     #     category = "lock"
     #     lockfree = self._lockWait(locktype, timeoutwait)
     #     if not lockfree:
-    #         if force == False:
+    #         if force is False:
     #             raise j.exceptions.RuntimeError("Cannot lock %s %s" % (locktype, info))
     #     value = [self.id, j.data.time.getTimeEpoch() + timeout, info]
     #     encodedValue = j.data.serializer.json.dumps(value)
@@ -549,7 +550,7 @@ class KeyValueStoreBase(JSBASE):  # , metaclass=ABCMeta):
     #     """
     #     lockfree = self._lockWait(locktype, timeoutwait)
     #     if not lockfree:
-    #         if force == False:
+    #         if force is False:
     #             raise j.exceptions.RuntimeError("Cannot unlock %s" % locktype)
     #     self.delete("lock", locktype)
     #

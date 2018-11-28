@@ -47,7 +47,8 @@ class DbConfigManager(IConfigManager):
     @property
     def namespace(self):
         if not self._namespace:
-            raise RuntimeError("configmanager isn't configured for a namespace you need to set the namespace using j.tools.configmanager.set_namespace")
+            raise RuntimeError(
+                "configmanager isn't configured for a namespace you need to set the namespace using j.tools.configmanager.set_namespace")
         return self._namespace
 
     def init(self, data={}, silent=False, configpath="", keypath=""):
@@ -118,7 +119,8 @@ class DbConfigManager(IConfigManager):
                 # TODO: understand better secret/secrets/adminsecrets role..
                 self._zdbsimplecl.namespace_new(namespace, die=False)
             else:
-                raise ValueError("Can't instantiate configmanager with db backend without specifying that in jumpscale state.")
+                raise ValueError(
+                    "Can't instantiate configmanager with db backend without specifying that in jumpscale state.")
         # try to populate sandbox if namespace has the keys
         if self._zdbsimplecl.namespace.exists('key.priv') and self._zdbsimplecl.namespace.exists('key.pub'):
             self.configure_keys(self._zdbsimplecl.namespace.get('key.priv'), self._zdbsimplecl.namespace.get('key.pub'),
@@ -181,7 +183,8 @@ class DbConfigManager(IConfigManager):
             nacl = j.data.nacl.get("key")
             # put the seed in the db
             self._zdbsimplecl.namespace.set(j.sal.fs.readFile(j.sal.fs.joinPaths(mgmtpath, "key.seed")), "key.seed")
-            self._zdbsimplecl.namespace.set(j.sal.fs.readFile(j.sal.fs.joinPaths(mgmtpath, "key.priv")), "key.priv.encoded")
+            self._zdbsimplecl.namespace.set(j.sal.fs.readFile(
+                j.sal.fs.joinPaths(mgmtpath, "key.priv")), "key.priv.encoded")
 
     def _findConfigRepo(self, die=False):
         """
@@ -277,7 +280,7 @@ class DbConfigManager(IConfigManager):
     def sandbox_init(self, path="", passphrase="", reset=False, sshkeyname="key"):
         """
         Will use specified dir as sandbox for config management (will not use system config dir)
-        looks for $path/secureconfig & $path/sshkeys (if systemssh == False)
+        looks for $path/secureconfig & $path/sshkeys (if systemssh is False)
         if not found will create
         Keyword Arguments:
             systemssh {Bool} -- if True will use the configured sshkey on system (default: {False})
@@ -321,7 +324,7 @@ class DbConfigManager(IConfigManager):
         self.sandbox_check()
         if location == "":
             raise RuntimeError("location cannot be empty")
-        if instance == "" or instance == None:
+        if instance == "" or instance is None:
             raise RuntimeError("instance cannot be empty")
 
         return DbConfig(instance=instance, location=location)

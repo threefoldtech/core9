@@ -1,6 +1,7 @@
 from Jumpscale import j
 import os
 
+
 class JSBase:
 
     def __init__(self):
@@ -11,7 +12,7 @@ class JSBase:
         self._logger_force = False
 
         if "_location" not in self.__dict__:
-            self._location=None
+            self._location = None
 
     @property
     def __name__(self):
@@ -28,8 +29,6 @@ class JSBase:
                 self._location = self.__name__
         return self._location
 
-
-
     @property
     def logger(self):
         if self._logger is None:
@@ -45,8 +44,6 @@ class JSBase:
         self._logger_force = True
         self._logger = None
         self.logger.level = 0
-
-
 
     @property
     def cache(self):

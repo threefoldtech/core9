@@ -57,7 +57,7 @@ class State(JSBASE):
             self.executor.reset()
 
         if self.executor.stateOnSystem is None:
-            raise RuntimeError("cannot load state because state on system in executor == None")
+            raise RuntimeError("cannot load state because state on system in executor is None")
 
         self.configJSPath = self.executor.stateOnSystem["path_jscfg"] + "/jumpscale.toml"
         self.configStatePath = self.executor.stateOnSystem["path_jscfg"] + "/state.toml"

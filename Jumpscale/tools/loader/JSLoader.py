@@ -1,3 +1,4 @@
+import pystache
 from Jumpscale import j
 import os
 import sys
@@ -90,8 +91,6 @@ j.tools.jsloader = JSLoader()
 
 """
 
-import pystache
-
 
 class JSLoader():
 
@@ -112,8 +111,8 @@ class JSLoader():
 
     def _findSitePath(self):
         if "PBASE" in os.environ:
-            #means we are in sandbox
-            return "%s/lib/pythonbin"%(os.environ["PBASE"])
+            # means we are in sandbox
+            return "%s/lib/pythonbin" % (os.environ["PBASE"])
         res = ""
         for item in sys.path:
             if "/site-packages" in item:
@@ -314,7 +313,7 @@ class JSLoader():
                     "(", 1)[0].strip()
                 if classname == "JSBaseClassConfig":
                     break
-            if line.find("self.__jslocation__") != -1 and locfound == False:
+            if line.find("self.__jslocation__") != -1 and locfound is False:
                 if classname is None:
                     raise RuntimeError(
                         "Could not find class in %s while loading jumpscale lib." %

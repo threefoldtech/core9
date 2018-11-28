@@ -1,6 +1,8 @@
 from jumpscale import j
 
 JSBASE = j.application.jsbase_get_class()
+
+
 class RsyncInstance(JSBASE):
 
     def __init__(self):
@@ -79,7 +81,7 @@ class RsyncServer(JSBASE):
         secrets file = /etc/rsync/users
 
         """
-                D = """
+        D = """
         [$secret]
         exclude = *.pyc .git
         path = $root/root/$name

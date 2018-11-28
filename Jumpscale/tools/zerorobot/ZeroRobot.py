@@ -7,6 +7,8 @@ from .ZeroRepos import *
 # from .ZeroServices import *
 
 JSBASE = j.application.jsbase_get_class()
+
+
 class ZeroRobot(JSBASE):
 
     def __init__(self):
@@ -33,7 +35,6 @@ class ZeroRobot(JSBASE):
             self._repos.load()  # auto load the known ones
         return self._repos
 
-
     @property
     def _path(self):
         return j.sal.fs.getDirName(os.path.abspath(__file__))
@@ -52,8 +53,7 @@ class ZeroRobot(JSBASE):
     #     return self._models
 
     def test(self):
-        self.templates.load() #will load all templates it can find
+        self.templates.load()  # will load all templates it can find
 
-        from IPython import embed;embed(colors='Linux')
-
-
+        from IPython import embed
+        embed(colors='Linux')

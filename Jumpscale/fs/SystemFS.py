@@ -17,6 +17,8 @@ from Jumpscale import j
 import copy
 
 JSBASE = j.application.jsbase_get_class()
+
+
 class SystemFS(JSBASE):
 
     def __init__(self):
@@ -218,7 +220,7 @@ class SystemFS(JSBASE):
                     if self.isDir(srcname):
                         # print "1:%s %s"%(srcname,dstname)
                         self.copyDirTree(srcname, dstname, keepsymlinks, deletefirst,
-                                         overwriteFiles=overwriteFiles,ignoredir=ignoredir,ignorefiles=ignorefiles)
+                                         overwriteFiles=overwriteFiles, ignoredir=ignoredir, ignorefiles=ignorefiles)
                     if self.isFile(srcname):
                         # print "2:%s %s"%(srcname,dstname)
                         self.copyFile(
@@ -241,7 +243,7 @@ class SystemFS(JSBASE):
             dstpath = dst.split(':')[1] if ':' in dst else dst
             cmd = "rsync --no-owner --no-group"
             if keepsymlinks:
-                #-l is keep symlinks, -L follow
+                # -l is keep symlinks, -L follow
                 cmd += " -rlt --partial %s" % excl
             else:
                 cmd += " -rLt --partial %s" % excl
@@ -372,10 +374,10 @@ class SystemFS(JSBASE):
         return dname + os.sep if dname else dname
 
     @path_check(path={"required", })
-    def getBaseName(self, path, removeExtension = False):
+    def getBaseName(self, path, removeExtension=False):
         """Return the base name of pathname path."""
         self.logger.debug('Get basename for path: %s' % path)
-        name =  os.path.basename(path.rstrip(os.path.sep))
+        name = os.path.basename(path.rstrip(os.path.sep))
         if removeExtension:
             if "." in name:
                 name = ".".join(name.split(".")[:-1])
@@ -788,7 +790,7 @@ class SystemFS(JSBASE):
                                 if len(r) > 0:
                                     filesreturn.extend(r)
             # and followSymlinks==False and listSymlinks:
-            elif self.isLink(fullpath) and followSymlinks == False and listSymlinks:
+            elif self.isLink(fullpath) and followSymlinks is False and listSymlinks:
                 filesreturn.append(fullpath)
 
         return filesreturn, depth
@@ -1293,7 +1295,7 @@ class SystemFS(JSBASE):
         files = sorted(self.walk(folder, recurse=1))
         return self.md5sum(files)
 
-    def getTmpDirPath(self, name="",create=True):
+    def getTmpDirPath(self, name="", create=True):
         """
         create a tmp dir name and makes sure the dir exists
         """

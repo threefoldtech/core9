@@ -6,6 +6,8 @@ import sys
 import pyximport
 
 JSBASE = j.application.jsbase_get_class()
+
+
 class CythonFactory(JSBASE):
     """
     example:

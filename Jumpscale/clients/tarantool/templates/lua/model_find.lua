@@ -12,7 +12,7 @@ local function find(query)
                 add = false
                 break
             end
-            if add == true then
+            if add is True then
                 table.insert(res, item)
             end
         end

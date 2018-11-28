@@ -47,7 +47,7 @@ class AlertHandler(JSBASE):
             e.level = error.level
             e.trace = error.trace
         else:
-            args=[str(item) for item in error.args]
+            args = [str(item) for item in error.args]
             e.message = "\n".join(args)
             name = str(error.__class__).split("'")[1].strip()
             e.cat = "python.%s" % name
@@ -77,7 +77,7 @@ class AlertHandler(JSBASE):
     def get(self, key, new=False, die=True):
         res = self.db.get(key)
         if res is None:
-            if die == False:
+            if die is False:
                 return
             if new:
                 return self.schema_alert.new()
@@ -173,7 +173,8 @@ class AlertHandler(JSBASE):
             except Exception as e:
                 j.errorhandler.try_except_error_process(e, die=False)  # if you want to continue
 
-        error = j.exceptions.HaltException("halt test")  # this test will not have nice stacktrace because is not really an exception
+        # this test will not have nice stacktrace because is not really an exception
+        error = j.exceptions.HaltException("halt test")
 
         j.errorhandler.try_except_error_process(error, die=False)
 

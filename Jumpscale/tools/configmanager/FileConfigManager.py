@@ -25,6 +25,7 @@ js_config init
 
 """
 
+
 class FileConfigManager(IConfigManager):
 
     def __init__(self):
@@ -34,7 +35,6 @@ class FileConfigManager(IConfigManager):
         self.sandbox = False
         self._keyname = ""  # if set will overrule from the main js config file
         self._init = False
-
 
     def reset(self, location=None, instance=None, force=False):
         """
@@ -57,7 +57,6 @@ class FileConfigManager(IConfigManager):
         else:
             j.sal.fs.remove(path)
 
-    
     @property
     def path(self):
         if not self._path:
@@ -132,7 +131,7 @@ class FileConfigManager(IConfigManager):
         sc = FileConfig(instance=instance, location=location, template=template, data=data)
 
         return sc
-    
+
     def js_obj_get(self, location="", instance="main", data={}):
         """
         will look for jumpscale module on defined location & return this object
@@ -160,7 +159,6 @@ class FileConfigManager(IConfigManager):
         obj = obj.get(instance=instance, data=data)
         return obj
 
-
     def get(self, location, instance="main"):
         """
         return a secret config, it needs to exist, otherwise it will die
@@ -168,12 +166,11 @@ class FileConfigManager(IConfigManager):
         self.sandbox_check()
         if location == "":
             raise RuntimeError("location cannot be empty")
-        if instance == "" or instance == None:
+        if instance == "" or instance is None:
             raise RuntimeError("instance cannot be empty")
         key = "%s_%s" % (location, instance)
 
         return FileConfig(instance=instance, location=location)
-
 
     def list(self, location="j.tools.myconfig"):
         """
@@ -187,12 +184,12 @@ class FileConfigManager(IConfigManager):
         instances = []
 
         if not location:
-            res=[]
+            res = []
             for location in j.sal.fs.listDirsInDir(self.path, recursive=False, dirNameOnly=True):
                 if ".git" in location:
                     continue
                 for instance in self.list(location):
-                    res.append((location,instance))
+                    res.append((location, instance))
             return res
 
         root = j.sal.fs.joinPaths(self.path, location)
@@ -211,7 +208,6 @@ class FileConfigManager(IConfigManager):
 
         return instances
 
-
     def delete(self, location, instance="*"):
         self.sandbox_check()
         if instance != "*":
@@ -224,12 +220,11 @@ class FileConfigManager(IConfigManager):
                 for item in j.sal.fs.listFilesInDir(path):
                     j.sal.fs.remove(item)
 
-
     def __str__(self):
         self.sandbox_check()
         sshagent = j.clients.sshkey.sshagent_available()
         keyloaded = self.keyname in j.clients.sshkey.listnames()
-        C="""
+        C = """
         
         configmanager:
         - backend: file
@@ -239,15 +234,14 @@ class FileConfigManager(IConfigManager):
         - sshagent loaded: {sshagent}
         - key in sshagent: {keyloaded}
 
-        """.format(**{"path":self.path,
-            "sshagent":sshagent,
-            "keyloaded":keyloaded,
-            "keyname":self.keyname,
-            "sandbox":self.sandbox_check()})
-        C=j.data.text.strip(C)
-        
+        """.format(**{"path": self.path,
+                      "sshagent": sshagent,
+                      "keyloaded": keyloaded,
+                      "keyname": self.keyname,
+                      "sandbox": self.sandbox_check()})
+        C = j.data.text.strip(C)
+
         return C
-        
 
     __repr__ = __str__
 

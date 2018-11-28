@@ -8,8 +8,9 @@ import os
 from jumpscale import j
 
 
-
 JSBASE = j.application.jsbase_get_class()
+
+
 class NetTools(JSBASE):
 
     def __init__(self):
@@ -227,9 +228,9 @@ class NetTools(JSBASE):
 
     def getIpAddresses(self, up=False):
         if j.core.platformtype.myplatform.isLinux or j.core.platformtype.myplatform.isMac:
-            result = {'ip': [],'ip6': []}
+            result = {'ip': [], 'ip6': []}
             for ipinfo in self.getNetworkInfo():
-                if ipinfo!=[] : # if empty array skip
+                if ipinfo != []:  # if empty array skip
                     result['ip'].extend(ipinfo['ip'])
                     result['ip6'].extend(ipinfo['ip6'])
             return result
@@ -286,7 +287,7 @@ class NetTools(JSBASE):
         @param interface: Interface to determine Nic type on
         @raise RuntimeError: On linux if ethtool is not present on the system
         """
-        if j.core.platformtype.myplatform.isLinux :
+        if j.core.platformtype.myplatform.isLinux:
             output = ''
             if j.sal.fs.exists("/sys/class/net/%s" % interface):
                 output = j.sal.fs.fileGetContents(
@@ -297,12 +298,12 @@ class NetTools(JSBASE):
                 if j.sal.fs.exists('/proc/net/vlan/%s' % (interface)):
                     return 'VLAN'
                 exitcode, output, err = j.sal.process.execute(
-                    "which ethtool",showout=False)
+                    "which ethtool", showout=False)
                 if exitcode != 0:
                     raise j.exceptions.RuntimeError(
                         "Ethtool is not installed on this system!")
                 exitcode, output, err = j.sal.process.execute(
-                    "ethtool -i %s" % (interface),showout=False)
+                    "ethtool -i %s" % (interface), showout=False)
                 if exitcode != 0:
                     return 'VIRTUAL'
                 match = re.search(
@@ -489,7 +490,7 @@ class NetTools(JSBASE):
         j.sal.process.execute(cmd)
         return "added %s default gw" % gw
 
-    def getNetworkInfo(self,device=None):
+    def getNetworkInfo(self, device=None):
         """
         returns network info like
 
@@ -508,20 +509,19 @@ class NetTools(JSBASE):
         TODO: change for windows
 
         """
-        #TODO: use caching feature from jumpscale to keep for e.g. 1 min, if not usecache needs to reset cache to make sure we load again
+        # TODO: use caching feature from jumpscale to keep for e.g. 1 min, if not usecache needs to reset cache to make sure we load again
         return j.tools.prefab.local.system.net.getInfo(device=device)
-
 
     def getIpAddress(self, interface):
         """Return a list of ip addresses and netmasks assigned to this interface"""
 
-        #TODO: use getNetworkInfo to return info
+        # TODO: use getNetworkInfo to return info
         if j.core.platformtype.myplatform.isLinux or j.core.platformtype.myplatform.isMac:
-            output =list()
+            output = list()
             output = j.tools.prefab.local.system.net.getInfo()
-            result = {'ip': [],'ip6': []}
+            result = {'ip': [], 'ip6': []}
             for nic in output:
-                if nic['name']== interface:
+                if nic['name'] == interface:
                     result['ip'].append(nic['ip'])
                     result['ip6'].append(nic['ip6'])
                     return result
@@ -550,11 +550,11 @@ class NetTools(JSBASE):
             raise LookupError(
                 "Interface %s not found on the system" % interface)
         if j.core.platformtype.myplatform.isLinux or j.core.platformtype.myplatform.isMac:
-            output =list()
+            output = list()
             output = j.tools.prefab.local.system.net.getInfo()
-            result=list()
+            result = list()
             for nic in output:
-                if nic['name']== interface:
+                if nic['name'] == interface:
                     result.append(nic['mac'])
                     break
             return result
@@ -624,21 +624,21 @@ class NetTools(JSBASE):
         @return: The MAC address corresponding with the given IP
         @raise: RuntimeError if no MAC found for IP or if platform is not suppported
         """
-        if j.core.platformtype.myplatform.isLinux or j.core.platformtype.myplatform.isMac :
+        if j.core.platformtype.myplatform.isLinux or j.core.platformtype.myplatform.isMac:
             IpAdress = list()
             IpAdress.append(ipaddress)
-            output =list()
+            output = list()
             output = j.tools.prefab.local.system.net.getInfo()
-            result=list()
+            result = list()
 
             for nic in output:
-                if nic['ip']== IpAdress:
+                if nic['ip'] == IpAdress:
                     result.append(nic['mac'])
                     return result
-                elif nic['ip6']== IpAdress:
+                elif nic['ip6'] == IpAdress:
                     result.append(nic['mac'])
                     return result
-            return "no MAC found for %s" %ipaddress
+            return "no MAC found for %s" % ipaddress
         else:
             raise j.exceptions.RuntimeError(
                 "j.sal.nettools.getMacAddressForIp not supported on this platform")
@@ -875,7 +875,7 @@ class NetTools(JSBASE):
         if j.core.platformtype.myplatform.isLinux:
             cmd = "dnsdomainname"
 
-        elif j.core.platformtype.myplatform.isMac :
+        elif j.core.platformtype.myplatform.isMac:
             cmd = "domainname"
 
         if not cmd:
@@ -933,7 +933,7 @@ class NetTools(JSBASE):
             self.logger.info('Do NOT FORGET TO COMMIT')
 
     def commit(self, device=None):
-        #- make sure loopback exist
+        # - make sure loopback exist
         if j.core.platformtype.myplatform.isMac:
             if device:
                 self.logger.info('Restarting interface %s' % device)
@@ -947,6 +947,7 @@ class NetTools(JSBASE):
                 self.logger.info('Restarting interface %s' % device)
                 j.sal.process.execute('ifdown %s && ifup %s' % (device, device))
         self.logger.info('DONE')
+
 
 class NetworkZone(JSBASE):
 

@@ -6,6 +6,7 @@ from .TarantoolClient import TarantoolClient
 
 JSConfigFactory = j.tools.configmanager.base_class_configs
 
+
 class TarantoolFactory(JSConfigFactory):
 
     """

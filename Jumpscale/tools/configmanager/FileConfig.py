@@ -14,12 +14,12 @@ class FileConfig(JSBASE):
 
         self.location = j.data.text.toStr(location)
         self.instance = j.data.text.toStr(instance)
-        self.error = False # if this is true then need to call the configure part
+        self.error = False  # if this is true then need to call the configure part
         self.namespace = None
         self._template = template
         if not j.data.types.string.check(template):
             if template is not None:
-                raise RuntimeError("template needs to be None or string:%s"%template)
+                raise RuntimeError("template needs to be None or string:%s" % template)
         if self.instance is None:
             raise RuntimeError("instance cannot be None")
 
@@ -62,7 +62,8 @@ class FileConfig(JSBASE):
     def path(self):
         self.logger.debug("init getpath:%s" % self._path)
         if not self._path:
-            self._path = j.sal.fs.joinPaths(j.data.text.toStr(j.tools.configmanager.path), self.location, self.instance + '.toml')
+            self._path = j.sal.fs.joinPaths(j.data.text.toStr(j.tools.configmanager.path),
+                                            self.location, self.instance + '.toml')
             self.logger.debug("getpath:%s" % self._path)
         return self._path
 
@@ -90,13 +91,13 @@ class FileConfig(JSBASE):
             if not j.sal.fs.exists(self.path):
                 raise RuntimeError("should exist at this point")
             else:
-                content = j.sal.fs.fileGetContents(self.path)                
+                content = j.sal.fs.fileGetContents(self.path)
                 try:
                     self._data = j.data.serializer.toml.loads(content)
                 except Exception as e:
                     if "deserialization failed" in str(e):
-                        raise RuntimeError("config file:%s is not valid toml.\n%s"%(self.path,content))
-                    raise e                     
+                        raise RuntimeError("config file:%s is not valid toml.\n%s" % (self.path, content))
+                    raise e
             for key, val in self.template.items():
                 ttype = j.data.types.type_detect(self.template[key])
                 if ttype.BASETYPE == "string":
@@ -116,20 +117,22 @@ class FileConfig(JSBASE):
         if self._template is None or self._template == '':
             obj = eval(self.location)
             module = None
-            if hasattr(obj,"_child_class"):
+            if hasattr(obj, "_child_class"):
                 obj._child_class
                 try:
                     module = getmodule(obj._child_class)
                 except Exception as e:
                     if "cannot import name" in str(e):
-                        raise RuntimeError("cannot find TEMPLATE in %s, please call the template: TEMPLATE"%obj._child_class.__module__)
-                    raise e          
+                        raise RuntimeError("cannot find TEMPLATE in %s, please call the template: TEMPLATE" %
+                                           obj._child_class.__module__)
+                    raise e
             else:
                 try:
                     module = getmodule(obj)
                 except Exception as e:
                     if "cannot import name" in str(e):
-                        raise RuntimeError("cannot find TEMPLATE in %s, please call the template: TEMPLATE"%obj._child_class.__module__)
+                        raise RuntimeError("cannot find TEMPLATE in %s, please call the template: TEMPLATE" %
+                                           obj._child_class.__module__)
                     raise e
             self._template = module.TEMPLATE
         if j.data.types.string.check(self._template):
@@ -137,11 +140,10 @@ class FileConfig(JSBASE):
                 self._template = j.data.serializer.toml.loads(self._template)
             except Exception as e:
                 if "deserialization failed" in str(e):
-                    raise RuntimeError("config file:%s is not valid toml.\n%s"%(self.path,self._template))
-                raise e          
+                    raise RuntimeError("config file:%s is not valid toml.\n%s" % (self.path, self._template))
+                raise e
 
         return self._template
-
 
     @property
     def data(self):
@@ -150,9 +152,9 @@ class FileConfig(JSBASE):
             self.load()
         for key, item in self._data.items():
             if key not in self.template:
-                self.logger.warning("could not find key:%s in template, while it was in instance:%s"%(key,self.path))
-                self.logger.debug("template was:%s\n"%self.template)
-                self.error=True
+                self.logger.warning("could not find key:%s in template, while it was in instance:%s" % (key, self.path))
+                self.logger.debug("template was:%s\n" % self.template)
+                self.error = True
             else:
                 ttype = j.data.types.type_detect(self.template[key])
                 if key.endswith("_"):

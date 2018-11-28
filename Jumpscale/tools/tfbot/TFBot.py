@@ -6,6 +6,7 @@ import locale
 
 JSBASE = j.application.jsbase_get_class()
 
+
 class TFBot(JSBASE):
 
     def __init__(self, zoscontainer):
@@ -18,11 +19,9 @@ class TFBot(JSBASE):
     def name(self):
         return self.zoscontainer.name
 
-
     @property
     def info(self):
         return self.zoscontainer.container.info
-
 
     def __repr__(self):
         return "tfbot:%s" % self.name

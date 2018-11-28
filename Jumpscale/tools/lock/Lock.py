@@ -9,6 +9,8 @@ logger = j.logger.get('Jumpscale.core.logger')
 _LOCKDICTIONARY = dict()
 
 JSBASE = j.application.jsbase_get_class()
+
+
 class LockException(Exception, JSBASE):
 
     def __init__(self, message='Failed to get lock', innerException=None):

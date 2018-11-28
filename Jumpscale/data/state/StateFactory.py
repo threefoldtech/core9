@@ -16,5 +16,5 @@ class StateFactory(JSBASE):
     def get(self, path="/host/jumpscale.toml"):
         """
         """
-        st = State(j.tools.executorLocal,path=path)
+        st = State(j.tools.executorLocal, path=path)
         return st

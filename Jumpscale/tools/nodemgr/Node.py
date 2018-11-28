@@ -200,7 +200,6 @@ class Node(JSConfigBase):
     def test_executor(self):
         self.executor.test()
 
-
     def sync(self, monitor=False):
         ddirs = j.tools.develop.getActiveCodeDirs()
         for ddir in ddirs:

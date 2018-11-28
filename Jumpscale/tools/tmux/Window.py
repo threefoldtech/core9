@@ -1,4 +1,5 @@
 
+from .Pane import Pane
 from Jumpscale import j
 import time
 import libtmux as tmuxp
@@ -6,7 +7,6 @@ import os
 
 JSBASE = j.application.jsbase_get_class()
 
-from .Pane import Pane
 
 class Window(JSBASE):
 
@@ -77,4 +77,3 @@ class Window(JSBASE):
         return ("window:%s:%s" % (self.id, self.name))
 
     __str__ = __repr__
-

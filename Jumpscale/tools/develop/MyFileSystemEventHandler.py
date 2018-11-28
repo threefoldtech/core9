@@ -31,7 +31,7 @@ class MyFileSystemEventHandler(FileSystemEventHandler, JSBASE):
         else:
             error = False
             for node in self.nodes:
-                if node.selected == False:
+                if node.selected is False:
                     continue
                 if error is False:
                     if changedfile.find("/.git/") != -1:

@@ -9,6 +9,8 @@ import re
 matchquote = re.compile(r'\'[^\']*\'')
 
 JSBASE = j.application.jsbase_get_class()
+
+
 class Tags(JSBASE):
     """
     represent set of tags & _labels

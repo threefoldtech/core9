@@ -1,4 +1,4 @@
-#CANNOT USE j. here anywhere
+# CANNOT USE j. here anywhere
 
 import sys
 import os
@@ -8,8 +8,9 @@ from functools import wraps
 import re
 
 joinPaths = os.path.join
-exists=os.path.exists
+exists = os.path.exists
 getcwd = os.getcwd
+
 
 def pathShorten(path):
     """
@@ -25,6 +26,7 @@ def pathShorten(path):
     #         cleanedPath = "%s%s" % (cleanedPath, sep)
     return cleanedPath
 
+
 def pathClean(path):
     """
     goal is to get a equal representation in / & \ in relation to os.sep
@@ -37,19 +39,22 @@ def pathClean(path):
     path = path.strip()
     return path
 
-def pathDirClean( path):
+
+def pathDirClean(path):
     path = path + os.sep
     return pathClean(path)
 
+
 def dirEqual(path1, path2):
     return pathDirClean(path1) == pathDirClean(path2)
+
 
 def pathNormalize(path):
     """
     paths are made absolute & made sure they are in line with os.sep
     @param path: path to normalize
     """
-    if path=="":
+    if path == "":
         return (getcwd())
     path = pathClean(path)
     if len(path) > 0 and path[0] != os.sep:
@@ -134,8 +139,8 @@ def path_check(**arguments):
                             parameter.name, jslocation(), func.__name__))
 
                     if "required" in validators:
-                        #NORMALIZE THE PATH 
-                        value=pathNormalize(value)
+                        # NORMALIZE THE PATH
+                        value = pathNormalize(value)
                         if position < len(args):
                             args[position] = value
                         else:
@@ -157,4 +162,3 @@ def path_check(**arguments):
             return func(*args, **kwargs)
         return wrapper
     return decorator
-

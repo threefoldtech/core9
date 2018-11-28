@@ -2,6 +2,8 @@
 from jumpscale import j
 
 JSBASE = j.application.jsbase_get_class()
+
+
 class ZeroDomains(JSBASE):
 
     def init(self, name, giturl):
@@ -9,7 +11,7 @@ class ZeroDomains(JSBASE):
         d = ZeroDomain()
 
     def load(self, path=None):
-        if path == None:
+        if path is None:
             repos = j.clients.git.getGitReposListLocal()
             for key, val in repos.items():
                 if key.startswith("zerorobot"):

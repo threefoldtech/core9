@@ -1,3 +1,4 @@
+from builtins import str
 import time
 from Jumpscale import j
 import re
@@ -12,7 +13,6 @@ matchlist = re.compile(r'\[[^\']*\]')
 re_nondigit = re.compile(r'\D')
 re_float = re.compile(r'[0-9]*\.[0-9]+')
 re_digit = re.compile(r'[0-9]*')
-from builtins import str
 
 try:
     import pygments.lexers
@@ -43,29 +43,31 @@ class Text(JSBASE):
         replace -,:... to _
         lower the text
         remove all the other parts
-        
+
         """
-        text=unidecode(text) #convert to ascii letters
+        text = unidecode(text)  # convert to ascii letters
         # text=self.strip_to_ascii(text) #happens later already
-        text=text.lower()
+        text = text.lower()
+
         def replace(char):
             if char in "-/\\= ;!+()":
                 return "_"
             return char
-        def check(char):                
+
+        def check(char):
             charnr = ord(char)
             if char in "._":
                 return True
-            if charnr>47 and charnr<58:
+            if charnr > 47 and charnr < 58:
                 return True
-            if charnr>96 and charnr<123:
+            if charnr > 96 and charnr < 123:
                 return True
             return False
         res = [replace(char) for char in str(text)]
-        res = [char for char in res if check(char)]        
-        text =  "".join(res)
+        res = [char for char in res if check(char)]
+        text = "".join(res)
         while "__" in text:
-            text = text.replace("__","_")
+            text = text.replace("__", "_")
         text = text.rstrip("_")
         return text
 
@@ -1005,7 +1007,7 @@ class Text(JSBASE):
         text = text.strip(" [")
         text = text.strip(" ]")
 
-        text=text.strip("'").strip("\"").strip()
+        text = text.strip("'").strip("\"").strip()
 
         if self.strip(text) == "":
             return []
@@ -1031,7 +1033,6 @@ class Text(JSBASE):
             if item not in res:
                 res.append(item)
         return res
-
 
     def getDict(self, text, ttype=None):
         """

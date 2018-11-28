@@ -7,6 +7,7 @@ from jumpscale import j
 # import psutil
 from .NodeBase import NodeBase
 
+
 class NodeHost(NodeBase):
 
     def __init__(self, ipaddr, sshport=22, name=""):

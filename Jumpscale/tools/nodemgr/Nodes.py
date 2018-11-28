@@ -94,7 +94,7 @@ class Nodes(JSConfigBase):
         for i in range(10):
             self.set("myhost%s" % i, "127.0.0.%s" % i, 22, cat="testcat")
 
-        assert self.exists("myhost1") == True
+        assert self.exists("myhost1") is True
 
         assert len(self.getall()) == 10 + startnr
 
@@ -125,10 +125,10 @@ class Nodes(JSConfigBase):
         n.selected = False
         n.config.data = {"selected": False}
         assert n.selected == n.config.data["selected"]
-        assert n.selected == False
-        assert n.config.data["selected"] == False
+        assert n.selected is False
+        assert n.config.data["selected"] is False
         n.selected = True
-        assert n.config.data["selected"] == True
+        assert n.config.data["selected"] is True
 
         # now tests about updating data
         d2["port"] = 2222

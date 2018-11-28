@@ -39,7 +39,7 @@ class SSHClientBase(JSConfigBase):
     # SETTERS & GETTERS
     @property
     def addr(self):
-        if self._private == True:
+        if self._private is True:
             return self.addr_variable
         return self.config.data["addr"]
 
@@ -168,6 +168,6 @@ class SSHClientBase(JSConfigBase):
         if key:
             sshkey = j.clients.sshkey.get(key)
             pubkey = sshkey.pubkey
-        if pubkey in [None,""]:
+        if pubkey in [None, ""]:
             raise RuntimeError("pubkey not given")
         self.prefab.system.ssh.authorize(user=user, key=pubkey)

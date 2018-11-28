@@ -10,12 +10,15 @@ CONFIG_FILE = '/etc/rsyncd.conf'
 # CLIENT_OPT_REGEXT = re.compile('\s*([^\(]+)\(([^\)]+)\)')
 
 JSBASE = j.application.jsbase_get_class()
+
+
 class RsyncError(Exception, JSBASE):
 
     def __init__(self):
         JSBASE.__init__(self)
 
     pass
+
 
 class RsyncModule(JSBASE):
 

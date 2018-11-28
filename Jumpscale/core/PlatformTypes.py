@@ -131,7 +131,7 @@ class PlatformType(JSBASE):
     @property
     def uname(self):
         if self._uname is None:
-            if  self.executor.type=="local":
+            if self.executor.type == "local":
                 unn = os.uname()
                 self._hostname = unn.nodename
                 distro_info = platform.linux_distribution()

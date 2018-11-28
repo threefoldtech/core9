@@ -4,6 +4,8 @@ from Jumpscale import j
 import time
 
 JSBASE = j.application.jsbase_get_class()
+
+
 class MemQueueFactory(JSBASE):
 
     def __init__(self):
@@ -19,9 +21,9 @@ class MemQueue(JSBASE):
 
     def __init__(self):
         JSBASE.__init__(self)
-        self.data=[]
-    
-    def put(self,data):
+        self.data = []
+
+    def put(self, data):
         self.data.append(data)
 
     def __str__(self):

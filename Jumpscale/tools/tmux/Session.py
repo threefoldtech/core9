@@ -1,4 +1,5 @@
 
+from .Window import Window
 from Jumpscale import j
 import time
 import libtmux as tmuxp
@@ -7,7 +8,7 @@ import os
 JSBASE = j.application.jsbase_get_class()
 
 # from .Pane import Pane
-from .Window import Window
+
 
 class Session(JSBASE):
 
@@ -78,4 +79,3 @@ class Session(JSBASE):
         return ("session:%s:%s" % (self.id, self.name))
 
     __str__ = __repr__
-

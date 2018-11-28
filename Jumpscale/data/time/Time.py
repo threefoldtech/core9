@@ -194,7 +194,6 @@ class Time_(JSBASE):
             return self.getTimeEpoch()
         return self.getTimeEpoch() + self.getDeltaTime(txt)
 
-
     def HRDateToEpoch(self, datestr, local=True):
         """
         convert string date to epoch

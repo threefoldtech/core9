@@ -2,6 +2,7 @@ import threading
 
 # JSBASE = j.application.jsbase_get_class()
 
+
 class StreamReader(threading.Thread):
 
     def __init__(self, stream, channel, queue, flag):

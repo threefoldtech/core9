@@ -12,6 +12,7 @@ import tarantool
 
 JSBASE = j.application.jsbase_get_class()
 
+
 class TarantoolQueue(JSBASE):
 
     def __init__(self, tarantoolclient, name, ttl=0, delay=0):
@@ -73,4 +74,3 @@ class TarantoolQueue(JSBASE):
     def get_nowait(self):
         """Equivalent to get(False)."""
         return self.get(False)
-

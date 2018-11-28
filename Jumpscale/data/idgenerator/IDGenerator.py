@@ -6,6 +6,7 @@ import string
 
 JSBASE = j.application.jsbase_get_class()
 
+
 class IDGenerator(JSBASE):
     """
     generic provider of id's

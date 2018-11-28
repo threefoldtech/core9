@@ -8,29 +8,31 @@ ModelBaseCollection = j.data.capnp.getModelBaseClassCollection()
 ModelBase = j.data.capnp.getModelBaseClass()
 # from Jumpscale.clients.tarantool.KVSInterface import KVSTarantool
 
+
 class TemplateModel(ModelBase):
     '''
     '''
+
     def __init__(self, key="", new=False, collection=None):
         ModelBase.__init__(self, key=key, new=new, collection=collection)
 
     def index(self):
-        #no need to put indexes because will be done by capnp
+        # no need to put indexes because will be done by capnp
         pass
 
     def save(self):
         self.reSerialize()
         self._pre_save()
-        buff = self.dbobj.to_bytes()          
-        key=self.key          
+        buff = self.dbobj.to_bytes()
+        key = self.key
         # key=msgpack.dumps(self.key)
         # key=base64.b64encode(self.key.encode())
-        return self.collection.client.call("model_template_set",(key,buff))
+        return self.collection.client.call("model_template_set", (key, buff))
 
-    def delete(self):                    
-        key=self.key          
+    def delete(self):
+        key = self.key
         # key=base64.b64encode(self.key.encode())
-        return self.collection.client.call("model_template_del",(key))
+        return self.collection.client.call("model_template_del", (key))
 
 
 class TemplateCollection(ModelBaseCollection):
@@ -49,33 +51,33 @@ class TemplateCollection(ModelBaseCollection):
         # mpath = j.sal.fs.getDirName(os.path.abspath(__file__)) + "/model.capnp"
         # SchemaCapnp = j.data.capnp.getSchemaFromPath(mpath, name='Template')
 
-        self.client =  j.clients.tarantool.client_get() #will get the tarantool from the config file, the main connection
-        mpath=j.sal.fs.getDirName(os.path.abspath(__file__))+"/model.capnp"
-        SchemaCapnp=j.data.capnp.getSchemaFromPath(mpath,name='Template')
-        super().__init__(SchemaCapnp, category=category, namespace=namespace, modelBaseClass=TemplateModel, db=self.client, indexDb=self.client)
-        self.client.db.encoding=None
+        self.client = j.clients.tarantool.client_get()  # will get the tarantool from the config file, the main connection
+        mpath = j.sal.fs.getDirName(os.path.abspath(__file__))+"/model.capnp"
+        SchemaCapnp = j.data.capnp.getSchemaFromPath(mpath, name='Template')
+        super().__init__(SchemaCapnp, category=category, namespace=namespace,
+                         modelBaseClass=TemplateModel, db=self.client, indexDb=self.client)
+        self.client.db.encoding = None
 
     def new(self):
         return TemplateModel(collection=self, new=True)
 
-    def get(self,key):                    
-        resp=self.client.call("model_template_get",key)
+    def get(self, key):
+        resp = self.client.call("model_template_get", key)
         if len(resp.data) <= 1 and len(resp.data[0]) > 2:
             raise KeyError("value for %s not found" % key)
         value = resp.data[0][1]
-        return TemplateModel(key=key,collection=self, new=False,data=value)
-
+        return TemplateModel(key=key, collection=self, new=False, data=value)
 
     # BELOW IS ALL EXAMPLE CODE WHICH NEEDS TO BE REPLACED
 
     def list(self):
-        resp=self.client.call("model_template_list")
-        return  [item.decode() for item in resp[0]]
+        resp = self.client.call("model_template_list")
+        return [item.decode() for item in resp[0]]
 
     # def list(self, actor="", service="", action="", state="", serviceKey="", fromEpoch=0, toEpoch=9999999999999,tags=[]):
     #     raise NotImplementedError()
     #     return res
-    
+
     # def find(self, actor="", service="", action="", state="", serviceKey="", fromEpoch=0, toEpoch=9999999999999, tags=[]):
     #     raise NotImplementedError()
     #     res = []
@@ -83,4 +85,3 @@ class TemplateCollection(ModelBaseCollection):
     #         if self.get(key):
     #             res.append(self.get(key))
     #     return res
-

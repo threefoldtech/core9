@@ -6,7 +6,7 @@ class JSLogger(logging.Logger):
 
     def __init__(self, name):
         super(JSLogger, self).__init__(name)
-        self.level=10
+        self.level = 10
         self.DEFAULT = False
         # self.custom_filters = {}
         # self.__only_me = False
@@ -22,7 +22,7 @@ class JSLogger(logging.Logger):
 
         """
         if self.isEnabledFor(logging.ERROR):
-            #TODO:*1 needs to escalate err object
+            # TODO:*1 needs to escalate err object
             # eco = j.errorhandler.getErrorConditionObject(
             #     ddict={}, msg=msg, msgpub=msg, category=self.name,
             #     level=logging.ERROR, type=logging.getLevelName(logging.ERROR),

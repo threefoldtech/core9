@@ -3,6 +3,8 @@ from .ExecutorSSH import ExecutorSSH
 import os
 
 JSBASE = j.application.jsbase_get_class()
+
+
 class ExecutorAsyncSSH(ExecutorSSH):
 
     def __init__(self, addr='', port=22, login="root",

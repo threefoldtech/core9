@@ -1,11 +1,10 @@
+from jumpscale import j
+import pytest
+import os
 import sys
 if '--gevent' in sys.argv:
     from gevent import monkey, pool
     monkey.patch_all()
-
-import os
-import pytest
-from jumpscale import j
 
 
 SECRET = '123456789012345678901234'

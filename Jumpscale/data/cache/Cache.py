@@ -30,7 +30,7 @@ class Cache(JSBASE):
             cache.reset()
 
     def reset(self, id=None):
-        if id == None:
+        if id is None:
             self.resetAll()
         else:
             if id in self._cache:
@@ -43,13 +43,13 @@ class Cache(JSBASE):
         def testAll(c):
             c.set("something", "OK")
             assert "something" in c.list()
-            assert c.exists("something") == True
+            assert c.exists("something") is True
             c.reset()
-            assert c.exists("something") == False
+            assert c.exists("something") is False
             c.set("something", "OK")
             self.logger.debug("RESET ALL")
             self.reset()
-            assert c.exists("something") == False
+            assert c.exists("something") is False
 
             c.set("something", "OK")
             assert "OK" == c.get("something")
@@ -90,7 +90,7 @@ class Cache(JSBASE):
             assert c.exists("somethingElse")
             assert "somethingElse" in c.list()
             self.reset()
-            assert c.exists("somethingElse") == False
+            assert c.exists("somethingElse") is False
             assert "somethingElse" not in c.list()
 
         self.logger.debug("REDIS CACHE TEST")
@@ -127,7 +127,7 @@ class CacheCategory(JSBASE):
         self.db.delete(self._key_get(key))
 
     def set(self, key, value, expire=None):
-        if expire == None:
+        if expire is None:
             expire = self.expiration
         self.db.set(self._key_get(key), pickle.dumps(value), ex=expire)
 
@@ -142,7 +142,7 @@ class CacheCategory(JSBASE):
         res = self.db.get(self._key_get(key))
         if res != None:
             res = pickle.loads(res)
-        if expire == None:
+        if expire is None:
             expire = self.expiration
         # print("res:%s"%res)
         if refresh or res is None:

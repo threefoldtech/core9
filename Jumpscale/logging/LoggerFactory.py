@@ -72,7 +72,7 @@ class LoggerFactory():
                     return True
             return False
 
-        if force == False and self.enabled is False:
+        if force is False and self.enabled is False:
             self.loggers[name] = self._default
             # print("DEFAULT LOGGER (disabledlogger):%s" % name)
         else:
@@ -248,12 +248,11 @@ class LoggerFactory():
         j.core.state._logger = None
         j.core.dirs._logger = None
         j.core.application._logger = None
-        for cat in [j.data, j.clients, j.tools, j.sal,j.portal,j.sal_zos,j.servers]:
+        for cat in [j.data, j.clients, j.tools, j.sal, j.portal, j.sal_zos, j.servers]:
             for key, item in cat.__dict__.items():
                 if item is not None:
                     item._logger = None
         self.loggers = {}
-
 
     def init(self):
         """
@@ -293,15 +292,12 @@ class LoggerFactory():
         js_shell 'j.logger.test()'
         """
 
-
-
         self.handlers_reset()
         self.memhandler_enable()
-        
+
         logger = self.get("loggerTest")
 
         logger.info("a test")
-
 
         def perftest(logger):
             print("start perftest logger")
@@ -314,5 +310,3 @@ class LoggerFactory():
             print("nr of logs per sec:%s" % int(nr / (stop - start)))
 
         perftest(logger)
-
-

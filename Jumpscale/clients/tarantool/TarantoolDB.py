@@ -6,6 +6,7 @@ import os
 
 JSBASE = j.application.jsbase_get_class()
 
+
 class TarantoolDB(JSBASE):
 
     def __init__(self, name="test", path="$DATADIR/tarantool/$NAME", adminsecret="admin007", port=3301):
@@ -49,7 +50,6 @@ class TarantoolDB(JSBASE):
         C2 += C3
 
         j.sal.fs.writeFile(j.clients.tarantool.cfgdir + "/%s.lua" % self.name, C2)
-
 
     def start_connect(self):
         """

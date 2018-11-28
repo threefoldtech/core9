@@ -12,6 +12,7 @@ class RegexTemplates_FindLines(JSBASE):
     regexexamples which find lines
     """
     # TODO: for all methods do input checking  (id:20)
+
     def __init__(self):
         JSBASE.__init__(self)
 

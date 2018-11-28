@@ -3,6 +3,8 @@ from jumpscale import j
 order = ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
 
 JSBASE = j.application.jsbase_get_class()
+
+
 class Sizes(JSBASE):
     _BASE = 1000.
 

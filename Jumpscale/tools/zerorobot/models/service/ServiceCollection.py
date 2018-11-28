@@ -1,10 +1,10 @@
+from Jumpscale.clients.tarantool.KVSInterface import KVSTarantool
 from jumpscale import j
 import os
 import capnp
 
 ModelBaseCollection = j.data.capnp.getModelBaseClassCollection()
 ModelBase = j.data.capnp.getModelBaseClass()
-from Jumpscale.clients.tarantool.KVSInterface import KVSTarantool
 
 JSBASE = j.application.jsbase_get_class()
 
@@ -12,8 +12,10 @@ JSBASE = j.application.jsbase_get_class()
 class ServiceModel(ModelBase):
     '''
     '''
+
     def __init__(self, key="", new=False, collection=None):
         ModelBase.__init__(self, key=key, new=new, collection=collection)
+
 
 class ServiceCollection(ModelBaseCollection):
     '''

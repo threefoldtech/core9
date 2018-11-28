@@ -1,4 +1,5 @@
 
+from .Session import Session
 from Jumpscale import j
 import time
 import libtmux as tmuxp
@@ -7,7 +8,6 @@ import os
 JSBASE = j.application.jsbase_get_class()
 
 # from .Pane import Pane
-from .Session import Session
 # from .Window import Window
 
 
@@ -34,9 +34,10 @@ class Tmux(JSBASE):
         """
         js_shell 'j.tools.tmux.killall()'
         """
-        for key,item in self.sessions.items():
+        for key, item in self.sessions.items():
             print("kill tmux, implement")
-            from IPython import embed;embed(colors='Linux')
+            from IPython import embed
+            embed(colors='Linux')
             s
 
     def session_get(self, name, reset=False, attach=False, firstWindow="ignore"):
@@ -66,11 +67,11 @@ class Tmux(JSBASE):
         self.sessions[name] = Session(res)
         return self.sessions[name]
 
-    def execute(self, cmd, session="main", window="main", pane="main",session_reset=False,window_reset=True):
+    def execute(self, cmd, session="main", window="main", pane="main", session_reset=False, window_reset=True):
         """
         """
-        s = self.session_get(session,reset=session_reset)
-        w = s.window_get(window,reset=window_reset)
+        s = self.session_get(session, reset=session_reset)
+        w = s.window_get(window, reset=window_reset)
         p = w.pane_get(pane)
         p.execute(cmd)
 

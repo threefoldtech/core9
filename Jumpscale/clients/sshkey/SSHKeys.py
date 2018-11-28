@@ -1,10 +1,10 @@
+from .AgentSSHKeys import *
 from jumpscale import j
 
 from .SSHKey import SSHKey
 
 import os
 JSConfigBase = j.tools.configmanager.base_class_configs
-from .AgentSSHKeys import *
 
 
 class SSHKeys(JSConfigBase):
@@ -44,7 +44,7 @@ class SSHKeys(JSConfigBase):
             self.key_load(path, passphrase=passphrase, returnObj=False, duration=None)
 
         if returnObj:
-            
+
             data = {}
             data["path"] = path
             data["passphrase_"] = passphrase

@@ -57,7 +57,7 @@ class DevelopToolsFactory(JSBASE):
             done.append(repo.BASEDIR)
         ddirs = j.clients.git.getGitReposListLocal(account="threefoldtech")  # took predefined list
         for key, path in ddirs.items():
-            if j.sal.fs.getBaseName(path)[0]=="_":
+            if j.sal.fs.getBaseName(path)[0] == "_":
                 continue
             self.logger.debug("try to find git dir for:%s" % path)
             try:
@@ -69,7 +69,6 @@ class DevelopToolsFactory(JSBASE):
 
         return res
 
-
     def sync(self):
         """
         sync all code to the remote destinations, uses config as set in jumpscale.toml
@@ -79,7 +78,7 @@ class DevelopToolsFactory(JSBASE):
         if self.node_active is not None:
             self.node_active.sync()
         else:
-            if self.nodes.getall() == []  :
+            if self.nodes.getall() == []:
                 self.logger.debug(
                     "NOTHING TO DO, THERE ARE NO NODES DEFINED PLEASE USE  j.tools.develop.run()")
                 return
@@ -88,7 +87,7 @@ class DevelopToolsFactory(JSBASE):
                 if node.selected:
                     node.sync()
                     did = True
-            if did == False:
+            if did is False:
                 self.logger.debug("nodes are defined but not selected, please use j.tools.develop.run()")
 
     def monitor(self):

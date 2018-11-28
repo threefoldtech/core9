@@ -42,13 +42,13 @@ assert self.bitstring8_to_int('00001010')==10
 assert self.bitstring_set_bit("00000000",7) == 128
 assert self.bitstring_set_bit("00000000",0) == 1
 
-assert self.bitstring_get_bit("00000000",0) == False
-assert self.bitstring_get_bit(128,7) == True
-assert self.bitstring_get_bit("00000001",0) == True
-assert self.bitstring_get_bit("00000011",1) == True
-assert self.bitstring_get_bit("00000011",2) == False
-assert self.bitstring_get_bit("10000011",7) == True
-assert self.bitstring_get_bit("00000011",7) == False
+assert self.bitstring_get_bit("00000000",0) is False
+assert self.bitstring_get_bit(128,7) is True
+assert self.bitstring_get_bit("00000001",0) is True
+assert self.bitstring_get_bit("00000011",1) is True
+assert self.bitstring_get_bit("00000011",2) is False
+assert self.bitstring_get_bit("10000011",7) is True
+assert self.bitstring_get_bit("00000011",7) is False
 
 
 llist0=[1,2,3,4,5,6,7,8,9,10]

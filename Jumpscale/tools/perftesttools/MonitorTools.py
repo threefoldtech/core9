@@ -111,7 +111,7 @@ class MonitorTools(MonitorClient):
         inflight = self.measureDiff(key, measurement[1], tags, val, aggrkey=measurement[1])
 
         self.logger.debug("%s: iops:%s mb/sec:%s (R:%s/W:%s)" %
-              (dev, iops, round(kbsec / 1024, 1), round(kbsecr / 1024, 1), round(kbsecw / 1024, 1)))
+                          (dev, iops, round(kbsec / 1024, 1), round(kbsecr / 1024, 1), round(kbsecw / 1024, 1)))
 
     def cpustat(self):
         tags = "node:%s %s" % (self.nodename, self.tags)

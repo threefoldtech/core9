@@ -4,6 +4,7 @@ import copy
 
 JSBASE = j.application.jsbase_get_class()
 
+
 class GitClient(JSBASE):
     """
     Client of git services, has all git related operations like push, pull, ...
@@ -14,7 +15,7 @@ class GitClient(JSBASE):
         if baseDir is None or baseDir.strip() == "":
             raise RuntimeError("basedir cannot be empty")
 
-        baseDir_org=copy.copy(baseDir)
+        baseDir_org = copy.copy(baseDir)
 
         JSBASE.__init__(self)
 
@@ -60,7 +61,6 @@ class GitClient(JSBASE):
         # if len(self.repo.remotes) != 1:
         #     raise j.exceptions.Input("git repo on %s is corrupt could not find remote url" % baseDir)
 
-
     def __repr__(self):
         return str(self.__dict__)
 
@@ -96,7 +96,7 @@ class GitClient(JSBASE):
         """
         $gitcategory/$account/$repo/$branch
         """
-        return "%s/%s/%s/%s"%( j.clients.git.rewriteGitRepoUrl(self.remoteUrl)[1],self.account,self.name,self.branchName)
+        return "%s/%s/%s/%s" % (j.clients.git.rewriteGitRepoUrl(self.remoteUrl)[1], self.account, self.name, self.branchName)
 
     @property
     def repo(self):
@@ -220,7 +220,7 @@ class GitClient(JSBASE):
         # Organize files in lists
         for diff in self.repo.index.diff(None):
             # TODO: does not work, did not show my changes !!! *1
-            if diff.a_blob==None:
+            if diff.a_blob is None:
                 continue
             path = diff.a_blob.path
             if checkignore(ignore, path):
@@ -484,7 +484,7 @@ docs/_build/
         flags = ""
         if not local:
             flags += "--global "
-        
+
         cmd = "cd %s; git config %s %s %s" % (self.BASEDIR, flags, field, value)
         j.tools.executorLocal.execute(cmd, die=die)
 

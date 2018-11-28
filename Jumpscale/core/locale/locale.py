@@ -6,6 +6,8 @@ KEYP = re.compile("(\w+(\.\w+)*)\s*=\s*(.*)", re.DOTALL)
 DEFAULTLOCALE = 'en'
 
 JSBASE = j.application.jsbase_get_class()
+
+
 class Domain(JSBASE):
 
     def __init__(self, key):

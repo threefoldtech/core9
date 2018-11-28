@@ -705,7 +705,7 @@ class GitFactory(JSBASE):
 
         return result
 
-    def findGitPath(self, path,die=True):
+    def findGitPath(self, path, die=True):
         """
         given a path, check if this path or any of its parents is a git repo, return the first git repo
         :param path: (String) path from where to start search
@@ -718,7 +718,6 @@ class GitFactory(JSBASE):
             path = j.sal.fs.getParent(path)
         if die:
             raise j.exceptions.Input("Cannot find git path in:%s" % path)
-
 
     def parseGitConfig(self, repopath):
         """
@@ -760,21 +759,21 @@ class GitFactory(JSBASE):
                                                        recursive=False, dirNameOnly=True, findDirectorySymlinks=True):
                 if account != "" and account != accountfound:
                     continue
-                if accountfound[0]==".":
+                if accountfound[0] == ".":
                     continue
                 accountfounddir = "/%s/%s/%s" % (j.dirs.CODEDIR,
                                                  top, accountfound)
                 for reponame in j.sal.fs.listDirsInDir(
-                                    "%s/%s/%s" %
-                                    (j.dirs.CODEDIR,
-                                    top,
-                                    accountfound),
-                                    recursive=False,
-                                    dirNameOnly=True,
-                                    findDirectorySymlinks=True):
-                    if reponame[0]==".":
+                    "%s/%s/%s" %
+                    (j.dirs.CODEDIR,
+                     top,
+                     accountfound),
+                    recursive=False,
+                    dirNameOnly=True,
+                        findDirectorySymlinks=True):
+                    if reponame[0] == ".":
                         continue
-                    if  name !="" and name != reponame:
+                    if name != "" and name != reponame:
                         continue
                     repodir = "%s/%s/%s/%s" % (j.dirs.CODEDIR,
                                                top, accountfound, reponame)

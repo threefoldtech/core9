@@ -1,3 +1,7 @@
+from Jumpscale.core.JSBase import JSBase as JSBASE
+from Jumpscale import tcpPortConnectionTest
+import time
+import os
 from Jumpscale import j
 
 redisFound = False
@@ -10,12 +14,8 @@ try:
     redisFound = True
 except:
     pass
-import os
-import time
 # import sys
-from Jumpscale import tcpPortConnectionTest
 
-from Jumpscale.core.JSBase import JSBase as JSBASE
 
 class RedisFactory(JSBASE):
 
@@ -70,9 +70,8 @@ class RedisFactory(JSBASE):
         set_patch is needed when using the client for gedis
 
         """
-        
 
-        if redisFound == False:
+        if redisFound is False:
             raise RuntimeError("redis libraries are not installed, please pip3 install them.")
         if unixsocket is None:
             key = "%s_%s" % (ipaddr, port)
@@ -81,7 +80,7 @@ class RedisFactory(JSBASE):
 
         if key not in self._redis or not fromcache:
             if unixsocket is None:
-                self._redis[key] = Redis(ipaddr, port, password=password, ssl=ssl, ssl_certfile=ssl_certfile, \
+                self._redis[key] = Redis(ipaddr, port, password=password, ssl=ssl, ssl_certfile=ssl_certfile,
                                          ssl_keyfile=ssl_keyfile,
                                          # socket_timeout=timeout,
                                          **args)
@@ -94,7 +93,7 @@ class RedisFactory(JSBASE):
 
         if ardb_patch:
             self._ardb_patch(self._redis[key])
-        
+
         if set_patch:
             self._set_patch(self._redis[key])
 
@@ -103,16 +102,16 @@ class RedisFactory(JSBASE):
                 res = self._redis[key].ping()
             except Exception as e:
                 if "Timeout" in str(e) or "Connection refused" in str(e):
-                    if die==False:
+                    if die is False:
                         return None
                     else:
-                        raise RuntimeError("Redis on %s:%s did not answer"%(ipaddr,port))
+                        raise RuntimeError("Redis on %s:%s did not answer" % (ipaddr, port))
                 else:
                     raise e
 
         if del_patch:
             self._del_patch(self._redis[key])
-    
+
         return self._redis[key]
 
     def _ardb_patch(self, client):
@@ -141,7 +140,6 @@ class RedisFactory(JSBASE):
             self._redisq[key] = RedisQueue(
                 self.get(ipaddr, port), name, namespace=namespace)
         return self._redisq[key]
-
 
     def core_get(self):
         """
@@ -173,14 +171,14 @@ class RedisFactory(JSBASE):
         j.sal.process.killall("redis-server")
 
     def core_running(self):
-        if self._running==None:
-            self._running=j.sal.nettools.tcpPortConnectionTest("localhost",6379)
+        if self._running is None:
+            self._running = j.sal.nettools.tcpPortConnectionTest("localhost", 6379)
         return self._running
 
     def core_check(self):
         if not self.core_running():
             self.core_start()
-        return self._running        
+        return self._running
 
     def core_start(self, timeout=20):
         """

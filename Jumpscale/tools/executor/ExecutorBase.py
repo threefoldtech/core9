@@ -147,7 +147,7 @@ class ExecutorBase(JSBASE):
 
     @property
     def isDebug(self):
-        return self.state.configGetFromDict("system", "debug") == "1" or self.state.configGetFromDict("system", "debug") == 1 or self.state.configGetFromDict("system", "debug") == True or self.state.configGetFromDict("system", "debug") == "true"
+        return self.state.configGetFromDict("system", "debug") == "1" or self.state.configGetFromDict("system", "debug") == 1 or self.state.configGetFromDict("system", "debug") is True or self.state.configGetFromDict("system", "debug") == "true"
 
     @property
     def isContainer(self):
@@ -161,18 +161,16 @@ class ExecutorBase(JSBASE):
         """
         means we are building python and we are in the build-dir
         """
-        if self._isBuildEnv == None:
-            #env arg is set by the env.sh script in the build dir
+        if self._isBuildEnv is None:
+            # env arg is set by the env.sh script in the build dir
             self._isBuildEnv = "PBASE" in os.environ
         return self._isBuildEnv
-
 
     @property
     def stateOnSystem(self):
         """
         is dict of all relevant param's on system
         """
-
 
         def do():
 
@@ -288,7 +286,6 @@ class ExecutorBase(JSBASE):
             res["env"] = envdict
             return res
 
-
         if self._stateOnSystem is None:
             self._stateOnSystem = self.cache.get("stateOnSystem", do)
         return self._stateOnSystem
@@ -301,7 +298,7 @@ class ExecutorBase(JSBASE):
     def _getDirPathConfig(self):
 
         if self.isBuildEnv:
-            T = "BASEDIR = \"%s\"\n"%os.environ["PBASE"]
+            T = "BASEDIR = \"%s\"\n" % os.environ["PBASE"]
             T += '''
             HOMEDIR = "{{HOME}}"
             CODEDIR = "{{BASEDIR}}/code"
@@ -436,11 +433,11 @@ class ExecutorBase(JSBASE):
             if self.isBuildEnv:
                 for key, val in DIRPATHS.items():
                     j.sal.fs.createDir(val)
-                githubpath="%s/github/threefoldtech"%DIRPATHS["CODEDIR"]
+                githubpath = "%s/github/threefoldtech" % DIRPATHS["CODEDIR"]
 
-                #link code dir from host to build dir if it exists
+                # link code dir from host to build dir if it exists
                 if not j.sal.fs.exists(githubpath):
-                    sdir1 = "%s/code/github/threefoldtech"%os.environ["HOME"]
+                    sdir1 = "%s/code/github/threefoldtech" % os.environ["HOME"]
                     sdir2 = "/opt/code/github/threefoldtech"
                     if j.sal.fs.exists(sdir1):
                         sdir = sdir1
@@ -455,7 +452,7 @@ class ExecutorBase(JSBASE):
                 out = ""
                 for key, val in DIRPATHS.items():
                     out += "mkdir -p %s\n" % val
-                self.execute(out, sudo=True,showout=False)
+                self.execute(out, sudo=True, showout=False)
 
             if self.exists("%s/github/threefoldtech/jumpscale_core/" % DIRPATHS["CODEDIR"]):
                 TT["plugins"]["Jumpscale"] = "%s/github/threefoldtech/jumpscale_core/Jumpscale/" % DIRPATHS["CODEDIR"]
@@ -475,7 +472,7 @@ class ExecutorBase(JSBASE):
                         dest = DIRPATHS["BINDIR"]
                     else:
                         dest = "/usr/local/bin"
-                    j.sal.fs.symlinkFilesInDir(src,dest, delete=True,
+                    j.sal.fs.symlinkFilesInDir(src, dest, delete=True,
                                                includeDirs=False, makeExecutable=True)
 
         if TT["system"]["container"] is True:
@@ -551,7 +548,7 @@ class ExecutorBase(JSBASE):
             # when contents are too big, bash will crash
             temp = j.sal.fs.getTempFileName()
             j.sal.fs.writeFile(filename=temp, contents=content, append=False)
-            self.upload(temp, path,showout=showout)
+            self.upload(temp, path, showout=showout)
             j.sal.fs.remove(temp)
         else:
             content2 = content.encode('utf-8')

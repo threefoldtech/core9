@@ -13,7 +13,7 @@ import signal
 from subprocess import Popen
 import select
 
-#for execute
+# for execute
 from fcntl import fcntl, F_GETFL, F_SETFL
 from os import O_NONBLOCK, read
 
@@ -27,17 +27,16 @@ class SystemProcess(JSBASE):
     def __init__(self):
         self._location = "j.sal.process"
         JSBASE.__init__(self)
-        self._isunix=None
+        self._isunix = None
 
     @property
     def isUnix(self):
-        if self._isunix==None:
+        if self._isunix is None:
             if 'posix' in sys.builtin_module_names:
                 self._isunix = True
             else:
                 self._isunix = False
         return self._isunix
-
 
     def executeWithoutPipe(self, command, die=True, printCommandToStdout=False):
         """
@@ -81,38 +80,35 @@ class SystemProcess(JSBASE):
         else:
             # self.logger.info("exec:%s" % command)
             path = None
-            self.logger.debug("execute:%s"%command)
+            self.logger.debug("execute:%s" % command)
 
-        os.environ["PYTHONUNBUFFERED"] = "1" #WHY THIS???
-
+        os.environ["PYTHONUNBUFFERED"] = "1"  # WHY THIS???
 
         if hasattr(subprocess, "_mswindows"):
             mswindows = subprocess._mswindows
         else:
             mswindows = subprocess.mswindows
 
-        if env==None:
-            env=os.environ
-
+        if env is None:
+            env = os.environ
 
         p = Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                   close_fds=self.isUnix,
                   shell=useShell, env=env, universal_newlines=False, cwd=cwd, bufsize=0, executable="/bin/bash")
 
-
         # set the O_NONBLOCK flag of p.stdout file descriptor:
-        flags = fcntl(p.stdout, F_GETFL) # get current p.stdout flags
-        flags = fcntl(p.stderr, F_GETFL) # get current p.stderr flags
+        flags = fcntl(p.stdout, F_GETFL)  # get current p.stdout flags
+        flags = fcntl(p.stderr, F_GETFL)  # get current p.stderr flags
         fcntl(p.stdout, F_SETFL, flags | O_NONBLOCK)
         fcntl(p.stderr, F_SETFL, flags | O_NONBLOCK)
 
-        out=""
-        err=""
+        out = ""
+        err = ""
 
         if async_:
             return p
 
-        captureOutput=True
+        captureOutput = True
 
         def readout(stream):
             if self.isUnix:
@@ -123,7 +119,7 @@ class SystemProcess(JSBASE):
                     line = stream.read()
                     if not line:
                         break
-                    line=line.decode()#will be utf8
+                    line = line.decode()  # will be utf8
                     # Honour subprocess univeral_newlines
                     if p.universal_newlines:
                         line = p._translate_newlines(line)
@@ -139,15 +135,15 @@ class SystemProcess(JSBASE):
             else:
                 # This is not UNIX, most likely Win32. read() seems to work
                 def readout(stream):
-                    line= stream.read().decode()
+                    line = stream.read().decode()
                     if showout:
                         # self.logger.debug(line)
                         print(line)
 
         if timeout < 0:
             out, err = p.communicate()
-            out=out.decode()
-            err=err.decode()
+            out = out.decode()
+            err = err.decode()
 
         else:  # timeout set
             start = time.time()
@@ -158,13 +154,13 @@ class SystemProcess(JSBASE):
             out = readout(p.stdout)
             err = readout(p.stderr)
             while p.poll() is None:
-                #means process is still running
+                # means process is still running
 
                 time.sleep(0.01)
                 now = time.time()
                 # print("wait")
 
-                if timeout!=0 and now > end:
+                if timeout != 0 and now > end:
                     if self.isUnix:
                         # Soft and hard kill on Unix
                         try:
@@ -189,31 +185,29 @@ class SystemProcess(JSBASE):
 
         rc = -1 if p.returncode < 0 else p.returncode
 
-        if rc<0 or rc>0:
+        if rc < 0 or rc > 0:
             j.sal.process.logger.debug('system.process.run ended, exitcode was %d' % rc)
-        if out!="":
+        if out != "":
             j.sal.process.logger.debug('system.process.run stdout:\n%s' % out)
-        if err!="":
+        if err != "":
             j.sal.process.logger.debug('system.process.run stderr:\n%s' % err)
 
-        if die and rc!=0:
-            msg="\nCould not execute:"
-            if command.find("\n") ==-1 and len(command)<40:
-                msg+=" '%s'"%command
+        if die and rc != 0:
+            msg = "\nCould not execute:"
+            if command.find("\n") == -1 and len(command) < 40:
+                msg += " '%s'" % command
             else:
-                command="\n".join(command.split(";"))
-                msg+= j.data.text.indent(command).rstrip()+"\n\n"
-            if out.strip()!="":
-                msg+="stdout:\n"
-                msg+= j.data.text.indent(out).rstrip()+"\n\n"
-            if err.strip()!="":
-                msg+="stderr:\n"
-                msg+= j.data.text.indent(err).rstrip()+"\n\n"
+                command = "\n".join(command.split(";"))
+                msg += j.data.text.indent(command).rstrip()+"\n\n"
+            if out.strip() != "":
+                msg += "stdout:\n"
+                msg += j.data.text.indent(out).rstrip()+"\n\n"
+            if err.strip() != "":
+                msg += "stderr:\n"
+                msg += j.data.text.indent(err).rstrip()+"\n\n"
             raise RuntimeError(msg)
 
         return (rc, out, err)
-
-
 
     def executeAsyncIO(self, command, outMethod="print", errMethod="print", timeout=600,
                        buffersize=5000000, useShell=True, cwd=None, die=True,
@@ -223,7 +217,7 @@ class SystemProcess(JSBASE):
         same for errMethod
         resout&reserr are lists with output/error
         return rc, resout, reserr
-        @param captureOutput, if that one == False then will not populate resout/reserr
+        @param captureOutput, if that one is False then will not populate resout/reserr
         @param outMethod,errMethod if None then will print to out
         """
         # TODO: *2 check if this works on windows
@@ -313,7 +307,7 @@ class SystemProcess(JSBASE):
             ))
 
         # TODO: *1 if I close this then later on there is problem, says loop is closed
-        # # if loop.is_closed() == False:
+        # # if loop.is_closed() is False:
         # print("STOP")
         # # executor.shutdown(wait=True)
         # loop.stop()
@@ -530,7 +524,7 @@ class SystemProcess(JSBASE):
         @param pid: pid of the process to kill
         @param sig: signal. If no signal is specified signal.SIGKILL is used
         """
-        pid=int(pid)
+        pid = int(pid)
         j.sal.process.logger.debug('Killing process %d' % pid)
         if self.isUnix:
             try:

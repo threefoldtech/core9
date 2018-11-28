@@ -3,6 +3,7 @@ import base64
 from Jumpscale import j
 JSBASE = j.application.jsbase_get_class()
 
+
 class KVSTarantool(JSBASE):
     """
     This class implement a simple key value store on top of tarantool

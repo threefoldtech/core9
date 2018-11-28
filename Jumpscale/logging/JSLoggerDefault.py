@@ -3,11 +3,12 @@ import logging
 
 # from pprint import pprint as print
 
+
 class JSLoggerDefault(logging.Logger):
 
     def __init__(self, name):
         super(JSLoggerDefault, self).__init__(name)
-        self.level=20
+        self.level = 20
         self.DEFAULT = True
         # print("DEFAULT:%s"%name)
 
@@ -49,7 +50,6 @@ class JSLoggerDefault(logging.Logger):
 
             self._log(logging.CRITICAL, msg, args, **kwargs)
 
-
     # def error(self, msg, *args, **kwargs):
     #     """
     #     """
@@ -61,7 +61,7 @@ class JSLoggerDefault(logging.Logger):
     #     j.logger.logger.critical(msg)
 
     def info(self, msg, *args, **kwargs):
-        print ("* %s"%msg)
+        print("* %s" % msg)
 
     def debug(self, *args, **kwargs):
         pass

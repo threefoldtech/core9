@@ -94,7 +94,7 @@ class ZDBClientNS(JSBASE):
 
     def delete(self, key):
         res = self.redis.delete(key)
- 
+
     def set(self, data, key=None):
         """[summary]
 
@@ -172,7 +172,6 @@ class ZDBClientNS(JSBASE):
                 res[key] = str(val).strip()
         return res
 
-
     def list(self, key_start=None, direction="forward", nrrecords=100000, result=None):
         if result is None:
             result = []
@@ -241,13 +240,13 @@ class ZDBClientNS(JSBASE):
                 j.shell()
                 raise e
 
-            (next,res) = resp
+            (next, res) = resp
 
-            if len(res)>0:
+            if len(res) > 0:
                 for item in res:
-                    #there can be more than 1
+                    # there can be more than 1
 
-                    keyb,size,epoch = item
+                    keyb, size, epoch = item
 
                     if self.mode == "seq":
                         key_new = struct.unpack("<I", keyb)[0]
@@ -283,7 +282,7 @@ class ZDBClientNS(JSBASE):
         id2 = self.set(b"b")
         assert id2 == 1
 
-        assert self.set(b"r", key=id) == None
+        assert self.set(b"r", key=id) is None
         assert self.set(b"rss", key=id) == 0  # changed the data
 
         nr = self.nsinfo["entries"]

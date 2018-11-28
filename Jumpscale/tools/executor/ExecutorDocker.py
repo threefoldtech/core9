@@ -148,7 +148,7 @@ class ExecutorDocker(ExecutorBase):
         cmd_file = j.sal.fs.joinPaths("/", str(uuid.uuid4()))
         try:
             self.file_write(cmd_file, cmd)
-            result = self.container.exec_run('bash -c "bash %s 2> %s.stderr"' % \
+            result = self.container.exec_run('bash -c "bash %s 2> %s.stderr"' %
                                              (cmd_file, cmd_file))
             output = result.output.decode("utf8")
             err_output = self.file_read("%s.stderr" % cmd_file)
@@ -162,8 +162,8 @@ class ExecutorDocker(ExecutorBase):
         finally:
             self.container.exec_run('bash -c "rm %s; rm %s.stderr"' % (cmd_file, cmd_file))
 
-    def execute(self, cmds, die=True, checkok=False, showout=True, timeout=0, env=None, # pylint: disable=R0913
-                asScript=False, hide=False, sudo=False): # pylint: disable=W0613
+    def execute(self, cmds, die=True, checkok=False, showout=True, timeout=0, env=None,  # pylint: disable=R0913
+                asScript=False, hide=False, sudo=False):  # pylint: disable=W0613
         """
         Executes command in container
 

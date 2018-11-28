@@ -54,7 +54,7 @@ class ExecutorFactory(JSBASE):
         """
         if j.data.types.string.check(sshclient):
             sshclient = j.clients.ssh.get(instance=sshclient)
-        #@TODO: *1 needs to be fixed
+        # @TODO: *1 needs to be fixed
         raise RuntimeError("not implemented")
         with self._lock:
             key = '%s:%s:%s' % (addr, port, login)
