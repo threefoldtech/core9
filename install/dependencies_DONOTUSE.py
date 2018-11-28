@@ -45,7 +45,6 @@ class dependencies():
         docker
         toml
         pystache
-        httplib2
         python-jose
         python-dateutil
         """
