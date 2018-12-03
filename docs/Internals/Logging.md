@@ -1,6 +1,6 @@
 # Logging
 
-When you create a new module in JumpScale add a `logger` in the module using `j.logger.get("module_name")` and use the proper verb when logging.
+When you create a new module in Jumpscale add a `logger` in the module using `j.logger.get("module_name")` and use the proper verb when logging.
 
 Example:
 
@@ -19,14 +19,14 @@ class MyModule:
 
 # How it works
 
-JumpScale use the standard Python logging module.
+Jumpscale use the standard Python logging module.
 
-Logging modules organize the logger in a hierarchy based on their name. The root logger of JumpScale is called `j`.
+Logging modules organize the logger in a hierarchy based on their name. The root logger of Jumpscale is called `j`.
 
 When you need to log something in a module make sure you get a logger instance using `j.logger.get(name)`. The name should start with `j` in order for the logger to inheriht the properties defined in the root logger.<br>
 A good practice is to use the same name as the jslocation of the module itself. So if you're module is plugged to `j.tools.mymodule`, you probably want to get a logger with the name `j.tools.mymodule` too.
 
-This organization is useful when an application uses JumpScale and wants to have control on what logs get be printed or saved.
+This organization is useful when an application uses Jumpscale and wants to have control on what logs get be printed or saved.
 
 See handlers and filter for more informations:
 
@@ -35,7 +35,7 @@ See handlers and filter for more informations:
 
 # Example
 ```python
-from js9 import j
+from jumpscale import j
 
 class TestLog(object):
     def __init__(self):
@@ -61,22 +61,22 @@ The output of the `foo()` method of this simple `TestLog` class will be:
 - In the console (in a real terminal you would even see nice coloring):
 
   ```
-  [Wed30 05:50] - /opt/jumpscale9//lib/JumpScale/baselib/testlog/Testlog.py:12 - INFO     - start foo method
-  [Wed30 05:50] - /opt/jumpscale9//lib/JumpScale/baselib/testlog/Testlog.py:17 - INFO     - end foo method
-  [Wed30 05:50] - /opt/jumpscale9//lib/JumpScale/baselib/testlog/Testlog.py:18 - ERROR    - BIG ERROR !!!
+  [Wed30 05:50] - /opt/jumpscale//lib/Jumpscale/baselib/testlog/Testlog.py:12 - INFO     - start foo method
+  [Wed30 05:50] - /opt/jumpscale//lib/Jumpscale/baselib/testlog/Testlog.py:17 - INFO     - end foo method
+  [Wed30 05:50] - /opt/jumpscale//lib/Jumpscale/baselib/testlog/Testlog.py:18 - ERROR    - BIG ERROR !!!
   ```
 
   
 # Configuration
 
-Logging configuration is located by default in jumpscale config file (`/root/js9host/cfg/jumpscale9.toml`).  
+Logging configuration is located by default in jumpscale config file (`/root/jumpscale/cfg/jumpscale.toml`).  
 If the logging section doesn't exist in your config file, you can add it yourself.
 
 There are 3 options you can configure.
 
 
 - **level**: the minimum level of logging you want to see output to the console.
-- **filter**: Filter is a list of logger name you want to filter out. JumpScale is a big framework and console output can quickly become to verbose. Use this filter list to remove some of the module you don't want to see logged on the console. This filter only concern the console handler, log file will always contains logs from all modules.
+- **filter**: Filter is a list of logger name you want to filter out. Jumpscale is a big framework and console output can quickly become to verbose. Use this filter list to remove some of the module you don't want to see logged on the console. This filter only concern the console handler, log file will always contains logs from all modules.
 - **exclude**: list of logger name you want to exclude from logs
 - **enabled**: if false loging will be turned off
 

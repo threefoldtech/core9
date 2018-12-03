@@ -8,8 +8,8 @@ def e(cmd):
     print(cmd)
     os.system(cmd)
 
-e("rm -rf %s/js9host"%HOME)
-e("rm -rf %s/opt/jumpscale9"%HOME)
+e("rm -rf %s/jumpscale"%HOME)
+e("rm -rf %s/opt/jumpscale"%HOME)
 e("rm -rf %s/opt/var/log"%HOME)
 e("mkdir -p %s/opt/var/log"%HOME)
 e("rm -f %s/.mascot.txt"%HOME)
@@ -28,7 +28,7 @@ def sed_delete(path,toremove=[]):
         print(cmd)
         e(cmd)
 
-sed_delete("%s/.bash_profile"%HOME,["sshkeyname","profile_js","zlibs.sh","includes","environment variables","serial"])
+sed_delete("%s/.profile_js"%HOME,["sshkeyname","profile_js","zlibs.sh","includes","environment variables","serial"])
 
 
 def pip(items):
@@ -38,6 +38,6 @@ def pip(items):
 
 # pip(["python-jose","PyNaCl","PyJWT","fakeredis","pudb","serial"])
 
-e("js9_init")
+e("js_init")
 
-e("js9_config init")
+e("js_config init")

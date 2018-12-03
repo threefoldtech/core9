@@ -1,6 +1,6 @@
 ## Config Manager
 
-JumpScale 9.3.0 introduces a secure configuration manager that makes sure that private configuration data is NACL encrypted on the filesystem.
+Jumpscale 9.3.0 introduces a secure configuration manager that makes sure that private configuration data is NACL encrypted on the filesystem.
 
 ### read more about config file locations
 
@@ -9,7 +9,7 @@ JumpScale 9.3.0 introduces a secure configuration manager that makes sure that p
 ### how to create your own config directory
 
 1.  create a git repo under j.dirs.CODEDIR
-2.  run `js9_config init`. This will mark this repo as your configuration repo
+2.  run `js_config init`. This will mark this repo as your configuration repo
 3.  Start creating your configuration instances
 
 it will ask for the right locations
@@ -21,7 +21,7 @@ you can also do such an initialization silently see [init_silent](init_silent.md
 to configure a client from the cmdline
 
 ```
-js9_config configure -l j.clients.openvcloud -i test -s /root/.ssh/id_rsa
+js_config configure -l j.clients.openvcloud -i test -s /root/.ssh/id_rsa
 ```
 
 * the -s is not needed it will find the directory for you and use default locations
@@ -41,17 +41,17 @@ where
 to reset config instance
 
 ```
-js9_config reset -l j.clients.openvcloud -i test
+js_config reset -l j.clients.openvcloud -i test
 ```
 
-note that if not instance name provided all instances for this client will be reset, you can also run `js9_config reset` without location or instance name to delete all configs
+note that if not instance name provided all instances for this client will be reset, you can also run `js_config reset` without location or instance name to delete all configs
 
 ### how to create a sandbox in a git repo
 
 create a git repo, go there and do:
 
 ```bash
-js9_config sandbox
+js_config sandbox
 ```
 
 this will create something like
@@ -65,7 +65,7 @@ this will create something like
 example configure script which will inser configuration information in local secure config
 
 ```python
-from js9 import j
+from jumpscale import j
 
 
 def configure_zerotier():

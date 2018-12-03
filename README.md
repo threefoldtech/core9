@@ -1,20 +1,24 @@
-# JumpScale 9
+[![Build Status](https://travis-ci.org/threefoldtech/jumpscale_core.svg?branch=development)](https://travis-ci.org/threefoldtech/jumpscale_core) [![codecov](https://codecov.io/gh/threefoldtech/jumpscale_core/branch/development/graph/badge.svg)](https://codecov.io/gh/threefoldtech/jumpscale_core)
 
-[![Join the chat at https://gitter.im/Jumpscale/jumpscale_core9](https://badges.gitter.im/Jumpscale/jumpscale_core9.svg)](https://gitter.im/Jumpscale/jumpscale_core9?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) ![travis](https://travis-ci.org/Jumpscale/core9.svg?branch=master)
 
-JumpScale is a cloud automation product and a branch from what used to be Pylabs. About 9 years ago Pylabs was the basis of a cloud automation product which was acquired by SUN Microsystems from Q-Layer. In the mean time we are 4 versions further and we have rebranded it to JumpScale.
+# Jumpscale
 
-- [JumpScale 9](#jumpscale-9)
-    - [About JumpScale9 Core](#about-jumpscale9-core)
-    - [Installing JumpScale9 Core](#installing-jumpscale9-core)
-        - [install using bash tools](#install-using-bash-tools)
-        - [Install using pip3](#install-using-pip3)
-    - [Usage](#usage)
-    - [Tutorials](#tutorials)
+Jumpscale is a cloud automation product and a branch from what used to be Pylabs. About 9 years ago Pylabs was the basis of a cloud automation product which was acquired by SUN Microsystems from Q-Layer. In the mean time we are 4 versions further and we have rebranded it to Jumpscale.
 
-## About JumpScale9 Core
+- [Jumpscale](#jumpscale)
+  - [About Jumpscale Core](#about-jumpscale-core)
+  - [Installing Jumpscale Core (NEW, need to test!!!)](#installing-jumpscale-core-new-need-to-test)
+    - [install](#install)
+    - [Install using pip3](#install-using-pip3)
+  - [Usage](#usage)
+  - [Tutorials](#tutorials)
 
-The core module provides the bare framework into which other modules of JumpScale plug into.
+
+REMARK: lots of changes have recently being done see [changes.md](changes.md)
+
+## About Jumpscale Core
+
+The core module provides the bare framework into which other modules of Jumpscale plug into.
 
 Of these provided tools are, most notably:
 
@@ -22,7 +26,7 @@ Of these provided tools are, most notably:
   The config manager is a secure way to manage configuration instances. Anything saved to the file system is NACL encrypted and only decrypted on the fly when accessed.
 
 - [Executors](docs/Internals/Executors.md)
-  JumpScale comes with its own executors that abstract working locally or remotely.
+  Jumpscale comes with its own executors that abstract working locally or remotely.
   Of these executors:
 
   * SSH Executor (for remote execution)
@@ -32,47 +36,51 @@ Of these provided tools are, most notably:
 * [JSLoader](docs/JSLoader/JSLoader.md)
 * [Node Manager]()
 
-## Installing JumpScale9 Core
+## Installing Jumpscale Core (NEW, need to test!!!)
 
 _tested on osx, ubuntu 16.04, ubuntu 17.04
 (will upgrade brew as part of the process on OSX)_
 
-### install using [bash tools](https://github.com/Jumpscale/bash)
+### install
+
+```bash
+curl https://raw.githubusercontent.com/threefoldtech/jumpscale_core/development/install.sh?$RANDOM > /tmp/install_jumpscale.sh;bash /tmp/install_jumpscale.sh
+```
 
 ```bash
 #to define branch:
-export JS9BRANCH="development"
-curl https://raw.githubusercontent.com/Jumpscale/core9/$JS9BRANCH/install.sh?$RANDOM > /tmp/install_js9.sh;bash /tmp/install_js9.sh
+export JUMPSCALEBRANCH="development"
+curl https://raw.githubusercontent.com/threefoldtech/jumpscale_core/$JUMPSCALEBRANCH/install.sh?$RANDOM > /tmp/install_jumpscale.sh;bash /tmp/install_jumpscale.sh
 ```
 
 to follow the install
 
 ```bash
-tail -f /tmp/zutils.log
+tail -f /tmp/jumpscale_install.log
 ```
 
 to test that it worked:
 
 ```bash
-js9
+js_shell
 ```
 
 ### Install using pip3
 
 ```
-mkdir -p /opt/code/github/jumpscale
-pip3 install -e git+https://github.com/Jumpscale/core9@development#egg=core9 --src /opt/code/github/jumpscale/
+mkdir -p /opt/code/github/threefoldtech/jumpscale_core
+pip3 install -e git+https://github.com/threefoldtech/jumpscale_core@development#egg=core --src /opt/code/github/threefoldtech/jumpscale_core
 ```
 
 ## Usage
 
 * The jsshell
-  in your terminal, type `js9`
+  in your terminal, type `js_shell`
 
 - In Python
 
   ```bash
-  python3 -c 'from js9 import j;print(j.application.getMemoryUsage())'
+  python3 -c 'from jumpscale import j;print(j.application.getMemoryUsage())'
   ```
 
   the default mem usage < 23 MB and lazy loading of the modules.

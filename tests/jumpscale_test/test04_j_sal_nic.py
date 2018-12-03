@@ -2,12 +2,12 @@ import os
 import unittest
 import random
 from testcases_base import TestcasesBase
-from js9 import j
-from JumpScale9Lib.sal.nic.UnixNetworkManager import NetworkingError
+from jumpscale import j
+from JumpscaleLib.sal.nic.UnixNetworkManager import NetworkingError
 
 class TestNICS(TestcasesBase):
 
-    @unittest.skip("https://github.com/Jumpscale/core9/issues/169")
+    @unittest.skip("https://github.com/threefoldtech/jumpscale_core/issues/169")
     def test001_get_nic(self):
         """ JS-025
 
@@ -27,7 +27,7 @@ class TestNICS(TestcasesBase):
         for nic in nics:
             self.assertIn(nic,nic_orgional)
 
-    @unittest.skip("https://github.com/Jumpscale/core9/issues/169")
+    @unittest.skip("https://github.com/threefoldtech/jumpscale_core/issues/169")
     def test002_get_nic_ip(self):
         """ JS-026
 
@@ -50,7 +50,7 @@ class TestNICS(TestcasesBase):
         self.lg.info("Compare between [nic_ip_mask] and [ifconfig_ip_mask],should be same .")
         self.assertEqual(nic_ip_mask , ifconfig_ip_mask)
 
-    @unittest.skip("https://github.com/Jumpscale/core9/issues/153")
+    @unittest.skip("https://github.com/threefoldtech/jumpscale_core/issues/153")
     def test003_set_nic_ip(self):
         """ JS-027
 

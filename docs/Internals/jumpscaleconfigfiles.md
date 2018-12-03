@@ -28,9 +28,9 @@
 
 ### redis
 
-- js9:cfg:config = toml file
-- js9:state:$stateName:$key = binary
-- js9:cache:$cacheName:$key = binary, std expiration 1h
+- jumpscale:cfg:config = toml file
+- jumpscale:state:$stateName:$key = binary
+- jumpscale:cache:$cacheName:$key = binary, std expiration 1h
 
 ### filesystem
 
@@ -49,7 +49,7 @@ when container starts /host is mapped to ~/container (on host)
 HOMEDIR = "~"
 TMPDIR = "/tmp"
 VARDIR = "/optvar"
-BASEDIR = "/opt/jumpscale9"
+BASEDIR = "/opt/jumpscale"
 CFGDIR = "{{VARDIR}}/cfg"
 DATADIR = "/host/data"
 CODEDIR = "/opt/code"
@@ -68,7 +68,7 @@ else:
 HOMEDIR = "~"
 TMPDIR = "/tmp"
 VARDIR = "{{HOMEDIR}}/opt/var"
-BASEDIR = "{{HOMEDIR}}/opt/jumpscale9"
+BASEDIR = "{{HOMEDIR}}/opt/jumpscale"
 CFGDIR = "{{VARDIR}}/cfg"
 DATADIR = "{{VARDIR}}/data"
 CODEDIR = "{{HOMEDIR}}/code"
@@ -92,11 +92,11 @@ smtp_server = ""
 
 [git.ays]
 branch = "master"
-url = "https://github.com/Jumpscale/ays9.git"
+url = "https://github.com/threefoldtech/jumpscale_/ays9.git"
 
 [git.js]
 branch = "master"
-url = "https://github.com/Jumpscale/core9.git"
+url = "https://github.com/threefoldtech/jumpscale_core.git"
 
 
 [system]

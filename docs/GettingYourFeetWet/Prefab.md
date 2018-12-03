@@ -36,4 +36,4 @@ prefab = j.tools.prefab.get(executor)
   prefab.core.file_copy("/opt/code/file1", "/opt/code/file2")
   ```
 
-For more information on Prefab check the [Prefab documentation](https://github.com/Jumpscale/prefab9/tree/master/docs).
+For more information on Prefab check the [Prefab documentation](https://github.com/threefoldtech/jumpscale_/prefab/tree/master/docs).

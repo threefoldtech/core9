@@ -1,6 +1,6 @@
-# JumpScale At The Command Line
+# Jumpscale At The Command Line
 
-JumpScale offers the following command line tools:
+Jumpscale offers the following command line tools:
 
  * [ays](##ays)
  * [jsdocker](##jsdocker)
@@ -10,7 +10,7 @@ JumpScale offers the following command line tools:
 
 
 ## ays
-Wrapper to JumpScale's **At Your Service** tool.
+Wrapper to Jumpscale's **At Your Service** tool.
 
 ```
 Usage: ays [OPTIONS] COMMAND [ARGS]...

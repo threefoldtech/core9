@@ -1,0 +1,139 @@
+#! /usr/bin/env python3
+
+"""
+This script is used to quickly deploy a ubuntu container on a 0-OS node and allow you to ssh into it
+
+This container is used to build flist, it contains already preinstalled tools like git, mc, build-essential.
+
+"""
+
+import time
+
+import click
+from jumpscale import j
+
+
+@click.group()
+def cli():
+    pass
+
+
+@click.command()
+def reset():
+    """
+    will remove all containers from the zero-os
+
+    """
+    if "builder" in j.clients.zos.list():
+        node = j.clients.zos.get('builder')
+        for cont in node.containers.list():
+            if cont.name is not "zrobot":
+                cont.stop()
+        for mount in  node.list_mounts():
+            if "/mnt/zdbs" in mount.mountpoint:
+                print("unmount:%s"%mount.mountpoint)  #TODO:*1
+
+    node.wipedisks()
+    print("zero-os clean")
+
+@click.command()
+def destroy():
+    """
+    will remove the virtualbox vms from local machine, be careful
+    :return:
+    """
+    j.tools.builder.zos_vb_delete_all()
+
+
+@click.command()
+@click.option('--name', '-n', default='zdb_builder', help='name of the zdb instance')
+@click.option('--mode', '-m', default='seq', help='seq or user mode')
+@click.option('--port', '-p', default=4500, help='port which will be exposed for the zerodb container, there is no admin passwd!')
+@click.option('--size', '-s', default=50, help='maximum amount of storage for the zerodb in GiB')
+def zdb(name, mode, port, size):
+    """
+    create a zdb container
+    """
+    node = j.clients.zos.get('builder')
+    logger = j.logger.get()
+
+    if node.addr == 'localhost':
+        # assume that if remote is localhost
+        # we try to reach a virtual machine with port forwarding
+        # from localhost to the machine, let's grab the reachable
+        # address of the virtual machine
+        node = j.clients.virtualbox.zero_os_private(node)
+
+    print("finding best disk where to deploy zdb...")
+    # find best disk where to deploy zdb
+    storage_pools = node.storagepools.list()
+    storage_pools = sorted(storage_pools, key=lambda sp: sp.info['used'], reverse=True)
+    # used the disk with the more space available
+
+    zdbs=node.zerodbs.list()
+
+
+    name2 = "builder_zdb_%s" % name
+    mountpoints = [mount.mountpoint for mount in node.list_mounts()]
+    mountpoints = [item for item in mountpoints if item.find(name2)is not -1]
+    if len(mountpoints)==0:
+        mountpoint, _ = node.zerodbs.create_and_mount_subvolume(
+            storagepool=storage_pools[0],
+            name="builder_zdb_%s" % name,
+            size=size)
+    else:
+        mountpoint = mountpoints[0]
+
+    zdb = node.zerodbs.create(name=name, path=mountpoint, mode=mode, node_port=port)
+    zdb.flist = "https://hub.grid.tf/tf-autobuilder/threefoldtech-0-db-development.flist"
+    # if zdb.is_running()[0]==True:
+    #     zdb.stop()
+    zdb.deploy()
+
+    zdb_cl = j.clients.zdb.configure(instance=name, secrets='',
+                            addr=node.addr, port=zdb.node_port,
+                            adminsecret='', mode=mode,
+                            encryptionkey='')
+
+    # zdb_cl = j.clients.zdb.configure(instance='%s_internal'%name, secrets='',
+    #                         addr=str(zdb.container.default_ip().ip), port=9900,
+    #                         adminsecret='', mode=mode,
+    #                         encryptionkey='')
+
+
+    assert zdb_cl.mode==mode
+    cl = zdb_cl.namespace_get("default")
+    if not cl.redis.ping():
+        raise RuntimeError("could not connect to zdb")
+
+    print('zdb deployed')
+    print('in jumpscale use as:\n    j.clients.zdb.get(\'%s\')' % name)
+    print('reach it publicly at %s:%s' % (node.addr, zdb.node_port))
+    print('reach it internally at %s:9900' % str(zdb.container.default_ip().ip))
+
+
+@click.command()
+def container():
+    """
+    create a build container in zero-os and launch ubuntu with lots of tools pre-installed to make building easy
+    """
+    j.shell("TO IMPLEMENT, USE j.tools.builder")
+
+
+@click.command()
+@click.option('--name', '-n', default='main', help='name of the tfbot container')
+def tfbot_build(name, port):
+    """
+    create a tfbot container
+    connect to zerotier network 1d7193940435f485, this is an ipv6 zerotier network which connects all tfbot's
+    """
+    j.shell("TO IMPLEMENT, USE j.tools.builder")
+
+cli.add_command(zdb)
+cli.add_command(container)
+cli.add_command(tfbot_build)
+cli.add_command(reset)
+cli.add_command(destroy)
+
+if __name__ == '__main__':
+    cli()

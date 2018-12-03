@@ -1,5 +1,5 @@
 
-# how to use atom for js9
+# how to use atom for jumpscale
 
 ## requirements
 
@@ -44,11 +44,11 @@ apm install raml
 
 add (ofcourse change yourusername)
 ```
-/Users/yourusername/js9host/autocomplete
+/Users/yourusername/jumpscale/autocomplete
 ```
 
 - ofcourse change to your own home path (check it exists).
-- when installing/building js9 docker it will sync all required libs to this path so you can use the autocompletion
+- when installing/building js_shell docker it will sync all required libs to this path so you can use the autocompletion
 
 ![](plugins_autocomplete.png)
 
@@ -58,7 +58,7 @@ settings in the plugin
 
 see how the autocompletion  works
 
-![](js9_autocomplete.png)
+![](js_autocomplete.png)
 
 ## nice plugins
 

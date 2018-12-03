@@ -3,7 +3,7 @@ import unittest
 import sys
 from unittest.mock import MagicMock
 from unittest.mock import patch
-from js9 import j
+from jumpscale import j
 
 from ... import base
 
@@ -18,7 +18,7 @@ class TestSSHClientFactory(base.BaseTestCase):
     #     ssh_client = j.clients.ssh.get()
     #     assert isinstance(ssh_client, MagicMock)
     #
-    #     from JumpScale9.clients.ssh import SSHClientFactory
+    #     from Jumpscale.clients.ssh import SSHClientFactory
     #     ssh_client_factory = SSHClientFactory.SSHClientFactory()
     #     ssh_client_factory.reset()
     #     ssh_client = ssh_client_factory.get()
@@ -41,8 +41,8 @@ class TestSSHClientFactory(base.BaseTestCase):
         """
         Checks if j.client.ssh.get() caching works properly
         """
-        with patch('JumpScale9.clients.ssh.SSHClient.SSHClient') as SSHClient:
-            from JumpScale9.clients.ssh import SSHClientFactory
+        with patch('Jumpscale.clients.ssh.SSHClient.SSHClient') as SSHClient:
+            from Jumpscale.clients.ssh import SSHClientFactory
             ssh_client_factory = SSHClientFactory.SSHClientFactory()
             ssh_client_factory.reset()
             ssh_instance_id_first = id(ssh_client_factory.get())
@@ -54,7 +54,7 @@ class TestSSHClientFactory(base.BaseTestCase):
     #     """
     #     Checks if j.client.ssh.get() disabling caching works properly
     #     """
-    #     from JumpScale9.clients.ssh import SSHClientFactory
+    #     from Jumpscale.clients.ssh import SSHClientFactory
     #     ssh_client_factory = SSHClientFactory.SSHClientFactory()
     #     ssh_client_factory.reset()
     #     ssh_instance_id_first = id(ssh_client_factory.get(usecache=False))
@@ -66,7 +66,7 @@ class TestSSHClientFactory(base.BaseTestCase):
     #     """
     #     Checks if cache is clear after calling reset
     #     """
-    #     from JumpScale9.clients.ssh import SSHClientFactory
+    #     from Jumpscale.clients.ssh import SSHClientFactory
     #     ssh_client_factory = SSHClientFactory.SSHClientFactory()
     #     ssh_client_factory.reset()
     #     assert ssh_client_factory.cache == {}

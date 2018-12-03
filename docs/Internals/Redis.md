@@ -16,7 +16,7 @@ Redis is an open source (BSD licensed), in-memory data structure store, used as 
 
 ## How does it get loaded?
 
-- When initiating a j instance, whether by starting a jsshell or importing j from JumpScale, it will be loaded on j.core.db
+- When initiating a j instance, whether by starting a jsshell or importing j from Jumpscale, it will be loaded on j.core.db
 - First port 9999 will be checked, if available that client will be loaded
 - Then default Redis port 6379 will be checked and loaded if found
 - Otherwise j.core.db=None

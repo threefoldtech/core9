@@ -1,6 +1,6 @@
-# JumpScale Core Components
+# Jumpscale Core Components
 
-JumpScale consists of the following main components:
+Jumpscale consists of the following main components:
 
 - [Various Tools](Tools.md)
 - [System Abstraction Layers](SALs.md)

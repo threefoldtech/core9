@@ -6,11 +6,13 @@ import os
 
 
 def _post_install(libname, libpath):
-    from JumpScale9 import j  # here its still the boostrap JumpScale9
+    from Jumpscale import j  # here its still the boostrap Jumpscale
 
     # remove leftovers
-    for item in j.sal.fs.find("/usr/local/bin/", fileregex="js9*"):
-        j.sal.fs.remove("/usr/local/bin/%s" % item)
+    if not "PBASE" in os.environ:
+        #should only be done when not in build dir
+        for item in j.sal.fs.find("/usr/local/bin/", fileregex="js_*"):
+            j.sal.fs.remove("/usr/local/bin/%s" % item)
 
     j.tools.executorLocal.initEnv()
     j.tools.jsloader.generate()
@@ -43,13 +45,13 @@ except ImportError:
 
 
 setup(
-    name='JumpScale9',
-    version='9.4.0-rc4',
+    name='Jumpscale',
+    version='9.5.0',
     description='Automation framework for cloud workloads',
     long_description=long_description,
-    url='https://github.com/Jumpscale/core9',
-    author='GreenItGlobe',
-    author_email='info@gig.tech',
+    url='https://github.com/threefoldtech/jumpscale_core',
+    author='ThreeFoldTech',
+    author_email='info@threefold.tech',
     license='Apache',
     packages=find_packages(),
 
@@ -60,7 +62,7 @@ setup(
         'colored_traceback',
         'colorlog>=2.10.0',
         'httplib2>=0.10.3',
-        'ipython>=6.0.0',
+        'ipython<6.5.0,>=6.0.0',
         'libtmux>=0.7.1',
         'netaddr>=0.7.19',
         'path.py>=10.3.1',
@@ -68,7 +70,7 @@ setup(
         'python-dateutil>=2.6.0',
         'pytoml>=0.1.12',
         'toml',
-        'redis>=2.10.5',
+        'redis<3.0.0',
         'requests>=2.13.0',
         'future>=0.16.0',
         'watchdog',
@@ -81,6 +83,8 @@ setup(
         'ssh2-python',
         'parallel_ssh>=1.4.0',
         'psutil>=5.4.3',
+        'Unidecode>=1.0.22',
+        'bpython'
 
     ],
     cmdclass={
@@ -89,9 +93,9 @@ setup(
         'developement': develop
     },
     scripts=[
-        'cmds/js9',
-        'cmds/js9_code',
-        'cmds/js9_docker',
-        'cmds/js9_doc',
+        'cmds/js_shell',
+        'cmds/js_code',
+        'cmds/js_docker',
+        'cmds/js_doc',
     ],
 )

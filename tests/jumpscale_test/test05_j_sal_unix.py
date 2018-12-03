@@ -1,8 +1,8 @@
 import os, shutil
 import random
 from testcases_base import TestcasesBase
-from js9 import j
-from JumpScale9Lib.sal.nic.UnixNetworkManager import NetworkingError
+from jumpscale import j
+from JumpscaleLib.sal.nic.UnixNetworkManager import NetworkingError
 import unittest
 import string,uuid
 from pwd import getpwuid 
@@ -176,7 +176,7 @@ class TestUNIX(TestcasesBase):
         with self.assertRaises(KeyError):
             j.sal.unix.chown(file_path , user_name, fake_group_name)
        
-    @unittest.skip("https://github.com/Jumpscale/core9/issues/163")
+    @unittest.skip("https://github.com/threefoldtech/jumpscale_core/issues/163")
     def test08_change_folder_owner_recursively(self):
         """ JS-036
 

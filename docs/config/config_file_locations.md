@@ -1,5 +1,5 @@
 
-# principles of configuration management in js93
+# principles of configuration management in jumpscale 9.3
 
 ## location of configuration management information
 
@@ -53,7 +53,7 @@ the selected ssh-agent will be configured in j.core.state.config_js (see below)
 
 check for myconfig info in ```j.core.state.config_js``` which is in 
 
-![](def_config_js9.png)
+![](def_config_jumpscale.png)
 
 you can check in
 
@@ -79,7 +79,7 @@ if no configuration directory like this exists then it will create one in defaul
 
 when ```cfg["myconfig"]["path"]``` is empty will try to find the config directory in git as follows
 
-- will walk over all git repos which are stored on right location (when using js9_code)
+- will walk over all git repos which are stored on right location (when using js_code)
    -  $HOMEDIR/code/$type/$account/$reponame  $type e.g. docs or github
 -  will look for ```.jsconfig``` in root of the git repo
 -  if found only1 this will be the config directory used and put in config file see above 

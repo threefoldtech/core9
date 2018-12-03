@@ -2,16 +2,26 @@ language: python
 sudo: enabled
 dist: trusty
 group: edge
-
-# whitelist master/development branch only		
-branches:		
-  only:		
-    - master
-    - development
+cache: pip
 
 python:
   - "3.5"
 
-install: ./install/travis_ci/prepare.sh
+before_install:
+  - sudo apt-get install -y python3.5 python3.5-dev
+  - sudo rm -f /usr/bin/python
+  - sudo rm -f /usr/bin/python3
+  - sudo ln -s /usr/bin/python3.5 /usr/bin/python
+  - sudo ln -s /usr/bin/python3.5 /usr/bin/python3
 
-script: ./run_tests.sh
+install:
+  - sudo ./install/travis_ci/prepare.sh
+  - sudo pip3 install pytest pytest-cov codecov pylint
+
+script:
+  - sudo python3 -c 'from jumpscale import j;print(j.application.getMemoryUsage())'
+  - sudo pytest -v --cov=Jumpscale Jumpscale
+  - sudo pylint --rcfile=.pylintrc Jumpscale
+
+after_success:
+  - codecov

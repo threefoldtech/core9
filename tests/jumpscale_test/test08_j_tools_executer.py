@@ -1,6 +1,6 @@
 import os, unittest, random, platform, sys
 from testcases_base import TestcasesBase
-from js9 import j
+from jumpscale import j
 from parameterized import parameterized
 
 class EXECUTER(TestcasesBase):

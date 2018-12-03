@@ -1,6 +1,6 @@
 # Working with Docker using the Docker SAL
 
-We will go through `j.sal.docker` to manage Docker related operations using JumpScale framework.
+We will go through `j.sal.docker` to manage Docker related operations using Jumpscale framework.
 
 Below you'll see how to:
 - [Check the available images](#get-images)
@@ -63,7 +63,7 @@ Let's check if it's running:
 
 ```
 In [4]: c1.isRunning()
-[Thu08 13:42] - ...lib/JumpScale/sal/docker/Container.py:94   - INFO     - read info of container mytest1:2a232407dd8bf95b46947b2fc490c2110a575598b292e67477c691399662b502
+[Thu08 13:42] - ...lib/Jumpscale/sal/docker/Container.py:94   - INFO     - read info of container mytest1:2a232407dd8bf95b46947b2fc490c2110a575598b292e67477c691399662b502
 
 Out[4]: True
 ```
@@ -73,7 +73,7 @@ Let's get more info on that container:
 
 ```
 In [9]: c1.info
-[Thu08 13:47] - ...lib/JumpScale/sal/docker/Container.py:94   - INFO     - read info of container mytest1:2a232407dd8bf95b46947b2fc490c2110a575598b292e67477c691399662b502
+[Thu08 13:47] - ...lib/Jumpscale/sal/docker/Container.py:94   - INFO     - read info of container mytest1:2a232407dd8bf95b46947b2fc490c2110a575598b292e67477c691399662b502
 Out[9]:
 {'AppArmorProfile': '',
  'Args': [],

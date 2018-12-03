@@ -24,7 +24,7 @@ curl https://raw.githubusercontent.com/Jumpscale/developer/master/jsinit.sh?$RAN
 ### download/start jumpscale docker
 
 ```bash
-js9_start
+js_start
 ```
 
 this will take a while, because this is a development docker and is +1.5GB
@@ -40,13 +40,13 @@ If you rather build the system from scratch
 
 ```bash
 #remove previous dockers, so you build from scratch
-js9_destroy
+js_destroy
 #-l installs extra libs
 #-p installs portal
-js9_build -l
+js_build -l
 ```
 
-To see all options do ```js9_build -h```
+To see all options do ```js_build -h```
 
 To see interactive output do the following in a separate console:
 ```bash

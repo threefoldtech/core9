@@ -2,7 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+.*.sw?
 # C extensions
 *.so
 
@@ -80,6 +80,9 @@ celerybeat-schedule
 venv/
 ENV/
 
+# pytest
+.pytest_cache
+
 # Spyder project settings
 .spyderproject
 
@@ -93,3 +96,4 @@ ENV/
 # editor
 .vscode
 .idea
+build
