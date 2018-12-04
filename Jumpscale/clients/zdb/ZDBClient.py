@@ -1,7 +1,9 @@
-from jumpscale import j
-from pprint import pprint as print
 import os
 import struct
+from pprint import pprint as print
+
+from jumpscale import j
+
 from .ZDBClientNS import ZDBClientNS
 
 JSBASE = j.application.jsbase_get_class()
@@ -96,3 +98,9 @@ class ZDBClient(JSBASE):
             cl.redis.execute_command("NSSET", name, "maxsize", maxsize)
 
         return self.namespace_get(name)
+
+    def namespace_delete(self, name):
+        if not self.namespace_exists(name):
+            return
+
+        return self.redis.execute_command("NSDEL", name)
