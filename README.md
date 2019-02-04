@@ -88,3 +88,6 @@ pip3 install -e git+https://github.com/threefoldtech/jumpscale_core@development#
 ## Tutorials
 How to run a sandbox of jumpscale and python  [Check Documentation](docs/howto/sandbox_python_zeroos_container.md)
 <!TODO>
+
+# Repository Owners:
+- https://github.com/rkhamis, telegram: @rThursday
