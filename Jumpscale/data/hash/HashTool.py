@@ -59,6 +59,12 @@ class HashTool(JSBASE):
         """
         return binascii.hexlify(bin)
 
+    def blake2b_bytes(self, data=b'', digest_size=64):
+        """
+        blake2b digest of a byte object. The returned digest is 64 bytes long
+        """
+        return blake2b(data=data, digest_size=digest_size).digest()
+
 
 def _hash_funcs(alg):
     '''Function generator for hashlib-compatible hashing implementations'''
