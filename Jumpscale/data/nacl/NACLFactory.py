@@ -5,7 +5,7 @@ import nacl.secret
 import nacl.utils
 import base64
 
-from nacl.public import PrivateKey, SealedBox
+from nacl.public import PrivateKey, SealedBox, Box
 
 JSBASE = j.application.jsbase_get_class()
 
@@ -213,6 +213,28 @@ class NACLFactory(JSBASE):
             print(message.strip()+"\n")
 
         return message
+
+    def encrypt_curve25519(self, message, priv_key, pub_key):
+        """
+        encrypt data using the curve25519 algorithm. It takes a message to encrypt,
+        your own private key, and another party's public key. The data can later be
+        decrypted by the other party provided it has access to your public key.
+        """
+
+        box = Box(priv_key, pub_key)
+        encrypted_message = box.encrypt(message)
+        return encrypted_message
+
+    def decrypt_curve25519(self, encrypted_message, priv_key, pub_key):
+        """
+        decrypt data using the curve25519 algorithm. It takes an encrypted message
+        to decrypt, your own private key, and the public key of the third paryt who
+        encrypted the data.
+        """
+
+        box = Box(priv_key, pub_key)
+        decrypted_message = box.decrypt(encrypted_message)
+        return decrypted_message
 
     @property
     def agent(self):
