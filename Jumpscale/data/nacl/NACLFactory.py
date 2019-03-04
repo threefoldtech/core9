@@ -236,6 +236,47 @@ class NACLFactory(JSBASE):
         decrypted_message = box.decrypt(encrypted_message)
         return decrypted_message
 
+    def sign_ed25519(self, message_bytes, signing_key):
+        """
+        Sign the data using the given signing key. message_bytes is assumed to be
+        a bytes object. It returns a tuple with the message bytes as first element
+        and the signature bytes as second element.
+
+        signing_key is an instance of nacl.signing.SigningKey
+        """
+
+        signed_message = signing_key.sign(message_bytes)
+        return (signed_message.message, signed_message.signature)
+
+    def verify_ed25519(self, message_bytes, signature, verify_key):
+        """
+        Verify a signature. message_bytes is the message as a bytes object. Signature
+        is the signature as a bytes object, verify_key is an instance of
+        nacl.signing.VerifyKey. The verify_key must be the verify key associated
+        with the signing key originally used to sign the message. If verification
+        is successful, the message_bytes are returned. If verification fails, an
+        exception is raised.
+        """
+
+        return verify_key.verify(message_bytes, signature)
+
+    def signing_key_to_private_key(self, signing_key):
+        """
+        Convert an ed25519 signing key to the corresponding curve25519 private key.
+        signing_key is expected to be a nacl.signing.PrivateKey. This returns a
+        nacl.public.PrivateKey.
+        """
+
+        return signing_key.to_curve25519_private_key()
+
+    def verify_key_to_public_key(self, verify_key):
+        """
+        Convert an ed25519 verify key to the corresponding curve25519 public key.
+        verify_key is expected to be a nacl.signing.VerifyKey. This returns a
+        nacl.public.PublicKey
+        """
+        return verify_key.to_curve25519_public_key()
+
     @property
     def agent(self):
 
