@@ -1,4 +1,3 @@
-
 import os
 import threading
 
@@ -72,13 +71,13 @@ class SSHClientFactory(JSConfigBase):
         Could not open a connection to your authentication agent.
         ((type:runtime.error)
 
-        In [4]: sshcl = j.clients.ssh.get(instance="dmdmssh", data=dict(addr="127.0.0.1", login="root", sshkey='dmdmconf', forward_agent=True, allow_agent=True, stdout=True, 
+        In [4]: sshcl = j.clients.ssh.get(instance="dmdmssh", data=dict(addr="127.0.0.1", login="root", sshkey='dmdmconf', forward_agent=True, allow_agent=True, stdout=True,
         ...: timeout=10), use_paramiko=True)
 
         In [5]: sshcl.execute("ssh-add -L")
         * connect to:127.0.0.1
         * connection ok
-        Out[5]: 
+        Out[5]:
         (0,
         'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCeq1MFCQOv3OCLO1HxdQl8V0CxAwt5AzdsNOL91wmHiG9ocgnq2yipv7qz+uCS0AdyOSzB9umyLcOZl2apnuyzSOd+2k6Cj9ipkgVx4nx4q5W1xt4MWIwKPfbfBA9gDMVpaGYpT6ZEv2ykFPnjG0obXzIjAaOsRthawuEF8bPZku1yi83SDtpU7I0pLOl3oifuwPpXTAVkK6GabSfbCJQWBDSYXXM20eRcAhIMmt79zo78FNItHmWpfPxPTWlYW02f7vVxTN/LUeRFoaNXXY+cuPxmcmXp912kW0vhK9IvWXqGAEuSycUOwync/yj+8f7dRU7upFGqd6bXUh67iMl7 /root/.ssh/id_rsa\nssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDM+No+Va36MX+f/ljwaN89w4j0Dy6Z0tSHVdx/kJhXq8QhZewc+BB7fISDPgqoPr5OoK7B5zy5tFMwf464NeRBwhAdq9LvOslJaHX9OzSavJISxpxLbK7o67dzV+BbzD3g9FL0jyd80+R39u00WzqfVr6aA2zE4kygeCak3Yj229/Y5BU64yHk1saCRxtBMa5o0vHw9gSSfJqjdw/TlhLiDe4YUn2DeC/AX9Jyh3udvl8fDHfiJeIg/TdfeMOj2iHolCzT7GV0+TMAw1tAapAALLRXpb9WCVAF8BEWFWr10dOdwc/VarPTmP4CcMxgivwqfQicSU4uPuwP0HYAOJiH /opt/code/git/despiegk/itenv_test/keys/itenv_test\n',
         '')
@@ -93,11 +92,13 @@ class SSHClientFactory(JSConfigBase):
 
         if j.core.platformtype.myplatform.isMac:
             use_paramiko = True
-            return SSHClientParamiko(instance=instance, data=data, interactive=interactive, parent=self)
-        elif use_paramiko is True:
-            return SSHClientParamiko(instance=instance, data=data, interactive=interactive, parent=self)
+
+        if use_paramiko is True:
+            client = SSHClientParamiko(instance=instance, data=data, interactive=interactive, parent=self)
         else:
-            return SSHClient(instance=instance, data=data, parent=self, interactive=interactive)
+            client = SSHClient(instance=instance, data=data, parent=self, interactive=interactive)
+
+        return client
 
     def reset(self):
         """

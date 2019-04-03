@@ -1,6 +1,9 @@
-import io
 import functools
+import io
+
 from jumpscale import j
+from pssh.clients import SSHClient as PSSHClient
+
 from .SSHClientBase import SSHClientBase
 
 # THIS IS NOT THE ORIGINAL FILE, IS JUST A COPY FROM SSHCLientBase.TEMPLATE: CHANGE THERE !!!! (and copy here)
@@ -32,28 +35,25 @@ class SSHClient(SSHClientBase):
 
     @property
     def client(self):
-        pkey = self.sshkey.path if (self.sshkey and self.sshkey.path) else None
-        passwd = self.passwd
-        if pkey:
-            passwd = self.sshkey.passphrase
+        if self._client is None:
+            pkey = self.sshkey.path if (self.sshkey and self.sshkey.path) else None
+            passwd = self.passwd
+            if pkey:
+                passwd = self.sshkey.passphrase
 
-        from pssh.ssh2_client import SSHClient as PSSHClient
-        PSSHClient = functools.partial(PSSHClient, retry_delay=1)
-
-        self._client = PSSHClient(self.addr_variable,
-                                  user=self.login,
-                                  password=passwd,
-                                  port=self.port,
-                                  pkey=pkey,
-                                  num_retries=self.timeout / 6,
-                                  allow_agent=self.allow_agent,
-                                  timeout=5)
-
+            self._client = PSSHClient(self.addr_variable,
+                                      user=self.login,
+                                      password=passwd,
+                                      port=self.port,
+                                      pkey=pkey,
+                                      num_retries=self.timeout / 6,
+                                      allow_agent=self.allow_agent,
+                                      timeout=5,
+                                      retry_delay=1)
         return self._client
 
     def execute(self, cmd, showout=True, die=True, timeout=None):
         channel, _, stdout, stderr, _ = self.client.run_command(cmd, timeout=timeout)
-        # self._client.wait_finished(channel)
 
         def _consume_stream(stream, printer, buf=None):
             buffer = buf or io.StringIO()
@@ -83,34 +83,6 @@ class SSHClient(SSHClientBase):
 
     def connect(self):
         self.client
-
-    # def connectViaProxy(self, host, username, port, identityfile, proxycommand=None):
-    #     # TODO: Fix this
-    #     self.usesproxy = True
-    #     client = paramiko.SSHClient()
-    #     client._policy = paramiko.WarningPolicy()
-    #     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    #     import os.path
-    #     self.host = host
-    #     cfg = {'hostname': host, 'username': username, "port": port}
-    #     self.addr = host
-    #     self.user = username
-
-    #     if identityfile is not None:
-    #         cfg['key_filename'] = identityfile
-    #         self.key_filename = cfg['key_filename']
-
-    #     if proxycommand is not None:
-    #         cfg['sock'] = paramiko.ProxyCommand(proxycommand)
-    #     cfg['timeout'] = 5
-    #     cfg['allow_agent'] = True
-    #     cfg['banner_timeout'] = 5
-    #     self.cfg = cfg
-    #     self.forward_agent = True
-    #     self._client = client
-    #     self._client.connect(**cfg)
-
-    #     return self._client
 
     def reset(self):
         with self._lock:
